@@ -1,0 +1,45 @@
+@theme inline {
+  --animate-reveal-text: reveal-text 4s ease forwards;
+  --animate-sweep-light-bar: sweep-light-bar 4s ease forwards;
+  --animate-sweep-light-bar-r: sweep-light-bar-r 4s ease forwards;
+
+  @keyframes reveal-text {
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+
+  @keyframes sweep-light-bar {
+    0%,
+    5% {
+      transform: scaleY(0) translateX(0);
+    }
+    10% {
+      transform: scaleY(1) translateX(0);
+    }
+    90% {
+      transform: scaleY(1) translateX(calc(100% - 1rem));
+    }
+    95%,
+    100% {
+      transform: scaleY(0) translateX(calc(100% - 1rem));
+    }
+  }
+
+  @keyframes sweep-light-bar-r {
+    0%,
+    5% {
+      transform: scaleY(0) translateX(0);
+    }
+    10% {
+      transform: scaleY(1) translateX(0);
+    }
+    90% {
+      transform: scaleY(1) translateX(calc(-100% + 1rem));
+    }
+    95%,
+    100% {
+      transform: scaleY(0) translateX(calc(-100% + 1rem));
+    }
+  }
+}

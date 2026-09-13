@@ -1,0 +1,42 @@
+@theme inline {
+  --animate-spark-h: spark-h 24s linear infinite;
+  --animate-spark-h-l: spark-h-l 128s linear infinite;
+  --animate-spark-v: spark-v 24s linear infinite;
+  --animate-spark-v-l: spark-v-l 128s linear infinite;
+
+  @keyframes spark-h {
+    0% {
+      background-position: 0% 0%;
+    }
+    100% {
+      background-position: 200% 0%;
+    }
+  }
+
+  @keyframes spark-h-l {
+    0% {
+      background-position: 0% 0%;
+    }
+    100% {
+      background-position: 800% 0%;
+    }
+  }
+
+  @keyframes spark-v {
+    0% {
+      background-position: 0% 0%;
+    }
+    100% {
+      background-position: 0% 200%;
+    }
+  }
+
+  @keyframes spark-v-l {
+    0% {
+      background-position: 0% 0%;
+    }
+    100% {
+      background-position: 0% 800%;
+    }
+  }
+}

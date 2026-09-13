@@ -1,0 +1,83 @@
+{
+  "pageHome": {
+    "experience": "Experience",
+    "portfolioProjects": "Portfolio Projects"
+  },
+
+  "contactForm": {
+    "labelName": "Name",
+    "labelEmail": "Email",
+    "labelSubject": "Subject",
+    "labelMessage": "Message",
+    "labelCaptcha": "Captcha",
+    "placeholderName": "Let me know who you are!",
+    "placeholderEmail": "I will reply to you here",
+    "placeholderSubject": "Project Inquiry? Feedback? Let me know!",
+    "placeholderMessage": "How can I help you today?",
+    "placeholderCaptcha": "Enter the generated captcha"
+  },
+
+  "contactFormFeedback": {
+    "success": "Success!",
+    "messageSent": "Your message has been sent.",
+    "name": "Name",
+    "email": "Email",
+    "subject": "Subject",
+    "missingFields": "Missing fields!",
+    "pleaseCorrect": "Please correct the contact form fields and try again.",
+    "serverError": "Server error!",
+    "messageNotSent": "The message was not sent successfully; please try again later.",
+    "invalidCaptcha": "The captcha is invalid; please try again."
+  },
+
+  "contactMap": {
+    "letUsTalk": "Let us talk about some projects",
+    "overCup": "over a cup of coffee 😄",
+    "poland": "Poland"
+  },
+
+  "experienceDetails": {
+    "liveLink": "Live Link",
+    "goAndSee": "Go and see the GitHub Repo",
+    "gitHubRepo": "GitHub Repo",
+    "skillsUsed": "Skills Used",
+    "watchVideo": "Watch Video"
+  },
+
+  "experienceModal": {
+    "projectInfo": "Project Info & Description",
+    "close": "Close"
+  },
+
+  "experienceSlide": {
+    "moreInfo": "More Info",
+    "liveLink": "Live Link",
+    "goAndSee": "Go and see the GitHub Repo",
+    "gitHubRepo": "GitHub Repo",
+    "watchVideo": "Watch Video"
+  },
+
+  "formSubmit": {
+    "sending": "Sending...",
+    "send": "Send",
+    "reset": "Reset",
+    "cancel": "Cancel"
+  },
+
+  "header": {
+    "home": "Home",
+    "education": "Education",
+    "contact": "Contact",
+    "pdf": "PDF Version",
+    "hrefPdf": "/my-cv.pdf",
+    "video": "Video Version"
+  },
+
+  "myCertificates": {
+    "myCertificates": "My Certificates"
+  },
+
+  "myEducation": {
+    "myEducation": "My Education"
+  }
+}

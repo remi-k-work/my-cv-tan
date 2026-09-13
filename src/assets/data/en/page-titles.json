@@ -1,0 +1,61 @@
+[
+  {
+    "/": {
+      "eyebrow": "Skills & Experience",
+      "heading": "My Resume",
+      "intro": "While I dabbled in ASP.NET and C# back in the day, my passion for web development has never wavered. These days, I am totally hooked on React, JavaScript, HTML, and CSS - the perfect tools for my front-end development obsession. With an insatiable hunger for knowledge and a commitment to learning, I am seeking internship opportunities to get my hands dirty and contribute to any project that comes my way. Even the simplest tasks would provide invaluable learning experiences as I strive to elevate my web development skills to the next level. I am eager to soak up knowledge from experienced pros and collaborate with a team of brilliant minds, ready to absorb skills and insights to become a true asset to any team."
+    },
+
+    "/education": {
+      "eyebrow": "Developer with Interactive Media Degree",
+      "heading": "My Education",
+      "intro": "My educational journey began at the Rzeszów University of Technology in Poland, where I got my feet wet in the world of computer science. I spent two years exploring the basics before taking the plunge and transferring to the Pratt Institute in the United States. At Pratt, I dove headfirst into the Interactive Media program, learning about all the latest crazes in web development, design, and user experience. While I might not have a fancy computer science degree, I have built a strong foundation in the core concepts. I am also proficient in a variety of programming languages and technologies, including JavaScript, HTML, CSS, and React. I am a dedicated and hardworking individual, always eager to learn and grow. Additionally, I am a team player at heart, always up for collaborating with talented folks and soaking up their knowledge. I am confident that my passion, skills, and willingness to learn make me a valuable asset to any organization that is willing to give me a chance to shine."
+    },
+
+    "/contact": {
+      "eyebrow": "Get in Touch",
+      "heading": "Contact Me",
+      "intro": "Wanna connect? Whether you have a question about my work, you are interested in collaborating on a project, or you have internship opportunities in mind, do not hesitate to reach out! Use the form below to send me a message, and I will be thrilled to respond promptly. I am eager to connect, learn, and grow alongside you! Cheers, and I hope to hear from you soon!"
+    }
+  },
+
+  {
+    "/": {
+      "eyebrow": "Full-Stack Forge",
+      "heading": "My Resume",
+      "intro": "My journey began with ASP.NET and C#, but now I thrive in the full-stack realm. JavaScript is my language of choice, and I wield React, NextJS, and the classic web dev trio (HTML, CSS, and JS) to build exceptional experiences. NextJS empowers me to bridge the front-end/back-end gap, crafting performant and SEO-friendly web applications. My hunger for knowledge is insatiable, and I am eager to take on an internship where I can leverage both my front-end and back-end skills. Every project, big or small, is a chance to learn and grow. I am a fast learner and eager to collaborate with a killer team and soak up knowledge from experienced developers. My goal? To become a true asset, bringing a full-stack skillset, fresh perspectives, and a thirst for knowledge to the table."
+    },
+
+    "/education": {
+      "eyebrow": "Building Bridges: From CS Basics to Interactive Design",
+      "heading": "My Education",
+      "intro": "My educational path started with a foundation in computer science at the Rzeszów University of Technology in Poland. After two years, I craved a deeper dive into the creative side of development. So, I made a bold move, transferring to the Pratt Institute's Interactive Media program in the US. Pratt ignited my passion for web development by fusing design, user experience, and the latest web technologies. While my degree may not be in traditional CS, I possess a strong grasp of core programming concepts. My skillset spans JavaScript, HTML, CSS, and React, and I am constantly expanding my knowledge. This journey reflects my dedication and thirst for learning. I thrive in collaborative environments, soaking up knowledge from talented teammates. My passion, combined with my skills and eagerness to grow, makes me a valuable asset for any team seeking a bridge between strong technical understanding and creative problem-solving."
+    },
+
+    "/contact": {
+      "eyebrow": "Let's Craft Something Awesome Together!",
+      "heading": "Contact Me",
+      "intro": "Whether you are curious about a project I have worked on, have a web development question bouncing around in your brain, or are seeking a passionate and eager intern for your team, I would love to hear from you! I truly believe collaboration fuels innovation. So, if you have an idea you want to bring to life or simply want to chat about the ever-evolving world of web development, do not be shy! Reach out using the form below, and let us connect. I am a fast learner with a genuine enthusiasm for the field, and I am always looking for opportunities to expand my knowledge and contribute to meaningful projects. Plus, I am a firm believer in the power of a good conversation – it is where some of the coolest ideas spark! So, fire away with your questions, project ideas, or internship inquiries. I cannot wait to hear from you and embark on a creative journey together!"
+    }
+  },
+
+  {
+    "/": {
+      "eyebrow": "JavaScript Jedi: From Front-End to Full-Stack",
+      "heading": "My Resume",
+      "intro": "Once upon a code, I dabbled in ASP.NET and C#. But the Force (a.k.a. JavaScript) awakened within me, leading me to the path of the Front-End. Now, wielding the lightsabers of React, NextJS, HTML, and CSS, I craft user experiences that leave users in awe. My insatiable curiosity compels me to explore the depths of the Force – both the front-end and back-end. An internship beckons, an opportunity to unleash my full potential in a collaborative environment. Every project, a new adventure, fuels my growth as a developer. Fast learning and eager to absorb knowledge from the wise masters (experienced devs!), I strive to become a true asset to any team. Fresh perspectives and a thirst for knowledge are my weapons of choice, ready to join the Rebellion (your awesome team!) and conquer the digital galaxy (build amazing web applications!)."
+    },
+
+    "/education": {
+      "eyebrow": "Rebellion Recruit: From Core Protocols to User Experience",
+      "heading": "My Education",
+      "intro": "My journey began on the familiar terrain of computer science at the Rzeszów University of Technology, Poland. After two years, I felt the call of the Rebellion – the urge to explore the creative side of the Force (a.k.a. web development). So, I made a daring hyperspace jump, transferring to the prestigious Pratt Institute's Interactive Media program in the U.S. Pratt opened my eyes to the power of the Force in web development. Here, I learned to wield the lightsabers of design, user experience, and the latest web technologies. My degree may not be a traditional Jedi certificate (computer science), but I possess a strong foundation in the core programming languages – the droids of the developer world (JavaScript, HTML, CSS, and React). And my training continues! This path reflects my unwavering dedication and thirst for knowledge. I thrive in collaborative environments, eager to learn from the wisdom of experienced developers (Jedi Masters!). My passion, combined with my skills and relentless pursuit of growth, makes me a valuable asset to any team seeking a Rebel with a strong grasp of technical protocols and a knack for creative problem-solving."
+    },
+
+    "/contact": {
+      "eyebrow": "Channel Your Inner Rebellion: Let's Build Something Epic!",
+      "heading": "Contact Me",
+      "intro": "Ever felt the Force calling you to join the fight for a more awesome web experience? Whether you have a burning question about a project from my portfolio, a daring vision for a new web application, or are seeking a talented padawan (intern) to join your Jedi development team, then this is your chance to send a transmission! Remember, the Rebellion thrives on collaboration. So, if you have a Death Star-sized project in need of a skilled developer or simply want to chat about the latest advancements in web development that would make even R2-D2 envious, don't hesitate to reach out! Fill out the form below, and let's connect. My skills are as sharp as a lightsaber, and my hunger for knowledge is ever-present, like a persistent droid. I'm eager to contribute to a meaningful project and learn from the wisdom of experienced developers (Jedi Masters!). Plus, who knows? Our conversation might spark the next revolutionary idea that will change the web forever, just like the stolen Death Star plans! So, fire away with your questions, project ideas, or internship inquiries. May the Force be with you, and I eagerly await your transmission!"
+    }
+  }
+]

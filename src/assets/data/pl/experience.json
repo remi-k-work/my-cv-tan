@@ -1,0 +1,103 @@
+[
+  {
+    "year": "Marzec 2026",
+    "role": "Programista Full-Stack",
+    "company": "Benefit Finance",
+    "txt": "Budowa platformy cyfrowej dla Benefit Finance. Dla Benefit Finance, rodzinnej firmy, która od ponad 13 lat wspiera klientów w zakresie rozwiązań finansowych, kredytowych i ubezpieczeniowych, zaprojektowałem i stworzyłem nowoczesną platformę cyfrową, której celem jest poprawa zaangażowania klientów, usprawnienie wewnętrznych przepływów pracy i dostępności usług. Wykorzystując Next.js i React, stworzyłem szybką, responsywną stronę internetową, która zapewnia płynne działanie na komputerach stacjonarnych i urządzeniach mobilnych, a jednocześnie integruje pełny system uwierzytelniania i zarządzania użytkownikami. Aby pomóc firmie w rozwoju bazy klientów, wdrożyłem rozbudowany system zarządzania leadami i poleceń, który pozwala użytkownikom w uporządkowany sposób polecać nowych klientów i śledzić napływające leady. System ten usprawnia proces pozyskiwania i przetwarzania zapytań potencjalnych klientów, ułatwiając firmie kontakt z osobami potrzebującymi pomocy finansowej. Jednym z najbardziej innowacyjnych elementów projektu jest Agent Wsparcia oparty na sztucznej inteligencji. Zbudowałem asystenta konwersacyjnego z własną bazą wiedzy o firmie, wykorzystując podejście Retrieval-Augmented Generation (RAG), aby udzielać klientom precyzyjnych i kontekstowych odpowiedzi na pytania za pośrednictwem interfejsu czatu. Pozwala to klientom szybko uzyskać informacje o usługach, opcjach finansowania i procedurach bez czekania na pomoc człowieka. Aby zarządzać całym ekosystemem, opracowałem niestandardowy system CMS i panel administracyjny, który daje firmie pełną kontrolę nad użytkownikami, leadami i bazą wiedzy agenta AI. Ten scentralizowany system upraszcza codzienne operacje i umożliwia zespołowi utrzymanie i rozbudowę platformy bez konieczności posiadania wiedzy technicznej. Projekt został sfinansowany w ramach inicjatywy Unii Europejskiej „STOP Wykluczeniu!”, programu mającego na celu wspieranie możliwości zatrudnienia osób z niepełnosprawnościami. Jako programista z niepełnosprawnościami, udział w tym projekcie pozwolił mi wnieść zarówno techniczny, jak i osobisty wkład w inicjatywę mającą na celu wspieranie integracji i równych szans w miejscu pracy.",
+    "gitHubLink": "https://github.com/remi-k-work/benefit-finance",
+    "liveLink": "https://benefit-finance.remiforge.dev",
+    "imageName": "16",
+    "skillsUsed": [
+      "Next.js",
+      "PostgreSQL",
+      "Autoryzacja",
+      "Drizzle ORM",
+      "Usługi Sieciowe RESTful",
+      "Wyszukiwanie RAG",
+      "Tailwind CSS",
+      "TypeScript",
+      "Sztuczna Inteligencja",
+      "Effect"
+    ]
+  },
+
+  {
+    "year": "Styczeń 2025",
+    "role": "Programista Full-Stack",
+    "company": "ARTCOM",
+    "txt": "Zauważając potrzebę ARTCOM (zespołu specjalistów w zakresie szkoleń informatycznych, nauczania języków obcych i projektów finansowanych przez UE), żeby móc skutecznie zarządzać dynamiczną treścią, opracowałem dla nich system zarządzania treścią (CMS), tak aby płynnie zintegrować go z odnowionym front-endem. Wykorzystałem Payload CMS do zbudowania przyjaznego dla użytkownika systemu z interfejsem typu „przeciągnij i upuść” oraz intuicyjnymi formularzami, znacznie poprawiając wydajność pracy nad treścią, skracając czas zarządzania nią i umożliwiając członkom zespołu bez wykształcenia technicznego samodzielne zarządzanie treścią witryny. Dostępna jest demonstracja na żywo CMS do eksploracji, prezentująca jego funkcjonalność i łatwość obsługi (wystarczy kliknąć zrzut ekranu i zalogować się przy użyciu wstępnie wypełnionym użytkownikiem demonstracyjnym).",
+    "gitHubLink": "https://github.com/remi-k-work/artcom",
+    "liveLink": "https://artcom.remiforge.dev/admin",
+    "imageName": "01",
+    "skillsUsed": ["Rozwój Back-Endu", "Payload CMS", "PostgreSQL", "Next.js", "Usługi w Chmurze", "Systemy Zarządzania Treścią (CMS)"]
+  },
+
+  {
+    "year": "Listopad 2024",
+    "role": "Programista React",
+    "company": "ARTCOM",
+    "txt": "Modernizacja cyfrowej obecności ARTCOM. Odegrałem kluczową rolę w przeprojektowaniu witryny ARTCOM, gdzie wykorzystałem moc Next.js i React, aby stworzyć dynamiczne i angażujące doświadczenie użytkownika. Wykorzystując nowoczesne techniki tworzenia stron internetowych, stworzyłem wizualnie atrakcyjny interfejs, który płynnie integruje się z tożsamością marki firmy. Aby podnieść estetykę witryny, włączyłem urzekające animacje zasilane przez „Motion”, wzmacniając interakcję użytkownika i pozostawiając trwałe wrażenie. Ten projekt pozwolił mi ugruntować moje umiejętności w zakresie rozwoju front-end, demonstrując moją zdolność do tworzenia responsywnych i wydajnych aplikacji internetowych.",
+    "gitHubLink": "https://github.com/remi-k-work/artcom",
+    "liveLink": "https://artcom.remiforge.dev",
+    "imageName": "02",
+    "skillsUsed": ["Rozwój Front-Endu", "Nowoczesny Projekt UI/UX", "Integracja Animacji", "React", "Next.js", "Responsywny Projekt Stron Internetowych"]
+  },
+
+  {
+    "year": "Październik 2024",
+    "role": "Staż",
+    "company": "ARTCOM",
+    "txt": "Po przerwie w branży IT, z wielką przyjemnością ogłaszam, że dostałem staż w ARTCOM, fantastycznej firmie poświęconej rozwojowi osobistemu i zawodowemu! Jak niektórzy z Was mogą wiedzieć, życie na jakiś czas zabrało mnie na 'objazd'. W przeszłości zajmowałem się ASP.NET i C# i moja pasja do tworzenia stron internetowych nigdy nie zgasła. Jednak nieprzewidziane okoliczności odciągnęły mnie od kodowania. Teraz wróciłem z odnowionym zacięciem i determinacją! Więc co robię w ARTCOM? W ARTCOM 'brudzę sobie ręce' nad różnymi projektami, wykorzystując moje różnorodne umiejętności. Obejmuje to: Rozwój front-endu → Wykorzystuję moją nowo odkrytą miłość do React, JavaScript, HTML i CSS, aby tchnąć życie w witrynę ARTCOM'u. Utrzymywanie wszystkiego w ruchu → Pomagam w utrzymaniu infrastruktury technicznej biura poprzez uaktualnianie i aktualizowanie systemów operacyjnych. Kreatywna iskra → Rozwijam swoje kreatywne mięśnie, tworząc zasoby cyfrowe 2D i 3D do prezentacji i programów szkoleniowych. Chociaż ten staż to fantastyczna okazja do nauki i rozwoju, moim ostatecznym celem jest nadal zdobycie pełnoetatowego stanowiska technicznego. Jednak środowisko ARTCOM'u okazuje się idealną trampoliną. Otoczenie przez zespół pełnych pasji ekspertów i praca nad tak różnorodnymi projektami napędzają moją naukę i pchają mnie w kierunku tego celu. Jestem niesamowicie podekscytowany powrotem do świata technologii i nie mogę się doczekać, aby podzielić się z Wami moimi nowymi doświadczeniami nabytymi w ARTCOM'ie!",
+    "liveLink": "https://artcom.edu.pl",
+    "imageName": "03",
+    "skillsUsed": [
+      "Projektowanie Stron Internetowych",
+      "Systemy Operacyjne",
+      "Tworzenie Zasobów Cyfrowych",
+      "Modelowanie 3D",
+      "Rozwiązywanie Problemów",
+      "Praca Zespołowa",
+      "Komunikacja",
+      "Zarządzanie Czasem"
+    ]
+  },
+
+  {
+    "year": "Zbyt Długo",
+    "role": "Prace Dorywcze",
+    "company": "Przerwa w Branży",
+    "txt": "Życie rzuciło mi wyzwanie, gdy wygasła moja wiza studencka. Aby przetrwać, musiałem rzucić programowanie i zacząć pracować dorywczo. Te nieoczekiwane zdarzenia okazały się całkiem cennym doświadczeniem. Jako barman, kelner, a nawet pracownik budowlany nauczyłem się wiele o ludziach, pracy zespołowej i rozwiązywaniu problemów. Te doświadczenia wzbogaciły mnie osobiście i dały głębsze zrozumienie otaczającego świata. Nigdy jednak nie straciłem pasji do programowania. Pragnąłem wyzwań związanych z algorytmami, strukturami danych i kreatywnym myśleniem. Marzyłem o powrocie do świata innowacyjnych projektów w branży IT. Gdy ponownie zagłębiłem się w programowanie, zdałem sobie sprawę, że ta podróż była cennym doświadczeniem edukacyjnym. Moje prace dorywcze poszerzyły moją perspektywę i pozwoliły głębiej zrozumieć różnorodność świata. Ta nowo odkryta perspektywa w połączeniu z moją odnowioną pasją do programowania wzmocniła moją determinację, aby ponownie wejść w tę dziedzinę. Dziś jestem gotowy, aby wskoczyć z powrotem do świata technologii, czując się pewnie i chcąc odzyskać swoją pozycję programisty. Moje mocne podstawy w programowaniu, w połączeniu z różnorodnymi doświadczeniami i niezachwianą determinacją, dają mi siłę, aby stawić czoła nadchodzącym wyzwaniom. Jestem gotowy wnieść swój wkład w tworzenie innowacyjnych i skutecznych projektów.",
+    "imageName": "04",
+    "skillsUsed": ["Odporność", "Umiejętności Transferowalne", "Pasja i Determinacja"]
+  },
+
+  {
+    "year": "2008, 2009",
+    "role": "Programista .NET",
+    "company": "Syncro Services",
+    "txt": "Od ponad 60 lat Syncro Services jest pionierem w dystrybucji treści. Wykorzystują swoje doświadczenie, aby zmaksymalizować zarządzanie treścią w chmurze, niezależnie od tego, czy chodzi o zarządzanie aktywami dla klientów indywidualnych, czy dystrybucję niektórych z najpopularniejszych programów telewizyjnych na świecie. Syncro zajmuje się wieloma rzeczami i jeśli dobrze pamiętam, YouTube w tamtym czasie nie istniał. Dostarczali swoje treści w staromodny sposób, wysyłając pocztą dużą liczbę płyt DVD i innych przedmiotów. Dlatego po raz kolejny wyobraziliśmy sobie scentralizowaną stronę internetową, na której klienci mogliby natychmiast przesyłać i przeglądać swoje multimedia. Przejście na nośniki w 100% cyfrowe, znacząco obniżyło koszty dystrybucji. Mało tego, centralna strona internetowa sprawiła, że ​​współpraca i burza mózgów dotycząca nowych pomysłów była łatwiejsza i praktycznie natychmiastowa. Korzystaliśmy wówczas z najnowocześniejszej technologii ASP.NET 2.0 w połączeniu z oprogramowaniem Silverlight firmy Microsoft, aby tworzyć wciągające, dynamiczne środowiska użytkownika w aplikacjach internetowych i mobilnych. Takie podejście umożliwiło nam zbudowanie strony internetowej, która była zarówno opłacalna, jak i przyjazna dla użytkownika. Byliśmy w stanie szybko reagować na opinie klientów i rozwijać nasz produkt. Strona internetowa odniosła ogromny sukces i udało nam się znacznie poszerzyć bazę klientów.",
+    "liveLink": "https://www.xr.global",
+    "imageName": "05",
+    "skillsUsed": ["Kreatywność i Innowacja", "Redukcja Kosztów", "Tworzenie Back-Endu Stron Internetowych", "Bazy Danych", "Multimedia", "Silverlight"]
+  },
+
+  {
+    "year": "2005 — 2007",
+    "role": "Konsultant Internetowy",
+    "company": "Not For Tourists",
+    "txt": "„Nie dla Turystów” to wymarzony przewodnik po dzielnicach Nowego Jorku, zaprojektowany z myślą o wiecznie zabieganych nowojorczykach, osób dojeżdżających do pracy, osób podróżujących służbowo i także zwiedzających turystów. Zatrudniono mnie jako konsultanta internetowego, aby pomóc we wdrożeniu bardziej scentralizowanego i opartego na bazie danych systemu zarządzania treścią. Dzięki temu wielu redaktorów o różnych poziomach dostępu mogło po prostu modyfikować swoje wytyczne z jednej centralnej bazy danych. Stworzyłem stronę główną oraz CMS, który automatycznie synchronizuje się z najnowszymi modyfikacjami. Umożliwiało to podróżującemu redaktorowi po prostu wniesienie wkładu, dodanie lub zmianę dowolnego punktu orientacyjnego, restauracji, baru lub sklepu, który następnie pojawiał się w ostatecznej wersji książkowej przewodnika. Próbowaliśmy nawet wdrożyć automatyczny układ strony w programie InDesign, łącząc go bezpośrednio z centralną bazą danych. CMS umożliwił także automatyczne generowanie interaktywnej mapy z hotspotami i interaktywnymi podpowiedziami, co pozwoliło na bardziej interaktywne doświadczenie użytkownika. Wdrożyliśmy także funkcję wyszukiwania, która pozwala użytkownikom szybko znaleźć w przewodniku dowolny punkt orientacyjny, restaurację, bar czy sklep.",
+    "liveLink": "https://www.notfortourists.com",
+    "imageName": "06",
+    "skillsUsed": ["Doradztwo Online", "Projektowanie Baz Danych", "Systemy Zarządzania Treścią (CMS)", "Aplikacje Internetowe"]
+  },
+
+  {
+    "year": "2002 — 2004",
+    "role": "Programista Full-Stack",
+    "company": "DanceShopper",
+    "txt": "Poznaliśmy się w szkole języka angielskiego ALCC w Nowym Jorku, gdzie masz szansę poznać ludzi z całego świata. On pochodził z Tajwanu, interesował się technologią, e-commerce i wpadł na genialny pomysł, aby sprzedawać w Internecie rzeczy dla profesjonalnych tancerzy. Jak można sprzedawać buty w Internecie, jeśli klienci nie mogą ich fizycznie przymierzyć? Otóż, taniec profesjonalny to ciekawa i specyficzna dziedzina, w której tancerze dokładnie wiedzą, czego potrzebują i często zamawiają buty przed każdymi większymi zawodami. Te buty muszą wiele znieść, są mocno eksploatowane i muszą być często zmieniane na nowe. Ponieważ miałem już pewną wiedzę z ASP.NET i C#, zdecydowałem się pomóc mu w realizacji jego wizji. Czerpaliśmy inspirację z innych stron w Internecie i stworzyliśmy od podstaw witrynę e-commerce, zawierającą bazę danych SQL Server dla zaplecza i VeriSign do przetwarzania kart kredytowych. Wdrożyliśmy także system zarządzania treścią umożliwiający aktualizację produktów oraz system analityczny umożliwiający śledzenie zachowań użytkowników. Strona została uruchomiona terminowo i spotkała się z bardzo dobrym przyjęciem przez klientów.",
+    "liveLink": "https://www.danceshopper.com",
+    "imageName": "07",
+    "skillsUsed": ["ASP.NET", "C#", "Microsoft SQL Server", "Projektowanie Stron Internetowych", "E-Commerce"]
+  }
+]

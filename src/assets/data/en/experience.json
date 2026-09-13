@@ -1,0 +1,92 @@
+[
+  {
+    "year": "Mar 2026",
+    "role": "Full-Stack Developer",
+    "company": "Benefit Finance",
+    "txt": "Building a Digital Platform for Benefit Finance. For Benefit Finance, a family-owned company that has been supporting clients with financial, credit, and insurance solutions for over 13 years, I designed and developed a modern digital platform aimed at improving client engagement, internal workflows, and accessibility of services. Using Next.js and React, I created a fast, responsive website that provides a seamless experience across desktop and mobile devices while integrating a full authentication and user management system. To help the company grow its client base, I implemented an extensive lead management and referral system that allows users to recommend new customers and track incoming leads in an organized manner. This system streamlines the process of capturing and processing potential client inquiries, making it easier for the company to connect with people who need financial assistance. One of the most innovative components of the project is a Support Agent powered by AI. I built a conversational assistant with its own knowledge base about the company, using a Retrieval-Augmented Generation (RAG) approach to provide accurate and context-aware answers to customer questions through a chat interface. This allows clients to quickly obtain information about services, financing options, and procedures without waiting for human assistance. To manage the entire ecosystem, I developed a custom CMS and administrative panel that gives the company full control over users, leads, and the AI agent’s knowledge base. This centralized system simplifies daily operations and enables the team to maintain and expand the platform without requiring technical expertise. The project was financed through the European Union initiative “STOP Exclusion!”, a program aimed at supporting employment opportunities for people with disabilities. As a developer with a disability, participating in this project allowed me to contribute both technically and personally to an initiative designed to foster inclusion and equal opportunities in the workforce.",
+    "gitHubLink": "https://github.com/remi-k-work/benefit-finance",
+    "liveLink": "https://benefit-finance.remiforge.dev",
+    "imageName": "16",
+    "skillsUsed": ["Next.js", "PostgreSQL", "Authorization", "Drizzle ORM", "RESTful WebServices", "RAG Search", "Tailwind CSS", "TypeScript", "AI", "Effect"]
+  },
+
+  {
+    "year": "Jan 2025",
+    "role": "Full-Stack Developer",
+    "company": "ARTCOM",
+    "txt": "Recognizing the need for ARTCOM, a team of specialists in IT training, language instruction, and EU-funded projects, to efficiently manage their dynamic content, I developed a custom Content Management System (CMS) to seamlessly integrate with the revamped front-end. I leveraged Payload CMS to build a user-friendly system with a drag-and-drop interface and intuitive workflows, significantly improving content workflow efficiency, reducing content management time, and empowering non-technical team members to independently manage website content. A live demo of the CMS is available for exploration, showcasing its functionality and user-friendliness (simply click on a screenshot and log in with prefilled demo user credentials).",
+    "gitHubLink": "https://github.com/remi-k-work/artcom",
+    "liveLink": "https://artcom.remiforge.dev/admin",
+    "imageName": "01",
+    "skillsUsed": ["Back-End Development", "Payload CMS", "PostgreSQL", "Next.js", "Cloud Computing & Storage", "Content Management Systems (CMS)"]
+  },
+
+  {
+    "year": "Nov 2024",
+    "role": "React Developer",
+    "company": "ARTCOM",
+    "txt": "Revamping ARTCOM's digital presence. I was instrumental in the redesign of ARTCOM's website, where I harnessed the power of Next.js and React to create a dynamic and engaging user experience. By leveraging modern web development techniques, I crafted a visually appealing interface that seamlessly integrates with the company's brand identity. To elevate the website's aesthetics, I incorporated captivating animations powered by 'Motion,' enhancing user interaction and leaving a lasting impression. This project allowed me to solidify my skills in front-end development, demonstrating my ability to build responsive and performant web applications.",
+    "gitHubLink": "https://github.com/remi-k-work/artcom",
+    "liveLink": "https://artcom.remiforge.dev",
+    "imageName": "02",
+    "skillsUsed": ["Front-End Development", "Modern UI/UX Design", "Animation Integration", "React", "Next.js", "Responsive Web Design"]
+  },
+
+  {
+    "year": "Oct 2024",
+    "role": "Internship",
+    "company": "ARTCOM",
+    "txt": "After a break from the tech industry, I am absolutely buzzing to announce that I have landed an internship at ARTCOM, a fantastic company dedicated to personal and professional development! As some of you may know, life took me on a detour for a while. While I dabbled in ASP.NET and C# back in the day, my passion for web development never faded. However, unforeseen circumstances pulled me away from coding. Now, I am back with a renewed fire in my belly! So, what am I doing at ARTCOM? At ARTCOM, I am getting my hands dirty on a variety of projects, putting my diverse skillset to good use. This includes: Front-end development → I am using my newfound love for React, JavaScript, HTML, and CSS to breathe life into ARTCOM's website. Keeping things running → I am helping maintain the office tech infrastructure by upgrading and updating operating systems. Creative spark → I am flexing my creative muscles by crafting 2D and 3D digital assets for presentations and training programs. While this internship is a fantastic opportunity to learn and grow, my ultimate goal is still to land a full-time tech position. However, ARTCOM's environment is proving to be the perfect springboard. Surrounded by a team of passionate experts and working on such a diverse range of projects is fueling my learning and propelling me towards that goal. I am incredibly excited to be back in the tech world, and I can't wait to share more about my experiences at ARTCOM. Stay tuned for updates on my journey.",
+    "liveLink": "https://artcom.edu.pl",
+    "imageName": "03",
+    "skillsUsed": [
+      "Web Development",
+      "Operating Systems",
+      "Digital Asset Creation",
+      "3D Modeling",
+      "Problem-Solving",
+      "Teamwork",
+      "Communication",
+      "Time Management"
+    ]
+  },
+
+  {
+    "year": "Too Long",
+    "role": "Odd Jobs",
+    "company": "Break Time",
+    "txt": "Life threw me a curveball when my student visa expired. I had to quit programming and start working odd jobs to survive. These unexpected detours turned out to be quite valuable. As a bartender, waiter, and even construction worker, I learned a lot about people, teamwork, and problem-solving. These experiences enriched me personally and gave me a deeper understanding of the world. Though I enjoyed my new experiences, I never lost my passion for programming. I craved the challenge of algorithms, data structures, and creative problem-solving. I longed to return to the world of innovative projects, using my skills to create meaningful software solutions. As I re-immersed myself in coding, I realized that my detour had been a valuable learning experience. My odd jobs broadened my perspective and gave me a deeper understanding of the world's diversity. This newfound perspective, coupled with my renewed passion for programming, fueled my determination to re-enter the field. Today, I am ready to jump back into the world of technology, feeling confident and eager to reclaim my position as a programmer. My strong foundation in programming, coupled with my diverse experiences and unwavering determination, empowers me to face the challenges ahead. I am ready to contribute my skills and expertise to creating innovative and impactful software solutions.",
+    "imageName": "04",
+    "skillsUsed": ["Resiliency", "Transferable Skills", "Passion & Determination"]
+  },
+
+  {
+    "year": "2008, 2009",
+    "role": ".NET Programmer",
+    "company": "Syncro Services",
+    "txt": "For over 60 years, Syncro Services has been a pioneer in content distribution. They are putting their experience to work to maximize cloud-based content management, whether it be asset management for individual clients or the distribution of some of the most popular television shows in the world. Syncro deals with a lot of stuff, and if I recall correctly, YouTube did not exist at the time. They were delivering their content in an old-fashioned manner by mailing out a large number of DVDs and other items. So, once again, we envisioned a centralized website where clients could immediately upload and browse their media. Switching to 100% digitally stored media significantly reduced distribution expenses. Not only that, but the central website made cooperation and brainstorming on new ideas easier and virtually instantaneous. Back then, we employed cutting-edge technology, ASP.NET 2.0, in conjunction with Microsoft's Silverlight to create engaging, dynamic user experiences for Web and mobile applications. This approach enabled us to build a website that was both cost-effective and user-friendly. We were able to quickly respond to customer feedback and evolve our product. The website was a great success, and we were able to expand our customer base significantly.",
+    "liveLink": "https://www.xr.global",
+    "imageName": "05",
+    "skillsUsed": ["Creativity and Innovation", "Cost Reduction", "Back-End Web Development", "Databases", "Multimedia", "Silverlight"]
+  },
+
+  {
+    "year": "2005 — 2007",
+    "role": "Web Consultant",
+    "company": "Not For Tourists",
+    "txt": "The Not For Tourists Guide to New York City is a map-based, neighborhood-by-neighborhood dream guide designed to lighten the load of already street-savvy New Yorkers, commuters, business travelers, and, yes, tourists too. I was hired as a web consultant to assist in the implementation of a more centralized and database-driven content management system. So that multiple editors with varying levels of access might simply modify their guidelines from a single central database. I created the main website as well as the CMS, which would automatically sync with the most recent modifications. This would allow a traveling editor to simply contribute, add, or amend any landmark, restaurant, bar, or store that would subsequently appear in the guide's final book version. We even tried implementing automatic page layout in InDesign by linking it straight to the central database. The CMS also allowed for the automatic generation of an interactive map with hotspots and interactive tooltips, allowing for a more interactive user experience. We also implemented a search feature, allowing users to quickly find any landmark, restaurant, bar, or store within the guide.",
+    "liveLink": "https://www.notfortourists.com",
+    "imageName": "06",
+    "skillsUsed": ["Online Consultancy", "Database Design", "Content Management Systems (CMS)", "Web Applications"]
+  },
+
+  {
+    "year": "2002 — 2004",
+    "role": "Full-Stack Developer",
+    "company": "DanceShopper",
+    "txt": "We met at the ALCC English School in New York, where you get a chance to meet people from all over the world. He was originally from Taiwan, was really interested in technology and e-commerce, and had this brilliant idea to sell items for professional dancers online. How could you possibly sell shoes online if clients could not physically try them on? Professional dancing, on the other hand, is a nice and specific niche where dancers know exactly what they need and order their shoes frequently before every major competition. Those shoes take a lot of abuse and must be updated frequently. So, since I already had some expertise with ASP.NET and C#, I decided to assist him in realizing his vision. We took inspiration from other websites on the Internet and created an e-commerce website from the ground up, including the SQL Server database for the back end and VeriSign for credit card processing. We also implemented a content management system for updating the products, and an analytics system for tracking user behavior. The website was launched on time and was well-received by the customers.",
+    "liveLink": "https://www.danceshopper.com",
+    "imageName": "07",
+    "skillsUsed": ["ASP.NET", "C#", "Microsoft SQL Server", "Web Design", "E-Commerce"]
+  }
+]
