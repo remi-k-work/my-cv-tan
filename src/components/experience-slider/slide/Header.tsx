@@ -1,13 +1,9 @@
-// next
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 
-// assets
 import { GlobeAltIcon, InformationCircleIcon, VideoCameraIcon } from "@heroicons/react/24/solid";
 import GitHubIcon from "@/assets/icons/GitHub";
 
-// types
 import type { JobExperience, LocalizedContent } from "@/types/shared";
-import type { UrlObject } from "url";
 
 interface HeaderProps {
   localizedContent: LocalizedContent;
@@ -27,46 +23,46 @@ export default function Header({ localizedContent, type, index, experience: { ye
       <section className="flex-3">
         <div className="flex flex-wrap items-center justify-end gap-2">
           <Link
-            href={`/exp/${type}/${index}`}
+            to="/exp/$type/$index"
+            params={{ type, index: String(index) }}
+            search={{ modal: true }}
             title={localizedContent["experienceSlide"]["moreInfo"]}
             className="text-primary-foreground border-primary-foreground hover:text-accent-foreground hover:border-accent-foreground rounded-full border p-1 hover:scale-110"
           >
             <InformationCircleIcon className="size-11" />
           </Link>
           {liveLink && (
-            <Link
-              href={liveLink as UrlObject}
+            <a
+              href={liveLink}
               target="_blank"
               rel="noopener noreferrer"
               title={localizedContent["experienceSlide"]["liveLink"]}
               className="text-primary-foreground border-primary-foreground hover:text-accent-foreground hover:border-accent-foreground rounded-full border p-1 hover:scale-110"
             >
               <GlobeAltIcon className="size-11" />
-            </Link>
+            </a>
           )}
           {gitHubLink && (
-            <Link
-              href={gitHubLink as UrlObject}
+            <a
+              href={gitHubLink}
               target="_blank"
               rel="noopener noreferrer"
               title={localizedContent["experienceSlide"]["goAndSee"]}
-              prefetch={false}
               className="text-primary-foreground border-primary-foreground hover:text-accent-foreground hover:border-accent-foreground rounded-full border p-1 hover:scale-110"
             >
               <GitHubIcon className="size-11" />
-            </Link>
+            </a>
           )}
           {videoLink && (
-            <Link
-              href={videoLink as UrlObject}
+            <a
+              href={videoLink}
               target="_blank"
               rel="noopener noreferrer"
               title={localizedContent["experienceSlide"]["watchVideo"]}
-              prefetch={false}
               className="text-primary-foreground border-primary-foreground hover:text-accent-foreground hover:border-accent-foreground rounded-full border p-1 hover:scale-110"
             >
               <VideoCameraIcon className="size-11" />
-            </Link>
+            </a>
           )}
         </div>
       </section>

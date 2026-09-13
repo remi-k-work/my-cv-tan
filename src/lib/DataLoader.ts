@@ -1,10 +1,9 @@
-// next
-import { cookies, headers } from "next/headers";
+// Pure, framework-agnostic localization loader (no next/* imports).
+// Server code resolves the lang via cookies/headers and passes it in;
+// client/loader code uses the returned instance synchronously.
 
-// other libraries
 import { resolveAcceptLanguage } from "resolve-accept-language";
 
-// assets
 import localizedContentEn from "@/assets/data/en/localized-content.json";
 import experienceEn from "@/assets/data/en/experience.json";
 import portfolioProjectsEn from "@/assets/data/en/portfolio-projects.json";
@@ -16,57 +15,40 @@ import portfolioProjectsPl from "@/assets/data/pl/portfolio-projects.json";
 import pageTitlesPl from "@/assets/data/pl/page-titles.json";
 import educationSchoolsPl from "@/assets/data/pl/education-schools.json";
 
-// types
 import type { EducationSchool, JobExperience, Lang, LocalizedContent, PageTitles } from "@/types/shared";
 
-// constants
-const LANG_COOKIE = "lang";
+export const LANG_COOKIE = "lang";
+
+export function resolveLang(langCookieValue: string | null | undefined, acceptLanguageHeader: string | null | undefined): Lang {
+  if (langCookieValue) {
+    if (langCookieValue === "en") return "en";
+    if (langCookieValue === "pl") return "pl";
+    return "en";
+  }
+  if (acceptLanguageHeader) {
+    const resolvedLanguage = resolveAcceptLanguage(acceptLanguageHeader, ["en-US", "en-GB", "pl-PL"], "en-US");
+    return resolvedLanguage.includes("en") ? "en" : "pl";
+  }
+  return "en";
+}
 
 export default class DataLoader {
   public readonly lang;
 
-  private constructor(lang: Lang) {
-    // Save the just-established preferred language by the user
+  constructor(lang: Lang) {
     this.lang = lang;
   }
 
-  // Create a new instance of DataLoader (we use a factory method because constructors cannot be async)
-  public static async create(): Promise<DataLoader> {
-    return new DataLoader(await DataLoader.prefferedLanguage());
+  /** Sync factory for loaders/components that already know the lang. */
+  public static fromLang(lang: Lang): DataLoader {
+    return new DataLoader(lang);
   }
 
-  // Establish the preferred language by the user
-  private static async prefferedLanguage(): Promise<Lang> {
-    // Try obtaining the lang value from a local cookie
-    const langCookieValue = (await cookies()).get(LANG_COOKIE)?.value;
-    if (langCookieValue) {
-      if (langCookieValue === "en") return "en";
-      if (langCookieValue === "pl") return "pl";
-
-      // Unrecognized language? use english by default
-      return "en";
-    } else {
-      // Otherwise, use the client's preferred language
-      const acceptLanguageHeader = (await headers()).get("Accept-Language");
-      if (acceptLanguageHeader) {
-        const resolvedLanguage = resolveAcceptLanguage(acceptLanguageHeader, ["en-US", "en-GB", "pl-PL"], "en-US");
-        return resolvedLanguage.includes("en") ? "en" : "pl";
-      }
-
-      // Unrecognized language? use english by default
-      return "en";
-    }
-  }
-
-  // Obtain the localized content for the preferred language
   localizedContent = (): LocalizedContent => (this.lang === "pl" ? localizedContentPl : localizedContentEn);
 
-  // Obtain a list of all job experiences from an outside source
   allExperiences = (): [JobExperience[], JobExperience[]] => (this.lang === "pl" ? [experiencePl, portfolioProjectsPl] : [experienceEn, portfolioProjectsEn]);
 
-  // Get all the page titles from an outside source
   allPageTitles = (): PageTitles[] => (this.lang === "pl" ? pageTitlesPl : pageTitlesEn);
 
-  // Obtain a list of all education schools from an outside source
   allEducationSchools = (): EducationSchool[] => (this.lang === "pl" ? educationSchoolsPl : educationSchoolsEn);
 }

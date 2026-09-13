@@ -1,22 +1,14 @@
-"use client";
-
-// react
 import { useTransition } from "react";
+import { useRouter } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 
-// next
-import { useRouter } from "next/navigation";
+import { setLangCookie } from "@/server/lang.functions";
 
-// server actions and mutations
-import { setLangCookie } from "@/actions/langChanger";
-
-// components
 import { Button } from "@/components/ui/custom/button";
 
-// assets
 import UsFlagIcon from "@/assets/icons/UsFlag";
 import PlFlagIcon from "@/assets/icons/PlFlag";
 
-// types
 import type { Lang } from "@/types/shared";
 
 interface LangChangerProps {
@@ -24,16 +16,14 @@ interface LangChangerProps {
 }
 
 export default function LangChanger({ preferredLang }: LangChangerProps) {
-  // To display a pending status while the server action is running
   const [isPending, startTransition] = useTransition();
-
-  // To be able to refresh the page
-  const { refresh } = useRouter();
+  const router = useRouter();
+  const setLang = useServerFn(setLangCookie);
 
   function handleLangToggled() {
     startTransition(async () => {
-      await setLangCookie(preferredLang === "en" ? "pl" : "en");
-      refresh();
+      await setLang({ data: preferredLang === "en" ? "pl" : "en" });
+      await router.invalidate();
     });
   }
 

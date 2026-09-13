@@ -1,22 +1,16 @@
-// react
 import { useEffect } from "react";
 
-// components
 import { toast } from "sonner";
 
-// types
-import type { ContactFormActionResult } from "@/actions/contactForm";
+import type { ContactFormResult } from "@/server/contact.functions";
 import type { LocalizedContent } from "@/types/shared";
 
-// Provide feedback to the user regarding contact form actions
-export default function useContactFormFeedback(formState: ContactFormActionResult, localizedContent: LocalizedContent, reset: () => void) {
+export default function useContactFormFeedback(formState: ContactFormResult, localizedContent: LocalizedContent, reset: () => void) {
   useEffect(() => {
     const { actionStatus } = formState;
 
     if (actionStatus === "succeeded") {
       toast.success(localizedContent["contactFormFeedback"]["success"], { description: localizedContent["contactFormFeedback"]["messageSent"] });
-
-      // Reset the entire form after successful submission
       reset();
     } else if (actionStatus === "invalid") {
       toast.warning(localizedContent["contactFormFeedback"]["missingFields"], { description: localizedContent["contactFormFeedback"]["pleaseCorrect"] });

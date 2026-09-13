@@ -2,15 +2,18 @@
 @import "tw-animate-css";
 
 /* custom animations */
-@import "../styles/anim/valid-error.css";
-@import "../styles/anim/slide-and-fade.css";
-@import "../styles/anim/sparks.css";
-@import "../styles/anim/sweep-light-bar.css";
-@import "../styles/anim/cursor-blink.css";
+@import "./anim/valid-error.css";
+@import "./anim/slide-and-fade.css";
+@import "./anim/sparks.css";
+@import "./anim/sweep-light-bar.css";
+@import "./anim/cursor-blink.css";
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  /* font (Fontsource replaces next/font/google) */
+  --font-outfit: "Outfit", ui-sans-serif, system-ui, sans-serif;
+
   /* our colors */
   --clr-primary-200: oklch(0.5783 0.0643 274.44 / 1);
   --clr-primary-400: oklch(0.5744 0.1383 272.82 / 0.9);

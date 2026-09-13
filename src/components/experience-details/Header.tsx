@@ -1,13 +1,7 @@
-// next
-import Link from "next/link";
-
-// assets
 import { GlobeAltIcon, VideoCameraIcon } from "@heroicons/react/24/solid";
 import GitHubIcon from "@/assets/icons/GitHub";
 
-// types
 import type { JobExperience, LocalizedContent } from "@/types/shared";
-import type { UrlObject } from "url";
 
 interface HeaderProps {
   localizedContent: LocalizedContent;
@@ -25,39 +19,37 @@ export default function Header({ localizedContent, experience: { year, role, com
       <section className="flex-3">
         <div className="flex flex-wrap items-center justify-end gap-2">
           {liveLink && (
-            <Link
-              href={liveLink as UrlObject}
+            <a
+              href={liveLink}
               target="_blank"
               rel="noopener noreferrer"
               title={localizedContent["experienceDetails"]["liveLink"]}
               className="text-primary-foreground border-primary-foreground hover:text-accent-foreground hover:border-accent-foreground rounded-full border p-1 hover:scale-110"
             >
               <GlobeAltIcon className="size-11" />
-            </Link>
+            </a>
           )}
           {gitHubLink && (
-            <Link
-              href={gitHubLink as UrlObject}
+            <a
+              href={gitHubLink}
               target="_blank"
               rel="noopener noreferrer"
               title={localizedContent["experienceDetails"]["goAndSee"]}
-              prefetch={false}
               className="text-primary-foreground border-primary-foreground hover:text-accent-foreground hover:border-accent-foreground rounded-full border p-1 hover:scale-110"
             >
               <GitHubIcon className="size-11" />
-            </Link>
+            </a>
           )}
           {videoLink && (
-            <Link
-              href={videoLink as UrlObject}
+            <a
+              href={videoLink}
               target="_blank"
               rel="noopener noreferrer"
               title={localizedContent["experienceDetails"]["watchVideo"]}
-              prefetch={false}
               className="text-primary-foreground border-primary-foreground hover:text-accent-foreground hover:border-accent-foreground rounded-full border p-1 hover:scale-110"
             >
               <VideoCameraIcon className="size-11" />
-            </Link>
+            </a>
           )}
         </div>
       </section>

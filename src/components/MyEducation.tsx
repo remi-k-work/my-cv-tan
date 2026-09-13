@@ -1,20 +1,20 @@
-// react
 import { Fragment } from "react";
 
-// other libraries
-import DataLoader from "@/lib/DataLoader";
+import type { EducationSchool, LocalizedContent } from "@/types/shared";
 
-export default async function MyEducation() {
-  // Create an instance of the data loader needed for localization
-  const { localizedContent, allEducationSchools } = await DataLoader.create();
+interface MyEducationProps {
+  localizedContent: LocalizedContent;
+  allEducationSchools: EducationSchool[];
+}
 
+export default function MyEducation({ localizedContent, allEducationSchools }: MyEducationProps) {
   return (
     <figure className="mx-auto w-full max-w-2xl">
       <figcaption className="bg-primary-foreground mb-4 place-self-end rounded-ss-xl rounded-ee-xl p-3 italic">
-        {localizedContent()["myEducation"]["myEducation"]}
+        {localizedContent["myEducation"]["myEducation"]}
       </figcaption>
       <dl>
-        {allEducationSchools().map(({ name, year, location, info }, schoolIndex) => (
+        {allEducationSchools.map(({ name, year, location, info }, schoolIndex) => (
           <Fragment key={schoolIndex}>
             <dt className="mb-4">
               <h2 className="text-clr-primary-200 text-lg uppercase">{name}</h2>

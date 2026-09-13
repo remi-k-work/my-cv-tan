@@ -1,6 +1,3 @@
-// types
-import type { UrlObject } from "url";
-
 export type Lang = "en" | "pl";
 
 export interface JobExperience {
@@ -8,11 +5,11 @@ export interface JobExperience {
   role: string;
   company: string;
   txt: string;
-  gitHubLink?: UrlObject | string;
-  liveLink?: UrlObject | string;
+  gitHubLink?: string;
+  liveLink?: string;
   imageName: string;
   skillsUsed: string[];
-  videoLink?: UrlObject | string;
+  videoLink?: string;
 }
 
 export interface EducationSchool {

@@ -1,21 +1,12 @@
-"use client";
-
-// react
 import { useEffect, useRef } from "react";
+import { useRouter } from "@tanstack/react-router";
 
-// next
-import { useRouter } from "next/navigation";
-
-// other libraries
 import { cn } from "@/lib/utils";
 
-// components
 import { Button } from "@/components/ui/custom/button";
 
-// assets
 import { InformationCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
 
-// types
 import type { ReactNode } from "react";
 import type { LocalizedContent } from "@/types/shared";
 
@@ -24,33 +15,25 @@ interface ExperienceModalProps {
   children: ReactNode;
 }
 
-// constants
 const CLOSE_DURATION = 1000;
 
 export default function ExperienceModal({ localizedContent, children }: ExperienceModalProps) {
-  // To be able to call showModal() method on the dialog
   const dialogRef = useRef<HTMLDialogElement>(null);
 
-  // To be able to close the modal
-  const { back } = useRouter();
+  const router = useRouter();
 
-  // Create a ref to hold the timeout id
   const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    // Show the dialog as a modal
     dialogRef.current?.showModal();
 
-    // The cleanup function runs when the component unmounts
     return () => {
-      // If a timeout is scheduled, clear it
       if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
     };
   }, []);
 
   function handleClosed() {
-    // Wait for animation to complete before navigating back
-    timeoutIdRef.current = setTimeout(() => back(), CLOSE_DURATION);
+    timeoutIdRef.current = setTimeout(() => router.history.back(), CLOSE_DURATION);
   }
 
   return (

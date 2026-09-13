@@ -1,19 +1,15 @@
-// other libraries
 import { cn } from "@/lib/utils";
-import DataLoader from "@/lib/DataLoader";
 
-// types
+import type { PageTitles } from "@/types/shared";
+
 interface PageTitleProps {
   titleTheme: number;
   pathname: string;
+  allPageTitles: PageTitles[];
 }
 
-export default async function PageTitle({ titleTheme, pathname }: PageTitleProps) {
-  // Create an instance of the data loader needed for localization
-  const { allPageTitles } = await DataLoader.create();
-
-  // Get the current page title data depending on the theme and pathname
-  const { eyebrow, heading, intro } = allPageTitles()[titleTheme][pathname];
+export default function PageTitle({ titleTheme, pathname, allPageTitles }: PageTitleProps) {
+  const { eyebrow, heading, intro } = allPageTitles[titleTheme][pathname];
 
   return (
     <section className="mx-4 my-3 lg:mx-0">

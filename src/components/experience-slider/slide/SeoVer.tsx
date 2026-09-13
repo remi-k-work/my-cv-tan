@@ -1,12 +1,6 @@
-// react
 import { Fragment } from "react";
 
-// next
-import Link from "next/link";
-
-// types
 import type { JobExperience } from "@/types/shared";
-import type { UrlObject } from "url";
 
 interface SlideSeoProps {
   experience: JobExperience;
@@ -25,16 +19,16 @@ export default function SlideSeo({ experience: { year, role, company, txt, skill
       <p>{year}</p>
       {(liveLink || videoLink) && (
         <p>
-          <Link href={(videoLink ?? liveLink) as UrlObject} prefetch={false} target="_blank" rel="noopener noreferrer">
+          <a href={videoLink ?? liveLink} target="_blank" rel="noopener noreferrer">
             <>{videoLink ?? liveLink}</>
-          </Link>
+          </a>
         </p>
       )}
       {gitHubLink && (
         <p>
-          <Link href={gitHubLink as UrlObject} prefetch={false} target="_blank" rel="noopener noreferrer">
+          <a href={gitHubLink} target="_blank" rel="noopener noreferrer">
             <>{gitHubLink}</>
-          </Link>
+          </a>
         </p>
       )}
       <p>{txt}</p>

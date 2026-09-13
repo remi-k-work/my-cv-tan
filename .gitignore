@@ -15,9 +15,11 @@ docs/
 # testing
 /coverage
 
-# next.js
-/.next/
-/out/
+# tanstack start / vite
+/dist/
+/.output/
+/.tanstack/
+vite.config.*.timestamp-*
 
 # production
 /build

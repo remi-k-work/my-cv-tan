@@ -1,17 +1,12 @@
-// next
-import { useRouter } from "next/navigation";
+import { useRouter } from "@tanstack/react-router";
 
-// other libraries
 import { useFormContext } from ".";
 
-// components
 import { Button } from "@/components/ui/custom/button";
 
-// assets
 import { HandThumbDownIcon, HandThumbUpIcon, XCircleIcon } from "@heroicons/react/24/solid";
 import { Loader2 } from "lucide-react";
 
-// types
 import type { LocalizedContent } from "@/types/shared";
 
 interface FormSubmitProps {
@@ -20,11 +15,9 @@ interface FormSubmitProps {
 }
 
 export default function FormSubmit({ localizedContent, isPending }: FormSubmitProps) {
-  // Get the form context
   const { Subscribe, reset } = useFormContext();
 
-  // To be able to send the user back after canceling
-  const { back } = useRouter();
+  const router = useRouter();
 
   return (
     <section className="flex w-full flex-wrap items-center justify-around gap-6">
@@ -49,7 +42,7 @@ export default function FormSubmit({ localizedContent, isPending }: FormSubmitPr
         <XCircleIcon className="size-9" />
         {localizedContent["formSubmit"]["reset"]}
       </Button>
-      <Button type="button" variant="secondary" onClick={() => back()}>
+      <Button type="button" variant="secondary" onClick={() => router.history.back()}>
         <HandThumbDownIcon className="size-9" />
         {localizedContent["formSubmit"]["cancel"]}
       </Button>

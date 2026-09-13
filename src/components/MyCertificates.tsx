@@ -1,31 +1,26 @@
-// next
-import Image from "next/image";
-import Link from "next/link";
-
-// other libraries
-import DataLoader from "@/lib/DataLoader";
-
-// assets
 import artcom from "@/assets/my-certificates-artcom.webp";
 import alcc from "@/assets/my-certificates-alcc.webp";
 import prattOrig from "@/assets/my-certificates-pratt-orig.webp";
 import prattTrans from "@/assets/my-certificates-pratt-trans.webp";
 
-export default async function MyCertificates() {
-  // Create an instance of the data loader needed for localization
-  const { localizedContent } = await DataLoader.create();
+import type { LocalizedContent } from "@/types/shared";
 
+interface MyCertificatesProps {
+  localizedContent: LocalizedContent;
+}
+
+export default function MyCertificates({ localizedContent }: MyCertificatesProps) {
   return (
     <figure className="mx-auto w-full max-w-4xl">
       <figcaption className="bg-primary-foreground mb-4 place-self-end rounded-ss-xl rounded-ee-xl p-3 italic">
-        {localizedContent()["myCertificates"]["myCertificates"]}
+        {localizedContent["myCertificates"]["myCertificates"]}
       </figcaption>
-      <Link href="https://my-cv-remi.remiforge.dev/my-certificates.pdf" target="_blank" rel="noopener noreferrer" prefetch={false} className="space-y-4">
-        <Image src={artcom} alt="ARTCOM" />
-        <Image src={alcc} alt="ALCC" />
-        <Image src={prattOrig} alt="Pratt" />
-        <Image src={prattTrans} alt="Pratt" />
-      </Link>
+      <a href="https://my-cv-remi.remiforge.dev/my-certificates.pdf" target="_blank" rel="noopener noreferrer" className="space-y-4">
+        <img src={artcom} alt="ARTCOM" loading="lazy" className="h-auto w-full" />
+        <img src={alcc} alt="ALCC" loading="lazy" className="h-auto w-full" />
+        <img src={prattOrig} alt="Pratt" loading="lazy" className="h-auto w-full" />
+        <img src={prattTrans} alt="Pratt" loading="lazy" className="h-auto w-full" />
+      </a>
     </figure>
   );
 }

@@ -1,23 +1,18 @@
 /* eslint-disable react/no-children-prop */
 
-"use client";
+import { useState } from "react";
+import { useRouter } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 
-// react
-import { useActionState } from "react";
+import { submitContact } from "@/server/contact.functions";
+import type { ContactFormResult } from "@/server/contact.functions";
 
-// server actions and mutations
-import newContact from "@/actions/contactForm";
-
-// other libraries
-import { mergeForm, useTransform } from "@tanstack/react-form-nextjs";
 import { useAppForm } from "@/components/form";
 import { ContactFormSchemaEn, ContactFormSchemaPl } from "@/schemas/contactForm";
 import useContactFormFeedback from "@/hooks/useContactFormFeedback";
 
-// components
 import Captcha from "@/features/auth/components/Captcha";
 
-// types
 import type { Lang, LocalizedContent } from "@/types/shared";
 
 interface ContactFormProps {
@@ -25,22 +20,42 @@ interface ContactFormProps {
   localizedContent: LocalizedContent;
 }
 
-// constants
-import { FORM_OPTIONS_EN, FORM_OPTIONS_PL, INITIAL_FORM_STATE } from "@/schemas/formFactory";
+import { FORM_OPTIONS_EN, FORM_OPTIONS_PL } from "@/schemas/formFactory";
+
+const IDLE_RESULT: ContactFormResult = { actionStatus: "idle" };
 
 export default function ContactForm({ preferredLang, localizedContent }: ContactFormProps) {
-  const [formState, formAction, isPending] = useActionState(newContact, INITIAL_FORM_STATE);
-  const { AppField, AppForm, FormSubmit, handleSubmit, reset } = useAppForm({
-    ...(preferredLang === "en" ? FORM_OPTIONS_EN : FORM_OPTIONS_PL),
-    transform: useTransform((baseForm) => mergeForm(baseForm, formState), [formState]),
-  });
+  const [formState, setFormState] = useState<ContactFormResult>(IDLE_RESULT);
+  const [isPending, setIsPending] = useState(false);
+  const submit = useServerFn(submitContact);
+  const router = useRouter();
 
-  // Provide feedback to the user regarding contact form actions
+  const form = useAppForm({
+    ...(preferredLang === "en" ? FORM_OPTIONS_EN : FORM_OPTIONS_PL),
+  });
+  const { AppField, AppForm, FormSubmit, handleSubmit, reset } = form;
+
   useContactFormFeedback(formState, localizedContent, reset);
 
   return (
     <AppForm>
-      <form action={formAction} className="bg-background mx-auto w-full max-w-4xl rounded-xl p-3" onSubmit={() => handleSubmit()}>
+      <form
+        className="bg-background mx-auto w-full max-w-4xl rounded-xl p-3"
+        onSubmit={(ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          void handleSubmit();
+          const values = form.state.values as { name: string; email: string; subject: string; message: string; captcha: string };
+          setIsPending(true);
+          submit({ data: values })
+            .then(async (result) => {
+              setFormState(result);
+              if (result.actionStatus === "succeeded") await router.invalidate();
+            })
+            .catch(() => setFormState({ actionStatus: "failed" }))
+            .finally(() => setIsPending(false));
+        }}
+      >
         <AppField
           name="name"
           validators={{ onChange: preferredLang === "en" ? ContactFormSchemaEn.shape.name : ContactFormSchemaPl.shape.name }}

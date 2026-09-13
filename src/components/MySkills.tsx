@@ -1,6 +1,3 @@
-// next
-import Image from "next/image";
-
 // other libraries
 import { cn } from "@/lib/utils";
 
@@ -43,7 +40,7 @@ export default function MySkills() {
         )}
       >
         <li>
-          <Image
+          <img
             src={html}
             alt="HTML"
             className={cn(
@@ -54,7 +51,7 @@ export default function MySkills() {
           />
         </li>
         <li>
-          <Image
+          <img
             src={css}
             alt="CSS"
             className={cn(
@@ -65,7 +62,7 @@ export default function MySkills() {
           />
         </li>
         <li className="grid *:col-span-full *:row-span-full">
-          <Image
+          <img
             src={javascript}
             alt="JavaScript"
             className={cn(
@@ -74,7 +71,7 @@ export default function MySkills() {
               "lg:animate-slide-lr-fade-out lg:-translate-x-full lg:[animation-delay:0.4s]",
             )}
           />
-          <Image
+          <img
             src={typescript}
             alt="TypeScript"
             className={cn(
@@ -85,7 +82,7 @@ export default function MySkills() {
           />
         </li>
         <li className="grid *:col-span-full *:row-span-full">
-          <Image
+          <img
             src={react}
             alt="React"
             className={cn(
@@ -94,7 +91,7 @@ export default function MySkills() {
               "lg:animate-slide-lr-fade-out lg:-translate-x-full lg:[animation-delay:0.6s,8s]",
             )}
           />
-          <Image
+          <img
             src={nextjs}
             alt="NextJS"
             className={cn(
@@ -105,7 +102,7 @@ export default function MySkills() {
           />
         </li>
         <li className="grid *:col-span-full *:row-span-full">
-          <Image
+          <img
             src={inkscape}
             alt="Inkscape"
             className={cn(
@@ -114,7 +111,7 @@ export default function MySkills() {
               "lg:animate-slide-lr-fade-out lg:-translate-x-full lg:[animation-delay:0.8s,16s]",
             )}
           />
-          <Image
+          <img
             src={gimp}
             alt="GIMP"
             className={cn(
