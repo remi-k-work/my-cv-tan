@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { Outlet, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
-import { Analytics } from "@vercel/analytics/react";
 
 import "@fontsource/outfit";
 import "../styles/globals.css";
@@ -52,7 +51,6 @@ function RootComponent() {
         <Outlet />
       </main>
       <Toaster richColors />
-      <Analytics debug={false} />
     </RootDocument>
   );
 }
