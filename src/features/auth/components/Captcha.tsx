@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import PathFinder from "@/lib/PathFinder";
-import { CAPTCHA_HEIGHT, CAPTCHA_WIDTH } from "@/features/auth/components/CaptchaBackground";
+import { CAPTCHA_HEIGHT, CAPTCHA_WIDTH } from "@/features/auth/captcha";
 
 import { Button } from "@/components/ui/custom/button";
 

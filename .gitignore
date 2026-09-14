@@ -19,6 +19,7 @@ docs/
 /dist/
 /.output/
 /.tanstack/
+/.wrangler/
 vite.config.*.timestamp-*
 
 # production

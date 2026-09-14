@@ -11,10 +11,6 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
   },
-  // Native binary (captcha PNG rendering) must not be pre-bundled.
-  optimizeDeps: {
-    exclude: ["@resvg/resvg-js"],
-  },
   plugins: [
     cloudflare({ viteEnvironment: { name: "ssr" } }),
     tanstackStart(),
