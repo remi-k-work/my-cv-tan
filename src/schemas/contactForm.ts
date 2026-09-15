@@ -1,4 +1,4 @@
-// other libraries
+// services, features, and other libraries
 import { z } from "zod";
 
 export const ContactFormSchemaEn = z.object({

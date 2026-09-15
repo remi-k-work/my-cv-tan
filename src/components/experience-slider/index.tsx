@@ -1,6 +1,4 @@
-"use client";
-
-// other libraries
+// services, features, and other libraries
 import useEmblaCarousel from "embla-carousel-react";
 
 // components

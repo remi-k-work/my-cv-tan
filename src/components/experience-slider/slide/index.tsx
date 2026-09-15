@@ -1,6 +1,8 @@
+// components
 import Header from "./Header";
 import ScreenShots from "./ScreenShots";
 
+// types
 import type { JobExperience, LocalizedContent } from "@/types/shared";
 
 interface SlideProps {
@@ -12,7 +14,7 @@ interface SlideProps {
 
 export default function Slide({ localizedContent, type, index, experience, experience: { liveLink, videoLink } }: SlideProps) {
   return (
-    <article className="bg-background @container relative rounded-xl p-3 select-none">
+    <article className="@container relative rounded-xl bg-background p-3 select-none">
       <Header localizedContent={localizedContent} type={type} index={index} experience={experience} />
       {liveLink || videoLink ? (
         <a href={videoLink ?? liveLink} target="_blank" rel="noopener noreferrer">

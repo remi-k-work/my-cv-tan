@@ -1,8 +1,11 @@
+// tanstack
 import { Link } from "@tanstack/react-router";
 
+// assets
 import { GlobeAltIcon, InformationCircleIcon, VideoCameraIcon } from "@heroicons/react/24/solid";
 import GitHubIcon from "@/assets/icons/GitHub";
 
+// types
 import type { JobExperience, LocalizedContent } from "@/types/shared";
 
 interface HeaderProps {
@@ -16,7 +19,7 @@ export default function Header({ localizedContent, type, index, experience: { ye
   return (
     <header className="mb-4 flex min-h-28 gap-4 @md:min-h-auto">
       <section className="flex-4">
-        <p className="text-accent-foreground text-sm font-semibold tracking-widest">{year}</p>
+        <p className="text-sm font-semibold tracking-widest text-accent-foreground">{year}</p>
         <h2 className="text-xl">{role}</h2>
         <p className="text-clr-primary-200">{company}</p>
       </section>
@@ -27,7 +30,7 @@ export default function Header({ localizedContent, type, index, experience: { ye
             params={{ type, index: String(index) }}
             search={{ modal: true }}
             title={localizedContent["experienceSlide"]["moreInfo"]}
-            className="text-primary-foreground border-primary-foreground hover:text-accent-foreground hover:border-accent-foreground rounded-full border p-1 hover:scale-110"
+            className="rounded-full border border-primary-foreground p-1 text-primary-foreground hover:scale-110 hover:border-accent-foreground hover:text-accent-foreground"
           >
             <InformationCircleIcon className="size-11" />
           </Link>
@@ -37,7 +40,7 @@ export default function Header({ localizedContent, type, index, experience: { ye
               target="_blank"
               rel="noopener noreferrer"
               title={localizedContent["experienceSlide"]["liveLink"]}
-              className="text-primary-foreground border-primary-foreground hover:text-accent-foreground hover:border-accent-foreground rounded-full border p-1 hover:scale-110"
+              className="rounded-full border border-primary-foreground p-1 text-primary-foreground hover:scale-110 hover:border-accent-foreground hover:text-accent-foreground"
             >
               <GlobeAltIcon className="size-11" />
             </a>
@@ -48,7 +51,7 @@ export default function Header({ localizedContent, type, index, experience: { ye
               target="_blank"
               rel="noopener noreferrer"
               title={localizedContent["experienceSlide"]["goAndSee"]}
-              className="text-primary-foreground border-primary-foreground hover:text-accent-foreground hover:border-accent-foreground rounded-full border p-1 hover:scale-110"
+              className="rounded-full border border-primary-foreground p-1 text-primary-foreground hover:scale-110 hover:border-accent-foreground hover:text-accent-foreground"
             >
               <GitHubIcon className="size-11" />
             </a>
@@ -59,7 +62,7 @@ export default function Header({ localizedContent, type, index, experience: { ye
               target="_blank"
               rel="noopener noreferrer"
               title={localizedContent["experienceSlide"]["watchVideo"]}
-              className="text-primary-foreground border-primary-foreground hover:text-accent-foreground hover:border-accent-foreground rounded-full border p-1 hover:scale-110"
+              className="rounded-full border border-primary-foreground p-1 text-primary-foreground hover:scale-110 hover:border-accent-foreground hover:text-accent-foreground"
             >
               <VideoCameraIcon className="size-11" />
             </a>

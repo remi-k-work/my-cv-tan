@@ -8,18 +8,18 @@ const buttonVariants = cva(
   cn(
     "inline-flex shrink-0 items-center justify-center gap-2 border whitespace-nowrap transition-all duration-300 ease-in-out outline-none",
     "hover:shadow-md active:scale-95 active:shadow-none",
-    "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-1",
+    "focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50",
     "disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none",
-    "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
-    "[&_svg]:pointer-events-none [&_svg]:shrink-0",
+    "aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40",
+    "[&_svg]:pointer-events-none [&_svg]:shrink-0"
   ),
   {
     variants: {
       variant: {
-        default: "text-primary-foreground border-primary-foreground hover:shadow-primary-foreground",
-        destructive: "text-destructive-foreground border-destructive-foreground hover:shadow-destructive-foreground",
-        secondary: "text-secondary-foreground border-secondary-foreground hover:shadow-secondary-foreground",
-        ghost: "text-primary-foreground border-primary-foreground/15 hover:shadow-primary-foreground",
+        default: "border-primary-foreground text-primary-foreground hover:shadow-primary-foreground",
+        destructive: "border-destructive-foreground text-destructive-foreground hover:shadow-destructive-foreground",
+        secondary: "border-secondary-foreground text-secondary-foreground hover:shadow-secondary-foreground",
+        ghost: "border-primary-foreground/15 text-primary-foreground hover:shadow-primary-foreground",
       },
       size: {
         default: "px-4 py-2",
@@ -32,7 +32,7 @@ const buttonVariants = cva(
       variant: "default",
       size: "default",
     },
-  },
+  }
 );
 
 function Button({

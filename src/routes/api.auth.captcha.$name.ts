@@ -1,7 +1,11 @@
+// tanstack
 import { createFileRoute } from "@tanstack/react-router";
 
+// services, features, and other libraries
 import { getRandomInt } from "@/lib/helpers";
 import { useCaptchaSession } from "@/server/session";
+
+// constants
 import { CAPTCHA_HEIGHT, CAPTCHA_WIDTH } from "@/features/auth/captcha";
 
 // Generic browser font stacks: the SVG renders client-side, so letterforms

@@ -1,5 +1,7 @@
+// react
 import { Fragment } from "react";
 
+// types
 import type { JobExperience } from "@/types/shared";
 
 interface SlideSeoProps {

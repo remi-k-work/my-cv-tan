@@ -1,18 +1,21 @@
-/* eslint-disable react/no-children-prop */
-
+// react
 import { useState } from "react";
+
+// tanstack
 import { useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 
+// services, features, and other libraries
 import { submitContact } from "@/server/contact.functions";
-import type { ContactFormResult } from "@/server/contact.functions";
-
 import { useAppForm } from "@/components/form";
 import { ContactFormSchemaEn, ContactFormSchemaPl } from "@/schemas/contactForm";
 import useContactFormFeedback from "@/hooks/useContactFormFeedback";
 
+// components
 import Captcha from "@/features/auth/components/Captcha";
 
+// types
+import type { ContactFormResult } from "@/server/contact.functions";
 import type { Lang, LocalizedContent } from "@/types/shared";
 
 interface ContactFormProps {
@@ -20,6 +23,7 @@ interface ContactFormProps {
   localizedContent: LocalizedContent;
 }
 
+// constants
 import { FORM_OPTIONS_EN, FORM_OPTIONS_PL } from "@/schemas/formFactory";
 
 const IDLE_RESULT: ContactFormResult = { actionStatus: "idle" };
@@ -35,12 +39,13 @@ export default function ContactForm({ preferredLang, localizedContent }: Contact
   });
   const { AppField, AppForm, FormSubmit, handleSubmit, reset } = form;
 
+  // Provide feedback to the user regarding contact form actions
   useContactFormFeedback(formState, localizedContent, reset);
 
   return (
     <AppForm>
       <form
-        className="bg-background mx-auto w-full max-w-4xl rounded-xl p-3"
+        className="mx-auto w-full max-w-4xl rounded-xl bg-background p-3"
         onSubmit={(ev) => {
           ev.preventDefault();
           ev.stopPropagation();

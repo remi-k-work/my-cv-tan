@@ -1,12 +1,17 @@
+// tanstack
 import { useRouter } from "@tanstack/react-router";
 
+// services, features, and other libraries
 import { useFormContext } from ".";
 
+// components
 import { Button } from "@/components/ui/custom/button";
 
+// assets
 import { HandThumbDownIcon, HandThumbUpIcon, XCircleIcon } from "@heroicons/react/24/solid";
 import { Loader2 } from "lucide-react";
 
+// types
 import type { LocalizedContent } from "@/types/shared";
 
 interface FormSubmitProps {
@@ -15,8 +20,10 @@ interface FormSubmitProps {
 }
 
 export default function FormSubmit({ localizedContent, isPending }: FormSubmitProps) {
+  // Get the form context
   const { Subscribe, reset } = useFormContext();
 
+  // To be able to send the user back after canceling
   const router = useRouter();
 
   return (

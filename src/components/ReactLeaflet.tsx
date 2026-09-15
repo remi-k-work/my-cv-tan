@@ -1,7 +1,7 @@
 // component css styles
 import "leaflet/dist/leaflet.css";
 
-// other libraries
+// services, features, and other libraries
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 
 // types

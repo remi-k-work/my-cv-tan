@@ -1,7 +1,7 @@
 // react
 import { useCallback, useEffect, useState } from "react";
 
-// other libraries
+// services, features, and other libraries
 import { cn } from "@/lib/utils";
 
 // components

@@ -1,6 +1,10 @@
+// tanstack
 import { Link, useLocation } from "@tanstack/react-router";
+
+// services, features, and other libraries
 import { cn } from "@/lib/utils";
 
+// types
 import type { ReactNode } from "react";
 
 interface NavItemProps {
@@ -26,25 +30,25 @@ export default function NavItem({ href, title, icon, isExternal = false, animDel
           "relative isolate",
           "[&>svg]:size-11",
           isActive
-            ? "border-foreground [&>svg]:text-foreground transition-colors [&>svg]:size-13"
-            : "border-primary-foreground hover:border-accent-foreground hover:scale-110",
+            ? "border-foreground transition-colors [&>svg]:size-13 [&>svg]:text-foreground"
+            : "border-primary-foreground hover:scale-110 hover:border-accent-foreground"
         )}
       >
         {icon}
         <span
-          className="via-accent-foreground animate-spark-h-l absolute top-0 left-0 h-px w-full bg-linear-to-r from-transparent via-5% to-transparent to-10% bg-size-[800%]"
+          className="absolute top-0 left-0 h-px w-full animate-spark-h-l bg-linear-to-r from-transparent via-accent-foreground via-5% to-transparent to-10% bg-size-[800%]"
           style={{ animationDelay: `${-animDelay}s` }}
         />
         <span
-          className="via-accent-foreground animate-spark-v-l direction-[reverse] absolute top-0 left-0 h-full w-px bg-linear-to-b from-transparent via-5% to-transparent to-10% bg-size-[100%_800%]"
+          className="absolute top-0 left-0 h-full w-px animate-spark-v-l bg-linear-to-b from-transparent via-accent-foreground via-5% to-transparent to-10% bg-size-[100%_800%] direction-[reverse]"
           style={{ animationDelay: `${-animDelay}s` }}
         />
         <span
-          className="via-accent-foreground animate-spark-h-l direction-[reverse] absolute bottom-0 left-0 h-px w-full bg-linear-to-r from-transparent via-5% to-transparent to-10% bg-size-[800%]"
+          className="absolute bottom-0 left-0 h-px w-full animate-spark-h-l bg-linear-to-r from-transparent via-accent-foreground via-5% to-transparent to-10% bg-size-[800%] direction-[reverse]"
           style={{ animationDelay: `${-animDelay}s` }}
         />
         <span
-          className="via-accent-foreground animate-spark-v-l absolute top-0 right-0 h-full w-px bg-linear-to-b from-transparent via-5% to-transparent to-10% bg-size-[100%_800%]"
+          className="absolute top-0 right-0 h-full w-px animate-spark-v-l bg-linear-to-b from-transparent via-accent-foreground via-5% to-transparent to-10% bg-size-[100%_800%]"
           style={{ animationDelay: `${-animDelay}s` }}
         />
       </a>
@@ -60,25 +64,25 @@ export default function NavItem({ href, title, icon, isExternal = false, animDel
         "relative isolate",
         "[&>svg]:size-11",
         isActive
-          ? "border-foreground [&>svg]:text-foreground transition-colors [&>svg]:size-13"
-          : "border-primary-foreground hover:border-accent-foreground hover:scale-110",
+          ? "border-foreground transition-colors [&>svg]:size-13 [&>svg]:text-foreground"
+          : "border-primary-foreground hover:scale-110 hover:border-accent-foreground"
       )}
     >
       {icon}
       <span
-        className="via-accent-foreground animate-spark-h-l absolute top-0 left-0 h-px w-full bg-linear-to-r from-transparent via-5% to-transparent to-10% bg-size-[800%]"
+        className="absolute top-0 left-0 h-px w-full animate-spark-h-l bg-linear-to-r from-transparent via-accent-foreground via-5% to-transparent to-10% bg-size-[800%]"
         style={{ animationDelay: `${-animDelay}s` }}
       />
       <span
-        className="via-accent-foreground animate-spark-v-l direction-[reverse] absolute top-0 left-0 h-full w-px bg-linear-to-b from-transparent via-5% to-transparent to-10% bg-size-[100%_800%]"
+        className="absolute top-0 left-0 h-full w-px animate-spark-v-l bg-linear-to-b from-transparent via-accent-foreground via-5% to-transparent to-10% bg-size-[100%_800%] direction-[reverse]"
         style={{ animationDelay: `${-animDelay}s` }}
       />
       <span
-        className="via-accent-foreground animate-spark-h-l direction-[reverse] absolute bottom-0 left-0 h-px w-full bg-linear-to-r from-transparent via-5% to-transparent to-10% bg-size-[800%]"
+        className="absolute bottom-0 left-0 h-px w-full animate-spark-h-l bg-linear-to-r from-transparent via-accent-foreground via-5% to-transparent to-10% bg-size-[800%] direction-[reverse]"
         style={{ animationDelay: `${-animDelay}s` }}
       />
       <span
-        className="via-accent-foreground animate-spark-v-l absolute top-0 right-0 h-full w-px bg-linear-to-b from-transparent via-5% to-transparent to-10% bg-size-[100%_800%]"
+        className="absolute top-0 right-0 h-full w-px animate-spark-v-l bg-linear-to-b from-transparent via-accent-foreground via-5% to-transparent to-10% bg-size-[100%_800%]"
         style={{ animationDelay: `${-animDelay}s` }}
       />
     </Link>

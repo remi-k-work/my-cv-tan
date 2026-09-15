@@ -1,8 +1,12 @@
+// tanstack
 import { createFileRoute, notFound } from "@tanstack/react-router";
+
+// services, features, and other libraries
 import DataLoader from "@/lib/DataLoader";
 import { getRandomInt } from "@/lib/helpers";
 import { getLang } from "@/server/i18n.functions";
 
+// components
 import PageTitle from "@/components/PageTitle";
 import ExperienceModal from "@/components/ExperienceModal";
 import ExperienceDetails from "@/components/experience-details";
@@ -25,13 +29,7 @@ export const Route = createFileRoute("/exp/$type/$index")({
     const list = allExperiences[validType === "e" ? 0 : 1];
     if (validIndex >= list.length) throw notFound();
 
-    return {
-      validType,
-      validIndex,
-      localizedContent: loader.localizedContent(),
-      allExperiences,
-      allPageTitles: loader.allPageTitles(),
-    };
+    return { validType, validIndex, localizedContent: loader.localizedContent(), allExperiences, allPageTitles: loader.allPageTitles() } as const;
   },
   component: ExpPage,
 });

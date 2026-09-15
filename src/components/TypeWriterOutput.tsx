@@ -1,6 +1,4 @@
-"use client";
-
-// other libraries
+// services, features, and other libraries
 import { cn } from "@/lib/utils";
 import useTypeWriter from "@/hooks/useTypeWriter";
 

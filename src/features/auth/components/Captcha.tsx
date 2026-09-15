@@ -1,15 +1,22 @@
+// react
 import { useEffect, useState } from "react";
 
+// services, features, and other libraries
 import PathFinder from "@/lib/PathFinder";
-import { CAPTCHA_HEIGHT, CAPTCHA_WIDTH } from "@/features/auth/captcha";
 
+// components
 import { Button } from "@/components/ui/custom/button";
 
+// assets
 import { ArrowPathIcon } from "@heroicons/react/24/solid";
 
+// types
 interface CaptchaProps {
   captchaName: string;
 }
+
+// constants
+import { CAPTCHA_HEIGHT, CAPTCHA_WIDTH } from "@/features/auth/captcha";
 
 export default function Captcha({ captchaName }: CaptchaProps) {
   const [captchaSrc, setCaptchaSrc] = useState(PathFinder.toCaptcha(captchaName));

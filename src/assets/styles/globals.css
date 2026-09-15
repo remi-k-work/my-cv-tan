@@ -1,12 +1,12 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* custom animations */
-@import "./anim/valid-error.css";
-@import "./anim/slide-and-fade.css";
-@import "./anim/sparks.css";
-@import "./anim/sweep-light-bar.css";
-@import "./anim/cursor-blink.css";
+/* custom styles and animations */
+@import "./valid-error.css";
+@import "./slide-and-fade.css";
+@import "./sparks.css";
+@import "./sweep-light-bar.css";
+@import "./cursor-blink.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -118,12 +118,12 @@
   }
 
   body {
-    @apply bg-background text-foreground min-h-dvh text-base font-light;
+    @apply min-h-dvh bg-background text-base font-light text-foreground;
   }
 
   a,
   button {
-    @apply focus-visible:outline-accent-foreground transition duration-1000 ease-in-out focus-visible:outline focus-visible:outline-offset-1;
+    @apply transition duration-1000 ease-in-out focus-visible:outline focus-visible:outline-offset-1 focus-visible:outline-accent-foreground;
   }
 
   h1,

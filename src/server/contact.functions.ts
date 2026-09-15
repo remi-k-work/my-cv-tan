@@ -1,10 +1,14 @@
+// tanstack
 import { createServerFn } from "@tanstack/react-start";
 import { getCookie, getRequestHeader } from "@tanstack/react-start/server";
+
+// services, features, and other libraries
 import { z } from "zod";
-import { LANG_COOKIE, resolveLang } from "@/lib/DataLoader";
+import { resolveLang } from "@/lib/DataLoader";
 import { ContactFormSchemaEn, ContactFormSchemaPl } from "@/schemas/contactForm";
 import { useCaptchaSession } from "@/server/session";
 
+// types
 export type ContactActionStatus = "idle" | "succeeded" | "failed" | "invalid" | "invalid-captcha";
 
 export interface ContactFormResult {
@@ -13,13 +17,10 @@ export interface ContactFormResult {
   fieldErrors?: Record<string, string[]>;
 }
 
-const ContactInputSchema = z.object({
-  name: z.string(),
-  email: z.string(),
-  subject: z.string(),
-  message: z.string(),
-  captcha: z.string(),
-});
+// constants
+import { LANG_COOKIE } from "@/lib/DataLoader";
+
+const ContactInputSchema = z.object({ name: z.string(), email: z.string(), subject: z.string(), message: z.string(), captcha: z.string() });
 
 export const submitContact = createServerFn({ method: "POST" })
   .validator((data: unknown) => ContactInputSchema.parse(data))
@@ -44,6 +45,7 @@ export const submitContact = createServerFn({ method: "POST" })
     }
 
     try {
+      // Submit the contact form with validated data
       const res = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
         method: "POST",
         headers: { "Content-Type": "application/json;charset=utf-8" },

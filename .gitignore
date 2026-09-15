@@ -1,6 +1,6 @@
+/.repos
 /_scratchpad
 .env
-docs/
 
 # dependencies
 /node_modules

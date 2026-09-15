@@ -17,21 +17,21 @@ export default function ScreenShots({ experience: { role, imageName } }: ScreenS
         width={SCREENSHOT_WIDTH}
         height={SCREENSHOT_HEIGHT}
         alt={role}
-        className="animate-fade-in-out col-span-full row-span-full opacity-0 [animation-delay:-9.6s]"
+        className="col-span-full row-span-full animate-fade-in-out opacity-0 [animation-delay:-9.6s]"
       />
       <img
         src={`/images/${imageName}-b.webp`}
         width={SCREENSHOT_WIDTH}
         height={SCREENSHOT_HEIGHT}
         alt={role}
-        className="animate-fade-in-out col-span-full row-span-full opacity-0 [animation-delay:6.4s]"
+        className="col-span-full row-span-full animate-fade-in-out opacity-0 [animation-delay:6.4s]"
       />
       <img
         src={`/images/${imageName}-c.webp`}
         width={SCREENSHOT_WIDTH}
         height={SCREENSHOT_HEIGHT}
         alt={role}
-        className="animate-fade-in-out col-span-full row-span-full opacity-0 [animation-delay:22.4s]"
+        className="col-span-full row-span-full animate-fade-in-out opacity-0 [animation-delay:22.4s]"
       />
     </article>
   );
