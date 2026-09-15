@@ -19,28 +19,11 @@ import "@fontsource/outfit";
 // types
 import type { ReactNode } from "react";
 
+// constants
+import { ROOT_HEAD } from "@/domain";
+
 export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Curious Web Dev: Eager to Learn, Collaborate, and Make a Splash" },
-      {
-        name: "description",
-        content:
-          "Passionate, self-taught web developer with a strong drive for continuous learning and a proven track record of delivering results. Eager to contribute to impactful projects, collaborate with experienced teams, and build high-quality web applications.",
-      },
-      { name: "author", content: "Remi" },
-      { name: "robots", content: "index, follow" },
-      { name: "category", content: "technology" },
-      { name: "google", content: "notranslate" },
-    ],
-    links: [
-      { rel: "canonical", href: "https://www.remiforge.dev/" },
-      { rel: "icon", href: "/icon.svg", type: "image/svg+xml" },
-      { rel: "og:image", href: "https://www.remiforge.dev/opengraph-image.jpg" },
-    ],
-  }),
+  head: () => ROOT_HEAD,
   loader: async () => {
     const lang = await getLang();
     const loader = DataLoader.fromLang(lang);

@@ -18,10 +18,10 @@ export default function MyCertificates({ localizedContent }: MyCertificatesProps
         {localizedContent["myCertificates"]["myCertificates"]}
       </figcaption>
       <a href="https://www.remiforge.dev/my-certificates.pdf" target="_blank" rel="noopener noreferrer" className="space-y-4">
-        <img src={artcom} alt="ARTCOM" loading="lazy" className="h-auto w-full" />
-        <img src={alcc} alt="ALCC" loading="lazy" className="h-auto w-full" />
-        <img src={prattOrig} alt="Pratt" loading="lazy" className="h-auto w-full" />
-        <img src={prattTrans} alt="Pratt" loading="lazy" className="h-auto w-full" />
+        <img src={artcom} width={1222} height={870} alt="ARTCOM" loading="lazy" className="h-auto w-full" />
+        <img src={alcc} width={1222} height={870} alt="ALCC" loading="lazy" className="h-auto w-full" />
+        <img src={prattOrig} width={1222} height={870} alt="Pratt" loading="lazy" className="h-auto w-full" />
+        <img src={prattTrans} width={1694} height={870} alt="Pratt" loading="lazy" className="h-auto w-full" />
       </a>
     </figure>
   );
