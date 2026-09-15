@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 // components
-import { Button } from "@/components/ui/custom/button";
+import { Button } from "@base-ui/react";
 
 // assets
 import NextIcon from "@/assets/icons/Next";
@@ -33,7 +33,7 @@ export default function Next({ emblaApi }: NextProps) {
   }, [emblaApi, onSelect]);
 
   return (
-    <Button type="button" disabled={isDisabled} onClick={() => emblaApi?.scrollNext()}>
+    <Button className="button" disabled={isDisabled} onClick={() => emblaApi?.scrollNext()}>
       <NextIcon className="size-9" />
     </Button>
   );

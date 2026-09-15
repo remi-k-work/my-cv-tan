@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 // components
-import { Button } from "@/components/ui/custom/button";
+import { Button } from "@base-ui/react";
 
 // assets
 import { ViewfinderCircleIcon as ViewfinderCircleIconS } from "@heroicons/react/24/solid";
@@ -38,13 +38,7 @@ export default function Dot({ emblaApi, index }: DotProps) {
   }, [emblaApi, onSelect]);
 
   return (
-    <Button
-      type="button"
-      size="icon"
-      variant="ghost"
-      className={cn(index === selectedIndex && "text-clr-primary-200")}
-      onClick={() => emblaApi?.scrollTo(index)}
-    >
+    <Button className={cn("button rounded-full p-2", index === selectedIndex && "text-clr-primary-200")} onClick={() => emblaApi?.scrollTo(index)}>
       {index === selectedIndex ? <ViewfinderCircleIconS className="size-6" /> : <ViewfinderCircleIconO className="size-6" />}
     </Button>
   );

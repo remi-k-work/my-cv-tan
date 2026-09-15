@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "tw-animate-css";
 
 /* custom styles and animations */
 @import "./valid-error.css";
@@ -22,10 +21,6 @@
   /* shadcn/ui (dark) */
   --background: oklch(0.2779 0.0668 271.89 / 1);
   --foreground: oklch(1 0 89.88 / 1);
-  --card: oklch(0.216 0.006 56.043);
-  --card-foreground: oklch(0.985 0.001 106.423);
-  --popover: oklch(0.216 0.006 56.043);
-  --popover-foreground: oklch(0.985 0.001 106.423);
   --primary: transparent;
   --primary-foreground: oklch(0.4374 0.0976 272.26 / 1);
   --secondary: transparent;
@@ -37,24 +32,6 @@
   --destructive: transparent;
   --destructive-foreground: oklch(0.7478 0.1765 163.47 / 1);
   --border: oklch(1 0 0 / 10%);
-  --input: oklch(0.4374 0.0976 272.26 / 1);
-  --ring: oklch(0.7478 0.1765 163.47 / 1);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.216 0.006 56.043);
-  --sidebar-foreground: oklch(0.985 0.001 106.423);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0.001 106.423);
-  --sidebar-accent: oklch(0.268 0.007 34.298);
-  --sidebar-accent-foreground: oklch(0.985 0.001 106.423);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.553 0.013 58.071);
-
-  /* shadcn/ui (shared) */
-  --radius: 0.625rem;
 }
 
 @theme inline {
@@ -66,10 +43,6 @@
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
@@ -81,35 +54,44 @@
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
 }
 
 @utility container {
   @apply mx-auto max-w-[min(90vw,65ch)];
 }
 
+@layer components {
+  .button {
+    @apply flex shrink-0 items-center justify-center gap-2 rounded-md border bg-primary px-4 py-2 font-semibold tracking-widest uppercase select-none;
+    @apply border-primary-foreground text-primary-foreground hover:shadow-primary-foreground;
+    @apply hover:shadow-md;
+    @apply active:scale-95 active:shadow-none;
+    @apply data-disabled:pointer-events-none data-disabled:opacity-50 data-disabled:shadow-none;
+    @apply [&_svg]:pointer-events-none [&_svg]:shrink-0;
+  }
+
+  .label {
+    @apply p-1 text-sm font-semibold tracking-widest text-clr-primary-200 uppercase select-none;
+    @apply group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50;
+    @apply peer-disabled:cursor-not-allowed peer-disabled:opacity-50;
+  }
+
+  .input {
+    @apply w-full border px-2 py-1 font-normal any-pointer-coarse:text-base;
+    @apply disabled:cursor-not-allowed disabled:opacity-50;
+    @apply placeholder:text-muted-foreground;
+  }
+
+  .textarea {
+    @apply flex field-sizing-fixed w-full border px-3 py-2;
+    @apply disabled:cursor-not-allowed disabled:opacity-50;
+    @apply placeholder:text-muted-foreground;
+  }
+}
+
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
 
   html {
@@ -122,7 +104,9 @@
   }
 
   a,
-  button {
+  button,
+  input,
+  textarea {
     @apply transition duration-1000 ease-in-out focus-visible:outline focus-visible:outline-offset-1 focus-visible:outline-accent-foreground;
   }
 

@@ -9,7 +9,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { setLangCookie } from "@/server/lang.functions";
 
 // components
-import { Button } from "@/components/ui/custom/button";
+import { Button } from "@base-ui/react";
 
 // assets
 import UsFlagIcon from "@/assets/icons/UsFlag";
@@ -39,7 +39,7 @@ export default function LangChanger({ preferredLang }: LangChangerProps) {
   }
 
   return (
-    <Button type="button" disabled={isPending} title={preferredLang === "en" ? "English" : "Polish"} onClick={handleLangToggled}>
+    <Button className="button" disabled={isPending} title={preferredLang === "en" ? "English" : "Polish"} onClick={handleLangToggled}>
       {preferredLang && (preferredLang === "en" ? <UsFlagIcon className="size-11" /> : <PlFlagIcon className="size-11" />)}
     </Button>
   );

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import PathFinder from "@/lib/PathFinder";
 
 // components
-import { Button } from "@/components/ui/custom/button";
+import { Button } from "@base-ui/react";
 
 // assets
 import { ArrowPathIcon } from "@heroicons/react/24/solid";
@@ -28,7 +28,7 @@ export default function Captcha({ captchaName }: CaptchaProps) {
   return (
     <article className="flex items-center justify-center gap-3">
       <img src={captchaSrc} width={CAPTCHA_WIDTH} height={CAPTCHA_HEIGHT} alt={captchaName} className="rounded" />
-      <Button type="button" onClick={() => setCaptchaSrc(PathFinder.toCaptcha(captchaName, true))}>
+      <Button className="button" onClick={() => setCaptchaSrc(PathFinder.toCaptcha(captchaName, true))}>
         <ArrowPathIcon className="size-9" />
       </Button>
     </article>

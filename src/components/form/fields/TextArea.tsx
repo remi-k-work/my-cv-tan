@@ -5,14 +5,12 @@ import { useId } from "react";
 import { useFieldContext } from "@/components/form";
 
 // components
-import { Label } from "@/components/ui/custom/label";
-import { Textarea } from "@/components/ui/custom/textarea";
 import FieldErrors from "@/components/form/field-errors";
 
 // types
 import type { ComponentPropsWithoutRef } from "react";
 
-interface TextAreaFieldProps extends ComponentPropsWithoutRef<typeof Textarea> {
+interface TextAreaFieldProps extends ComponentPropsWithoutRef<"textarea"> {
   label: string;
 }
 
@@ -30,8 +28,10 @@ export default function TextAreaField({ label, ...props }: TextAreaFieldProps) {
 
   return (
     <>
-      <Label htmlFor={id}>{label}</Label>
-      <Textarea id={id} name={name} value={value ?? ""} onChange={(ev) => handleChange(ev.target.value)} onBlur={handleBlur} {...props} />
+      <label className="label" htmlFor={id}>
+        {label}
+      </label>
+      <textarea className="textarea" id={id} name={name} value={value ?? ""} onChange={(ev) => handleChange(ev.target.value)} onBlur={handleBlur} {...props} />
       <FieldErrors />
     </>
   );

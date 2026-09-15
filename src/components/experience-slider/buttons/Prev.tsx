@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 // components
-import { Button } from "@/components/ui/custom/button";
+import { Button } from "@base-ui/react";
 
 // assets
 import PrevIcon from "@/assets/icons/Prev";
@@ -33,7 +33,7 @@ export default function Prev({ emblaApi }: PrevProps) {
   }, [emblaApi, onSelect]);
 
   return (
-    <Button type="button" disabled={isDisabled} onClick={() => emblaApi?.scrollPrev()}>
+    <Button className="button" disabled={isDisabled} onClick={() => emblaApi?.scrollPrev()}>
       <PrevIcon className="size-9" />
     </Button>
   );

@@ -8,7 +8,7 @@ import { useRouter } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 
 // components
-import { Button } from "@/components/ui/custom/button";
+import { Button } from "@base-ui/react";
 
 // assets
 import { InformationCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
@@ -82,7 +82,7 @@ export default function ExperienceModal({ localizedContent, children }: Experien
               />
             </h3>
           </section>
-          <Button type="submit">
+          <Button className="button" type="submit">
             <XCircleIcon className="size-9" />
           </Button>
         </header>

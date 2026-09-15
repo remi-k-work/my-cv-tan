@@ -5,7 +5,7 @@ import { useRouter } from "@tanstack/react-router";
 import { useFormContext } from ".";
 
 // components
-import { Button } from "@/components/ui/custom/button";
+import { Button } from "@base-ui/react";
 
 // assets
 import { HandThumbDownIcon, HandThumbUpIcon, XCircleIcon } from "@heroicons/react/24/solid";
@@ -30,7 +30,7 @@ export default function FormSubmit({ localizedContent, isPending }: FormSubmitPr
     <section className="flex w-full flex-wrap items-center justify-around gap-6">
       <Subscribe selector={(formState) => [formState.canSubmit, formState.isSubmitting, formState.isPristine]}>
         {([canSubmit, isSubmitting, isPristine]) => (
-          <Button type="submit" disabled={isPending || !canSubmit || isPristine}>
+          <Button className="button" type="submit" disabled={isPending || !canSubmit || isPristine}>
             {isPending || isSubmitting ? (
               <>
                 <Loader2 className="size-9 animate-spin" />
@@ -45,11 +45,11 @@ export default function FormSubmit({ localizedContent, isPending }: FormSubmitPr
           </Button>
         )}
       </Subscribe>
-      <Button type="button" variant="destructive" onClick={() => reset()}>
+      <Button className="button border-destructive-foreground text-destructive-foreground hover:shadow-destructive-foreground" onClick={() => reset()}>
         <XCircleIcon className="size-9" />
         {localizedContent["formSubmit"]["reset"]}
       </Button>
-      <Button type="button" variant="secondary" onClick={() => router.history.back()}>
+      <Button className="button border-secondary-foreground text-secondary-foreground hover:shadow-secondary-foreground" onClick={() => router.history.back()}>
         <HandThumbDownIcon className="size-9" />
         {localizedContent["formSubmit"]["cancel"]}
       </Button>
