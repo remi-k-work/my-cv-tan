@@ -53,3 +53,5 @@ export const ROOT_HEAD = {
     { rel: "twitter:image", href: "https://www.remiforge.dev/twitter-image.jpg" },
   ],
 } as const satisfies RootHead;
+
+export const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
