@@ -37,6 +37,7 @@ export default function ContactForm({ preferredLang, localizedContent }: Contact
   const form = useAppForm({
     ...(preferredLang === "en" ? FORM_OPTIONS_EN : FORM_OPTIONS_PL),
   });
+  // oxlint-disable-next-line typescript/unbound-method -- TanStack Form factory returns bound closures; destructured helpers do not rely on dynamic `this`
   const { AppField, AppForm, FormSubmit, handleSubmit, reset } = form;
 
   // Provide feedback to the user regarding contact form actions

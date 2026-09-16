@@ -1,4 +1,5 @@
 {
+  "$schema": "./node_modules/@effect/tsgo/schema.json",
   "compilerOptions": {
     "target": "es2023",
     "lib": [
@@ -25,7 +26,16 @@
       "@/*": [
         "./src/*"
       ]
-    }
+    },
+    "plugins": [
+      {
+        "name": "@effect/language-service",
+        // Effect diagnostics are reported by Oxlint (type-aware) as the single
+        // source; disable them here to avoid double-reporting.
+        // See https://effect.website/docs/v4/getting-started/devtools#oxlint
+        "diagnostics": false
+      }
+    ]
   },
   "include": [
     "**/*.ts",

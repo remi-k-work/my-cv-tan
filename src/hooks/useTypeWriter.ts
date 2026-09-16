@@ -23,7 +23,7 @@ export default function useTypeWriter(fullText: string) {
     typewriter.typeFullText(fullText);
 
     // Start the typewriter logic
-    typewriter.start(() => {
+    void typewriter.start(() => {
       // Check if the component is still mounted implicitly by checking the ref
       if (elementRef.current) setIsRunning(false);
     });

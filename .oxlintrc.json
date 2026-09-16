@@ -1,0 +1,69 @@
+{
+  "$schema": "./node_modules/@effect/tsgo/oxlint-schema.json",
+  // Effect recommended preset: enables type-aware mode + effecttsgo rules.
+  // See https://effect.website/docs/v4/getting-started/devtools#oxlint
+  "extends": [
+    "./node_modules/@effect/tsgo/oxlint-presets/recommended.json"
+  ],
+  // Vite + TanStack Start scope (adapted from the Next.js setup in wordle):
+  // react + jsx-a11y + typescript + import cover the old eslint flat-config
+  // needs. No nextjs plugin (no Next.js here), no vitest plugin (no tests yet).
+  // Existing `eslint-disable` comments keep working (respected by default).
+  "plugins": [
+    "eslint",
+    "typescript",
+    "react",
+    "jsx-a11y",
+    "import"
+  ],
+  "categories": {
+    "correctness": "error"
+  },
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2023": true
+  },
+  // Generated / build outputs. node_modules and .git are ignored by default;
+  // .gitignore is respected automatically (covers dist, .output, .tanstack,
+  // .wrangler, build, .repos, _scratchpad) — listed here to be explicit.
+  "ignorePatterns": [
+    "dist/**",
+    ".output/**",
+    ".tanstack/**",
+    ".wrangler/**",
+    "build/**",
+    ".repos/**",
+    "_scratchpad/**",
+    "src/routeTree.gen.ts"
+  ],
+  "settings": {
+    // Oxlint has no "detect"; pin to the installed React version.
+    "react": {
+      "version": "19.3.0"
+    }
+  },
+  "rules": {
+    // --- modern-JSX opts (same as wordle) ---
+    "react/no-unknown-property": "off",
+    "react/react-in-jsx-scope": "off",
+    "react/jsx-no-target-blank": "off",
+    // --- typescript parity (wordle kept these at warn) ---
+    "typescript/no-unused-vars": "warn",
+    "typescript/no-unused-expressions": "warn",
+    "typescript/no-explicit-any": "warn",
+    // --- import parity ---
+    "import/no-anonymous-default-export": "warn",
+    // --- Downgraded to warn: fires on pre-existing external-system
+    // subscriptions (embla carousel events, matchMedia, exit-animation
+    // timeouts) that follow the legitimate sync-with-external-system pattern.
+    // Stays visible without blocking `npm run lint`.
+    "react/set-state-in-effect": "warn",
+    // --- Disabled: not applicable to this stack ---
+    // TanStack Form's `Field` API takes its render function via the `children`
+    // prop (`children={(field) => ...}`); the rule assumes JSX nesting.
+    "react/no-children-prop": "off",
+    // --- Architectural Effect guidance; matches Effect's own correctness preset. ---
+    "effecttsgo/any-unknown-in-error-context": "warn"
+  }
+}
