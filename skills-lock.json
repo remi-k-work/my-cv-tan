@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "skills": {
+    "motion-advanced": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "skillPath": "skills/motion-advanced/SKILL.md",
+      "computedHash": "38502b809de1d53e5c47ae65eafb7a70a6624ed25d578c403ca858c6fa25eb90"
+    },
+    "motion-foundations": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "skillPath": "skills/motion-foundations/SKILL.md",
+      "computedHash": "f76298f3fcc5f20001c8e78cfa36384469c5a583cb25e8ce60a76d3912608d99"
+    },
+    "motion-patterns": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "skillPath": "skills/motion-patterns/SKILL.md",
+      "computedHash": "71d7279a0651e6cb95a0fe804c77cb7bfa88befba1cbd1c60c05d23feada4dcc"
+    },
+    "xstate-v5": {
+      "source": "statelyai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/xstate-v5/SKILL.md",
+      "computedHash": "70e61b481b3692774871f9eb7b1298bcd31bf6ede229d5061e8f7820348811f7"
+    }
+  }
+}
