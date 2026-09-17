@@ -14,6 +14,7 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as EducationRouteImport } from './routes/education'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as ApiRpcRouteImport } from './routes/api.rpc'
 import { Route as ExpTypeIndexRouteImport } from './routes/exp.$type.$index'
 import { Route as ApiAuthCaptchaNameRouteImport } from './routes/api.auth.captcha.$name'
 
@@ -42,6 +43,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiRpcRoute = ApiRpcRouteImport.update({
+  id: '/api/rpc',
+  path: '/api/rpc',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ExpTypeIndexRoute = ExpTypeIndexRouteImport.update({
   id: '/exp/$type/$index',
   path: '/exp/$type/$index',
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/education': typeof EducationRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/api/rpc': typeof ApiRpcRoute
   '/exp/$type/$index': typeof ExpTypeIndexRoute
   '/api/auth/captcha/$name': typeof ApiAuthCaptchaNameRoute
 }
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/education': typeof EducationRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/api/rpc': typeof ApiRpcRoute
   '/exp/$type/$index': typeof ExpTypeIndexRoute
   '/api/auth/captcha/$name': typeof ApiAuthCaptchaNameRoute
 }
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/education': typeof EducationRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/api/rpc': typeof ApiRpcRoute
   '/exp/$type/$index': typeof ExpTypeIndexRoute
   '/api/auth/captcha/$name': typeof ApiAuthCaptchaNameRoute
 }
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/education'
     | '/robots.txt'
     | '/sitemap.xml'
+    | '/api/rpc'
     | '/exp/$type/$index'
     | '/api/auth/captcha/$name'
   fileRoutesByTo: FileRoutesByTo
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/education'
     | '/robots.txt'
     | '/sitemap.xml'
+    | '/api/rpc'
     | '/exp/$type/$index'
     | '/api/auth/captcha/$name'
   id:
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/education'
     | '/robots.txt'
     | '/sitemap.xml'
+    | '/api/rpc'
     | '/exp/$type/$index'
     | '/api/auth/captcha/$name'
   fileRoutesById: FileRoutesById
@@ -117,6 +129,7 @@ export interface RootRouteChildren {
   EducationRoute: typeof EducationRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ApiRpcRoute: typeof ApiRpcRoute
   ExpTypeIndexRoute: typeof ExpTypeIndexRoute
   ApiAuthCaptchaNameRoute: typeof ApiAuthCaptchaNameRoute
 }
@@ -158,6 +171,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/rpc': {
+      id: '/api/rpc'
+      path: '/api/rpc'
+      fullPath: '/api/rpc'
+      preLoaderRoute: typeof ApiRpcRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/exp/$type/$index': {
       id: '/exp/$type/$index'
       path: '/exp/$type/$index'
@@ -181,6 +201,7 @@ const rootRouteChildren: RootRouteChildren = {
   EducationRoute: EducationRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ApiRpcRoute: ApiRpcRoute,
   ExpTypeIndexRoute: ExpTypeIndexRoute,
   ApiAuthCaptchaNameRoute: ApiAuthCaptchaNameRoute,
 }

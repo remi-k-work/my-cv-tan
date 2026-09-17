@@ -8,6 +8,7 @@ const RpcMainLayer = RpcMain.toLayer({
   isCaptchaValid: ({ captchaInput }) =>
     Effect.gen(function* () {
       yield* Effect.sleep(1000);
+      yield* Effect.log(captchaInput);
       return yield* Effect.succeed(captchaInput === "123456");
     }),
 });

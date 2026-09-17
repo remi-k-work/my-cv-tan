@@ -8,7 +8,7 @@ import { AnimatePresence } from "motion/react";
 
 // components
 import { Input } from "@base-ui/react";
-import { ErrorLine } from "@/components/form-new";
+import { ErrorLine } from "@/components/form";
 
 // types
 import type { ComponentPropsWithoutRef } from "react";

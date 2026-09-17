@@ -10,7 +10,7 @@ import { RuntimeAtom } from "@/lib/runtime-client";
 import useContactFormFeedback from "@/hooks/useContactFormFeedback";
 
 // components
-import { FormSubmit, TextAreaInput, TextInput } from "@/components/form-new";
+import { FormSubmit, TextAreaInput, TextInput } from "@/components/form";
 import Captcha from "@/features/auth/components/Captcha";
 
 // types

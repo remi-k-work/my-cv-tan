@@ -1,11 +1,10 @@
 @import "tailwindcss";
 
 /* custom styles and animations */
-@import "./valid-error.css";
+@import "./cursor-blink.css";
 @import "./slide-and-fade.css";
 @import "./sparks.css";
 @import "./sweep-light-bar.css";
-@import "./cursor-blink.css";
 
 @custom-variant dark (&:is(.dark *));
 
