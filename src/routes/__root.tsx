@@ -9,6 +9,7 @@ import DataLoader from "@/lib/DataLoader";
 import { getLang } from "@/server/i18n.functions";
 
 // components
+import { AtomRegistryProvider } from "@/components/atom-registry-provider";
 import Header from "@/components/header";
 import MySkills from "@/components/MySkills";
 import { Toaster } from "@/components/ui/sonner";
@@ -37,12 +38,14 @@ function RootComponent() {
 
   return (
     <RootDocument>
-      <Header preferredLang={lang} localizedContent={localizedContent} />
-      <MySkills />
-      <main className="[grid-area:main]">
-        <Outlet />
-      </main>
-      <Toaster richColors />
+      <AtomRegistryProvider>
+        <Header preferredLang={lang} localizedContent={localizedContent} />
+        <MySkills />
+        <main className="[grid-area:main]">
+          <Outlet />
+        </main>
+        <Toaster richColors />
+      </AtomRegistryProvider>
     </RootDocument>
   );
 }

@@ -1,51 +1,28 @@
-// react
-import { useEffect, useState } from "react";
-
-// next
-import { useRouter } from "next/navigation";
+// tanstack
+import { useRouter } from "@tanstack/react-router";
 
 // services, features, and other libraries
-import { Duration, Option } from "effect";
-import { Result, useAtomSet, useAtomSubscribe, useAtomValue } from "@effect-atom/atom-react";
+import { Option } from "effect";
+import { useAtomSet, useAtomValue } from "@effect/atom-react";
 
 // components
-import { Button } from "@/components/ui/custom/button";
+import { Button } from "@base-ui/react";
 
 // assets
-import { ArrowLeftCircleIcon, XCircleIcon } from "@heroicons/react/24/outline";
+import { HandThumbDownIcon, HandThumbUpIcon, XCircleIcon } from "@heroicons/react/24/solid";
 import { Loader2 } from "lucide-react";
 
 // types
 import type { Field } from "@lucas-barake/effect-form-react";
 import type { BuiltForm } from "@lucas-barake/effect-form-react/FormReact";
-import type { DurationInput } from "effect/Duration";
-import type { ReactNode } from "react";
+import type { LocalizedContent } from "@/types/shared";
 
 interface FormSubmitProps<TFields extends Field.FieldsRecord, R, A, E, SubmitArgs> {
   form: BuiltForm<TFields, R, A, E, SubmitArgs>;
-  submitIcon: ReactNode;
-  submitText: string;
-  resetText?: string;
-  cancelText?: string;
-  showReset?: boolean;
-  showCancel?: boolean;
-  isStateless?: boolean;
-  cooldown?: DurationInput;
-  onClearedForm?: () => void;
+  localizedContent: LocalizedContent;
 }
 
-export function FormSubmit<TFields extends Field.FieldsRecord, R, A, E, SubmitArgs>({
-  form,
-  submitIcon,
-  submitText,
-  resetText = "Clear Form",
-  cancelText = "Cancel and Go Back",
-  showReset = true,
-  showCancel = true,
-  isStateless = false,
-  cooldown = 0,
-  onClearedForm,
-}: FormSubmitProps<TFields, R, A, E, SubmitArgs>) {
+export function FormSubmit<TFields extends Field.FieldsRecord, R, A, E, SubmitArgs>({ form, localizedContent }: FormSubmitProps<TFields, R, A, E, SubmitArgs>) {
   // Get the form context
   const isDirty = useAtomValue(form.isDirty);
   const { waiting } = useAtomValue(form.submit);
@@ -54,93 +31,45 @@ export function FormSubmit<TFields extends Field.FieldsRecord, R, A, E, SubmitAr
   const reset = useAtomSet(form.reset);
 
   // To be able to send the user back after canceling
-  const { back } = useRouter();
-
-  // Add a simple cooling down state
-  const [isCoolingDown, setIsCoolingDown] = useState(false);
-
-  // Decode the duration safely once (handles numbers, "9 seconds", "1 millis", etc.)
-  const cooldownMillis = Duration.toMillis(Duration.decode(cooldown));
-
-  // Begin the cooldown only after the form has been successfully submitted
-  useAtomSubscribe(
-    form.submit,
-    (result) => {
-      if (Result.isSuccess(result)) {
-        // Make sure the cooldown duration has been actually requested
-        if (cooldownMillis > 0) setIsCoolingDown(true);
-      }
-    },
-    { immediate: false }
-  );
-
-  // Reset the cooling down state
-  useEffect(() => {
-    if (isCoolingDown) {
-      const timer = setTimeout(() => setIsCoolingDown(false), cooldownMillis);
-      return () => clearTimeout(timer);
-    }
-  }, [isCoolingDown, cooldownMillis]);
+  const router = useRouter();
 
   // Determine allowance to submit the form
   const hasSubmittedSuccessfully = Option.isSome(lastSubmittedValues);
-  const canSubmit = isStateless ? !waiting && !isCoolingDown : isDirty && !waiting && !isCoolingDown && (hasChangedSinceSubmit || !hasSubmittedSuccessfully);
+  const canSubmit = isDirty && !waiting && (hasChangedSinceSubmit || !hasSubmittedSuccessfully);
 
   return (
     <section className="flex flex-wrap gap-3 *:flex-1 md:gap-6">
-      <Button type="submit" disabled={!canSubmit}>
-        {waiting ? <Loader2 className="size-9 animate-spin" /> : <>{submitIcon}</>}
-        {submitText}
+      <Button className="button" type="submit" disabled={!canSubmit}>
+        {waiting ? <Loader2 className="size-9 animate-spin" /> : <HandThumbUpIcon className="size-9" />}
+        {waiting ? localizedContent["formSubmit"]["sending"] : localizedContent["formSubmit"]["send"]}
       </Button>
-      {showReset && (
-        <Button
-          type="button"
-          variant="destructive"
-          onClick={() => {
-            reset();
-            onClearedForm?.();
-          }}
-        >
-          <XCircleIcon className="size-9" />
-          {resetText}
-        </Button>
-      )}
-      {showCancel && (
-        <Button type="button" variant="secondary" onClick={() => back()}>
-          <ArrowLeftCircleIcon className="size-9" />
-          {cancelText}
-        </Button>
-      )}
+      <Button className="button border-destructive-foreground text-destructive-foreground hover:shadow-destructive-foreground" onClick={() => reset()}>
+        <XCircleIcon className="size-9" />
+        {localizedContent["formSubmit"]["reset"]}
+      </Button>
+      <Button className="button border-secondary-foreground text-secondary-foreground hover:shadow-secondary-foreground" onClick={() => router.history.back()}>
+        <HandThumbDownIcon className="size-9" />
+        {localizedContent["formSubmit"]["cancel"]}
+      </Button>
     </section>
   );
 }
 
-export function FormSubmitSkeleton<TFields extends Field.FieldsRecord, R, A, E, SubmitArgs>({
-  submitIcon,
-  submitText,
-  resetText = "Clear Form",
-  cancelText = "Cancel and Go Back",
-  showReset = true,
-  showCancel = true,
-}: Omit<FormSubmitProps<TFields, R, A, E, SubmitArgs>, "form">) {
+export function FormSubmitSkeleton() {
   return (
     <section className="flex flex-wrap gap-3 *:flex-1 md:gap-6">
-      <Button type="submit" disabled>
-        {submitIcon}
-        {submitText}
+      <Button className="button" type="submit" disabled>
+        <HandThumbUpIcon className="size-9" />
+        &nbsp;
       </Button>
-      {showReset && (
-        <Button type="button" variant="destructive" disabled>
-          <XCircleIcon className="size-9" />
-          {resetText}
-        </Button>
-      )}
-      {showCancel && (
-        <Button type="button" variant="secondary" disabled>
-          <ArrowLeftCircleIcon className="size-9" />
-          {cancelText}
-        </Button>
-      )}
+      <Button className="button border-destructive-foreground text-destructive-foreground hover:shadow-destructive-foreground" disabled>
+        <XCircleIcon className="size-9" />
+        &nbsp;
+      </Button>
+      <Button className="button border-secondary-foreground text-secondary-foreground hover:shadow-secondary-foreground" disabled>
+        <HandThumbDownIcon className="size-9" />
+        &nbsp;
+      </Button>
     </section>
   );
 }

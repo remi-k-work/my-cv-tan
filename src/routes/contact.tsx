@@ -8,7 +8,7 @@ import { getLang } from "@/server/i18n.functions";
 
 // components
 import PageTitle from "@/components/PageTitle";
-import ContactForm from "@/components/ContactForm";
+import ContactForm from "@/components/contact-form";
 import ContactMap from "@/components/ContactMap";
 
 export const Route = createFileRoute("/contact")({
@@ -28,7 +28,7 @@ function ContactPage() {
       <PageTitle titleTheme={getRandomInt(0, 2)} pathname="/contact" allPageTitles={allPageTitles} />
       <article className="grid auto-rows-fr grid-cols-1 gap-4 xl:grid-cols-2">
         <section className="rounded-xl bg-clr-primary-800 p-4">
-          <ContactForm preferredLang={lang} localizedContent={localizedContent} />
+          <ContactForm preferredLanguage={lang} localizedContent={localizedContent} />
         </section>
         <section className="rounded-xl bg-clr-primary-800 p-4">
           <ContactMap localizedContent={localizedContent} />
