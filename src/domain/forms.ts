@@ -21,7 +21,9 @@ export const contactFormBuilder = (preferredLanguage: PreferredLanguage) =>
         if (!(yield* isCaptchaValid({ captchaInput })))
           return { path: ["captchaInput"], issue: preferredLanguage === "en" ? "Entered captcha is invalid" : "Wpisana captcha jest nieprawidłowa" };
       }).pipe(
-        Effect.tapError(Effect.logError),
-        Effect.orElseSucceed(() => undefined)
+        Effect.orElseSucceed(() => ({
+          path: ["captchaInput"],
+          issue: preferredLanguage === "en" ? "Something went wrong, please try again later" : "Wystąpił błąd, spróbuj ponownie później",
+        }))
       )
     );

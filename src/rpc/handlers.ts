@@ -1,3 +1,5 @@
+import "@tanstack/react-start/server-only";
+
 // services, features, and other libraries
 import { Effect, Layer } from "effect";
 import { RpcSerialization, RpcServer } from "effect/unstable/rpc";
@@ -13,7 +15,7 @@ const RpcMainLayer = RpcMain.toLayer({
       yield* Effect.log({ captchaInput });
       // const { getCaptchaString } = yield* Captcha;
       return yield* Effect.succeed(false);
-      return yield* Effect.succeed(captchaInput === getCaptchaString);
+      // return yield* Effect.succeed(captchaInput === getCaptchaString);
     }),
 
   // contactForm: ({ name, email, subject, message }) =>
@@ -21,7 +23,7 @@ const RpcMainLayer = RpcMain.toLayer({
   //     yield* Effect.sleep(1000);
   //     yield* Effect.log({ name, email, subject, message });
   //   }),
-});
+}).pipe(Layer.provide(Captcha.layer));
 
 const RpcLayer = RpcServer.layerHttp({
   group: RpcMain,
