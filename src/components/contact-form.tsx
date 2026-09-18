@@ -33,7 +33,6 @@ const contactForm = (preferredLanguage: PreferredLanguage) =>
       message: TextAreaInput,
       captchaInput: TextInput,
     },
-    // oxlint-disable-next-line no-empty-pattern
     onSubmit: (_, { decoded: { name, email, subject, message, captchaInput } }) =>
       Effect.gen(function* () {
         yield* Effect.sleep(2000);

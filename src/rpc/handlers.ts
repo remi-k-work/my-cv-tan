@@ -3,14 +3,24 @@ import { Effect, Layer } from "effect";
 import { RpcSerialization, RpcServer } from "effect/unstable/rpc";
 import { HttpServer, HttpRouter } from "effect/unstable/http";
 import { RpcMain } from "./requests";
+import { Captcha } from "@/services/captcha";
+import { RpcLoggerLive } from "@/services/rpc-logger";
 
 const RpcMainLayer = RpcMain.toLayer({
   isCaptchaValid: ({ captchaInput }) =>
     Effect.gen(function* () {
-      yield* Effect.sleep(1000);
-      yield* Effect.log(captchaInput);
-      return yield* Effect.succeed(captchaInput === "123456");
+      // Check the captcha solution stored in the sealed session cookie
+      yield* Effect.log({ captchaInput });
+      // const { getCaptchaString } = yield* Captcha;
+      return yield* Effect.succeed(false);
+      return yield* Effect.succeed(captchaInput === getCaptchaString);
     }),
+
+  // contactForm: ({ name, email, subject, message }) =>
+  //   Effect.gen(function* () {
+  //     yield* Effect.sleep(1000);
+  //     yield* Effect.log({ name, email, subject, message });
+  //   }),
 });
 
 const RpcLayer = RpcServer.layerHttp({
@@ -19,6 +29,6 @@ const RpcLayer = RpcServer.layerHttp({
   protocol: "http",
   disableFatalDefects: true,
   disableTracing: true,
-}).pipe(Layer.provide(Layer.mergeAll(RpcMainLayer, RpcSerialization.layerSchemaBinary(), HttpServer.layerServices)));
+}).pipe(Layer.provide(Layer.mergeAll(RpcMainLayer, RpcSerialization.layerSchemaBinary(), HttpServer.layerServices, RpcLoggerLive)));
 
 export const handler = HttpRouter.toWebHandler(RpcLayer, { disableLogger: true });

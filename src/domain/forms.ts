@@ -20,5 +20,8 @@ export const contactFormBuilder = (preferredLanguage: PreferredLanguage) =>
         const { isCaptchaValid } = yield* RpcMainClient;
         if (!(yield* isCaptchaValid({ captchaInput })))
           return { path: ["captchaInput"], issue: preferredLanguage === "en" ? "Entered captcha is invalid" : "Wpisana captcha jest nieprawidłowa" };
-      }).pipe(Effect.orElseSucceed(() => undefined))
+      }).pipe(
+        Effect.tapError(Effect.logError),
+        Effect.orElseSucceed(() => undefined)
+      )
     );
