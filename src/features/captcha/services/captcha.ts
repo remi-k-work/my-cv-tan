@@ -6,7 +6,7 @@ import { createCaptchaSvg, getCaptchaSession, setCaptchaSession } from "@/featur
 import { PERMITTED_CHARS, STRENGTH } from "@/features/captcha/domain";
 
 export class Captcha extends Context.Service<Captcha>()("Captcha", {
-  make: Effect.succeed(() => {
+  make: Effect.sync(() => {
     const getCaptchaString = Effect.promise(() => getCaptchaSession());
     const setCaptchaString = Effect.fn("setCaptchaString")((captchaString: string) => Effect.promise(() => setCaptchaSession({ data: { captchaString } })));
     const createNewCaptcha = Effect.gen(function* () {

@@ -7,6 +7,7 @@ import { useAtomSet } from "@effect/atom-react";
 import { FormReact } from "@lucas-barake/effect-form-react";
 import { contactFormBuilder } from "@/features/contact-me/domain/forms";
 import { RuntimeAtom } from "@/lib/runtime-client";
+import { RpcMainClient } from "@/rpc/client";
 import useContactFormFeedback from "@/hooks/useContactFormFeedback";
 
 // components
@@ -33,11 +34,10 @@ const contactForm = (preferredLanguage: PreferredLanguage) =>
       message: TextAreaInput,
       captchaInput: TextInput,
     },
-    onSubmit: (_, { decoded: { name, email, subject, message, captchaInput } }) =>
+    onSubmit: (_, { decoded: { name, email, subject, message } }) =>
       Effect.gen(function* () {
-        yield* Effect.sleep(2000);
-        yield* Effect.log("Contact form submitted");
-        yield* Effect.log({ name, email, subject, message, captchaInput });
+        const { contactForm } = yield* RpcMainClient;
+        yield* contactForm({ preferredLanguage, name, email, subject, message });
       }),
   });
 
