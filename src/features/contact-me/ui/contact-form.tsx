@@ -5,13 +5,13 @@ import { useMemo } from "react";
 import { Effect } from "effect";
 import { useAtomSet, useAtomValue } from "@effect/atom-react";
 import { FormReact } from "@lucas-barake/effect-form-react";
-import { contactFormBuilder } from "@/domain/forms";
+import { contactFormBuilder } from "@/features/contact-me/domain/forms";
 import { RuntimeAtom } from "@/lib/runtime-client";
 import useContactFormFeedback from "@/hooks/useContactFormFeedback";
 
 // components
 import { FormSubmit, TextAreaInput, TextInput } from "@/components/form";
-import Captcha from "@/features/auth/components/Captcha";
+import { Captcha } from "@/features/captcha/ui/captcha";
 
 // types
 import type { PreferredLanguage } from "@/domain";
@@ -41,7 +41,7 @@ const contactForm = (preferredLanguage: PreferredLanguage) =>
       }),
   });
 
-export default function ContactForm({ preferredLanguage, localizedContent }: ContactFormProps) {
+export function ContactForm({ preferredLanguage, localizedContent }: ContactFormProps) {
   // Get the form context
   const contactFormL = useMemo(() => contactForm(preferredLanguage), [preferredLanguage]);
   const submit = useAtomSet(contactFormL.submit);
@@ -93,7 +93,7 @@ export default function ContactForm({ preferredLanguage, localizedContent }: Con
           placeholder={localizedContent["contactForm"]["placeholderMessage"]}
         />
         <br />
-        <Captcha captchaName="captcha" />
+        <Captcha />
         <br />
         <contactFormL.captchaInput
           label={localizedContent["contactForm"]["labelCaptcha"]}

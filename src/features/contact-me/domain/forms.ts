@@ -5,7 +5,7 @@ import { RpcMainClient } from "@/rpc/client";
 import { CaptchaInputField, EmailField, MessageField, NameField, SubjectField } from ".";
 
 // types
-import type { PreferredLanguage } from ".";
+import type { PreferredLanguage } from "@/domain";
 
 export const contactFormBuilder = (preferredLanguage: PreferredLanguage) =>
   FormBuilder.empty

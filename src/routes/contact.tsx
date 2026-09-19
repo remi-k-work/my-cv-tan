@@ -8,8 +8,8 @@ import { getLang } from "@/server/i18n.functions";
 
 // components
 import PageTitle from "@/components/PageTitle";
-import ContactForm from "@/components/contact-form";
-import ContactMap from "@/components/ContactMap";
+import { ContactForm } from "@/features/contact-me/ui/contact-form";
+import { ContactMap } from "@/features/contact-me/ui/contact-map";
 
 export const Route = createFileRoute("/contact")({
   loader: async () => {

@@ -6,7 +6,7 @@ import { getRandomInt } from "@/lib/helpers";
 import { useCaptchaSession } from "@/server/session";
 
 // constants
-import { CAPTCHA_HEIGHT, CAPTCHA_WIDTH } from "@/features/auth/captcha";
+import { CAPTCHA_HEIGHT, CAPTCHA_WIDTH } from "@/features/captcha/domain";
 
 // Generic browser font stacks: the SVG renders client-side, so letterforms
 // come from the viewer's system. Rotation, offsets, colors and background
@@ -50,12 +50,10 @@ function renderLetters(captchaString: string): string {
   return out;
 }
 
-export const Route = createFileRoute("/api/auth/captcha/$name")({
+export const Route = createFileRoute("/api/auth/captcha")({
   server: {
     handlers: {
-      GET: async ({ params }) => {
-        const { name } = params;
-
+      GET: async () => {
         const permittedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         const strength = 6;
         let captchaString = "";
@@ -63,7 +61,7 @@ export const Route = createFileRoute("/api/auth/captcha/$name")({
           captchaString += permittedChars[getRandomInt(0, permittedChars.length - 1)];
         }
 
-        const session = await useCaptchaSession(name);
+        const session = await useCaptchaSession("captcha");
         await session.update({ captchaString });
 
         const svg =

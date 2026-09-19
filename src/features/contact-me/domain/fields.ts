@@ -3,10 +3,10 @@ import { Schema } from "effect";
 import { Field } from "@lucas-barake/effect-form-react";
 
 // types
-import type { PreferredLanguage } from ".";
+import type { PreferredLanguage } from "@/domain";
 
 // constants
-import { EMAIL_REGEX } from ".";
+import { EMAIL_REGEX } from "@/domain";
 
 export const NameField = <K extends string = "name">(preferredLanguage: PreferredLanguage = "en", key: K = "name" as K) =>
   preferredLanguage === "en"

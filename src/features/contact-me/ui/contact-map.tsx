@@ -4,7 +4,7 @@ import { Suspense, lazy } from "react";
 // assets
 import avatar from "@/assets/avatar.jpg";
 
-const ReactLeaflet = lazy(() => import("@/components/ReactLeaflet"));
+const ReactLeaflet = lazy(() => import("@/features/contact-me/ui/react-leaflet"));
 
 // types
 import type { LocalizedContent } from "@/types/shared";
@@ -13,7 +13,7 @@ interface ContactMapProps {
   localizedContent: LocalizedContent;
 }
 
-export default function ContactMap({ localizedContent }: ContactMapProps) {
+export function ContactMap({ localizedContent }: ContactMapProps) {
   return (
     <div className="relative z-0 mx-auto size-full max-w-4xl">
       <Suspense fallback={<div className="size-full min-h-64 animate-pulse rounded-xl" />}>
