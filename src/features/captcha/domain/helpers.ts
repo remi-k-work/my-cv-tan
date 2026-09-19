@@ -4,7 +4,7 @@ import { Effect, Random } from "effect";
 // constants
 import { CAPTCHA_HEIGHT, CAPTCHA_WIDTH, LETTER_FONTS } from ".";
 
-export const randomBackground = Effect.gen(function* () {
+const randomBackground = Effect.gen(function* () {
   const r = yield* Random.nextIntBetween(125, 175);
   const g = yield* Random.nextIntBetween(125, 175);
   const b = yield* Random.nextIntBetween(125, 175);
@@ -28,7 +28,7 @@ export const randomBackground = Effect.gen(function* () {
   return `<rect width="${CAPTCHA_WIDTH}" height="${CAPTCHA_HEIGHT}" fill="rgb(${r},${g},${b})"/>${rects}`;
 });
 
-export const renderLetters = Effect.fn("renderLetters")(function* (captchaString: string) {
+const renderLetters = Effect.fn("renderLetters")(function* (captchaString: string) {
   let out = "";
   for (let i = 0; i < captchaString.length; i++) {
     const font = LETTER_FONTS[yield* Random.nextIntBetween(0, LETTER_FONTS.length - 1)];
@@ -38,5 +38,13 @@ export const renderLetters = Effect.fn("renderLetters")(function* (captchaString
     const fill = (yield* Random.nextIntBetween(0, 1)) === 0 ? "rgb(0,0,0)" : "rgb(255,255,255)";
     out += `<text x="${x}" y="${y}" font-family="${font},sans-serif" font-size="25" font-weight="bold" text-anchor="middle" fill="${fill}" transform="rotate(${rot} ${x} ${y})">${captchaString[i]}</text>`;
   }
+
   return out;
+});
+
+export const createCaptchaSvg = Effect.fn("createCaptchaSvg")(function* (captchaString: string) {
+  return (
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${CAPTCHA_WIDTH}" height="${CAPTCHA_HEIGHT}" viewBox="0 0 ${CAPTCHA_WIDTH} ${CAPTCHA_HEIGHT}">` +
+    `${yield* randomBackground}${yield* renderLetters(captchaString)}</svg>`
+  );
 });

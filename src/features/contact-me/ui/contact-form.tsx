@@ -3,7 +3,7 @@ import { useMemo } from "react";
 
 // services, features, and other libraries
 import { Effect } from "effect";
-import { useAtomSet, useAtomValue } from "@effect/atom-react";
+import { useAtomSet } from "@effect/atom-react";
 import { FormReact } from "@lucas-barake/effect-form-react";
 import { contactFormBuilder } from "@/features/contact-me/domain/forms";
 import { RuntimeAtom } from "@/lib/runtime-client";

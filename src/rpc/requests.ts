@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { Schema } from "effect";
 import { Rpc, RpcGroup } from "effect/unstable/rpc";
-import { CaptchaInputField, EmailField, MessageField, NameField, PreferredLanguage, SubjectField } from "@/domain";
+import { CaptchaInputField, EmailField, MessageField, NameField, SubjectField } from "@/features/contact-me/domain";
 import { RpcLogger } from "@/services/rpc-logger";
 
 export class RpcMain extends RpcGroup.make(

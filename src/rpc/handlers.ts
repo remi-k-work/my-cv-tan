@@ -12,10 +12,8 @@ const RpcMainLayer = RpcMain.toLayer({
   isCaptchaValid: ({ captchaInput }) =>
     Effect.gen(function* () {
       // Check the captcha solution stored in the sealed session cookie
-      yield* Effect.log({ captchaInput });
-      // const { getCaptchaString } = yield* Captcha;
-      return yield* Effect.succeed(false);
-      // return yield* Effect.succeed(captchaInput === getCaptchaString);
+      const { getCaptchaString } = yield* Captcha;
+      return yield* Effect.succeed(captchaInput === getCaptchaString);
     }),
 
   // contactForm: ({ name, email, subject, message }) =>
