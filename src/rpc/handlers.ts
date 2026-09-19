@@ -5,7 +5,7 @@ import { Effect, Layer } from "effect";
 import { RpcSerialization, RpcServer } from "effect/unstable/rpc";
 import { HttpServer, HttpRouter } from "effect/unstable/http";
 import { RpcMain } from "./requests";
-import { Captcha } from "@/services/captcha";
+import { Captcha } from "@/features/captcha/services/captcha";
 import { RpcLoggerLive } from "@/services/rpc-logger";
 
 const RpcMainLayer = RpcMain.toLayer({
