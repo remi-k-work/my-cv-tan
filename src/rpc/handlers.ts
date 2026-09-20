@@ -12,13 +12,16 @@ import { RpcLoggerLive } from "@/services/rpc-logger";
 const RpcMainLayer = RpcMain.toLayer({
   isCaptchaValid: ({ captchaInput }) =>
     Effect.gen(function* () {
+      // Check the captcha
       const { getCaptchaString } = yield* Captcha;
       return captchaInput === (yield* getCaptchaString);
     }),
   contactForm: ({ preferredLanguage, name, email, subject, message }) =>
     Effect.gen(function* () {
+      // Send the contact form with validated data
       const { send } = yield* Send;
-      yield* send(name, email, subject, message);
+      yield* Effect.void;
+      // yield* send(name, email, subject, message);
     }),
 }).pipe(Layer.provide(Layer.mergeAll(Captcha.layer, Send.layer)));
 

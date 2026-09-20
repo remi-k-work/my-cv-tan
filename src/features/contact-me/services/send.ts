@@ -40,8 +40,7 @@ export class Send extends Context.Service<Send>()("Send", {
           })
         );
       },
-      Effect.mapError((cause) => (Schema.is(SendError)(cause) ? cause : new SendError({ cause }))),
-      Effect.tapError(Effect.logError)
+      Effect.mapError((cause) => (Schema.is(SendError)(cause) ? cause : new SendError({ cause })))
     );
 
     return { send } as const;

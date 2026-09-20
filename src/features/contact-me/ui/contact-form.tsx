@@ -8,7 +8,7 @@ import { FormReact } from "@lucas-barake/effect-form-react";
 import { contactFormBuilder } from "@/features/contact-me/domain/forms";
 import { RuntimeAtom } from "@/lib/runtime-client";
 import { RpcMainClient } from "@/rpc/client";
-import useContactFormFeedback from "@/hooks/useContactFormFeedback";
+import { useSubmitToast } from "@/components/form";
 
 // components
 import { FormSubmit, TextAreaInput, TextInput } from "@/components/form";
@@ -46,8 +46,8 @@ export function ContactForm({ preferredLanguage, localizedContent }: ContactForm
   const contactFormL = useMemo(() => contactForm(preferredLanguage), [preferredLanguage]);
   const submit = useAtomSet(contactFormL.submit);
 
-  // Provide feedback to the user regarding contact form actions
-  // useContactFormFeedback(formState, localizedContent, reset);
+  // Provide feedback to the user regarding this form actions
+  useSubmitToast(contactFormL, localizedContent);
 
   return (
     <contactFormL.Initialize defaultValues={{ name: "", email: "", subject: "", message: "", captchaInput: "" }}>
