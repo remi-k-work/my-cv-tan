@@ -13,22 +13,21 @@ import { HandThumbDownIcon, HandThumbUpIcon, XCircleIcon } from "@heroicons/reac
 import { Loader2 } from "lucide-react";
 
 // types
-import type { Field } from "@lucas-barake/effect-form-react";
-import type { BuiltForm } from "@lucas-barake/effect-form-react/FormReact";
+import type { ContactForm } from "@/features/contact-me/domain";
 import type { LocalizedContent } from "@/types/shared";
 
-interface FormSubmitProps<TFields extends Field.FieldsRecord, R, A, E, SubmitArgs> {
-  form: BuiltForm<TFields, R, A, E, SubmitArgs>;
+interface FormSubmitProps {
+  contactForm: ContactForm;
   localizedContent: LocalizedContent;
 }
 
-export function FormSubmit<TFields extends Field.FieldsRecord, R, A, E, SubmitArgs>({ form, localizedContent }: FormSubmitProps<TFields, R, A, E, SubmitArgs>) {
+export function FormSubmit({ contactForm, localizedContent }: FormSubmitProps) {
   // Get the form context
-  const isDirty = useAtomValue(form.isDirty);
-  const { waiting } = useAtomValue(form.submit);
-  const hasChangedSinceSubmit = useAtomValue(form.hasChangedSinceSubmit);
-  const lastSubmittedValues = useAtomValue(form.lastSubmittedValues);
-  const reset = useAtomSet(form.reset);
+  const isDirty = useAtomValue(contactForm.isDirty);
+  const { waiting } = useAtomValue(contactForm.submit);
+  const hasChangedSinceSubmit = useAtomValue(contactForm.hasChangedSinceSubmit);
+  const lastSubmittedValues = useAtomValue(contactForm.lastSubmittedValues);
+  const reset = useAtomSet(contactForm.reset);
 
   // To be able to send the user back after canceling
   const router = useRouter();

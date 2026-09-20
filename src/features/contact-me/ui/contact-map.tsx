@@ -4,7 +4,7 @@ import { Suspense, lazy } from "react";
 // assets
 import avatar from "@/assets/avatar.jpg";
 
-const ReactLeaflet = lazy(() => import("@/features/contact-me/ui/react-leaflet"));
+const ReactLeaflet = lazy(() => import("./react-leaflet"));
 
 // types
 import type { LocalizedContent } from "@/types/shared";

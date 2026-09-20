@@ -1,13 +1,18 @@
 // services, features, and other libraries
 import { Effect } from "effect";
-import { FormBuilder } from "@lucas-barake/effect-form-react";
+import { FormBuilder, FormReact } from "@lucas-barake/effect-form-react";
 import { RpcMainClient } from "@/rpc/client";
+import { RuntimeAtom } from "@/lib/runtime-client";
 import { CaptchaInputField, EmailField, MessageField, NameField, SubjectField } from ".";
+
+// components
+import { TextAreaInput, TextInput } from "@/components/form";
 
 // types
 import type { PreferredLanguage } from "@/domain";
+export type ContactForm = ReturnType<typeof contactForm>;
 
-export const contactFormBuilder = (preferredLanguage: PreferredLanguage) =>
+const contactFormBuilder = (preferredLanguage: PreferredLanguage) =>
   FormBuilder.empty
     .addField(NameField(preferredLanguage))
     .addField(EmailField(preferredLanguage))
@@ -27,3 +32,20 @@ export const contactFormBuilder = (preferredLanguage: PreferredLanguage) =>
         }))
       )
     );
+
+export const contactForm = (preferredLanguage: PreferredLanguage) =>
+  FormReact.make(contactFormBuilder(preferredLanguage), {
+    runtime: RuntimeAtom,
+    fields: {
+      name: TextInput,
+      email: TextInput,
+      subject: TextInput,
+      message: TextAreaInput,
+      captchaInput: TextInput,
+    },
+    onSubmit: (_, { decoded: { name, email, subject, message } }) =>
+      Effect.gen(function* () {
+        const { contactForm } = yield* RpcMainClient;
+        yield* contactForm({ name, email, subject, message });
+      }),
+  });

@@ -4,7 +4,7 @@ import { useRef, useState, useEffect } from "react";
 // other libraries
 import TypeWriter from "@/lib/TypeWriter";
 
-export default function useTypeWriter(fullText: string) {
+export function useTypeWriter(fullText: string) {
   // State to track the animation status, causing minimal re-renders
   const [isRunning, setIsRunning] = useState(true);
 

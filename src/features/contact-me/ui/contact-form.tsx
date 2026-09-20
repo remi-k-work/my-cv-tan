@@ -2,17 +2,14 @@
 import { useMemo } from "react";
 
 // services, features, and other libraries
-import { Effect } from "effect";
 import { useAtomSet } from "@effect/atom-react";
-import { FormReact } from "@lucas-barake/effect-form-react";
-import { contactFormBuilder } from "@/features/contact-me/domain/forms";
-import { RuntimeAtom } from "@/lib/runtime-client";
-import { RpcMainClient } from "@/rpc/client";
-import { useSubmitToast } from "@/components/form";
+import { contactForm } from "@/features/contact-me/domain";
+import { useSubmitToast } from "@/features/contact-me/hooks";
 
 // components
-import { FormSubmit, TextAreaInput, TextInput } from "@/components/form";
 import { Captcha } from "@/features/captcha/ui/captcha";
+import { SubmitStatus } from "./submit-status";
+import { FormSubmit } from "./form-submit";
 
 // types
 import type { PreferredLanguage } from "@/domain";
@@ -22,24 +19,6 @@ interface ContactFormProps {
   preferredLanguage: PreferredLanguage;
   localizedContent: LocalizedContent;
 }
-
-// constants
-const contactForm = (preferredLanguage: PreferredLanguage) =>
-  FormReact.make(contactFormBuilder(preferredLanguage), {
-    runtime: RuntimeAtom,
-    fields: {
-      name: TextInput,
-      email: TextInput,
-      subject: TextInput,
-      message: TextAreaInput,
-      captchaInput: TextInput,
-    },
-    onSubmit: (_, { decoded: { name, email, subject, message } }) =>
-      Effect.gen(function* () {
-        const { contactForm } = yield* RpcMainClient;
-        yield* contactForm({ preferredLanguage, name, email, subject, message });
-      }),
-  });
 
 export function ContactForm({ preferredLanguage, localizedContent }: ContactFormProps) {
   // Get the form context
@@ -104,7 +83,8 @@ export function ContactForm({ preferredLanguage, localizedContent }: ContactForm
           placeholder={localizedContent["contactForm"]["placeholderCaptcha"]}
         />
         <br />
-        <FormSubmit form={contactFormL} localizedContent={localizedContent} />
+        <SubmitStatus contactForm={contactFormL} localizedContent={localizedContent} />
+        <FormSubmit contactForm={contactFormL} localizedContent={localizedContent} />
       </form>
     </contactFormL.Initialize>
   );

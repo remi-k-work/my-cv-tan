@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { cn } from "@/lib/utils";
-import useTypeWriter from "@/hooks/useTypeWriter";
+import { useTypeWriter } from "@/hooks";
 
 // types
 interface TypeWriterOutputProps {

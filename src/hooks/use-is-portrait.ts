@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 
 // Determine whether the current screen orientation is portrait
-export default function useIsPortrait() {
+export function useIsPortrait() {
   const [isPortrait, setIsPortrait] = useState<boolean | undefined>(undefined);
 
   useEffect(() => {

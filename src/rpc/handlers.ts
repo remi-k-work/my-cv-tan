@@ -16,7 +16,7 @@ const RpcMainLayer = RpcMain.toLayer({
       const { getCaptchaString } = yield* Captcha;
       return captchaInput === (yield* getCaptchaString);
     }),
-  contactForm: ({ preferredLanguage, name, email, subject, message }) =>
+  contactForm: ({ name, email, subject, message }) =>
     Effect.gen(function* () {
       // Send the contact form with validated data
       const { send } = yield* Send;
