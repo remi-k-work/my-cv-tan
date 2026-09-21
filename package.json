@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "start": "vite preview",
     "lint": "oxlint",
+    "test": "vitest --reporter=verbose",
     "type-check": "tsc --noEmit",
     "upload": "npm run build && wrangler versions upload --preview-alias staging",
     "deploy": "npm run build && wrangler deploy",
