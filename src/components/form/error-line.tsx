@@ -2,12 +2,15 @@
 import { motion } from "motion/react";
 
 // assets
-import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+import { ExclamationTriangleIcon } from "@heroicons/react/24/solid";
 
 // types
 interface ErrorLineProps {
   message: string;
 }
+
+// constants
+import { SPRINGS } from "@/lib/motion-tokens";
 
 export function ErrorLine({ message }: ErrorLineProps) {
   return (
@@ -15,10 +18,10 @@ export function ErrorLine({ message }: ErrorLineProps) {
       role="alert"
       className="flex max-w-none items-center gap-2 overflow-clip rounded-b-xl border border-destructive-foreground px-3 py-2 text-destructive-foreground"
       layout
-      initial={{ opacity: 0, y: "-50%", height: 0 }}
+      initial={{ opacity: 0, y: "-25%", height: 0 }}
       animate={{ opacity: 1, y: "0%", height: "auto" }}
-      exit={{ opacity: 0, y: "-50%", height: 0 }}
-      transition={{ default: { type: "spring", visualDuration: 1, bounce: 0.5 }, opacity: { ease: "easeOut" }, height: { ease: "easeOut" } }}
+      exit={{ opacity: 0, y: "-25%", height: 0 }}
+      transition={SPRINGS.gentle}
     >
       <ExclamationTriangleIcon className="size-9 flex-none" />
       {message}

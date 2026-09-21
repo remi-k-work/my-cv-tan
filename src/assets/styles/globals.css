@@ -61,7 +61,7 @@
 
 @layer components {
   .button {
-    @apply flex shrink-0 items-center justify-center gap-2 rounded-md border bg-primary px-4 py-2 font-semibold tracking-widest uppercase select-none;
+    @apply flex shrink-0 items-center justify-center gap-2 rounded-xl border bg-primary px-4 py-2 tracking-widest uppercase select-none;
     @apply border-primary-foreground text-primary-foreground hover:shadow-primary-foreground;
     @apply hover:shadow-md;
     @apply active:scale-95 active:shadow-none;
@@ -70,19 +70,19 @@
   }
 
   .label {
-    @apply p-1 text-sm font-semibold tracking-widest text-clr-primary-200 uppercase select-none;
+    @apply p-1 text-sm tracking-widest text-clr-primary-200 uppercase select-none;
     @apply group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50;
     @apply peer-disabled:cursor-not-allowed peer-disabled:opacity-50;
   }
 
   .input {
-    @apply w-full border px-2 py-1 font-normal any-pointer-coarse:text-base;
+    @apply border px-2 py-1 font-normal any-pointer-coarse:text-base;
     @apply disabled:cursor-not-allowed disabled:opacity-50;
     @apply placeholder:text-muted-foreground;
   }
 
   .textarea {
-    @apply flex field-sizing-fixed w-full border px-3 py-2;
+    @apply flex field-sizing-fixed border px-3 py-2;
     @apply disabled:cursor-not-allowed disabled:opacity-50;
     @apply placeholder:text-muted-foreground;
   }
@@ -120,5 +120,9 @@
 
   p {
     @apply max-w-prose text-pretty;
+  }
+
+  form {
+    @apply grid;
   }
 }

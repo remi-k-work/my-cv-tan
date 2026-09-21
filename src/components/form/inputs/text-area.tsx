@@ -32,7 +32,9 @@ export const TextAreaInput: FormReact.FieldComponent<string, TextAreaInputProps>
         </label>
       )}
       <textarea className="textarea" id={id} name={path} value={value} onChange={(ev) => onChange(ev.target.value)} onBlur={onBlur} {...rest} />
-      <AnimatePresence>{Option.isSome(error) && <ErrorLine message={error.value} />}</AnimatePresence>
+      <div className="min-h-6">
+        <AnimatePresence>{Option.isSome(error) && <ErrorLine message={error.value} />}</AnimatePresence>
+      </div>
     </>
   );
 };
@@ -49,6 +51,7 @@ export function TextAreaInputSkeleton({ formName = "global", label, ...rest }: T
         </label>
       )}
       <textarea className="textarea" id={id} name={label} disabled {...rest} />
+      <div className="min-h-6" />
     </>
   );
 }

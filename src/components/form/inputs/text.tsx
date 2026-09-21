@@ -31,7 +31,9 @@ export const TextInput: FormReact.FieldComponent<string, TextInputProps> = ({ fi
         {label}
       </label>
       <Input className="input" id={id} name={path} value={value} onChange={(ev) => onChange(ev.target.value)} onBlur={onBlur} {...rest} />
-      <AnimatePresence>{Option.isSome(error) && <ErrorLine message={error.value} />}</AnimatePresence>
+      <div className="min-h-6">
+        <AnimatePresence>{Option.isSome(error) && <ErrorLine message={error.value} />}</AnimatePresence>
+      </div>
     </>
   );
 };
@@ -46,6 +48,7 @@ export function TextInputSkeleton({ formName = "global", label, ...rest }: TextI
         {label}
       </label>
       <Input className="input" id={id} name={label} disabled {...rest} />
+      <div className="min-h-6" />
     </>
   );
 }

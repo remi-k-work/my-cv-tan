@@ -13,6 +13,9 @@ interface InfoLineProps {
   className?: string;
 }
 
+// constants
+import { MOTION_TOKENS, SPRINGS } from "@/lib/motion-tokens";
+
 export function InfoLine({ message, className }: InfoLineProps) {
   return (
     <AnimatePresence>
@@ -20,12 +23,15 @@ export function InfoLine({ message, className }: InfoLineProps) {
         <motion.p
           role="status"
           aria-live="polite"
-          className={cn("flex max-w-none items-center gap-2 border px-3 py-2 text-muted-foreground", className)}
+          className={cn(
+            "my-3 flex max-w-none items-center justify-center gap-2 border border-destructive-foreground px-3 py-2 text-destructive-foreground",
+            className
+          )}
           layout
-          initial={{ opacity: 0, scale: 0, height: 0 }}
-          animate={{ opacity: 1, scale: 1, height: "auto" }}
-          exit={{ opacity: 0, scale: 0, height: 0 }}
-          transition={{ default: { type: "spring", visualDuration: 1, bounce: 0.5 }, opacity: { ease: "easeOut" }, height: { ease: "easeOut" } }}
+          initial={{ opacity: 0, scale: MOTION_TOKENS.scale.press, y: MOTION_TOKENS.distance.sm }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: MOTION_TOKENS.scale.press, y: MOTION_TOKENS.distance.sm }}
+          transition={SPRINGS.gentle}
         >
           <InformationCircleIcon className="size-9 flex-none" />
           {message}
