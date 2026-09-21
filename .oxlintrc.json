@@ -1,20 +1,15 @@
 {
   "$schema": "./node_modules/@effect/tsgo/oxlint-schema.json",
-  // Effect recommended preset: enables type-aware mode + effecttsgo rules.
-  // See https://effect.website/docs/v4/getting-started/devtools#oxlint
   "extends": [
     "./node_modules/@effect/tsgo/oxlint-presets/recommended.json"
   ],
-  // Vite + TanStack Start scope (adapted from the Next.js setup in wordle):
-  // react + jsx-a11y + typescript + import cover the old eslint flat-config
-  // needs. No nextjs plugin (no Next.js here), no vitest plugin (no tests yet).
-  // Existing `eslint-disable` comments keep working (respected by default).
   "plugins": [
     "eslint",
     "typescript",
     "react",
     "jsx-a11y",
-    "import"
+    "import",
+    "vitest"
   ],
   "categories": {
     "correctness": "error"
@@ -24,9 +19,6 @@
     "node": true,
     "es2023": true
   },
-  // Generated / build outputs. node_modules and .git are ignored by default;
-  // .gitignore is respected automatically (covers dist, .output, .tanstack,
-  // .wrangler, build, .repos, _scratchpad) — listed here to be explicit.
   "ignorePatterns": [
     "dist/**",
     ".output/**",
@@ -64,6 +56,22 @@
     // prop (`children={(field) => ...}`); the rule assumes JSX nesting.
     "react/no-children-prop": "off",
     // --- Architectural Effect guidance; matches Effect's own correctness preset. ---
-    "effecttsgo/any-unknown-in-error-context": "warn"
+    "effecttsgo/any-unknown-in-error-context": "warn",
+    // --- @effect/vitest support ---
+    // Tests use `it.effect(...)`; teach the rule these are test blocks so the
+    // rule keeps working as intended instead of false-positive errors.
+    "vitest/no-standalone-expect": [
+      "error",
+      {
+        "additionalTestBlockFunctions": [
+          "it.effect",
+          "it.live",
+          "it.scoped",
+          "test.effect",
+          "test.live",
+          "test.scoped"
+        ]
+      }
+    ],
   }
 }
