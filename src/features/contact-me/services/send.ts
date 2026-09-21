@@ -4,6 +4,9 @@ import { FetchHttpClient, HttpClient, HttpClientRequest } from "effect/unstable/
 import { SendError } from "@/domain";
 import { SendRequest } from "@/features/contact-me/domain";
 
+// types
+import type { Name, Email, Message, Subject } from "@/features/contact-me/domain";
+
 export class Send extends Context.Service<Send>()("Send", {
   make: Effect.gen(function* () {
     const user_id = yield* Config.Redacted("EMAILJS_PUB_KEY");
@@ -18,12 +21,7 @@ export class Send extends Context.Service<Send>()("Send", {
 
     // Send the contact form with validated data
     const send = Effect.fn("send")(
-      function* (
-        name: (typeof SendRequest)["Type"]["template_params"]["name"],
-        email: (typeof SendRequest)["Type"]["template_params"]["email"],
-        subject: (typeof SendRequest)["Type"]["template_params"]["subject"],
-        message: (typeof SendRequest)["Type"]["template_params"]["message"]
-      ) {
+      function* (name: Name, email: Email, subject: Subject, message: Message) {
         // Execute request
         const sendRequest = SendRequest.make({ user_id, accessToken, template_params: { name, email, subject, message } as const });
         yield* HttpClientRequest.post("/email/send").pipe(

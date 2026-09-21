@@ -1,20 +1,20 @@
 import "@tanstack/react-start/server-only";
 
 // services, features, and other libraries
-import { Effect, Layer } from "effect";
+import { Effect, Layer, Option } from "effect";
 import { RpcSerialization, RpcServer } from "effect/unstable/rpc";
 import { HttpServer, HttpRouter } from "effect/unstable/http";
 import { RpcMain } from "./requests";
-import { Captcha } from "@/features/captcha/services/captcha";
+import { getCaptchaStringFromHeaders } from "@/features/captcha/domain";
 import { Send } from "@/features/contact-me/services/send";
 import { RpcLoggerLive } from "@/services/rpc-logger";
 
 const RpcMainLayer = RpcMain.toLayer({
-  isCaptchaValid: ({ captchaInput }) =>
+  isCaptchaValid: ({ captchaInput }, { headers }) =>
     Effect.gen(function* () {
-      // Check the captcha
-      const { getCaptchaString } = yield* Captcha;
-      return captchaInput === (yield* getCaptchaString);
+      // Check the captcha against the sealed cookie set by the HttpApi captcha endpoint
+      const expected = yield* getCaptchaStringFromHeaders(headers);
+      return Option.isSome(expected) && expected.value === captchaInput;
     }),
   contactForm: ({ name, email, subject, message }) =>
     Effect.gen(function* () {
@@ -23,7 +23,7 @@ const RpcMainLayer = RpcMain.toLayer({
       yield* Effect.void;
       // yield* send(name, email, subject, message);
     }),
-}).pipe(Layer.provide(Layer.mergeAll(Captcha.layer, Send.layer)));
+}).pipe(Layer.provide(Send.layer));
 
 const RpcLayer = RpcServer.layerHttp({
   group: RpcMain,
