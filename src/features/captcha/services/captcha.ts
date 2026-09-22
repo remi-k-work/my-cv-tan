@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Array, Context, Crypto, Effect, Encoding, Layer, Option, Record } from "effect";
+import { Array, Context, Crypto, Effect, Encoding, Layer, Option, Record, String } from "effect";
 import { Cookies, Headers } from "effect/unstable/http";
 import { BrowserCrypto } from "@effect/platform-browser";
 import { commitToCaptcha, verifyCaptchaString } from "@/features/captcha/domain";
@@ -14,9 +14,9 @@ export class Captcha extends Context.Service<Captcha>()("Captcha", {
 
     const generate = Effect.replicateEffect(STRENGTH)(crypto.randomIntBetween(0, PERMITTED_CHARS.length - 1)).pipe(
       Effect.map((indices) =>
-        Array.join(
-          indices.map((index) => PERMITTED_CHARS[index]),
-          ""
+        Option.all(indices.map((index) => String.charAt(PERMITTED_CHARS, index))).pipe(
+          Option.map(Array.join("")),
+          Option.getOrElse(() => "")
         )
       )
     );
