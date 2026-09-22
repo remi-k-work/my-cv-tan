@@ -16,13 +16,13 @@ import UsFlagIcon from "@/assets/icons/UsFlag";
 import PlFlagIcon from "@/assets/icons/PlFlag";
 
 // types
-import type { Lang } from "@/types/shared";
+import type { PreferredLanguage } from "@/domain";
 
 interface LangChangerProps {
-  preferredLang: Lang;
+  preferredLanguage: PreferredLanguage;
 }
 
-export default function LangChanger({ preferredLang }: LangChangerProps) {
+export default function LangChanger({ preferredLanguage }: LangChangerProps) {
   // To display a pending status while the server action is running
   const [isPending, startTransition] = useTransition();
 
@@ -33,14 +33,14 @@ export default function LangChanger({ preferredLang }: LangChangerProps) {
 
   function handleLangToggled() {
     startTransition(async () => {
-      await setLang({ data: preferredLang === "en" ? "pl" : "en" });
+      await setLang({ data: preferredLanguage === "en" ? "pl" : "en" });
       await router.invalidate();
     });
   }
 
   return (
-    <Button className="button" disabled={isPending} title={preferredLang === "en" ? "English" : "Polish"} onClick={handleLangToggled}>
-      {preferredLang && (preferredLang === "en" ? <UsFlagIcon className="size-11" /> : <PlFlagIcon className="size-11" />)}
+    <Button className="button" disabled={isPending} title={preferredLanguage === "en" ? "English" : "Polish"} onClick={handleLangToggled}>
+      {preferredLanguage && (preferredLanguage === "en" ? <UsFlagIcon className="size-11" /> : <PlFlagIcon className="size-11" />)}
     </Button>
   );
 }

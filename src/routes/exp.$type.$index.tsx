@@ -23,25 +23,25 @@ export const Route = createFileRoute("/exp/$type/$index")({
     const validIndex = Number(index);
     if (!Number.isInteger(validIndex) || validIndex < 0) throw notFound();
 
-    const lang = await getLang();
-    const loader = DataLoader.fromLang(lang);
-    const allExperiences = loader.allExperiences();
-    const list = allExperiences[validType === "e" ? 0 : 1];
+    const preferredLanguage = await getLang();
+    const loader = DataLoader.fromLang(preferredLanguage);
+    const experience = loader.experience;
+    const list = experience[validType === "e" ? 0 : 1];
     if (validIndex >= list.length) throw notFound();
 
-    return { validType, validIndex, localizedContent: loader.localizedContent(), allExperiences, allPageTitles: loader.allPageTitles() } as const;
+    return { validType, validIndex, localizedContent: loader.localizedContent, experience, pageTitles: loader.pageTitles } as const;
   },
   component: ExpPage,
 });
 
 function ExpPage() {
   const { modal } = Route.useSearch();
-  const { validType, validIndex, localizedContent, allExperiences, allPageTitles } = Route.useLoaderData();
+  const { validType, validIndex, localizedContent, experience, pageTitles } = Route.useLoaderData();
 
   const details = (
     <>
-      <ExperienceDetailsSeo allExperiences={allExperiences} type={validType} index={validIndex} />
-      <ExperienceDetails localizedContent={localizedContent} allExperiences={allExperiences} type={validType} index={validIndex} />
+      <ExperienceDetailsSeo experience={experience} type={validType} index={validIndex} />
+      <ExperienceDetails localizedContent={localizedContent} experience={experience} type={validType} index={validIndex} />
     </>
   );
 
@@ -53,7 +53,7 @@ function ExpPage() {
 
   return (
     <>
-      <PageTitle titleTheme={getRandomInt(0, 2)} pathname="/" allPageTitles={allPageTitles} />
+      <PageTitle titleTheme={getRandomInt(0, 2)} pathname="/" pageTitles={pageTitles} />
       {details}
     </>
   );

@@ -2,17 +2,17 @@
 import { Fragment } from "react";
 
 // types
-import type { JobExperience } from "@/types/shared";
+import type { Experience } from "@/types/shared";
 
 interface ExperienceDetailsSeoProps {
-  allExperiences: [JobExperience[], JobExperience[]];
+  experience: [Experience[], Experience[]];
   type: "e" | "p";
   index: number;
 }
 
-export default function ExperienceDetailsSeo({ allExperiences, type, index }: ExperienceDetailsSeoProps) {
-  const experience = allExperiences[type === "e" ? 0 : 1][index];
-  const { year, role, company, txt, skillsUsed, gitHubLink, liveLink, videoLink } = experience;
+export default function ExperienceDetailsSeo({ experience, type, index }: ExperienceDetailsSeoProps) {
+  const experienceT = experience[type === "e" ? 0 : 1][index];
+  const { year, role, company, txt, skillsUsed, gitHubLink, liveLink, videoLink } = experienceT;
 
   return (
     <article className="sr-only">

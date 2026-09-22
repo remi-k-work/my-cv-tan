@@ -6,17 +6,18 @@ import NavItem from "./NavItem";
 import LangChanger from "@/components/LangChanger";
 
 // types
-import type { Lang, LocalizedContent } from "@/types/shared";
+import type { PreferredLanguage } from "@/domain";
+import type { LocalizedContent } from "@/types/shared";
 
 interface HeaderProps {
-  preferredLang: Lang;
+  preferredLanguage: PreferredLanguage;
   localizedContent: LocalizedContent;
 }
 
 // constants
 import { NAV_ITEMS } from "./constants";
 
-export default function Header({ preferredLang, localizedContent }: HeaderProps) {
+export default function Header({ preferredLanguage, localizedContent }: HeaderProps) {
   return (
     <header
       className={cn(
@@ -26,7 +27,7 @@ export default function Header({ preferredLang, localizedContent }: HeaderProps)
         "before:animate-spark-h before:bg-linear-to-r before:from-primary-foreground before:via-accent-foreground before:via-5% before:to-primary-foreground before:to-10% before:bg-size-[200%]",
         "lg:before:fixed lg:before:top-14",
         "max-lg:after:absolute max-lg:after:top-34 max-lg:after:left-0 max-lg:after:-z-1 max-lg:after:h-px max-lg:after:w-full max-lg:after:content-['']",
-        "max-lg:after:animate-spark-h max-lg:after:bg-linear-to-r max-lg:after:from-primary-foreground max-lg:after:via-accent-foreground max-lg:after:via-5% max-lg:after:to-primary-foreground max-lg:after:to-10% max-lg:after:bg-size-[200%] max-lg:after:direction-[reverse]"
+        "max-lg:after:direction-[reverse] max-lg:after:animate-spark-h max-lg:after:bg-linear-to-r max-lg:after:from-primary-foreground max-lg:after:via-accent-foreground max-lg:after:via-5% max-lg:after:to-primary-foreground max-lg:after:to-10% max-lg:after:bg-size-[200%]"
       )}
     >
       <nav
@@ -40,7 +41,7 @@ export default function Header({ preferredLang, localizedContent }: HeaderProps)
         {NAV_ITEMS(localizedContent).map((navItem, index) => (
           <NavItem key={index} {...navItem} animDelay={index ** 2} />
         ))}
-        <LangChanger preferredLang={preferredLang} />
+        <LangChanger preferredLanguage={preferredLanguage} />
       </nav>
     </header>
   );

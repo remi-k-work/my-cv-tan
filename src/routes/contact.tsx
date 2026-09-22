@@ -13,22 +13,22 @@ import { ContactMap } from "@/features/contact-me/ui/contact-map";
 
 export const Route = createFileRoute("/contact")({
   loader: async () => {
-    const lang = await getLang();
-    const loader = DataLoader.fromLang(lang);
-    return { lang, localizedContent: loader.localizedContent(), allPageTitles: loader.allPageTitles() } as const;
+    const preferredLanguage = await getLang();
+    const loader = DataLoader.fromLang(preferredLanguage);
+    return { preferredLanguage, localizedContent: loader.localizedContent, pageTitles: loader.pageTitles } as const;
   },
   component: ContactPage,
 });
 
 function ContactPage() {
-  const { lang, localizedContent, allPageTitles } = Route.useLoaderData();
+  const { preferredLanguage, localizedContent, pageTitles } = Route.useLoaderData();
 
   return (
     <>
-      <PageTitle titleTheme={getRandomInt(0, 2)} pathname="/contact" allPageTitles={allPageTitles} />
+      <PageTitle titleTheme={getRandomInt(0, 2)} pathname="/contact" pageTitles={pageTitles} />
       <article className="grid auto-rows-fr grid-cols-1 gap-4 xl:grid-cols-2">
         <section className="rounded-xl bg-clr-primary-800 p-4">
-          <ContactForm preferredLanguage={lang} localizedContent={localizedContent} />
+          <ContactForm preferredLanguage={preferredLanguage} localizedContent={localizedContent} />
         </section>
         <section className="rounded-xl bg-clr-primary-800 p-4">
           <ContactMap localizedContent={localizedContent} />

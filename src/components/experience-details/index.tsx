@@ -5,11 +5,11 @@ import SkillsUsed from "./SkillsUsed";
 import TypeWriterOutput from "@/components/TypeWriterOutput";
 
 // types
-import type { JobExperience, LocalizedContent } from "@/types/shared";
+import type { Experience, LocalizedContent } from "@/types/shared";
 
 interface ExperienceDetailsProps {
   localizedContent: LocalizedContent;
-  allExperiences: [JobExperience[], JobExperience[]];
+  experience: [Experience[], Experience[]];
   type: "e" | "p";
   index: number;
 }
@@ -17,24 +17,24 @@ interface ExperienceDetailsProps {
 // constants
 const MAX_CHUNK_LENGTH = 80;
 
-export default function ExperienceDetails({ localizedContent, allExperiences, type, index }: ExperienceDetailsProps) {
-  const experience = allExperiences[type === "e" ? 0 : 1][index];
-  const { txt, liveLink, videoLink } = experience;
+export default function ExperienceDetails({ localizedContent, experience, type, index }: ExperienceDetailsProps) {
+  const experienceT = experience[type === "e" ? 0 : 1][index];
+  const { txt, liveLink, videoLink } = experienceT;
 
   // Use the helper function to create perfectly chunked paragraphs
   const paras = chunkTextByWords(txt, MAX_CHUNK_LENGTH);
 
   return (
     <article className="mx-auto w-full max-w-4xl rounded-xl bg-clr-primary-800 p-3">
-      <Header localizedContent={localizedContent} experience={experience} />
+      <Header localizedContent={localizedContent} experience={experienceT} />
       {liveLink || videoLink ? (
         <a href={videoLink ?? liveLink} target="_blank" rel="noopener noreferrer">
-          <ScreenShots experience={experience} />
+          <ScreenShots experience={experienceT} />
         </a>
       ) : (
-        <ScreenShots experience={experience} />
+        <ScreenShots experience={experienceT} />
       )}
-      <SkillsUsed localizedContent={localizedContent} experience={experience} />
+      <SkillsUsed localizedContent={localizedContent} experience={experienceT} />
       <p className="sr-only">{txt}</p>
       {paras.map((para, index) => (
         <TypeWriterOutput key={index} fullText={para} />

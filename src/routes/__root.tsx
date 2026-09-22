@@ -26,20 +26,20 @@ import { ROOT_HEAD } from "@/domain";
 export const Route = createRootRoute({
   head: () => ROOT_HEAD,
   loader: async () => {
-    const lang = await getLang();
-    const loader = DataLoader.fromLang(lang);
-    return { lang, localizedContent: loader.localizedContent() } as const;
+    const preferredLanguage = await getLang();
+    const loader = DataLoader.fromLang(preferredLanguage);
+    return { preferredLanguage, localizedContent: loader.localizedContent } as const;
   },
   component: RootComponent,
 });
 
 function RootComponent() {
-  const { lang, localizedContent } = Route.useLoaderData();
+  const { preferredLanguage, localizedContent } = Route.useLoaderData();
 
   return (
     <RootDocument>
       <AtomRegistryProvider>
-        <Header preferredLang={lang} localizedContent={localizedContent} />
+        <Header preferredLanguage={preferredLanguage} localizedContent={localizedContent} />
         <MySkills />
         <main className="[grid-area:main]">
           <Outlet />

@@ -3,11 +3,11 @@ import { GlobeAltIcon, VideoCameraIcon } from "@heroicons/react/24/solid";
 import GitHubIcon from "@/assets/icons/GitHub";
 
 // types
-import type { JobExperience, LocalizedContent } from "@/types/shared";
+import type { Experience, LocalizedContent } from "@/types/shared";
 
 interface HeaderProps {
   localizedContent: LocalizedContent;
-  experience: JobExperience;
+  experience: Experience;
 }
 
 export default function Header({ localizedContent, experience: { year, role, company, gitHubLink, liveLink, videoLink } }: HeaderProps) {

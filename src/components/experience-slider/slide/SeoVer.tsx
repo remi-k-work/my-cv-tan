@@ -2,10 +2,10 @@
 import { Fragment } from "react";
 
 // types
-import type { JobExperience } from "@/types/shared";
+import type { Experience } from "@/types/shared";
 
 interface SlideSeoProps {
-  experience: JobExperience;
+  experience: Experience;
 }
 
 export default function SlideSeo({ experience: { year, role, company, txt, skillsUsed, gitHubLink, liveLink, videoLink } }: SlideSeoProps) {

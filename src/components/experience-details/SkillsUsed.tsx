@@ -1,9 +1,9 @@
 // types
-import type { JobExperience, LocalizedContent } from "@/types/shared";
+import type { Experience, LocalizedContent } from "@/types/shared";
 
 interface SkillsUsedProps {
   localizedContent: LocalizedContent;
-  experience: JobExperience;
+  experience: Experience;
 }
 
 export default function SkillsUsed({ localizedContent, experience: { skillsUsed } }: SkillsUsedProps) {

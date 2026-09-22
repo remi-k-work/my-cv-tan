@@ -1,6 +1,4 @@
-export type Lang = "en" | "pl";
-
-export interface JobExperience {
+export interface Experience {
   year: string;
   role: string;
   company: string;
@@ -12,7 +10,7 @@ export interface JobExperience {
   videoLink?: string;
 }
 
-export interface EducationSchool {
+export interface Education {
   name: string;
   year: string;
   location: string;

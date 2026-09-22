@@ -2,21 +2,21 @@
 import { Fragment } from "react";
 
 // types
-import type { EducationSchool, LocalizedContent } from "@/types/shared";
+import type { Education, LocalizedContent } from "@/types/shared";
 
 interface MyEducationProps {
   localizedContent: LocalizedContent;
-  allEducationSchools: EducationSchool[];
+  education: Education[];
 }
 
-export default function MyEducation({ localizedContent, allEducationSchools }: MyEducationProps) {
+export default function MyEducation({ localizedContent, education }: MyEducationProps) {
   return (
     <figure className="mx-auto w-full max-w-2xl">
       <figcaption className="mb-4 place-self-end rounded-ss-xl rounded-ee-xl bg-primary-foreground p-3 italic">
         {localizedContent["myEducation"]["myEducation"]}
       </figcaption>
       <dl>
-        {allEducationSchools.map(({ name, year, location, info }, schoolIndex) => (
+        {education.map(({ name, year, location, info }, schoolIndex) => (
           <Fragment key={schoolIndex}>
             <dt className="mb-4">
               <h2 className="text-lg text-clr-primary-200 uppercase">{name}</h2>

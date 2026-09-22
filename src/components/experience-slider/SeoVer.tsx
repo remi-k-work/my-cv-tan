@@ -2,18 +2,18 @@
 import SlideSeo from "./slide/SeoVer";
 
 // types
-import type { JobExperience } from "@/types/shared";
+import type { Experience } from "@/types/shared";
 
 interface ExperienceSliderSeoProps {
-  allExperiences: [JobExperience[], JobExperience[]];
+  experience: [Experience[], Experience[]];
   type: "e" | "p";
 }
 
-export default function ExperienceSliderSeo({ allExperiences, type }: ExperienceSliderSeoProps) {
+export default function ExperienceSliderSeo({ experience, type }: ExperienceSliderSeoProps) {
   return (
     <article className="sr-only">
-      {allExperiences[type === "e" ? 0 : 1].map((singleJobExperience, jobIndex) => (
-        <SlideSeo key={jobIndex} experience={singleJobExperience} />
+      {experience[type === "e" ? 0 : 1].map((experienceT, index) => (
+        <SlideSeo key={index} experience={experienceT} />
       ))}
     </article>
   );

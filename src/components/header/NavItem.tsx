@@ -40,11 +40,11 @@ export default function NavItem({ href, title, icon, isExternal = false, animDel
           style={{ animationDelay: `${-animDelay}s` }}
         />
         <span
-          className="absolute top-0 left-0 h-full w-px animate-spark-v-l bg-linear-to-b from-transparent via-accent-foreground via-5% to-transparent to-10% bg-size-[100%_800%] direction-[reverse]"
+          className="direction-[reverse] absolute top-0 left-0 h-full w-px animate-spark-v-l bg-linear-to-b from-transparent via-accent-foreground via-5% to-transparent to-10% bg-size-[100%_800%]"
           style={{ animationDelay: `${-animDelay}s` }}
         />
         <span
-          className="absolute bottom-0 left-0 h-px w-full animate-spark-h-l bg-linear-to-r from-transparent via-accent-foreground via-5% to-transparent to-10% bg-size-[800%] direction-[reverse]"
+          className="direction-[reverse] absolute bottom-0 left-0 h-px w-full animate-spark-h-l bg-linear-to-r from-transparent via-accent-foreground via-5% to-transparent to-10% bg-size-[800%]"
           style={{ animationDelay: `${-animDelay}s` }}
         />
         <span
@@ -74,11 +74,11 @@ export default function NavItem({ href, title, icon, isExternal = false, animDel
         style={{ animationDelay: `${-animDelay}s` }}
       />
       <span
-        className="absolute top-0 left-0 h-full w-px animate-spark-v-l bg-linear-to-b from-transparent via-accent-foreground via-5% to-transparent to-10% bg-size-[100%_800%] direction-[reverse]"
+        className="direction-[reverse] absolute top-0 left-0 h-full w-px animate-spark-v-l bg-linear-to-b from-transparent via-accent-foreground via-5% to-transparent to-10% bg-size-[100%_800%]"
         style={{ animationDelay: `${-animDelay}s` }}
       />
       <span
-        className="absolute bottom-0 left-0 h-px w-full animate-spark-h-l bg-linear-to-r from-transparent via-accent-foreground via-5% to-transparent to-10% bg-size-[800%] direction-[reverse]"
+        className="direction-[reverse] absolute bottom-0 left-0 h-px w-full animate-spark-h-l bg-linear-to-r from-transparent via-accent-foreground via-5% to-transparent to-10% bg-size-[800%]"
         style={{ animationDelay: `${-animDelay}s` }}
       />
       <span

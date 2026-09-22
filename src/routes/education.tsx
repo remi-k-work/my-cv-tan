@@ -13,25 +13,25 @@ import MyEducation from "@/components/MyEducation";
 
 export const Route = createFileRoute("/education")({
   loader: async () => {
-    const lang = await getLang();
-    const loader = DataLoader.fromLang(lang);
-    return { localizedContent: loader.localizedContent(), allPageTitles: loader.allPageTitles(), allEducationSchools: loader.allEducationSchools() } as const;
+    const preferredLanguage = await getLang();
+    const loader = DataLoader.fromLang(preferredLanguage);
+    return { localizedContent: loader.localizedContent, pageTitles: loader.pageTitles, education: loader.education } as const;
   },
   component: EducationPage,
 });
 
 function EducationPage() {
-  const { localizedContent, allPageTitles, allEducationSchools } = Route.useLoaderData();
+  const { localizedContent, pageTitles, education } = Route.useLoaderData();
 
   return (
     <>
-      <PageTitle titleTheme={getRandomInt(0, 2)} pathname="/education" allPageTitles={allPageTitles} />
+      <PageTitle titleTheme={getRandomInt(0, 2)} pathname="/education" pageTitles={pageTitles} />
       <article className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <section className="rounded-xl bg-clr-primary-800 p-4">
           <MyCertificates localizedContent={localizedContent} />
         </section>
         <section className="rounded-xl bg-clr-primary-800 p-4">
-          <MyEducation localizedContent={localizedContent} allEducationSchools={allEducationSchools} />
+          <MyEducation localizedContent={localizedContent} education={education} />
         </section>
       </article>
     </>

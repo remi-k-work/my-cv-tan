@@ -7,11 +7,11 @@ import type { PageTitles } from "@/types/shared";
 interface PageTitleProps {
   titleTheme: number;
   pathname: string;
-  allPageTitles: PageTitles[];
+  pageTitles: PageTitles[];
 }
 
-export default function PageTitle({ titleTheme, pathname, allPageTitles }: PageTitleProps) {
-  const { eyebrow, heading, intro } = allPageTitles[titleTheme][pathname];
+export default function PageTitle({ titleTheme, pathname, pageTitles }: PageTitleProps) {
+  const { eyebrow, heading, intro } = pageTitles[titleTheme][pathname];
 
   return (
     <section className="mx-4 my-3 lg:mx-0">

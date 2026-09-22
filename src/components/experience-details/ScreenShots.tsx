@@ -1,8 +1,8 @@
 // types
-import type { JobExperience } from "@/types/shared";
+import type { Experience } from "@/types/shared";
 
 interface ScreenShotsProps {
-  experience: JobExperience;
+  experience: Experience;
 }
 
 // constants

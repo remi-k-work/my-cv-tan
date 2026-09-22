@@ -3,13 +3,13 @@ import Header from "./Header";
 import ScreenShots from "./ScreenShots";
 
 // types
-import type { JobExperience, LocalizedContent } from "@/types/shared";
+import type { Experience, LocalizedContent } from "@/types/shared";
 
 interface SlideProps {
   localizedContent: LocalizedContent;
   type: "e" | "p";
   index: number;
-  experience: JobExperience;
+  experience: Experience;
 }
 
 export default function Slide({ localizedContent, type, index, experience, experience: { liveLink, videoLink } }: SlideProps) {

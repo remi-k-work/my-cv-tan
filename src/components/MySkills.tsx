@@ -29,7 +29,7 @@ export default function MySkills() {
         "lg:before:animate-spark-v lg:before:bg-linear-to-b lg:before:bg-size-[100%_200%]",
 
         "lg:after:from-primary-foreground lg:after:via-accent-foreground lg:after:via-5% lg:after:to-primary-foreground lg:after:to-10%",
-        "lg:after:animate-spark-v lg:after:bg-linear-to-b lg:after:bg-size-[100%_200%] lg:after:direction-[reverse]"
+        "lg:after:direction-[reverse] lg:after:animate-spark-v lg:after:bg-linear-to-b lg:after:bg-size-[100%_200%]"
       )}
     >
       <ul
