@@ -20,6 +20,7 @@ export class Captcha extends Context.Service<Captcha>()("Captcha", {
         )
       )
     );
+
     const seal = Effect.fn("seal")(
       function* (captchaString: string) {
         const salt = yield* crypto.randomBytes(SALT_BYTES);
@@ -29,12 +30,17 @@ export class Captcha extends Context.Service<Captcha>()("Captcha", {
       Effect.provideService(Crypto.Crypto, crypto),
       Effect.mapError((cause) => new CaptchaError({ cause }))
     );
+
     const verify = Effect.fn("verify")(
-      function* (headers: Headers.Headers, captchaInput: string) {
-        const sealed = Headers.get(headers, "cookie").pipe(Option.map(Cookies.parseHeader), Option.flatMap(Record.get(CAPTCHA_COOKIE_NAME)));
-        if (Option.isNone(sealed)) return false;
-        return yield* verifyCaptchaString(sealed.value, captchaInput);
-      },
+      (headers: Headers.Headers, captchaInput: string) =>
+        Headers.get(headers, "cookie").pipe(
+          Option.map(Cookies.parseHeader),
+          Option.flatMap(Record.get(CAPTCHA_COOKIE_NAME)),
+          Option.match({
+            onNone: () => Effect.succeed(false),
+            onSome: (sealed) => verifyCaptchaString(sealed, captchaInput),
+          })
+        ),
       Effect.provideService(Crypto.Crypto, crypto),
       Effect.mapError((cause) => new CaptchaError({ cause }))
     );
