@@ -15,12 +15,12 @@ const CaptchaApiHandlers = HttpApiBuilder.group(
   CaptchaApi,
   "Captcha",
   Effect.fn(function* (handlers) {
-    const { generateCaptchaString, sealCaptchaString } = yield* Captcha;
+    const { generate, seal } = yield* Captcha;
 
     return handlers.handle("captcha", () =>
       Effect.gen(function* () {
-        const captchaString = yield* generateCaptchaString;
-        const sealed = yield* sealCaptchaString(captchaString);
+        const captchaString = yield* generate;
+        const sealed = yield* seal(captchaString);
         yield* HttpEffect.appendPreResponseHandler((_request, response) =>
           HttpServerResponse.setCookie(response, CAPTCHA_COOKIE_NAME, sealed, CAPTCHA_COOKIE_OPTIONS).pipe(Effect.tapError(Effect.logError), Effect.orDie)
         );

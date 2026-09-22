@@ -1,95 +1,37 @@
 // services, features, and other libraries
-import { Config, Effect, Encoding, Option, Redacted, Schema } from "effect";
-import { Headers, HttpServerRequest } from "effect/unstable/http";
-import { CaptchaPayloadJson } from ".";
-import { CaptchaCryptoError } from "@/domain";
+import { Config, Crypto, Effect, Encoding, Option, Redacted, Schema } from "effect";
 
 // constants
-import { CAPTCHA_COOKIE_NAME } from ".";
+const decodePart = Schema.decodeOption(Schema.Uint8ArrayFromBase64Url);
 
-const decodeSealed = (sealed: string): { iv: Uint8Array; data: Uint8Array } | undefined => {
-  const dot = sealed.indexOf(".");
-  if (dot <= 0) return undefined;
-  const iv = Encoding.decodeBase64Url(sealed.slice(0, dot));
-  if (iv._tag === "Failure") return undefined;
-  const data = Encoding.decodeBase64Url(sealed.slice(dot + 1));
-  if (data._tag === "Failure") return undefined;
-  if (iv.success.length !== 12) return undefined;
-  return { iv: iv.success, data: data.success };
-};
-
-const importAesKey = Effect.fn("importAesKey")(
-  function* () {
-    const secret = yield* Config.Redacted("SESSION_SECRET");
-    const secretBytes = new TextEncoder().encode(Redacted.value(secret));
-    const keyHash = yield* Effect.promise(() => crypto.subtle.digest("SHA-256", secretBytes));
-    return yield* Effect.promise(() => crypto.subtle.importKey("raw", keyHash, "AES-GCM", false, ["encrypt", "decrypt"]));
-  },
-  Effect.mapError((cause) => new CaptchaCryptoError({ cause }))
-);
-
-export const sealCaptchaString = Effect.fn("sealCaptchaString")(function* (captchaString: string) {
-  const key = yield* importAesKey();
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const plaintext = new TextEncoder().encode(
-    yield* Schema.encodeEffect(CaptchaPayloadJson)({ captchaString }).pipe(Effect.mapError((cause) => new CaptchaCryptoError({ cause })))
-  );
-  const ciphertext = yield* Effect.promise(() => crypto.subtle.encrypt({ name: "AES-GCM", iv: iv as BufferSource }, key, plaintext as BufferSource)).pipe(
-    Effect.mapError((cause) => new CaptchaCryptoError({ cause }))
-  );
-  return `${Encoding.encodeBase64Url(iv)}.${Encoding.encodeBase64Url(new Uint8Array(ciphertext))}`;
-});
-
-const unsealStrict = Effect.fn("unsealStrict")(function* (sealed: string) {
-  const parts = decodeSealed(sealed);
-  if (parts === undefined) return yield* new CaptchaCryptoError({ cause: "malformed sealed captcha cookie" });
-  const key = yield* importAesKey();
-  const decrypted = yield* Effect.tryPromise(() =>
-    crypto.subtle.decrypt({ name: "AES-GCM", iv: parts.iv as BufferSource }, key, parts.data as BufferSource)
-  ).pipe(Effect.mapError((cause) => new CaptchaCryptoError({ cause })));
-  const { captchaString } = yield* Schema.decodeEffect(CaptchaPayloadJson)(new TextDecoder().decode(decrypted)).pipe(
-    Effect.mapError((cause) => new CaptchaCryptoError({ cause }))
-  );
-  return captchaString;
-});
-
-export const unsealCaptchaString = (sealed: string): Effect.Effect<Option.Option<string>> =>
-  unsealStrict(sealed).pipe(
-    Effect.asSome,
-    Effect.orElseSucceed((): Option.Option<string> => Option.none())
-  );
-
-export const getSealedCaptchaFromCookieHeader = (cookieHeader: string | undefined): string | undefined => {
-  if (cookieHeader === undefined) return undefined;
-  const parts = cookieHeader.split(";");
+const concatBytes = (parts: ReadonlyArray<Uint8Array>) => {
+  const out = new Uint8Array(parts.reduce((length, part) => length + part.length, 0));
+  let offset = 0;
   for (const part of parts) {
-    const eq = part.indexOf("=");
-    if (eq === -1) continue;
-    if (part.slice(0, eq).trim() === CAPTCHA_COOKIE_NAME) {
-      const raw = part.slice(eq + 1).trim();
-      try {
-        return decodeURIComponent(raw);
-      } catch {
-        return raw;
-      }
-    }
+    out.set(part, offset);
+    offset += part.length;
   }
-  return undefined;
+  return out;
 };
 
-export const getCaptchaStringFromCookieHeader = Effect.fn("getCaptchaStringFromCookieHeader")(function* (cookieHeader: string | undefined) {
-  const sealed = getSealedCaptchaFromCookieHeader(cookieHeader);
-  if (sealed === undefined) return Option.none();
-  return yield* unsealCaptchaString(sealed);
+const readSecretBytes = Effect.fn("readSecretBytes")(function* () {
+  const secret = yield* Config.Redacted("SESSION_SECRET");
+  return new TextEncoder().encode(Redacted.value(secret));
 });
 
-export const getCaptchaStringFromHeaders = Effect.fn("getCaptchaStringFromHeaders")(function* (headers: Headers.Headers) {
-  const cookieHeader = Headers.get(headers, "cookie");
-  if (Option.isNone(cookieHeader)) return Option.none();
-  return yield* getCaptchaStringFromCookieHeader(cookieHeader.value);
+export const commitToCaptcha = Effect.fn("commitToCaptcha")(function* (salt: Uint8Array, captchaString: string) {
+  const crypto = yield* Crypto.Crypto;
+  const secret = yield* readSecretBytes();
+  const answer = new TextEncoder().encode(captchaString);
+  return yield* crypto.digest("SHA-256", concatBytes([secret, salt, answer]));
 });
 
-export const getCaptchaStringFromRequest = Effect.fn("getCaptchaStringFromRequest")(function* () {
-  const request = yield* HttpServerRequest.HttpServerRequest;
-  return yield* getCaptchaStringFromCookieHeader(request.headers.cookie);
+export const verifyCaptchaString = Effect.fn("verifyCaptchaString")(function* (sealed: string, captchaInput: string) {
+  const dot = sealed.indexOf(".");
+  if (dot <= 0) return false;
+  const salt = decodePart(sealed.slice(0, dot));
+  const expected = decodePart(sealed.slice(dot + 1));
+  if (Option.isNone(salt) || Option.isNone(expected)) return false;
+  const actual = yield* commitToCaptcha(salt.value, captchaInput);
+  return Encoding.encodeBase64Url(actual) === Encoding.encodeBase64Url(expected.value);
 });

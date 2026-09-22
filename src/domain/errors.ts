@@ -7,6 +7,6 @@ export class SendError extends Schema.TaggedError<SendError>()("SendError", {
   responseBody: Schema.optionalKey(Schema.String),
 }) {}
 
-export class CaptchaCryptoError extends Schema.TaggedError<CaptchaCryptoError>()("CaptchaCryptoError", {
+export class CaptchaError extends Schema.TaggedError<CaptchaError>()("CaptchaError", {
   cause: Schema.Defect(),
 }) {}

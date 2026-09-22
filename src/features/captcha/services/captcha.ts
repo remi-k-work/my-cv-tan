@@ -1,20 +1,46 @@
 // services, features, and other libraries
-import { Context, Effect, Layer, Random } from "effect";
-import { sealCaptchaString, unsealCaptchaString } from "@/features/captcha/domain";
+import { Array, Context, Crypto, Effect, Encoding, Layer, Option, Record } from "effect";
+import { Cookies, Headers } from "effect/unstable/http";
+import { BrowserCrypto } from "@effect/platform-browser";
+import { commitToCaptcha, verifyCaptchaString } from "@/features/captcha/domain";
+import { CaptchaError } from "@/domain";
 
 // constants
-import { PERMITTED_CHARS, STRENGTH } from "@/features/captcha/domain";
+import { CAPTCHA_COOKIE_NAME, PERMITTED_CHARS, SALT_BYTES, STRENGTH } from "@/features/captcha/domain";
 
 export class Captcha extends Context.Service<Captcha>()("Captcha", {
-  make: Effect.sync(() => {
-    const generateCaptchaString = Effect.gen(function* () {
-      let captchaString = "";
-      for (let i = 0; i < STRENGTH; i++) captchaString += PERMITTED_CHARS[yield* Random.nextIntBetween(0, PERMITTED_CHARS.length - 1)];
-      return captchaString;
-    });
+  make: Effect.gen(function* () {
+    const crypto = yield* Crypto.Crypto;
 
-    return { generateCaptchaString, sealCaptchaString, unsealCaptchaString } as const;
+    const generate = Effect.replicateEffect(STRENGTH)(crypto.randomIntBetween(0, PERMITTED_CHARS.length - 1)).pipe(
+      Effect.map((indices) =>
+        Array.join(
+          indices.map((index) => PERMITTED_CHARS[index]),
+          ""
+        )
+      )
+    );
+    const seal = Effect.fn("seal")(
+      function* (captchaString: string) {
+        const salt = yield* crypto.randomBytes(SALT_BYTES);
+        const commitment = yield* commitToCaptcha(salt, captchaString);
+        return `${Encoding.encodeBase64Url(salt)}.${Encoding.encodeBase64Url(commitment)}`;
+      },
+      Effect.provideService(Crypto.Crypto, crypto),
+      Effect.mapError((cause) => new CaptchaError({ cause }))
+    );
+    const verify = Effect.fn("verify")(
+      function* (headers: Headers.Headers, captchaInput: string) {
+        const sealed = Headers.get(headers, "cookie").pipe(Option.map(Cookies.parseHeader), Option.flatMap(Record.get(CAPTCHA_COOKIE_NAME)));
+        if (Option.isNone(sealed)) return false;
+        return yield* verifyCaptchaString(sealed.value, captchaInput);
+      },
+      Effect.provideService(Crypto.Crypto, crypto),
+      Effect.mapError((cause) => new CaptchaError({ cause }))
+    );
+
+    return { generate, seal, verify } as const;
   }),
 }) {
-  static readonly layer = Layer.effect(this, this.make);
+  static readonly layer = Layer.effect(this, this.make).pipe(Layer.provide(BrowserCrypto.layer));
 }

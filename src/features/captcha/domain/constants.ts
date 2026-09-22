@@ -13,3 +13,5 @@ export const LETTER_FONTS = ["monospace", "sans-serif", "serif", "cursive", "fan
 
 export const PERMITTED_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 export const STRENGTH = 6;
+
+export const SALT_BYTES = 16;
