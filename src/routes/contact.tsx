@@ -15,13 +15,13 @@ export const Route = createFileRoute("/contact")({
   loader: async () => {
     const preferredLanguage = await getLang();
     const loader = DataLoader.fromLang(preferredLanguage);
-    return { preferredLanguage, localizedContent: loader.localizedContent, pageTitles: loader.pageTitles } as const;
+    return { preferredLanguage, pageTitles: loader.pageTitles, localizedContent: loader.localizedContent } as const;
   },
   component: ContactPage,
 });
 
 function ContactPage() {
-  const { preferredLanguage, localizedContent, pageTitles } = Route.useLoaderData();
+  const { preferredLanguage, pageTitles, localizedContent } = Route.useLoaderData();
 
   return (
     <>

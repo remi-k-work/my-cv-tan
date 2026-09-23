@@ -1,12 +1,14 @@
 // tanstack
 import { createFileRoute } from "@tanstack/react-router";
 
+// assets
+import experienceEn from "@/assets/data/en/experience.json";
+
 // constants
 const BASE_URL = "https://www.remiforge.dev";
 
 function buildSitemap(): string {
-  const eIds = [0, 1, 2, 3, 4, 5, 6, 7];
-  const pIds = [0, 1, 2, 3, 4, 5, 6, 7];
+  const eSlugs = experienceEn.map((e) => e.slug);
   const today = new Date().toISOString().split("T")[0];
 
   const urls = [
@@ -14,8 +16,7 @@ function buildSitemap(): string {
     { loc: `${BASE_URL}/education`, changefreq: "monthly", priority: "0.8" },
     { loc: `${BASE_URL}/contact`, changefreq: "monthly", priority: "0.5" },
     { loc: `${BASE_URL}/my-cv.pdf`, changefreq: "monthly", priority: "0.4" },
-    ...eIds.map((id) => ({ loc: `${BASE_URL}/exp/e/${id}`, changefreq: "monthly", priority: "0.6" })),
-    ...pIds.map((id) => ({ loc: `${BASE_URL}/exp/p/${id}`, changefreq: "monthly", priority: "0.6" })),
+    ...eSlugs.map((slug) => ({ loc: `${BASE_URL}/exp/${slug}`, changefreq: "monthly", priority: "0.6" })),
   ];
 
   const entries = urls

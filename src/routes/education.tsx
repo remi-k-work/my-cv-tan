@@ -15,13 +15,13 @@ export const Route = createFileRoute("/education")({
   loader: async () => {
     const preferredLanguage = await getLang();
     const loader = DataLoader.fromLang(preferredLanguage);
-    return { localizedContent: loader.localizedContent, pageTitles: loader.pageTitles, education: loader.education } as const;
+    return { pageTitles: loader.pageTitles, localizedContent: loader.localizedContent, education: loader.education } as const;
   },
   component: EducationPage,
 });
 
 function EducationPage() {
-  const { localizedContent, pageTitles, education } = Route.useLoaderData();
+  const { pageTitles, localizedContent, education } = Route.useLoaderData();
 
   return (
     <>
