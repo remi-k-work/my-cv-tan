@@ -5,7 +5,7 @@ import { CaptchaError, SendError } from "@/domain";
 import { CaptchaInputField, EmailField, MessageField, NameField, SubjectField } from "@/features/contact-me/domain";
 import { RpcLogger } from "@/services/rpc-logger";
 
-export class RpcMain extends RpcGroup.make(
+export class RpcApp extends RpcGroup.make(
   Rpc.make("isCaptchaValid", {
     payload: { captchaInput: CaptchaInputField().schema },
     success: Schema.Boolean,

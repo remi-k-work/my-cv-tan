@@ -5,7 +5,7 @@ import SkillsUsed from "./SkillsUsed";
 import TypeWriterOutput from "@/components/TypeWriterOutput";
 
 // types
-import type { Experience, LocalizedContent } from "@/types/shared";
+import type { Experience, LocalizedContent } from "@/domain";
 
 interface ExperienceDetailsProps {
   localizedContent: LocalizedContent;

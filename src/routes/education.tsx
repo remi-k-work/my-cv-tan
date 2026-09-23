@@ -15,23 +15,23 @@ export const Route = createFileRoute("/education")({
   loader: async () => {
     const preferredLanguage = await getLang();
     const loader = DataLoader.fromLang(preferredLanguage);
-    return { pageTitles: loader.pageTitles, localizedContent: loader.localizedContent, education: loader.education } as const;
+    return { pageTitlesList: loader.pageTitlesList, localizedContent: loader.localizedContent, educationList: loader.educationList } as const;
   },
   component: EducationPage,
 });
 
 function EducationPage() {
-  const { pageTitles, localizedContent, education } = Route.useLoaderData();
+  const { pageTitlesList, localizedContent, educationList } = Route.useLoaderData();
 
   return (
     <>
-      <PageTitle titleTheme={getRandomInt(0, 2)} pathname="/education" pageTitles={pageTitles} />
+      <PageTitle titleTheme={getRandomInt(0, 2)} pagePath="/education" pageTitlesList={pageTitlesList} />
       <article className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <section className="rounded-xl bg-clr-primary-800 p-4">
           <MyCertificates localizedContent={localizedContent} />
         </section>
         <section className="rounded-xl bg-clr-primary-800 p-4">
-          <MyEducation localizedContent={localizedContent} education={education} />
+          <MyEducation localizedContent={localizedContent} educationList={educationList} />
         </section>
       </article>
     </>

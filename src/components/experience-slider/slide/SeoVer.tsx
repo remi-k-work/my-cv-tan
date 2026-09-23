@@ -2,7 +2,7 @@
 import { Fragment } from "react";
 
 // types
-import type { Experience } from "@/types/shared";
+import type { Experience } from "@/domain";
 
 interface SlideSeoProps {
   experience: Experience;
@@ -14,8 +14,8 @@ export default function SlideSeo({ experience: { year, role, company, txt, skill
       <h2 className="text-xl">{role}</h2>
       <h3>{company}</h3>
       <h4>
-        {skillsUsed.map((skillUsed, skillIndex) => (
-          <Fragment key={skillIndex}>{skillUsed} </Fragment>
+        {skillsUsed.map((skillUsed, index) => (
+          <Fragment key={index}>{skillUsed} </Fragment>
         ))}
       </h4>
       <p>{year}</p>

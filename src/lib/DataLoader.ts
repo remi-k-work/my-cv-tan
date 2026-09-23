@@ -1,5 +1,7 @@
 // services, features, and other libraries
+import { Schema } from "effect";
 import { resolveAcceptLanguage } from "resolve-accept-language";
+import { EducationList, ExperienceList, LocalizedContent, PageTitlesList } from "@/domain";
 
 // assets
 import pageTitlesEn from "@/assets/data/en/page-titles.json";
@@ -50,16 +52,16 @@ export default class DataLoader {
     return new DataLoader(preferredLanguage);
   }
 
-  public get pageTitles() {
-    return this.preferredLanguage === "pl" ? pageTitlesPl : pageTitlesEn;
+  public get pageTitlesList() {
+    return Schema.decodeUnknownSync(PageTitlesList)(this.preferredLanguage === "pl" ? pageTitlesPl : pageTitlesEn);
   }
   public get localizedContent() {
-    return this.preferredLanguage === "pl" ? localizedContentPl : localizedContentEn;
+    return Schema.decodeUnknownSync(LocalizedContent)(this.preferredLanguage === "pl" ? localizedContentPl : localizedContentEn);
   }
-  public get experience() {
-    return this.preferredLanguage === "pl" ? experiencePl : experienceEn;
+  public get experienceList() {
+    return Schema.decodeUnknownSync(ExperienceList)(this.preferredLanguage === "pl" ? experiencePl : experienceEn);
   }
-  public get education() {
-    return this.preferredLanguage === "pl" ? educationPl : educationEn;
+  public get educationList() {
+    return Schema.decodeUnknownSync(EducationList)(this.preferredLanguage === "pl" ? educationPl : educationEn);
   }
 }

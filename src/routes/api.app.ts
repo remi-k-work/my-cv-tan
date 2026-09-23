@@ -6,4 +6,4 @@ import { handler } from "@/http/handlers";
 
 const effectHandler = ({ request }: { request: Request }) => handler.handler(request);
 
-export const Route = createFileRoute("/api/captcha")({ server: { handlers: { GET: effectHandler } } });
+export const Route = createFileRoute("/api/app")({ server: { handlers: { GET: effectHandler } } });

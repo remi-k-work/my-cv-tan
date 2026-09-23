@@ -5,7 +5,7 @@ import "leaflet/dist/leaflet.css";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 
 // types
-import type { LocalizedContent } from "@/types/shared";
+import type { LocalizedContent } from "@/domain";
 
 interface ReactLeafletProps {
   localizedContent: LocalizedContent;

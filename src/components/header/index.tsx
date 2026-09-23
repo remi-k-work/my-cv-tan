@@ -6,8 +6,7 @@ import NavItem from "./NavItem";
 import LangChanger from "@/components/LangChanger";
 
 // types
-import type { PreferredLanguage } from "@/domain";
-import type { LocalizedContent } from "@/types/shared";
+import type { LocalizedContent, PreferredLanguage } from "@/domain";
 
 interface HeaderProps {
   preferredLanguage: PreferredLanguage;

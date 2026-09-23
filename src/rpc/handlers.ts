@@ -4,12 +4,12 @@ import "@tanstack/react-start/server-only";
 import { Effect, Layer } from "effect";
 import { RpcSerialization, RpcServer } from "effect/unstable/rpc";
 import { HttpServer, HttpRouter } from "effect/unstable/http";
-import { RpcMain } from "./requests";
+import { RpcApp } from "./requests";
 import { Captcha } from "@/features/captcha/services/captcha";
 import { Send } from "@/features/contact-me/services/send";
 import { RpcLoggerLive } from "@/services/rpc-logger";
 
-const RpcMainLayer = RpcMain.toLayer({
+const RpcAppLayer = RpcApp.toLayer({
   isCaptchaValid: ({ captchaInput }, { headers }) =>
     Effect.gen(function* () {
       const { verify } = yield* Captcha;
@@ -26,11 +26,11 @@ const RpcMainLayer = RpcMain.toLayer({
 }).pipe(Layer.provide([Captcha.layer, Send.layer]));
 
 const RpcLayer = RpcServer.layerHttp({
-  group: RpcMain,
+  group: RpcApp,
   path: "/api/rpc",
   protocol: "http",
   disableFatalDefects: true,
   disableTracing: true,
-}).pipe(Layer.provide(Layer.mergeAll(RpcMainLayer, RpcSerialization.layerSchemaBinary(), HttpServer.layerServices, RpcLoggerLive)));
+}).pipe(Layer.provide(Layer.mergeAll(RpcAppLayer, RpcSerialization.layerSchemaBinary(), HttpServer.layerServices, RpcLoggerLive)));
 
 export const handler = HttpRouter.toWebHandler(RpcLayer, { disableLogger: true });

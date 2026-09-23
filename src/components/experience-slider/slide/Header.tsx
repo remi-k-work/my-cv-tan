@@ -6,7 +6,7 @@ import { GlobeAltIcon, InformationCircleIcon, VideoCameraIcon } from "@heroicons
 import GitHubIcon from "@/assets/icons/GitHub";
 
 // types
-import type { Experience, LocalizedContent } from "@/types/shared";
+import type { Experience, LocalizedContent } from "@/domain";
 
 interface HeaderProps {
   localizedContent: LocalizedContent;

@@ -8,8 +8,8 @@ const CaptchaSuccess = HttpApiSchema.WithHeaders(CaptchaSvg, {
   "Cache-Control": Schema.Literal("private, no-store"),
 });
 
-class CaptchaApiGroup extends HttpApiGroup.make("Captcha")
-  .add(HttpApiEndpoint.get("captcha", "/captcha", { success: CaptchaSuccess }))
+class AppApiGroup extends HttpApiGroup.make("App")
+  .add(HttpApiEndpoint.get("captcha", "/app", { success: CaptchaSuccess }))
   .prefix("/api") {}
 
-export class CaptchaApi extends HttpApi.make("CaptchaApi").add(CaptchaApiGroup) {}
+export class AppApi extends HttpApi.make("AppApi").add(AppApiGroup) {}

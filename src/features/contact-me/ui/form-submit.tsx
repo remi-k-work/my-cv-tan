@@ -14,7 +14,7 @@ import { Loader2 } from "lucide-react";
 
 // types
 import type { ContactForm } from "@/features/contact-me/domain";
-import type { LocalizedContent } from "@/types/shared";
+import type { LocalizedContent } from "@/domain";
 
 interface FormSubmitProps {
   contactForm: ContactForm;

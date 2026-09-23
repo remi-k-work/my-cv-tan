@@ -1,5 +1,5 @@
 // services, features, and other libraries
 import { makeRpcClient } from "@/lib/rpc-client";
-import { RpcMain } from "./requests";
+import { RpcApp } from "./requests";
 
-export class RpcMainClient extends makeRpcClient("RpcMainClient", RpcMain, "/api/rpc") {}
+export class RpcAppClient extends makeRpcClient("RpcAppClient", RpcApp, "/api/rpc") {}

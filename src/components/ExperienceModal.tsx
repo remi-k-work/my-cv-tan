@@ -15,7 +15,7 @@ import { InformationCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
 
 // types
 import type { ReactNode } from "react";
-import type { LocalizedContent } from "@/types/shared";
+import type { LocalizedContent } from "@/domain";
 
 interface ExperienceModalProps {
   localizedContent: LocalizedContent;

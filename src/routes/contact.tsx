@@ -15,17 +15,17 @@ export const Route = createFileRoute("/contact")({
   loader: async () => {
     const preferredLanguage = await getLang();
     const loader = DataLoader.fromLang(preferredLanguage);
-    return { preferredLanguage, pageTitles: loader.pageTitles, localizedContent: loader.localizedContent } as const;
+    return { preferredLanguage, pageTitlesList: loader.pageTitlesList, localizedContent: loader.localizedContent } as const;
   },
   component: ContactPage,
 });
 
 function ContactPage() {
-  const { preferredLanguage, pageTitles, localizedContent } = Route.useLoaderData();
+  const { preferredLanguage, pageTitlesList, localizedContent } = Route.useLoaderData();
 
   return (
     <>
-      <PageTitle titleTheme={getRandomInt(0, 2)} pathname="/contact" pageTitles={pageTitles} />
+      <PageTitle titleTheme={getRandomInt(0, 2)} pagePath="/contact" pageTitlesList={pageTitlesList} />
       <article className="grid auto-rows-fr grid-cols-1 gap-4 xl:grid-cols-2">
         <section className="rounded-xl bg-clr-primary-800 p-4">
           <ContactForm preferredLanguage={preferredLanguage} localizedContent={localizedContent} />

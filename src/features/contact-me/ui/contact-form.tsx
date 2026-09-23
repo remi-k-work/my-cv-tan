@@ -12,8 +12,7 @@ import { SubmitStatus } from "./submit-status";
 import { FormSubmit } from "./form-submit";
 
 // types
-import type { PreferredLanguage } from "@/domain";
-import type { LocalizedContent } from "@/types/shared";
+import type { LocalizedContent, PreferredLanguage } from "@/domain";
 
 interface ContactFormProps {
   preferredLanguage: PreferredLanguage;

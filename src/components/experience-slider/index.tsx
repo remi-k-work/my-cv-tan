@@ -8,11 +8,11 @@ import Next from "./buttons/Next";
 import Dot from "./buttons/Dot";
 
 // types
-import type { Experience, LocalizedContent } from "@/types/shared";
+import type { Experience, LocalizedContent } from "@/domain";
 
 interface ExperienceSliderProps {
   localizedContent: LocalizedContent;
-  experienceList: Experience[];
+  experienceList: ReadonlyArray<Experience>;
 }
 
 export default function ExperienceSlider({ localizedContent, experienceList }: ExperienceSliderProps) {

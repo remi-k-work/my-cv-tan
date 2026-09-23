@@ -7,7 +7,7 @@ import avatar from "@/assets/avatar.jpg";
 const ReactLeaflet = lazy(() => import("./react-leaflet"));
 
 // types
-import type { LocalizedContent } from "@/types/shared";
+import type { LocalizedContent } from "@/domain";
 
 interface ContactMapProps {
   localizedContent: LocalizedContent;

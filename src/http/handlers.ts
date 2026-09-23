@@ -6,14 +6,14 @@ import { HttpEffect, HttpRouter, HttpServer, HttpServerResponse } from "effect/u
 import { HttpApiBuilder, HttpApiSchema } from "effect/unstable/httpapi";
 import { createCaptchaSvg } from "@/features/captcha/domain";
 import { Captcha } from "@/features/captcha/services/captcha";
-import { CaptchaApi } from "./api";
+import { AppApi } from "./api";
 
 // constants
 import { CAPTCHA_COOKIE_NAME, CAPTCHA_COOKIE_OPTIONS } from "@/features/captcha/domain";
 
-const CaptchaApiHandlers = HttpApiBuilder.group(
-  CaptchaApi,
-  "Captcha",
+const AppApiHandlers = HttpApiBuilder.group(
+  AppApi,
+  "App",
   Effect.fn(function* (handlers) {
     const { generate, seal } = yield* Captcha;
 
@@ -31,6 +31,6 @@ const CaptchaApiHandlers = HttpApiBuilder.group(
   })
 ).pipe(Layer.provide(Captcha.layer));
 
-const CaptchaApiRoutes = HttpApiBuilder.layer(CaptchaApi).pipe(Layer.provide(CaptchaApiHandlers));
+const AppApiRoutes = HttpApiBuilder.layer(AppApi).pipe(Layer.provide(AppApiHandlers));
 
-export const handler = HttpRouter.toWebHandler(CaptchaApiRoutes.pipe(Layer.provide(HttpServer.layerServices)), { disableLogger: true });
+export const handler = HttpRouter.toWebHandler(AppApiRoutes.pipe(Layer.provide(HttpServer.layerServices)), { disableLogger: true });

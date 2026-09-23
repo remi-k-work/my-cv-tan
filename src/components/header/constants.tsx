@@ -4,7 +4,7 @@ import LinkedInIcon from "@/assets/icons/LinkedIn";
 import GitHubIcon from "@/assets/icons/GitHub";
 
 // types
-import type { LocalizedContent } from "@/types/shared";
+import type { LocalizedContent } from "@/domain";
 
 // constants
 export const NAV_ITEMS = (localizedContent: LocalizedContent) => [

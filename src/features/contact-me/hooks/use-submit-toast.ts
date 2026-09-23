@@ -8,7 +8,7 @@ import { toast } from "sonner";
 
 // types
 import type { ContactForm } from "@/features/contact-me/domain";
-import type { LocalizedContent } from "@/types/shared";
+import type { LocalizedContent } from "@/domain";
 
 // Provide feedback to the user regarding this form actions
 export function useSubmitToast(contactForm: ContactForm, localizedContent: LocalizedContent) {

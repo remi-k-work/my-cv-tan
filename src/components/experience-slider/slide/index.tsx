@@ -3,7 +3,7 @@ import Header from "./Header";
 import ScreenShots from "./ScreenShots";
 
 // types
-import type { Experience, LocalizedContent } from "@/types/shared";
+import type { Experience, LocalizedContent } from "@/domain";
 
 interface SlideProps {
   localizedContent: LocalizedContent;

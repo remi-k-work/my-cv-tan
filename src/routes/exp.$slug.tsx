@@ -12,9 +12,6 @@ import ExperienceModal from "@/components/ExperienceModal";
 import ExperienceDetails from "@/components/experience-details";
 import ExperienceDetailsSeo from "@/components/experience-details/SeoVer";
 
-// types
-import type { Experience } from "@/types/shared";
-
 export const Route = createFileRoute("/exp/$slug")({
   validateSearch: (search) => ({
     modal: search.modal === true || search.modal === "1" || search.modal === 1,
@@ -25,17 +22,17 @@ export const Route = createFileRoute("/exp/$slug")({
 
     const preferredLanguage = await getLang();
     const loader = DataLoader.fromLang(preferredLanguage);
-    const experience = loader.experience.find((exp) => exp.slug === slug) as Experience;
+    const experience = loader.experienceList.find((exp) => exp.slug === slug);
     if (!experience) throw notFound();
 
-    return { pageTitles: loader.pageTitles, localizedContent: loader.localizedContent, experience } as const;
+    return { pageTitlesList: loader.pageTitlesList, localizedContent: loader.localizedContent, experience } as const;
   },
   component: ExpPage,
 });
 
 function ExpPage() {
   const { modal } = Route.useSearch();
-  const { pageTitles, localizedContent, experience } = Route.useLoaderData();
+  const { pageTitlesList, localizedContent, experience } = Route.useLoaderData();
 
   const details = (
     <>
@@ -52,7 +49,7 @@ function ExpPage() {
 
   return (
     <>
-      <PageTitle titleTheme={getRandomInt(0, 2)} pathname="/" pageTitles={pageTitles} />
+      <PageTitle titleTheme={getRandomInt(0, 2)} pagePath="/" pageTitlesList={pageTitlesList} />
       {details}
     </>
   );

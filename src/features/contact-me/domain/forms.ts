@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { Effect } from "effect";
 import { FormBuilder, FormReact } from "@lucas-barake/effect-form-react";
-import { RpcMainClient } from "@/rpc/client";
+import { RpcAppClient } from "@/rpc/client";
 import { RuntimeAtom } from "@/lib/runtime-client";
 import { CaptchaInputField, EmailField, MessageField, NameField, SubjectField } from ".";
 
@@ -22,7 +22,7 @@ const contactFormBuilder = (preferredLanguage: PreferredLanguage) =>
     .refineEffect(({ captchaInput }) =>
       Effect.gen(function* () {
         // Check the captcha to ensure it matches
-        const { isCaptchaValid } = yield* RpcMainClient;
+        const { isCaptchaValid } = yield* RpcAppClient;
         if (!(yield* isCaptchaValid({ captchaInput })))
           return { path: ["captchaInput"], issue: preferredLanguage === "en" ? "Entered captcha is invalid" : "Wpisana captcha jest nieprawidłowa" };
       }).pipe(
@@ -45,7 +45,7 @@ export const contactForm = (preferredLanguage: PreferredLanguage) =>
     },
     onSubmit: (_, { decoded: { name, email, subject, message } }) =>
       Effect.gen(function* () {
-        const { contactForm } = yield* RpcMainClient;
+        const { contactForm } = yield* RpcAppClient;
         yield* contactForm({ name, email, subject, message });
       }),
   });

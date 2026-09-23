@@ -1,5 +1,5 @@
 // types
-import type { Experience } from "@/types/shared";
+import type { Experience } from "@/domain";
 
 interface ScreenShotsProps {
   experience: Experience;

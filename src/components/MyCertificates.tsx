@@ -5,7 +5,7 @@ import prattOrig from "@/assets/my-certificates-pratt-orig.webp";
 import prattTrans from "@/assets/my-certificates-pratt-trans.webp";
 
 // types
-import type { LocalizedContent } from "@/types/shared";
+import type { LocalizedContent } from "@/domain";
 
 interface MyCertificatesProps {
   localizedContent: LocalizedContent;

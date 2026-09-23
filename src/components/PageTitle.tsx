@@ -2,16 +2,16 @@
 import { cn } from "@/lib/utils";
 
 // types
-import type { PageTitles } from "@/types/shared";
+import type { PagePath, PageTitlesList } from "@/domain";
 
 interface PageTitleProps {
   titleTheme: number;
-  pathname: string;
-  pageTitles: PageTitles[];
+  pagePath: PagePath;
+  pageTitlesList: PageTitlesList;
 }
 
-export default function PageTitle({ titleTheme, pathname, pageTitles }: PageTitleProps) {
-  const { eyebrow, heading, intro } = pageTitles[titleTheme][pathname];
+export default function PageTitle({ titleTheme, pagePath, pageTitlesList }: PageTitleProps) {
+  const { eyebrow, heading, intro } = pageTitlesList[titleTheme][pagePath];
 
   return (
     <section className="mx-4 my-3 lg:mx-0">
