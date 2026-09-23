@@ -5,15 +5,12 @@ import { Fragment } from "react";
 import type { Experience } from "@/types/shared";
 
 interface ExperienceDetailsSeoProps {
-  experience: [Experience[], Experience[]];
-  type: "e" | "p";
-  index: number;
+  experience: Experience;
 }
 
-export default function ExperienceDetailsSeo({ experience, type, index }: ExperienceDetailsSeoProps) {
-  const experienceT = experience[type === "e" ? 0 : 1][index];
-  const { year, role, company, txt, skillsUsed, gitHubLink, liveLink, videoLink } = experienceT;
-
+export default function ExperienceDetailsSeo({
+  experience: { year, role, company, txt, skillsUsed, gitHubLink, liveLink, videoLink },
+}: ExperienceDetailsSeoProps) {
   return (
     <article className="sr-only">
       <h2 className="text-xl">{role}</h2>

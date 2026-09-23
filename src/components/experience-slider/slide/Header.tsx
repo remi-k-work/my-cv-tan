@@ -10,12 +10,10 @@ import type { Experience, LocalizedContent } from "@/types/shared";
 
 interface HeaderProps {
   localizedContent: LocalizedContent;
-  type: "e" | "p";
-  index: number;
   experience: Experience;
 }
 
-export default function Header({ localizedContent, type, index, experience: { year, role, company, gitHubLink, liveLink, videoLink } }: HeaderProps) {
+export default function Header({ localizedContent, experience: { slug, year, role, company, gitHubLink, liveLink, videoLink } }: HeaderProps) {
   return (
     <header className="mb-4 flex min-h-28 gap-4 @md:min-h-auto">
       <section className="flex-4">
@@ -26,8 +24,8 @@ export default function Header({ localizedContent, type, index, experience: { ye
       <section className="flex-3">
         <div className="flex flex-wrap items-center justify-end gap-2">
           <Link
-            to="/exp/$type/$index"
-            params={{ type, index: String(index) }}
+            to="/exp/$slug"
+            params={{ slug }}
             search={{ modal: true }}
             title={localizedContent["experienceSlide"]["moreInfo"]}
             className="rounded-full border border-primary-foreground p-1 text-primary-foreground hover:scale-110 hover:border-accent-foreground hover:text-accent-foreground"

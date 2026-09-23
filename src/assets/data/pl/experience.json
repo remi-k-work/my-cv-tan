@@ -1,5 +1,7 @@
 [
   {
+    "type": "e",
+    "slug": "benefit-finance",
     "year": "Marzec 2026",
     "role": "Programista Full-Stack",
     "company": "Benefit Finance",
@@ -22,6 +24,8 @@
   },
 
   {
+    "type": "e",
+    "slug": "artcom-cms",
     "year": "Styczeń 2025",
     "role": "Programista Full-Stack",
     "company": "ARTCOM",
@@ -33,6 +37,8 @@
   },
 
   {
+    "type": "e",
+    "slug": "artcom-website",
     "year": "Listopad 2024",
     "role": "Programista React",
     "company": "ARTCOM",
@@ -44,6 +50,8 @@
   },
 
   {
+    "type": "e",
+    "slug": "artcom-internship",
     "year": "Październik 2024",
     "role": "Staż",
     "company": "ARTCOM",
@@ -63,6 +71,8 @@
   },
 
   {
+    "type": "e",
+    "slug": "break-time",
     "year": "Zbyt Długo",
     "role": "Prace Dorywcze",
     "company": "Przerwa w Branży",
@@ -72,6 +82,8 @@
   },
 
   {
+    "type": "e",
+    "slug": "syncro",
     "year": "2008, 2009",
     "role": "Programista .NET",
     "company": "Syncro Services",
@@ -82,6 +94,8 @@
   },
 
   {
+    "type": "e",
+    "slug": "not-for-tourists",
     "year": "2005 — 2007",
     "role": "Konsultant Internetowy",
     "company": "Not For Tourists",
@@ -92,6 +106,8 @@
   },
 
   {
+    "type": "e",
+    "slug": "danceshopper",
     "year": "2002 — 2004",
     "role": "Programista Full-Stack",
     "company": "DanceShopper",
@@ -99,5 +115,150 @@
     "liveLink": "https://www.danceshopper.com",
     "imageName": "07",
     "skillsUsed": ["ASP.NET", "C#", "Microsoft SQL Server", "Projektowanie Stron Internetowych", "E-Commerce"]
+  },
+
+  {
+    "type": "p",
+    "slug": "wordle-overdrive",
+    "year": "Czerwiec 2026",
+    "role": "Wordle Overdrive",
+    "company": "Projekt Osobisty",
+    "txt": "Co się dzieje, gdy spokojne, metodyczne tempo tradycyjnej łamigłówki słownej zderza się z presją niekończącej się, arcade'owej rozgrywki survivalowej? Wordle Overdrive powstało, aby odpowiedzieć właśnie na to pytanie. Zamiast rozwiązywać pojedynczą, odizolowaną łamigłówkę, gracze uczestniczą w ciągłej, wysokiej stawce, gdzie każde rozwiązane słowo przyczynia się do rosnącego mnożnika punktów i passy zwycięstw, a jeden błąd może zniweczyć całą rozgrywkę. Aby przekształcić klasyczną formułę w coś bardziej dynamicznego i opartego na umiejętnościach, zaprojektowałem system punktacji w czasie rzeczywistym, w którym potencjał nagrody stale maleje w zależności od upływu czasu i skuteczności zgadywania. Szybkie, trafne rozwiązania zapewniają agresywne mnożniki, a wahanie stopniowo wyczerpuje potencjalną nagrodę, tworząc ciągłą pilność i napięcie przez całą rozgrywkę. Aby rozszerzyć tę pętlę przetrwania poza pojedynczą sesję, wdrożyłem globalny system High Score. Gracze nie tylko optymalizują swoje wyniki pod kątem wewnętrznych systemów gry, ale także rywalizują z szerszą bazą graczy, gdzie każda rozgrywka staje się próbą osiągnięcia globalnego mistrzostwa. Aby zmniejszyć trudność związaną ze zgadywaniem na ślepo, zintegrowałem system generowania zagadek oparty na sztucznej inteligencji, wykorzystujący modele Gemini i generując unikalne wskazówki dla każdego słowa. To przesuwa rozgrywkę w kierunku dedukcji i rozpoznawania wzorców, a nie czystego zapamiętywania. Doświadczenie jest dodatkowo wzmocnione przez klawiaturę zorientowaną na przetrwanie, która dynamicznie usuwa nieprawidłowe litery w trakcie gry, usprawniając podejmowanie decyzji pod presją. Cały system został zbudowany w oparciu o Next.js i TypeScript, w dużym stopniu wykorzystując zasady programowania funkcyjnego i reaktywne zarządzanie stanem oparte na atomach. Projekt obejmuje również w pełni zlokalizowane tryby angielski i polski z obszernymi, niezależnymi słownikami oraz responsywnym interfejsem użytkownika zaprojektowanym w oparciu o nowoczesne systemy kolorów OKLCH, zarówno dla ciemnych, jak i jasnych motywów. Wordle Overdrive to w zasadzie eksperyment w projektowaniu gier zręcznościowych, łączący wspomaganą sztuczną inteligencją rozgrywkę, systemy punktacji i funkcjonalną architekturę w szybką, reaktywną i wciągającą przygodę.",
+    "gitHubLink": "https://github.com/remi-k-work/wordle-game",
+    "liveLink": "https://wordle-game.remiforge.dev",
+    "imageName": "12",
+    "skillsUsed": [
+      "Next.js",
+      "TypeScript",
+      "PostgreSQL",
+      "Orkiestracja Sztucznej Inteligencji",
+      "Model Gemini od Google",
+      "Effect",
+      "Programowanie Funkcyjne",
+      "Zarządzanie Stanem Reaktywnym",
+      "Projektowanie Gier",
+      "Tailwind CSS",
+      "Najlepsze Wyniki w Grze i ich Przechowywanie"
+    ]
+  },
+
+  {
+    "type": "p",
+    "slug": "total-recall-ai",
+    "year": "Listopad 2025",
+    "role": "Total Recall AI",
+    "company": "Projekt Osobisty",
+    "txt": "Masz dość gubienia genialnych pomysłów w bałaganie cyfrowych notatek? Czy łapiesz się na tym, że bez końca szukasz tej jednej, kluczowej informacji, którą wiesz, że zapisałeś? Witamy w Total Recall AI, kolejnej generacji osobistego zarządzania wiedzą. To nie jest kolejna aplikacja do robienia notatek; to Twój osobisty asystent poznawczy, oparty na najnowszej technologii AI. Zamiast przeszukiwać foldery i tagi, wyobraź sobie, że po prostu zadajesz pytanie. Nasza sztuczna inteligencja ma pełną pamięć każdej notatki, jaką kiedykolwiek napisałeś, natychmiast znajdując i syntetyzując dokładnie te informacje, których potrzebujesz. Niezależnie od tego, czy jesteś studentem przygotowującym się do egzaminu, profesjonalistą burzy mózgów nad projektem, czy po prostu kimś, kto chce zapamiętać, gdzie zaparkował samochód, Total Recall AI jest gotowe pomóc Ci na nowo odkryć własne myśli. Przestań szukać i zacznij zapamiętywać. Total Recall AI dba o to, aby Twoja wiedza nigdy nie zginęła — czeka tylko, aż ją sobie przypomnisz.",
+    "gitHubLink": "https://github.com/remi-k-work/total-recall-ai",
+    "liveLink": "https://total-recall-ai.remiforge.dev",
+    "imageName": "15",
+    "skillsUsed": [
+      "Next.js",
+      "PostgreSQL",
+      "Autoryzacja",
+      "Drizzle ORM",
+      "Usługi Sieciowe RESTful",
+      "Wyszukiwanie RAG",
+      "Tailwind CSS",
+      "TypeScript",
+      "Sztuczna Inteligencja"
+    ]
+  },
+
+  {
+    "type": "p",
+    "slug": "pixamory",
+    "year": "Maj 2025",
+    "role": "PixaMory",
+    "company": "Projekt Osobisty",
+    "txt": "Czy chciałbyś poprawić swoją pamięć wzrokową, wystawiając ją na próbę? Zobaczmy, ile tur zajmie Ci odsłonięcie całej planszy. Będziesz mógł wybierać spośród szerokiej gamy kolekcji obrazów, które zawsze Cię zaskoczą, ponieważ są pobierane losowo z serwerów PixaBay. Powinno to zwiększyć zainteresowanie grą i sprawić, że będzie ona dość nieprzewidywalna. Kiedy uznasz, że robisz postępy, wypróbuj trudniejszy poziom. Śledź swoje wyniki i porównuj je z poprzednimi. Dojdź do granic możliwości i spróbuj pobić swój najlepszy wynik. Ciesz się wyzwaniem i baw się dobrze!",
+    "gitHubLink": "https://github.com/remi-k-work/memory-game-native",
+    "liveLink": "https://github.com/remi-k-work/memory-game-native/releases/latest/download/PixaMory.apk",
+    "videoLink": "https://fyxk1xpcf8.ufs.sh/f/l5x42vpjizuQ8I0aihPUfBmtn1HJYGFeZq0yMzNl4w6cQb9s",
+    "imageName": "14",
+    "skillsUsed": ["React Native", "Expo", "Usługi Sieciowe RESTful", "Projektowanie Gier", "PostgreSQL", "Zustand"]
+  },
+
+  {
+    "type": "p",
+    "slug": "noline-deli-manager",
+    "year": "Czerwiec 2024",
+    "role": "NoLine-Deli Manager",
+    "company": "Projekt Osobisty",
+    "txt": "NoLine-Deli Manager to szyty na miarę system zarządzania treścią (CMS), który zbudowałem do prowadzenia NoLine-Deli, fikcyjnego europejskiego sklepu z ekologiczną żywnością, który stworzyłem jako osobiste przedsięwzięcie e-commerce. Dzięki tej przyjaznej dla użytkownika platformie każdy może poeksperymentować z zarządzaniem backendem sklepu internetowego. Użytkownicy mogą tworzyć, aktualizować i usuwać marki, kategorie, podkategorie i towary, zdobywając doświadczenie z pierwszej ręki w zakresie zarządzania treścią e-commerce. Płynne zarządzanie obrazami zapewnia piękną wizualnie witrynę sklepową, a połączenie systemu z front-endem NoLine-Deli (który również zaprojektowałem) zapewnia płynny przepływ danych i aktualizację w czasie rzeczywistym.",
+    "gitHubLink": "https://github.com/remi-k-work/noline-deli",
+    "liveLink": "https://noline-deli.remiforge.dev/manager",
+    "imageName": "08",
+    "skillsUsed": [
+      "Next.js",
+      "E-Commerce",
+      "MongoDB",
+      "Prisma ORM",
+      "Projektowanie Responsywne (RWD)",
+      "Autoryzacja",
+      "TypeScript",
+      "Systemy Zarządzania Treścią (CMS)"
+    ]
+  },
+
+  {
+    "type": "p",
+    "slug": "noline-deli",
+    "year": "Marzec 2024",
+    "role": "NoLine-Deli",
+    "company": "Projekt Osobisty",
+    "txt": "Witamy w NoLine-Deli, europejskim sklepie z ekologiczną, zdrową żywnością, który szanuje Twój czas i jest miejscem, w którym nigdy nie doświadczysz stania w długich kolejkach. Dostarczymy towar bezpośrednio do Twojego domu. Oprócz zapewnienia Ci wygody mamy jeszcze inny cel. Chcemy przedstawiać Ci świeże, zdrowe, organiczne i wysokiej jakości produkty europejskie, niezależnie od tego, w której części Stanów Zjednoczonych się znajdujesz. Jeśli masz środkowoeuropejskie korzenie, to chcemy dostarczyć Ci Twoje ulubione potrawy i wspomnienia oraz sprawić, że poczujesz się jak w swoim rodzinnym mieście. Każdego klienta traktujemy indywidualnie. W naszej ofercie znajdą Państwo produkty specyficzne dla Polski, słynącej na przykład z kiełbasy i pierogów. Jednakże stale poszerzamy nasz asortyment i jesteśmy otwarci na Państwa sugestie. Celem naszego sklepu ze zdrową żywnością ekologiczną jest dostarczanie wszelkich produktów, o które poprosisz. Jeżeli mają Państwo indywidualne potrzeby wykraczające poza listę naszych pozycji, prosimy o informację, a my postaramy się je dla Państwa znaleźć. Jeśli organizujesz przyjęcie i potrzebujesz porady dotyczącej menu, również możemy pomóc.",
+    "gitHubLink": "https://github.com/remi-k-work/noline-deli",
+    "liveLink": "https://noline-deli.remiforge.dev",
+    "imageName": "09",
+    "skillsUsed": [
+      "Next.js",
+      "E-Commerce",
+      "MongoDB",
+      "Prisma ORM",
+      "Projektowanie Responsywne (RWD)",
+      "Autoryzacja",
+      "TypeScript",
+      "Systemy Zarządzania Treścią (CMS)"
+    ]
+  },
+
+  {
+    "type": "p",
+    "slug": "word-wave",
+    "year": "Luty 2024",
+    "role": "Word Wave",
+    "company": "Projekt Osobisty",
+    "txt": "Co masz dzisiaj na myśli? Pozwól swoim myślom odlecieć i dołącz do naszej tętniącej życiem społeczności blogowej. Uwolnij swoją kreatywność i nawiąż kontakt z osobami o podobnych poglądach. Masz historię do opowiedzenia? Pomysł, który kipi w środku? Nasza platforma zapewnia przestrzeń do swobodnego wyrażania siebie i nawiązywania kontaktu z innymi, którzy podzielają Twoje pasje. Zbudowałem prostą aplikację do obsługi sieci społecznościowych, inspirowaną tutorialem Marka Eriksona „Redux Essentials” z oficjalnej dokumentacji Redux.",
+    "gitHubLink": "https://github.com/remi-k-work/word-wave",
+    "liveLink": "https://word-wave.remiforge.dev",
+    "imageName": "10",
+    "skillsUsed": ["Redux", "Blogi i Media Społecznościowe", "REST API", "React.js", "Interfejs Użytkownika (UX)", "Projektowanie Responsywne (RWD)"]
+  },
+
+  {
+    "type": "p",
+    "slug": "home-budget",
+    "year": "Grudzień 2023",
+    "role": "Home Budget",
+    "company": "Projekt Osobisty",
+    "txt": "Po długiej przerwie w branży ciężko pracuję, aby nadążać za wszystkimi najnowszymi trendami w tworzeniu stron internetowych. Bardzo podoba mi się React, ponieważ pozwala myśleć bardziej modułowo podczas tworzenia aplikacji, a także pomaga w enkapsulacji. Ćwiczę z React Router, który jest kolejnym przydatnym narzędziem, dzięki któremu SPA Reacta zachowuje się bardziej jak tradycyjna witryna internetowa z oddzielnymi stronami. Wzorowałem się na jedenym z tutoriali „Coding in Public” i stworzyłem przykład aplikacji do prowadzenia domowego budżetu. Także, zacznij budżetować swoje wydatki już teraz, zwłaszcza w okresie świątecznym!",
+    "gitHubLink": "https://github.com/remi-k-work/home-budget",
+    "liveLink": "https://home-budget.remiforge.dev",
+    "imageName": "11",
+    "skillsUsed": ["React.js", "Tworzenie Aplikacji Internetowych", "Doświadczenie Użytkownika (UX)"]
+  },
+
+  {
+    "type": "p",
+    "slug": "my-cv",
+    "year": "Październik 2023",
+    "role": "My CV",
+    "company": "Projekt Osobisty",
+    "txt": "Czy myślisz, że widziałeś już tę stronę? Tak, bo właśnie się na niej teraz znajdujesz 😄 To jest moje CV. Możesz argumentować, że muszę być nieco zdesperowany, aby włączyć to do swojego portfolio. I miałbyś rację, ale ponieważ jest to projekt oparty na React, możesz przynajmniej sprawdzić jego kod źródłowy na GitHubie. Jest to projekt, z którego jestem dumny i wierzę, że Cię zainteresuje. Może znajdziesz coś, co możesz dodać do swojego portfolio lub czegoś się z niego nauczyć? Rzuć okiem i daj mi znać, co o nim myślisz.",
+    "gitHubLink": "https://github.com/remi-k-work/my-cv",
+    "liveLink": "https://remiforge.dev",
+    "imageName": "13",
+    "skillsUsed": ["React.js", "GitHub", "Doświadczenie Użytkownika (UX)", "Lokalizacja"]
   }
 ]

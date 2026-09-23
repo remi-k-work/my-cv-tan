@@ -12,36 +12,35 @@ import ExperienceModal from "@/components/ExperienceModal";
 import ExperienceDetails from "@/components/experience-details";
 import ExperienceDetailsSeo from "@/components/experience-details/SeoVer";
 
-export const Route = createFileRoute("/exp/$type/$index")({
+// types
+import type { Experience } from "@/types/shared";
+
+export const Route = createFileRoute("/exp/$slug")({
   validateSearch: (search) => ({
     modal: search.modal === true || search.modal === "1" || search.modal === 1,
   }),
   loaderDeps: ({ search }) => ({ modal: search.modal }),
   loader: async ({ params }) => {
-    const { type, index } = params;
-    const validType: "e" | "p" = type === "e" || type === "p" ? type : "e";
-    const validIndex = Number(index);
-    if (!Number.isInteger(validIndex) || validIndex < 0) throw notFound();
+    const { slug } = params;
 
     const preferredLanguage = await getLang();
     const loader = DataLoader.fromLang(preferredLanguage);
-    const experience = loader.experience;
-    const list = experience[validType === "e" ? 0 : 1];
-    if (validIndex >= list.length) throw notFound();
+    const experience = loader.experience.find((exp) => exp.slug === slug) as Experience;
+    if (!experience) throw notFound();
 
-    return { validType, validIndex, localizedContent: loader.localizedContent, experience, pageTitles: loader.pageTitles } as const;
+    return { pageTitles: loader.pageTitles, localizedContent: loader.localizedContent, experience } as const;
   },
   component: ExpPage,
 });
 
 function ExpPage() {
   const { modal } = Route.useSearch();
-  const { validType, validIndex, localizedContent, experience, pageTitles } = Route.useLoaderData();
+  const { pageTitles, localizedContent, experience } = Route.useLoaderData();
 
   const details = (
     <>
-      <ExperienceDetailsSeo experience={experience} type={validType} index={validIndex} />
-      <ExperienceDetails localizedContent={localizedContent} experience={experience} type={validType} index={validIndex} />
+      <ExperienceDetailsSeo experience={experience} />
+      <ExperienceDetails localizedContent={localizedContent} experience={experience} />
     </>
   );
 

@@ -1,5 +1,7 @@
 [
   {
+    "type": "e",
+    "slug": "benefit-finance",
     "year": "Mar 2026",
     "role": "Full-Stack Developer",
     "company": "Benefit Finance",
@@ -11,6 +13,8 @@
   },
 
   {
+    "type": "e",
+    "slug": "artcom-cms",
     "year": "Jan 2025",
     "role": "Full-Stack Developer",
     "company": "ARTCOM",
@@ -22,6 +26,8 @@
   },
 
   {
+    "type": "e",
+    "slug": "artcom-website",
     "year": "Nov 2024",
     "role": "React Developer",
     "company": "ARTCOM",
@@ -33,6 +39,8 @@
   },
 
   {
+    "type": "e",
+    "slug": "artcom-internship",
     "year": "Oct 2024",
     "role": "Internship",
     "company": "ARTCOM",
@@ -52,6 +60,8 @@
   },
 
   {
+    "type": "e",
+    "slug": "break-time",
     "year": "Too Long",
     "role": "Odd Jobs",
     "company": "Break Time",
@@ -61,6 +71,8 @@
   },
 
   {
+    "type": "e",
+    "slug": "syncro",
     "year": "2008, 2009",
     "role": ".NET Programmer",
     "company": "Syncro Services",
@@ -71,6 +83,8 @@
   },
 
   {
+    "type": "e",
+    "slug": "not-for-tourists",
     "year": "2005 — 2007",
     "role": "Web Consultant",
     "company": "Not For Tourists",
@@ -81,6 +95,8 @@
   },
 
   {
+    "type": "e",
+    "slug": "danceshopper",
     "year": "2002 — 2004",
     "role": "Full-Stack Developer",
     "company": "DanceShopper",
@@ -88,5 +104,122 @@
     "liveLink": "https://www.danceshopper.com",
     "imageName": "07",
     "skillsUsed": ["ASP.NET", "C#", "Microsoft SQL Server", "Web Design", "E-Commerce"]
+  },
+
+  {
+    "type": "p",
+    "slug": "wordle-overdrive",
+    "year": "Jun 2026",
+    "role": "Wordle Overdrive",
+    "company": "Personal",
+    "txt": "What happens when the calm, methodical pace of a traditional word puzzle collides with the pressure of an endless arcade survival run? Wordle Overdrive was built to answer exactly that question. Instead of solving a single isolated puzzle, players enter a continuous high-stakes session where every solved word contributes to a growing score multiplier and winning streak, while a single mistake can wipe out the entire run. To transform the classic formula into something more dynamic and skill-driven, I designed a real-time scoring system where reward potential constantly decays based on both elapsed time and guess efficiency. Fast, accurate solutions grant aggressive multipliers, while hesitation steadily drains the possible reward, creating constant urgency and tension throughout the run. To extend this survival loop beyond a single session, I implemented a global High Score system that turns every run into a permanent competitive benchmark. Players are not only optimizing against the game’s internal systems but also competing against the broader player base, where each run becomes a bid for mastery on a shared leaderboard. To reduce the friction of blind guessing, I integrated an AI-powered riddle generation system using Gemini models, producing unique cryptic clues for every word. This shifts gameplay toward deduction and pattern recognition rather than pure memorization. The experience is further reinforced by a survival-focused keypad that dynamically removes incorrect letters during play, tightening decision-making under pressure. The entire system was built with Next.js and TypeScript, heavily embracing functional programming principles through Effect and atom-based reactive state management. Instead of scattered asynchronous logic, the game lifecycle, scoring pipeline, AI interactions, and session handling are coordinated through explicit type-safe effects and generators, ensuring predictable behavior even under fast-paced gameplay conditions. The project also includes fully localized English and Polish modes with large independent dictionaries and a responsive UI designed around modern OKLCH color systems for both dark and light themes. Wordle Overdrive ultimately serves as an experiment in arcade game design, combining AI-assisted gameplay, competitive scoring systems, and functional architecture into a fast, reactive, and replayable browser experience.",
+    "gitHubLink": "https://github.com/remi-k-work/wordle-game",
+    "liveLink": "https://wordle-game.remiforge.dev",
+    "imageName": "12",
+    "skillsUsed": [
+      "Next.js",
+      "TypeScript",
+      "PostgreSQL",
+      "AI Orchestration",
+      "Gemini API",
+      "Effect",
+      "Functional Programming",
+      "Reactive State Management",
+      "Game Systems Design",
+      "Tailwind CSS",
+      "Leaderboards & Persistence"
+    ]
+  },
+
+  {
+    "type": "p",
+    "slug": "total-recall-ai",
+    "year": "Nov 2025",
+    "role": "Total Recall AI",
+    "company": "Personal",
+    "txt": "Are you tired of losing your brilliant ideas in a mess of digital notes? Do you find yourself endlessly searching for that one crucial piece of information you know you wrote down? Welcome to Total Recall AI, the next generation of personal knowledge management. This isn't just another note-taking app; it's your personal cognitive assistant, powered by the latest AI technology. Instead of hunting through folders and tags, imagine simply asking a question. Our AI has total recall of every note you've ever written, instantly finding and synthesizing the exact information you need. Whether you're a student preparing for an exam, a professional brainstorming a project, or just someone who wants to remember where they parked their car, Total Recall AI is ready to help you rediscover your own thoughts. Stop searching and start remembering. Total Recall AI makes sure your knowledge is never lost—it's just waiting for you to recall it.",
+    "gitHubLink": "https://github.com/remi-k-work/total-recall-ai",
+    "liveLink": "https://total-recall-ai.remiforge.dev",
+    "imageName": "15",
+    "skillsUsed": ["Next.js", "PostgreSQL", "Authorization", "Drizzle ORM", "RESTful WebServices", "RAG Search", "Tailwind CSS", "TypeScript", "AI"]
+  },
+
+  {
+    "type": "p",
+    "slug": "pixamory",
+    "year": "May 2025",
+    "role": "PixaMory",
+    "company": "Personal",
+    "txt": "Would you like to enhance your visual memory by putting it to the test? Let us see how many turns it takes you to reveal the entire board. You will be able to select from a wide range of image collections that will always surprise you because they are acquired at random from PixaBay servers. This should increase the game's interest and make it quite unpredictable. When you believe you are improving, try a more difficult level. Keep track of your scores and compare them with your previous ones. Push yourself to the limit and try to beat your best score. Enjoy the challenge and have fun!",
+    "gitHubLink": "https://github.com/remi-k-work/memory-game-native",
+    "liveLink": "https://github.com/remi-k-work/memory-game-native/releases/latest/download/PixaMory.apk",
+    "videoLink": "https://fyxk1xpcf8.ufs.sh/f/l5x42vpjizuQ8I0aihPUfBmtn1HJYGFeZq0yMzNl4w6cQb9s",
+    "imageName": "14",
+    "skillsUsed": ["React Native", "Expo", "RESTful WebServices", "Game Design", "PostgreSQL", "Zustand"]
+  },
+
+  {
+    "type": "p",
+    "slug": "noline-deli-manager",
+    "year": "Jun 2024",
+    "role": "NoLine-Deli Manager",
+    "company": "Personal",
+    "txt": "NoLine-Deli Manager is a bespoke content management system (CMS) that I built to run NoLine-Deli, a fictitious organic European food store I made as a personal e-commerce venture. This user-friendly platform enables anyone to experiment with managing the backend of an online store. Users can create, update, and delete brands, categories, subcategories, and goods, gaining firsthand experience with e-commerce content management. Seamless image management assures a visually beautiful storefront, and the system's connection with the NoLine-Deli front-end (which I also designed) ensures smooth data flow and real-time updates.",
+    "gitHubLink": "https://github.com/remi-k-work/noline-deli",
+    "liveLink": "https://noline-deli.remiforge.dev/manager",
+    "imageName": "08",
+    "skillsUsed": ["Next.js", "E-Commerce", "MongoDB", "Prisma ORM", "Responsive Web Design", "Authorization", "TypeScript", "Content Management Systems (CMS)"]
+  },
+
+  {
+    "type": "p",
+    "slug": "noline-deli",
+    "year": "Mar 2024",
+    "role": "NoLine-Deli",
+    "company": "Personal",
+    "txt": "Welcome to NoLine-Deli, an organic, healthy European food store that respects your time and is a place where you will never experience standing in long lines. We will deliver goods directly to your home. We also have another goal besides making it convenient for you. We want to introduce fresh, healthy, organic, and high-quality European products to you, no matter which part of the United States you are located in. If you have Central European roots or happen to visit here, we want to bring you some of your favorite foods and memories and make you feel like you are in your hometown. We treat each client individually. In our offer, you will find products that are specific to Poland, famous for sausage, pierogis, kielbasa, and kiszka. However, we constantly expand our merchandise and are open to your suggestions. Our organic healthy food store has a goal to deliver any item you ask for from the variety we have to offer: breads, coffees, desserts, baking, dry goods, sauces, snacks, soups, spices, sweets, teas, and more. In case you have individual needs that go beyond the list of our items, please let us know, and we will try to find them for you. If you are creating a party and need some advice about the menu, we might help as well.",
+    "gitHubLink": "https://github.com/remi-k-work/noline-deli",
+    "liveLink": "https://noline-deli.remiforge.dev",
+    "imageName": "09",
+    "skillsUsed": ["Next.js", "E-Commerce", "MongoDB", "Prisma ORM", "Responsive Web Design", "Authorization", "TypeScript", "Content Management Systems (CMS)"]
+  },
+
+  {
+    "type": "p",
+    "slug": "word-wave",
+    "year": "Feb 2024",
+    "role": "Word Wave",
+    "company": "Personal",
+    "txt": "What is on your mind today? Let your thoughts take flight and join our vibrant blogging community. Unleash your creativity and connect with like-minded individuals. Have a story to tell? An idea that's bubbling up inside? Our platform provides a space for you to express yourself freely and connect with others who share your passions. I was building a simple social network feed app inspired by Mark Erikson's 'Redux Essentials' tutorial from the official Redux documentation.",
+    "gitHubLink": "https://github.com/remi-k-work/word-wave",
+    "liveLink": "https://word-wave.remiforge.dev",
+    "imageName": "10",
+    "skillsUsed": ["Redux", "Social Media Blogging", "REST APIs", "React.js", "User Experience (UX)", "Responsive Web Design"]
+  },
+
+  {
+    "type": "p",
+    "slug": "home-budget",
+    "year": "Dec 2023",
+    "role": "Home Budget",
+    "company": "Personal",
+    "txt": "After taking a long break from the industry, I am working hard to keep up with all of the latest web-development trends. I really enjoy React since it allows you to think more modularly when creating your app and also aids in encapsulation. I am practicing with React Router, which is another useful tool for making React's SPA behave more like a traditional website with discrete pages and routes. I went through one of the tutorials on Coding in Public. So, starting now, take charge of your spending, especially during the holiday season!",
+    "gitHubLink": "https://github.com/remi-k-work/home-budget",
+    "liveLink": "https://home-budget.remiforge.dev",
+    "imageName": "11",
+    "skillsUsed": ["React.js", "Web Application Development", "User Experience (UX)"]
+  },
+
+  {
+    "type": "p",
+    "slug": "my-cv",
+    "year": "Oct 2023",
+    "role": "My CV",
+    "company": "Personal",
+    "txt": "Do you think you have seen this page before? You are already on it 😄 It is my Resume/CV. You may argue that I must be somewhat desperate to include it in my portfolio. And you would be correct, but since it is React's project, you can at least check out its source code on GitHub. It is a project that I am proud of, and I believe it will be of interest to you. Maybe you can find something you can add to your own portfolio or learn from it. Give it a look and let me know what you think of it.",
+    "gitHubLink": "https://github.com/remi-k-work/my-cv",
+    "liveLink": "https://remiforge.dev",
+    "imageName": "13",
+    "skillsUsed": ["React.js", "GitHub", "User Experience (UX)", "Localization"]
   }
 ]

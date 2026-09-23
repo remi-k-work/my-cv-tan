@@ -16,7 +16,7 @@ import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ApiCaptchaRouteImport } from './routes/api.captcha'
 import { Route as ApiRpcRouteImport } from './routes/api.rpc'
-import { Route as ExpTypeIndexRouteImport } from './routes/exp.$type.$index'
+import { Route as ExpSlugRouteImport } from './routes/exp.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -53,9 +53,9 @@ const ApiRpcRoute = ApiRpcRouteImport.update({
   path: '/api/rpc',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ExpTypeIndexRoute = ExpTypeIndexRouteImport.update({
-  id: '/exp/$type/$index',
-  path: '/exp/$type/$index',
+const ExpSlugRoute = ExpSlugRouteImport.update({
+  id: '/exp/$slug',
+  path: '/exp/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -67,7 +67,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/captcha': typeof ApiCaptchaRoute
   '/api/rpc': typeof ApiRpcRoute
-  '/exp/$type/$index': typeof ExpTypeIndexRoute
+  '/exp/$slug': typeof ExpSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -77,7 +77,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/captcha': typeof ApiCaptchaRoute
   '/api/rpc': typeof ApiRpcRoute
-  '/exp/$type/$index': typeof ExpTypeIndexRoute
+  '/exp/$slug': typeof ExpSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -88,7 +88,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/captcha': typeof ApiCaptchaRoute
   '/api/rpc': typeof ApiRpcRoute
-  '/exp/$type/$index': typeof ExpTypeIndexRoute
+  '/exp/$slug': typeof ExpSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -100,7 +100,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/api/captcha'
     | '/api/rpc'
-    | '/exp/$type/$index'
+    | '/exp/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -110,7 +110,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/api/captcha'
     | '/api/rpc'
-    | '/exp/$type/$index'
+    | '/exp/$slug'
   id:
     | '__root__'
     | '/'
@@ -120,7 +120,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/api/captcha'
     | '/api/rpc'
-    | '/exp/$type/$index'
+    | '/exp/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -131,7 +131,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiCaptchaRoute: typeof ApiCaptchaRoute
   ApiRpcRoute: typeof ApiRpcRoute
-  ExpTypeIndexRoute: typeof ExpTypeIndexRoute
+  ExpSlugRoute: typeof ExpSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -185,11 +185,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiRpcRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/exp/$type/$index': {
-      id: '/exp/$type/$index'
-      path: '/exp/$type/$index'
-      fullPath: '/exp/$type/$index'
-      preLoaderRoute: typeof ExpTypeIndexRouteImport
+    '/exp/$slug': {
+      id: '/exp/$slug'
+      path: '/exp/$slug'
+      fullPath: '/exp/$slug'
+      preLoaderRoute: typeof ExpSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -203,7 +203,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiCaptchaRoute: ApiCaptchaRoute,
   ApiRpcRoute: ApiRpcRoute,
-  ExpTypeIndexRoute: ExpTypeIndexRoute,
+  ExpSlugRoute: ExpSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -2,20 +2,17 @@
 import { resolveAcceptLanguage } from "resolve-accept-language";
 
 // assets
-import localizedContentEn from "@/assets/data/en/localized-content.json";
-import localizedContentPl from "@/assets/data/pl/localized-content.json";
 import pageTitlesEn from "@/assets/data/en/page-titles.json";
 import pageTitlesPl from "@/assets/data/pl/page-titles.json";
+import localizedContentEn from "@/assets/data/en/localized-content.json";
+import localizedContentPl from "@/assets/data/pl/localized-content.json";
 import experienceEn from "@/assets/data/en/experience.json";
 import experiencePl from "@/assets/data/pl/experience.json";
-import portfolioEn from "@/assets/data/en/portfolio.json";
-import portfolioPl from "@/assets/data/pl/portfolio.json";
 import educationEn from "@/assets/data/en/education.json";
 import educationPl from "@/assets/data/pl/education.json";
 
 // types
 import type { PreferredLanguage } from "@/domain";
-import type { Experience } from "@/types/shared";
 
 // constants
 export const LANG_COOKIE = "lang";
@@ -53,22 +50,15 @@ export default class DataLoader {
     return new DataLoader(preferredLanguage);
   }
 
-  // Obtain the localized content for the preferred language
-  public get localizedContent() {
-    return this.preferredLanguage === "pl" ? localizedContentPl : localizedContentEn;
-  }
-
-  // Get all the page titles from an outside source
   public get pageTitles() {
     return this.preferredLanguage === "pl" ? pageTitlesPl : pageTitlesEn;
   }
-
-  // Obtain a list of all job experiences from an outside source
-  public get experience(): [Experience[], Experience[]] {
-    return this.preferredLanguage === "pl" ? [experiencePl, portfolioPl] : [experienceEn, portfolioEn];
+  public get localizedContent() {
+    return this.preferredLanguage === "pl" ? localizedContentPl : localizedContentEn;
   }
-
-  // Obtain a list of all education schools from an outside source
+  public get experience() {
+    return this.preferredLanguage === "pl" ? experiencePl : experienceEn;
+  }
   public get education() {
     return this.preferredLanguage === "pl" ? educationPl : educationEn;
   }

@@ -12,20 +12,19 @@ import type { Experience, LocalizedContent } from "@/types/shared";
 
 interface ExperienceSliderProps {
   localizedContent: LocalizedContent;
-  experience: [Experience[], Experience[]];
-  type: "e" | "p";
+  experienceList: Experience[];
 }
 
-export default function ExperienceSlider({ localizedContent, experience, type }: ExperienceSliderProps) {
+export default function ExperienceSlider({ localizedContent, experienceList }: ExperienceSliderProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel();
 
   return (
     <article className="grid grid-cols-[auto_1fr] grid-rows-[1fr_auto] gap-4 [grid-template-areas:'viewport_viewport''prevnext_dots']">
       <section ref={emblaRef} className="overflow-hidden [grid-area:viewport]">
         <div className="-ms-4 flex touch-pan-y touch-pinch-zoom">
-          {experience[type === "e" ? 0 : 1].map((experienceT, index) => (
+          {experienceList.map((experience, index) => (
             <div key={index} className="min-w-0 shrink-0 grow-0 basis-full ps-4">
-              <Slide localizedContent={localizedContent} type={type} index={index} experience={experienceT} />
+              <Slide localizedContent={localizedContent} experience={experience} />
             </div>
           ))}
         </div>

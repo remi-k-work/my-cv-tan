@@ -9,32 +9,27 @@ import type { Experience, LocalizedContent } from "@/types/shared";
 
 interface ExperienceDetailsProps {
   localizedContent: LocalizedContent;
-  experience: [Experience[], Experience[]];
-  type: "e" | "p";
-  index: number;
+  experience: Experience;
 }
 
 // constants
 const MAX_CHUNK_LENGTH = 80;
 
-export default function ExperienceDetails({ localizedContent, experience, type, index }: ExperienceDetailsProps) {
-  const experienceT = experience[type === "e" ? 0 : 1][index];
-  const { txt, liveLink, videoLink } = experienceT;
-
+export default function ExperienceDetails({ localizedContent, experience, experience: { txt, liveLink, videoLink } }: ExperienceDetailsProps) {
   // Use the helper function to create perfectly chunked paragraphs
   const paras = chunkTextByWords(txt, MAX_CHUNK_LENGTH);
 
   return (
     <article className="mx-auto w-full max-w-4xl rounded-xl bg-clr-primary-800 p-3">
-      <Header localizedContent={localizedContent} experience={experienceT} />
+      <Header localizedContent={localizedContent} experience={experience} />
       {liveLink || videoLink ? (
         <a href={videoLink ?? liveLink} target="_blank" rel="noopener noreferrer">
-          <ScreenShots experience={experienceT} />
+          <ScreenShots experience={experience} />
         </a>
       ) : (
-        <ScreenShots experience={experienceT} />
+        <ScreenShots experience={experience} />
       )}
-      <SkillsUsed localizedContent={localizedContent} experience={experienceT} />
+      <SkillsUsed localizedContent={localizedContent} experience={experience} />
       <p className="sr-only">{txt}</p>
       {paras.map((para, index) => (
         <TypeWriterOutput key={index} fullText={para} />

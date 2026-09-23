@@ -11,17 +11,20 @@ import PageTitle from "@/components/PageTitle";
 import ExperienceSlider from "@/components/experience-slider";
 import ExperienceSliderSeo from "@/components/experience-slider/SeoVer";
 
+// types
+import type { Experience } from "@/types/shared";
+
 export const Route = createFileRoute("/")({
   loader: async () => {
     const preferredLanguage = await getLang();
     const loader = DataLoader.fromLang(preferredLanguage);
-    return { localizedContent: loader.localizedContent, experience: loader.experience, pageTitles: loader.pageTitles } as const;
+    return { pageTitles: loader.pageTitles, localizedContent: loader.localizedContent, experience: loader.experience } as const;
   },
   component: HomePage,
 });
 
 function HomePage() {
-  const { localizedContent, experience, pageTitles } = Route.useLoaderData();
+  const { pageTitles, localizedContent, experience } = Route.useLoaderData();
 
   return (
     <>
@@ -32,8 +35,8 @@ function HomePage() {
             <figcaption className="mb-4 place-self-end rounded-ss-xl rounded-ee-xl bg-primary-foreground p-3 italic">
               {localizedContent["pageHome"]["experience"]}
             </figcaption>
-            <ExperienceSliderSeo experience={experience} type="e" />
-            <ExperienceSlider localizedContent={localizedContent} experience={experience} type="e" />
+            <ExperienceSliderSeo experienceList={experience.filter(({ type }) => type === "e") as Experience[]} />
+            <ExperienceSlider localizedContent={localizedContent} experienceList={experience.filter(({ type }) => type === "e") as Experience[]} />
           </figure>
         </section>
         <section className="rounded-xl bg-clr-primary-800 p-4">
@@ -41,8 +44,8 @@ function HomePage() {
             <figcaption className="mb-4 place-self-end rounded-ss-xl rounded-ee-xl bg-primary-foreground p-3 italic">
               {localizedContent["pageHome"]["portfolioProjects"]}
             </figcaption>
-            <ExperienceSliderSeo experience={experience} type="p" />
-            <ExperienceSlider localizedContent={localizedContent} experience={experience} type="p" />
+            <ExperienceSliderSeo experienceList={experience.filter(({ type }) => type === "p") as Experience[]} />
+            <ExperienceSlider localizedContent={localizedContent} experienceList={experience.filter(({ type }) => type === "p") as Experience[]} />
           </figure>
         </section>
       </article>

@@ -1,13 +1,15 @@
 export interface Experience {
+  type: "e" | "p";
+  slug: string;
   year: string;
   role: string;
   company: string;
   txt: string;
   gitHubLink?: string;
   liveLink?: string;
+  videoLink?: string;
   imageName: string;
   skillsUsed: string[];
-  videoLink?: string;
 }
 
 export interface Education {
