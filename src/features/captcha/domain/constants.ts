@@ -1,9 +1,17 @@
 // oxlint-disable effecttsgo/process-env
 
+// types
+import type { Cookies } from "effect/unstable/http";
+
 // constants
 export const CAPTCHA_COOKIE_NAME = "captcha";
 
-export const CAPTCHA_COOKIE_OPTIONS = { httpOnly: true, sameSite: "lax", path: "/", secure: process.env.NODE_ENV === "production" } as const;
+export const CAPTCHA_COOKIE_OPTIONS = {
+  httpOnly: true,
+  sameSite: "lax",
+  path: "/",
+  secure: process.env.NODE_ENV === "production",
+} as const satisfies Cookies.Cookie["options"];
 
 export const CAPTCHA_WIDTH = 200;
 export const CAPTCHA_HEIGHT = 50;

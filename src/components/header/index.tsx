@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 // components
 import NavItem from "./NavItem";
-import LangChanger from "@/components/LangChanger";
+import LangChanger from "@/features/lang/ui/lang-changer";
 
 // types
 import type { LocalizedContent, PreferredLanguage } from "@/domain";

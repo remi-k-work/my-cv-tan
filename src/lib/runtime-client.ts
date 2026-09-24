@@ -2,6 +2,8 @@
 import { Layer, Logger, ManagedRuntime } from "effect";
 import { Atom, AtomRegistry, Reactivity } from "effect/unstable/reactivity";
 import { RpcAppClient } from "@/rpc/client";
+
+// components
 import { sharedAtomRegistry } from "@/components/atom-registry-provider";
 
 const sharedMemoMap = Layer.makeMemoMapUnsafe();

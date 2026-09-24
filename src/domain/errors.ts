@@ -10,3 +10,7 @@ export class SendError extends Schema.TaggedError<SendError>()("SendError", {
 export class CaptchaError extends Schema.TaggedError<CaptchaError>()("CaptchaError", {
   cause: Schema.Defect(),
 }) {}
+
+export class LangError extends Schema.TaggedError<LangError>()("LangError", {
+  cause: Schema.Defect(),
+}) {}

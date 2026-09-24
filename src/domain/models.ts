@@ -35,7 +35,7 @@ export class Experience extends Schema.Class<Experience>("Experience")({
   gitHubLink: Schema.optionalKey(Schema.Trim.check(Schema.isNonEmpty())),
   liveLink: Schema.optionalKey(Schema.Trim.check(Schema.isNonEmpty())),
   videoLink: Schema.optionalKey(Schema.Trim.check(Schema.isNonEmpty())),
-  imageName: Schema.FiniteFromString.check(Schema.isInt()),
+  imageName: Schema.Trim.check(Schema.isNonEmpty()),
   skillsUsed: Schema.NonEmptyArray(Schema.Trim.check(Schema.isNonEmpty())),
 }) {}
 export const ExperienceList = Schema.NonEmptyArray(Experience);

@@ -17,7 +17,7 @@ export default function MyCertificates({ localizedContent }: MyCertificatesProps
       <figcaption className="mb-4 place-self-end rounded-ss-xl rounded-ee-xl bg-primary-foreground p-3 italic">
         {localizedContent["myCertificates"]["myCertificates"]}
       </figcaption>
-      <a href="https://www.remiforge.dev/my-certificates.pdf" target="_blank" rel="noopener noreferrer" className="space-y-4">
+      <a href="/my-certificates.pdf" target="_blank" rel="noopener noreferrer" className="space-y-4">
         <img src={artcom} width={1222} height={870} alt="ARTCOM" loading="lazy" className="h-auto w-full" />
         <img src={alcc} width={1222} height={870} alt="ALCC" loading="lazy" className="h-auto w-full" />
         <img src={prattOrig} width={1222} height={870} alt="Pratt" loading="lazy" className="h-auto w-full" />

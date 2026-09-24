@@ -53,15 +53,18 @@ export default class DataLoader {
   }
 
   public get pageTitlesList() {
-    return Schema.decodeUnknownSync(PageTitlesList)(this.preferredLanguage === "pl" ? pageTitlesPl : pageTitlesEn);
+    const decoded = Schema.decodeUnknownSync(PageTitlesList)(this.preferredLanguage === "pl" ? pageTitlesPl : pageTitlesEn);
+    return Schema.encodeSync(PageTitlesList)(decoded);
   }
   public get localizedContent() {
     return Schema.decodeUnknownSync(LocalizedContent)(this.preferredLanguage === "pl" ? localizedContentPl : localizedContentEn);
   }
   public get experienceList() {
-    return Schema.decodeUnknownSync(ExperienceList)(this.preferredLanguage === "pl" ? experiencePl : experienceEn);
+    const decoded = Schema.decodeUnknownSync(ExperienceList)(this.preferredLanguage === "pl" ? experiencePl : experienceEn);
+    return Schema.encodeSync(ExperienceList)(decoded);
   }
   public get educationList() {
-    return Schema.decodeUnknownSync(EducationList)(this.preferredLanguage === "pl" ? educationPl : educationEn);
+    const decoded = Schema.decodeUnknownSync(EducationList)(this.preferredLanguage === "pl" ? educationPl : educationEn);
+    return Schema.encodeSync(EducationList)(decoded);
   }
 }
