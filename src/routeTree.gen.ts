@@ -14,9 +14,10 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as EducationRouteImport } from './routes/education'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as ApiAppRouteImport } from './routes/api.app'
-import { Route as ApiRpcRouteImport } from './routes/api.rpc'
+import { Route as ApiCaptchaRouteImport } from './routes/api.captcha'
 import { Route as ExpSlugRouteImport } from './routes/exp.$slug'
+import { Route as ApiRpcCaptchaRouteImport } from './routes/api.rpc.captcha'
+import { Route as ApiRpcContactMeRouteImport } from './routes/api.rpc.contact-me'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -43,19 +44,24 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiAppRoute = ApiAppRouteImport.update({
-  id: '/api/app',
-  path: '/api/app',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiRpcRoute = ApiRpcRouteImport.update({
-  id: '/api/rpc',
-  path: '/api/rpc',
+const ApiCaptchaRoute = ApiCaptchaRouteImport.update({
+  id: '/api/captcha',
+  path: '/api/captcha',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExpSlugRoute = ExpSlugRouteImport.update({
   id: '/exp/$slug',
   path: '/exp/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiRpcCaptchaRoute = ApiRpcCaptchaRouteImport.update({
+  id: '/api/rpc/captcha',
+  path: '/api/rpc/captcha',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiRpcContactMeRoute = ApiRpcContactMeRouteImport.update({
+  id: '/api/rpc/contact-me',
+  path: '/api/rpc/contact-me',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -65,9 +71,10 @@ export interface FileRoutesByFullPath {
   '/education': typeof EducationRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/api/app': typeof ApiAppRoute
-  '/api/rpc': typeof ApiRpcRoute
+  '/api/captcha': typeof ApiCaptchaRoute
   '/exp/$slug': typeof ExpSlugRoute
+  '/api/rpc/captcha': typeof ApiRpcCaptchaRoute
+  '/api/rpc/contact-me': typeof ApiRpcContactMeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -75,9 +82,10 @@ export interface FileRoutesByTo {
   '/education': typeof EducationRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/api/app': typeof ApiAppRoute
-  '/api/rpc': typeof ApiRpcRoute
+  '/api/captcha': typeof ApiCaptchaRoute
   '/exp/$slug': typeof ExpSlugRoute
+  '/api/rpc/captcha': typeof ApiRpcCaptchaRoute
+  '/api/rpc/contact-me': typeof ApiRpcContactMeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -86,9 +94,10 @@ export interface FileRoutesById {
   '/education': typeof EducationRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/api/app': typeof ApiAppRoute
-  '/api/rpc': typeof ApiRpcRoute
+  '/api/captcha': typeof ApiCaptchaRoute
   '/exp/$slug': typeof ExpSlugRoute
+  '/api/rpc/captcha': typeof ApiRpcCaptchaRoute
+  '/api/rpc/contact-me': typeof ApiRpcContactMeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -98,9 +107,10 @@ export interface FileRouteTypes {
     | '/education'
     | '/robots.txt'
     | '/sitemap.xml'
-    | '/api/app'
-    | '/api/rpc'
+    | '/api/captcha'
     | '/exp/$slug'
+    | '/api/rpc/captcha'
+    | '/api/rpc/contact-me'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -108,9 +118,10 @@ export interface FileRouteTypes {
     | '/education'
     | '/robots.txt'
     | '/sitemap.xml'
-    | '/api/app'
-    | '/api/rpc'
+    | '/api/captcha'
     | '/exp/$slug'
+    | '/api/rpc/captcha'
+    | '/api/rpc/contact-me'
   id:
     | '__root__'
     | '/'
@@ -118,9 +129,10 @@ export interface FileRouteTypes {
     | '/education'
     | '/robots.txt'
     | '/sitemap.xml'
-    | '/api/app'
-    | '/api/rpc'
+    | '/api/captcha'
     | '/exp/$slug'
+    | '/api/rpc/captcha'
+    | '/api/rpc/contact-me'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -129,9 +141,10 @@ export interface RootRouteChildren {
   EducationRoute: typeof EducationRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  ApiAppRoute: typeof ApiAppRoute
-  ApiRpcRoute: typeof ApiRpcRoute
+  ApiCaptchaRoute: typeof ApiCaptchaRoute
   ExpSlugRoute: typeof ExpSlugRoute
+  ApiRpcCaptchaRoute: typeof ApiRpcCaptchaRoute
+  ApiRpcContactMeRoute: typeof ApiRpcContactMeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -171,18 +184,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/app': {
-      id: '/api/app'
-      path: '/api/app'
-      fullPath: '/api/app'
-      preLoaderRoute: typeof ApiAppRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/rpc': {
-      id: '/api/rpc'
-      path: '/api/rpc'
-      fullPath: '/api/rpc'
-      preLoaderRoute: typeof ApiRpcRouteImport
+    '/api/captcha': {
+      id: '/api/captcha'
+      path: '/api/captcha'
+      fullPath: '/api/captcha'
+      preLoaderRoute: typeof ApiCaptchaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/exp/$slug': {
@@ -190,6 +196,20 @@ declare module '@tanstack/react-router' {
       path: '/exp/$slug'
       fullPath: '/exp/$slug'
       preLoaderRoute: typeof ExpSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/rpc/captcha': {
+      id: '/api/rpc/captcha'
+      path: '/api/rpc/captcha'
+      fullPath: '/api/rpc/captcha'
+      preLoaderRoute: typeof ApiRpcCaptchaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/rpc/contact-me': {
+      id: '/api/rpc/contact-me'
+      path: '/api/rpc/contact-me'
+      fullPath: '/api/rpc/contact-me'
+      preLoaderRoute: typeof ApiRpcContactMeRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -201,9 +221,10 @@ const rootRouteChildren: RootRouteChildren = {
   EducationRoute: EducationRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
-  ApiAppRoute: ApiAppRoute,
-  ApiRpcRoute: ApiRpcRoute,
+  ApiCaptchaRoute: ApiCaptchaRoute,
   ExpSlugRoute: ExpSlugRoute,
+  ApiRpcCaptchaRoute: ApiRpcCaptchaRoute,
+  ApiRpcContactMeRoute: ApiRpcContactMeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
