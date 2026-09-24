@@ -6,6 +6,8 @@ import { useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 
 // services, features, and other libraries
+import { useAtomSet } from "@effect/atom-react";
+import { updateAtom } from "@/features/lang/state";
 import { setLangCookie } from "@/server/lang.functions";
 
 // components
@@ -23,6 +25,8 @@ interface LangChangerProps {
 }
 
 export default function LangChanger({ preferredLanguage }: LangChangerProps) {
+  const update = useAtomSet(updateAtom, { mode: "promise" });
+
   // To display a pending status while the server action is running
   const [isPending, startTransition] = useTransition();
 
@@ -33,7 +37,8 @@ export default function LangChanger({ preferredLanguage }: LangChangerProps) {
 
   function handleLangToggled() {
     startTransition(async () => {
-      await setLang({ data: preferredLanguage === "en" ? "pl" : "en" });
+      // await setLang({ data: preferredLanguage === "en" ? "pl" : "en" });
+      await update("en");
       await router.invalidate();
     });
   }

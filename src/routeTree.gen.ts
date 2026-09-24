@@ -18,6 +18,7 @@ import { Route as ApiCaptchaRouteImport } from './routes/api.captcha'
 import { Route as ExpSlugRouteImport } from './routes/exp.$slug'
 import { Route as ApiRpcCaptchaRouteImport } from './routes/api.rpc.captcha'
 import { Route as ApiRpcContactMeRouteImport } from './routes/api.rpc.contact-me'
+import { Route as ApiRpcLangRouteImport } from './routes/api.rpc.lang'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -64,6 +65,11 @@ const ApiRpcContactMeRoute = ApiRpcContactMeRouteImport.update({
   path: '/api/rpc/contact-me',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiRpcLangRoute = ApiRpcLangRouteImport.update({
+  id: '/api/rpc/lang',
+  path: '/api/rpc/lang',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/exp/$slug': typeof ExpSlugRoute
   '/api/rpc/captcha': typeof ApiRpcCaptchaRoute
   '/api/rpc/contact-me': typeof ApiRpcContactMeRoute
+  '/api/rpc/lang': typeof ApiRpcLangRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -86,6 +93,7 @@ export interface FileRoutesByTo {
   '/exp/$slug': typeof ExpSlugRoute
   '/api/rpc/captcha': typeof ApiRpcCaptchaRoute
   '/api/rpc/contact-me': typeof ApiRpcContactMeRoute
+  '/api/rpc/lang': typeof ApiRpcLangRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -98,6 +106,7 @@ export interface FileRoutesById {
   '/exp/$slug': typeof ExpSlugRoute
   '/api/rpc/captcha': typeof ApiRpcCaptchaRoute
   '/api/rpc/contact-me': typeof ApiRpcContactMeRoute
+  '/api/rpc/lang': typeof ApiRpcLangRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -111,6 +120,7 @@ export interface FileRouteTypes {
     | '/exp/$slug'
     | '/api/rpc/captcha'
     | '/api/rpc/contact-me'
+    | '/api/rpc/lang'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -122,6 +132,7 @@ export interface FileRouteTypes {
     | '/exp/$slug'
     | '/api/rpc/captcha'
     | '/api/rpc/contact-me'
+    | '/api/rpc/lang'
   id:
     | '__root__'
     | '/'
@@ -133,6 +144,7 @@ export interface FileRouteTypes {
     | '/exp/$slug'
     | '/api/rpc/captcha'
     | '/api/rpc/contact-me'
+    | '/api/rpc/lang'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -145,6 +157,7 @@ export interface RootRouteChildren {
   ExpSlugRoute: typeof ExpSlugRoute
   ApiRpcCaptchaRoute: typeof ApiRpcCaptchaRoute
   ApiRpcContactMeRoute: typeof ApiRpcContactMeRoute
+  ApiRpcLangRoute: typeof ApiRpcLangRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -212,6 +225,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiRpcContactMeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/rpc/lang': {
+      id: '/api/rpc/lang'
+      path: '/api/rpc/lang'
+      fullPath: '/api/rpc/lang'
+      preLoaderRoute: typeof ApiRpcLangRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -225,6 +245,7 @@ const rootRouteChildren: RootRouteChildren = {
   ExpSlugRoute: ExpSlugRoute,
   ApiRpcCaptchaRoute: ApiRpcCaptchaRoute,
   ApiRpcContactMeRoute: ApiRpcContactMeRoute,
+  ApiRpcLangRoute: ApiRpcLangRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -4,7 +4,7 @@
 import type { Cookies } from "effect/unstable/http";
 
 // constants
-export const LANG_COOKIE_NAME = "captcha";
+export const LANG_COOKIE_NAME = "lang";
 
 export const LANG_COOKIE_OPTIONS = {
   maxAge: 2592000,
