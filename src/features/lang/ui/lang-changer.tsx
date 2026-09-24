@@ -1,14 +1,15 @@
+// oxlint-disable effecttsgo/async-function
+
 // react
 import { useTransition } from "react";
 
 // tanstack
 import { useRouter } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 
 // services, features, and other libraries
 import { useAtomSet } from "@effect/atom-react";
 import { updateAtom } from "@/features/lang/state";
-import { setLangCookie } from "@/server/lang.functions";
+import { matchPreferredLanguage } from "@/domain";
 
 // components
 import { Button } from "@base-ui/react";
@@ -33,12 +34,9 @@ export default function LangChanger({ preferredLanguage }: LangChangerProps) {
   // To be able to refresh the page
   const router = useRouter();
 
-  const setLang = useServerFn(setLangCookie);
-
   function handleLangToggled() {
     startTransition(async () => {
-      // await setLang({ data: preferredLanguage === "en" ? "pl" : "en" });
-      await update("en");
+      await update(matchPreferredLanguage(preferredLanguage, "pl", "en"));
       await router.invalidate();
     });
   }

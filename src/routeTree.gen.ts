@@ -15,6 +15,7 @@ import { Route as EducationRouteImport } from './routes/education'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ApiCaptchaRouteImport } from './routes/api.captcha'
+import { Route as ApiLangRouteImport } from './routes/api.lang'
 import { Route as ExpSlugRouteImport } from './routes/exp.$slug'
 import { Route as ApiRpcCaptchaRouteImport } from './routes/api.rpc.captcha'
 import { Route as ApiRpcContactMeRouteImport } from './routes/api.rpc.contact-me'
@@ -50,6 +51,11 @@ const ApiCaptchaRoute = ApiCaptchaRouteImport.update({
   path: '/api/captcha',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiLangRoute = ApiLangRouteImport.update({
+  id: '/api/lang',
+  path: '/api/lang',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ExpSlugRoute = ExpSlugRouteImport.update({
   id: '/exp/$slug',
   path: '/exp/$slug',
@@ -78,6 +84,7 @@ export interface FileRoutesByFullPath {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/captcha': typeof ApiCaptchaRoute
+  '/api/lang': typeof ApiLangRoute
   '/exp/$slug': typeof ExpSlugRoute
   '/api/rpc/captcha': typeof ApiRpcCaptchaRoute
   '/api/rpc/contact-me': typeof ApiRpcContactMeRoute
@@ -90,6 +97,7 @@ export interface FileRoutesByTo {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/captcha': typeof ApiCaptchaRoute
+  '/api/lang': typeof ApiLangRoute
   '/exp/$slug': typeof ExpSlugRoute
   '/api/rpc/captcha': typeof ApiRpcCaptchaRoute
   '/api/rpc/contact-me': typeof ApiRpcContactMeRoute
@@ -103,6 +111,7 @@ export interface FileRoutesById {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/captcha': typeof ApiCaptchaRoute
+  '/api/lang': typeof ApiLangRoute
   '/exp/$slug': typeof ExpSlugRoute
   '/api/rpc/captcha': typeof ApiRpcCaptchaRoute
   '/api/rpc/contact-me': typeof ApiRpcContactMeRoute
@@ -117,6 +126,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/api/captcha'
+    | '/api/lang'
     | '/exp/$slug'
     | '/api/rpc/captcha'
     | '/api/rpc/contact-me'
@@ -129,6 +139,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/api/captcha'
+    | '/api/lang'
     | '/exp/$slug'
     | '/api/rpc/captcha'
     | '/api/rpc/contact-me'
@@ -141,6 +152,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/api/captcha'
+    | '/api/lang'
     | '/exp/$slug'
     | '/api/rpc/captcha'
     | '/api/rpc/contact-me'
@@ -154,6 +166,7 @@ export interface RootRouteChildren {
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiCaptchaRoute: typeof ApiCaptchaRoute
+  ApiLangRoute: typeof ApiLangRoute
   ExpSlugRoute: typeof ExpSlugRoute
   ApiRpcCaptchaRoute: typeof ApiRpcCaptchaRoute
   ApiRpcContactMeRoute: typeof ApiRpcContactMeRoute
@@ -204,6 +217,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCaptchaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/lang': {
+      id: '/api/lang'
+      path: '/api/lang'
+      fullPath: '/api/lang'
+      preLoaderRoute: typeof ApiLangRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/exp/$slug': {
       id: '/exp/$slug'
       path: '/exp/$slug'
@@ -242,6 +262,7 @@ const rootRouteChildren: RootRouteChildren = {
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiCaptchaRoute: ApiCaptchaRoute,
+  ApiLangRoute: ApiLangRoute,
   ExpSlugRoute: ExpSlugRoute,
   ApiRpcCaptchaRoute: ApiRpcCaptchaRoute,
   ApiRpcContactMeRoute: ApiRpcContactMeRoute,

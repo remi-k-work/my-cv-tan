@@ -9,10 +9,10 @@ import { Lang } from "@/features/lang/services/lang";
 import { RpcLoggerLive } from "@/services/rpc-logger";
 
 const RpcLangLayer = RpcLang.toLayer({
-  update: ({ preferredLanguage }) =>
+  resolve: (_, { headers }) =>
     Effect.gen(function* () {
-      const { update } = yield* Lang;
-      yield* update(preferredLanguage);
+      const { resolve } = yield* Lang;
+      return yield* resolve(headers);
     }),
 }).pipe(Layer.provide(Lang.layer));
 

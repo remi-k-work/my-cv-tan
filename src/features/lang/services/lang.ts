@@ -8,7 +8,7 @@ import { LangError, PreferredLanguage } from "@/domain";
 import { LANG_COOKIE_NAME, LANG_COOKIE_OPTIONS } from "@/features/lang/domain";
 
 export class Lang extends Context.Service<Lang>()("Lang", {
-  make: Effect.succeed(() => {
+  make: Effect.sync(() => {
     // Establish the preferred language by the user (try obtaining it from a local cookie first)
     const resolve = Effect.fn("resolve")(
       (headers: Headers.Headers) =>
