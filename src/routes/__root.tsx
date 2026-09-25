@@ -4,9 +4,12 @@ import "@/assets/styles/globals.css";
 import { Outlet, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 
 // services, features, and other libraries
+import { Effect } from "effect";
 import { cn } from "@/lib/utils";
 import DataLoader from "@/lib/DataLoader";
 import { getLang } from "@/server/i18n.functions";
+import { RuntimeClient } from "@/lib/runtime-client";
+import { RpcLangClient } from "@/features/lang/rpc/client";
 
 // components
 import { AtomRegistryProvider } from "@/components/atom-registry-provider";
@@ -26,9 +29,22 @@ import { ROOT_HEAD } from "@/domain";
 export const Route = createRootRoute({
   head: () => ROOT_HEAD,
   loader: async () => {
-    const preferredLanguage = await getLang();
-    const loader = DataLoader.fromLang(preferredLanguage);
-    return { preferredLanguage, localizedContent: loader.localizedContent } as const;
+    const { preferredLanguage, localizedContent } = await RuntimeClient.runPromise(
+      Effect.gen(function* () {
+        const rpcLangClient = yield* RpcLangClient;
+        const { preferredLanguage, localizedContent } = yield* Effect.all(
+          { preferredLanguage: rpcLangClient.preferredLanguage(), localizedContent: rpcLangClient.localizedContent() },
+          { concurrency: "unbounded" }
+        ).pipe(Effect.tapError(Effect.logError));
+
+        return { preferredLanguage, localizedContent } as const;
+      })
+    );
+    // const preferredLanguage = await getLang();
+    // const loader = DataLoader.fromLang(preferredLanguage);
+    // return { preferredLanguage, localizedContent: loader.localizedContent } as const;
+
+    return { preferredLanguage, localizedContent: localizedContent.valueOrUndefined ?? {} } as const;
   },
   component: RootComponent,
 });
