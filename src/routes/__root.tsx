@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import DataLoader from "@/lib/DataLoader";
 import { getLang } from "@/server/i18n.functions";
 import { RuntimeClient } from "@/lib/runtime-client";
-import { RpcLangClient } from "@/features/lang/rpc/client";
+import { RpcDataClient } from "@/features/data/rpc/client";
 
 // components
 import { AtomRegistryProvider } from "@/components/atom-registry-provider";
@@ -31,7 +31,7 @@ export const Route = createRootRoute({
   loader: async () => {
     const { preferredLanguage, localizedContent } = await RuntimeClient.runPromise(
       Effect.gen(function* () {
-        const rpcLangClient = yield* RpcLangClient;
+        const rpcLangClient = yield* RpcDataClient;
         const { preferredLanguage, localizedContent } = yield* Effect.all(
           { preferredLanguage: rpcLangClient.preferredLanguage(), localizedContent: rpcLangClient.localizedContent() },
           { concurrency: "unbounded" }

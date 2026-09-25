@@ -4,7 +4,7 @@ import "@tanstack/react-start/server-only";
 import { Effect, Layer } from "effect";
 import { HttpRouter, HttpServer } from "effect/unstable/http";
 import { HttpApiBuilder } from "effect/unstable/httpapi";
-import { Lang } from "@/features/lang/services/lang";
+import { Lang } from "@/features/data/services/lang";
 import { LangApi } from "./api";
 
 const LangApiHandlers = HttpApiBuilder.group(

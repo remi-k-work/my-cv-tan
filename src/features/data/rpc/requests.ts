@@ -5,7 +5,7 @@ import { EducationList, ExperienceList, LocalizedContent, PageTitlesList, Prefer
 import { LangError } from "@/domain";
 import { RpcLogger } from "@/services/rpc-logger";
 
-export class RpcLang extends RpcGroup.make(
+export class RpcData extends RpcGroup.make(
   Rpc.make("preferredLanguage", {
     success: PreferredLanguage,
     error: LangError,

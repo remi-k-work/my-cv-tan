@@ -5,7 +5,7 @@ import { resolveAcceptLanguage } from "resolve-accept-language";
 import { LangError, PreferredLanguage } from "@/domain";
 
 // constants
-import { LANG_COOKIE_NAME, LANG_COOKIE_OPTIONS } from "@/features/lang/domain";
+import { LANG_COOKIE_NAME, LANG_COOKIE_OPTIONS } from "@/features/data/domain";
 
 export class Lang extends Context.Service<Lang>()("Lang", {
   make: Effect.sync(() => {

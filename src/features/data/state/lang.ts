@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { Effect } from "effect";
 import { RuntimeAtom } from "@/lib/runtime-client";
-import { LangApiClient } from "@/features/lang/http/client";
+import { LangApiClient } from "@/features/data/http/client";
 
 // types
 import type { PreferredLanguage } from "@/domain";

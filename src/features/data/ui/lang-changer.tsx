@@ -8,7 +8,7 @@ import { useRouter } from "@tanstack/react-router";
 
 // services, features, and other libraries
 import { useAtomSet } from "@effect/atom-react";
-import { updateAtom } from "@/features/lang/state";
+import { updateAtom } from "@/features/data/state";
 import { matchPreferredLanguage } from "@/domain";
 
 // components
