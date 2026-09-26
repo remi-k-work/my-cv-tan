@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Context, Effect, Layer, Schema } from "effect";
+import { Context, Effect, Layer, Option, Schema } from "effect";
 import { Headers } from "effect/unstable/http";
 import { EducationList, ExperienceList, LocalizedContent, matchPreferredLanguage, PageTitlesList } from "@/domain";
 import { Lang } from "./lang";
@@ -14,28 +14,52 @@ import experiencePl from "@/assets/data/pl/experience.json";
 import educationEn from "@/assets/data/en/education.json";
 import educationPl from "@/assets/data/pl/education.json";
 
+// types
+import type { PreferredLanguage } from "@/domain";
+
 export class Data extends Context.Service<Data>()("Data", {
   make: Effect.gen(function* () {
     const { resolve } = yield* Lang;
 
-    const pageTitlesList = Effect.fn("pageTitlesList")(function* (headers: Headers.Headers) {
-      const preferredLanguage = yield* resolve(headers);
-      return Schema.decodeUnknownOption(PageTitlesList)(matchPreferredLanguage(preferredLanguage, pageTitlesEn, pageTitlesPl));
+    const pageTitlesList = Effect.fn("pageTitlesList")(function* (
+      preferredLanguage: Option.Option<PreferredLanguage>,
+      headers: Option.Option<Headers.Headers>
+    ) {
+      const resolvedLanguage = yield* Option.match(preferredLanguage, {
+        onNone: () => resolve(headers),
+        onSome: Effect.succeed,
+      });
+      return Schema.decodeUnknownOption(PageTitlesList)(matchPreferredLanguage(resolvedLanguage, pageTitlesEn, pageTitlesPl));
     });
 
-    const localizedContent = Effect.fn("localizedContent")(function* (headers: Headers.Headers) {
-      const preferredLanguage = yield* resolve(headers);
-      return Schema.decodeOption(LocalizedContent)(matchPreferredLanguage(preferredLanguage, localizedContentEn, localizedContentPl));
+    const localizedContent = Effect.fn("localizedContent")(function* (
+      preferredLanguage: Option.Option<PreferredLanguage>,
+      headers: Option.Option<Headers.Headers>
+    ) {
+      const resolvedLanguage = yield* Option.match(preferredLanguage, {
+        onNone: () => resolve(headers),
+        onSome: Effect.succeed,
+      });
+      return Schema.decodeOption(LocalizedContent)(matchPreferredLanguage(resolvedLanguage, localizedContentEn, localizedContentPl));
     });
 
-    const experienceList = Effect.fn("experienceList")(function* (headers: Headers.Headers) {
-      const preferredLanguage = yield* resolve(headers);
-      return Schema.decodeUnknownOption(ExperienceList)(matchPreferredLanguage(preferredLanguage, experienceEn, experiencePl));
+    const experienceList = Effect.fn("experienceList")(function* (
+      preferredLanguage: Option.Option<PreferredLanguage>,
+      headers: Option.Option<Headers.Headers>
+    ) {
+      const resolvedLanguage = yield* Option.match(preferredLanguage, {
+        onNone: () => resolve(headers),
+        onSome: Effect.succeed,
+      });
+      return Schema.decodeUnknownOption(ExperienceList)(matchPreferredLanguage(resolvedLanguage, experienceEn, experiencePl));
     });
 
-    const educationList = Effect.fn("educationList")(function* (headers: Headers.Headers) {
-      const preferredLanguage = yield* resolve(headers);
-      return Schema.decodeUnknownOption(EducationList)(matchPreferredLanguage(preferredLanguage, educationEn, educationPl));
+    const educationList = Effect.fn("educationList")(function* (preferredLanguage: Option.Option<PreferredLanguage>, headers: Option.Option<Headers.Headers>) {
+      const resolvedLanguage = yield* Option.match(preferredLanguage, {
+        onNone: () => resolve(headers),
+        onSome: Effect.succeed,
+      });
+      return Schema.decodeUnknownOption(EducationList)(matchPreferredLanguage(resolvedLanguage, educationEn, educationPl));
     });
 
     return { pageTitlesList, localizedContent, experienceList, educationList } as const;

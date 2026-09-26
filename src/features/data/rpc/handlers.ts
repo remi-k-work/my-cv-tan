@@ -1,7 +1,7 @@
 import "@tanstack/react-start/server-only";
 
 // services, features, and other libraries
-import { Effect, Layer } from "effect";
+import { Effect, Layer, Option } from "effect";
 import { RpcSerialization, RpcServer } from "effect/unstable/rpc";
 import { HttpServer, HttpRouter } from "effect/unstable/http";
 import { RpcData } from "./requests";
@@ -13,31 +13,31 @@ const RpcDataLayer = RpcData.toLayer({
   preferredLanguage: (_, { headers }) =>
     Effect.gen(function* () {
       const { resolve } = yield* Lang;
-      return yield* resolve(headers);
+      return yield* resolve(Option.some(headers));
     }),
 
   pageTitlesList: (_, { headers }) =>
     Effect.gen(function* () {
       const { pageTitlesList } = yield* Data;
-      return yield* pageTitlesList(headers);
+      return yield* pageTitlesList(Option.none(), Option.some(headers));
     }),
 
   localizedContent: (_, { headers }) =>
     Effect.gen(function* () {
       const { localizedContent } = yield* Data;
-      return yield* localizedContent(headers);
+      return yield* localizedContent(Option.none(), Option.some(headers));
     }),
 
   experienceList: (_, { headers }) =>
     Effect.gen(function* () {
       const { experienceList } = yield* Data;
-      return yield* experienceList(headers);
+      return yield* experienceList(Option.none(), Option.some(headers));
     }),
 
   educationList: (_, { headers }) =>
     Effect.gen(function* () {
       const { educationList } = yield* Data;
-      return yield* educationList(headers);
+      return yield* educationList(Option.none(), Option.some(headers));
     }),
 }).pipe(Layer.provide([Lang.layer, Data.layer]));
 

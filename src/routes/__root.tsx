@@ -2,13 +2,15 @@ import "@/assets/styles/globals.css";
 
 // tanstack
 import { Outlet, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { createIsomorphicFn } from "@tanstack/react-start";
 
 // services, features, and other libraries
-import { Effect } from "effect";
 import { cn } from "@/lib/utils";
-import DataLoader from "@/lib/DataLoader";
-import { getLang } from "@/server/i18n.functions";
+import { Effect, Option } from "effect";
+import { RuntimeServer } from "@/lib/runtime-server";
 import { RuntimeClient } from "@/lib/runtime-client";
+import { Data } from "@/features/data/services/data";
+import { Lang } from "@/features/data/services/lang";
 import { RpcDataClient } from "@/features/data/rpc/client";
 
 // components
@@ -26,10 +28,25 @@ import type { ReactNode } from "react";
 // constants
 import { ROOT_HEAD } from "@/domain";
 
-export const Route = createRootRoute({
-  head: () => ROOT_HEAD,
-  loader: async () => {
-    const { preferredLanguage, localizedContent } = await RuntimeClient.runPromise(
+const loaderIso = createIsomorphicFn()
+  .server(() =>
+    RuntimeServer.runPromise(
+      Effect.gen(function* () {
+        const { resolve } = yield* Lang;
+        const data = yield* Data;
+        const preferredLanguage = yield* resolve(Option.none());
+
+        const { localizedContent } = yield* Effect.all(
+          { localizedContent: data.localizedContent(Option.some(preferredLanguage), Option.none()) },
+          { concurrency: "unbounded" }
+        ).pipe(Effect.tapError(Effect.logError));
+
+        return { preferredLanguage, localizedContent: localizedContent.valueOrUndefined ?? {} } as const;
+      })
+    )
+  )
+  .client(() =>
+    RuntimeClient.runPromise(
       Effect.gen(function* () {
         const rpcLangClient = yield* RpcDataClient;
         const { preferredLanguage, localizedContent } = yield* Effect.all(
@@ -37,20 +54,27 @@ export const Route = createRootRoute({
           { concurrency: "unbounded" }
         ).pipe(Effect.tapError(Effect.logError));
 
-        return { preferredLanguage, localizedContent } as const;
+        return { preferredLanguage, localizedContent: localizedContent.valueOrUndefined ?? {} } as const;
       })
-    );
-    // const preferredLanguage = await getLang();
-    // const loader = DataLoader.fromLang(preferredLanguage);
-    // return { preferredLanguage, localizedContent: loader.localizedContent } as const;
+    )
+  );
 
-    return { preferredLanguage, localizedContent: localizedContent.valueOrUndefined ?? {} } as const;
-  },
-  component: RootComponent,
-});
+// const loader = Effect.gen(function* () {
+//   const rpcLangClient = yield* RpcDataClient;
+//   const { preferredLanguage, localizedContent } = yield* Effect.all(
+//     { preferredLanguage: rpcLangClient.preferredLanguage(), localizedContent: rpcLangClient.localizedContent() },
+//     { concurrency: "unbounded" }
+//   ).pipe(Effect.tapError(Effect.logError));
+
+//   return { preferredLanguage, localizedContent: localizedContent.valueOrUndefined ?? {} } as const;
+// });
+
+export const Route = createRootRoute({ head: () => ROOT_HEAD, loader: () => loaderIso(), component: RootComponent });
 
 function RootComponent() {
   const { preferredLanguage, localizedContent } = Route.useLoaderData();
+
+  console.log(preferredLanguage);
 
   return (
     <RootDocument>
