@@ -7,7 +7,7 @@ import { getRandomInt } from "@/lib/helpers";
 import { getLang } from "@/server/i18n.functions";
 
 // components
-import PageTitle from "@/components/PageTitle";
+import { PageTitle } from "@/components/page-title";
 import MyCertificates from "@/components/MyCertificates";
 import MyEducation from "@/components/MyEducation";
 

@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Context, Effect, Layer, Option, Schema } from "effect";
+import { Array, Context, Effect, Layer, Option, Random, Schema } from "effect";
 import { Headers } from "effect/unstable/http";
 import { EducationList, ExperienceList, LocalizedContent, matchPreferredLanguage, PageTitlesList } from "@/domain";
 import { Lang } from "./lang";
@@ -21,7 +21,7 @@ export class Data extends Context.Service<Data>()("Data", {
   make: Effect.gen(function* () {
     const { resolve } = yield* Lang;
 
-    const pageTitlesList = Effect.fn("pageTitlesList")(function* (
+    const randomPageTitles = Effect.fn("randomPageTitles")(function* (
       preferredLanguage: Option.Option<PreferredLanguage>,
       headers: Option.Option<Headers.Headers>
     ) {
@@ -29,7 +29,9 @@ export class Data extends Context.Service<Data>()("Data", {
         onNone: () => resolve(headers),
         onSome: Effect.succeed,
       });
-      return Schema.decodeUnknownOption(PageTitlesList)(matchPreferredLanguage(resolvedLanguage, pageTitlesEn, pageTitlesPl));
+      return Schema.decodeUnknownOption(PageTitlesList)(matchPreferredLanguage(resolvedLanguage, pageTitlesEn, pageTitlesPl)).pipe(
+        Option.flatMap(Array.get(yield* Random.nextIntBetween(0, pageTitlesEn.length - 1)))
+      );
     });
 
     const localizedContent = Effect.fn("localizedContent")(function* (
@@ -62,7 +64,7 @@ export class Data extends Context.Service<Data>()("Data", {
       return Schema.decodeUnknownOption(EducationList)(matchPreferredLanguage(resolvedLanguage, educationEn, educationPl));
     });
 
-    return { pageTitlesList, localizedContent, experienceList, educationList } as const;
+    return { randomPageTitles, localizedContent, experienceList, educationList } as const;
   }),
 }) {
   static readonly layer = Layer.effect(this, this.make).pipe(Layer.provide(Lang.layer));

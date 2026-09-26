@@ -8,7 +8,7 @@ import { getRandomInt } from "@/lib/helpers";
 import { getLang } from "@/server/i18n.functions";
 
 // components
-import PageTitle from "@/components/PageTitle";
+import { PageTitle } from "@/components/page-title";
 import ExperienceSlider from "@/components/experience-slider";
 import ExperienceSliderSeo from "@/components/experience-slider/SeoVer";
 

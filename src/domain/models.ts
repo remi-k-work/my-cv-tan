@@ -4,6 +4,7 @@ import { Schema } from "effect";
 // types
 export type PreferredLanguage = typeof PreferredLanguage.Type;
 export type PagePath = typeof PagePath.Type;
+export type PageTitles = typeof PageTitles.Type;
 export type PageTitlesList = typeof PageTitlesList.Type;
 export type LocalizedContent = typeof LocalizedContent.Type;
 export type ExperienceList = typeof ExperienceList.Type;
@@ -17,7 +18,7 @@ class PageTitle extends Schema.Class<PageTitle>("PageTitle")({
   heading: Schema.Trim.check(Schema.isNonEmpty()),
   intro: Schema.Trim.check(Schema.isNonEmpty()),
 }) {}
-const PageTitles = Schema.Record(PagePath, PageTitle);
+export const PageTitles = Schema.Record(PagePath, PageTitle);
 export const PageTitlesList = Schema.NonEmptyArray(PageTitles);
 
 const LocalizedSection = Schema.Trim.check(Schema.isNonEmpty());

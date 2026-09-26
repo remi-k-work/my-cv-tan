@@ -7,7 +7,7 @@ import { getRandomInt } from "@/lib/helpers";
 import { getLang } from "@/server/i18n.functions";
 
 // components
-import PageTitle from "@/components/PageTitle";
+import { PageTitle } from "@/components/page-title";
 import ExperienceModal from "@/components/ExperienceModal";
 import ExperienceDetails from "@/components/experience-details";
 import ExperienceDetailsSeo from "@/components/experience-details/SeoVer";

@@ -28,7 +28,7 @@ import type { ReactNode } from "react";
 // constants
 import { ROOT_HEAD } from "@/domain";
 
-const loaderIso = createIsomorphicFn()
+const loader = createIsomorphicFn()
   .server(() =>
     RuntimeServer.runPromise(
       Effect.gen(function* () {
@@ -59,22 +59,10 @@ const loaderIso = createIsomorphicFn()
     )
   );
 
-// const loader = Effect.gen(function* () {
-//   const rpcLangClient = yield* RpcDataClient;
-//   const { preferredLanguage, localizedContent } = yield* Effect.all(
-//     { preferredLanguage: rpcLangClient.preferredLanguage(), localizedContent: rpcLangClient.localizedContent() },
-//     { concurrency: "unbounded" }
-//   ).pipe(Effect.tapError(Effect.logError));
-
-//   return { preferredLanguage, localizedContent: localizedContent.valueOrUndefined ?? {} } as const;
-// });
-
-export const Route = createRootRoute({ head: () => ROOT_HEAD, loader: () => loaderIso(), component: RootComponent });
+export const Route = createRootRoute({ head: () => ROOT_HEAD, loader: () => loader(), component: RootComponent });
 
 function RootComponent() {
   const { preferredLanguage, localizedContent } = Route.useLoaderData();
-
-  console.log(preferredLanguage);
 
   return (
     <RootDocument>

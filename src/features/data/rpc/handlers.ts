@@ -16,10 +16,10 @@ const RpcDataLayer = RpcData.toLayer({
       return yield* resolve(Option.some(headers));
     }),
 
-  pageTitlesList: (_, { headers }) =>
+  randomPageTitles: (_, { headers }) =>
     Effect.gen(function* () {
-      const { pageTitlesList } = yield* Data;
-      return yield* pageTitlesList(Option.none(), Option.some(headers));
+      const { randomPageTitles } = yield* Data;
+      return yield* randomPageTitles(Option.none(), Option.some(headers));
     }),
 
   localizedContent: (_, { headers }) =>
