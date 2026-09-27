@@ -10,7 +10,7 @@ interface SlideProps {
   experience: Experience;
 }
 
-export default function Slide({ localizedContent, experience, experience: { liveLink, videoLink } }: SlideProps) {
+export function Slide({ localizedContent, experience, experience: { liveLink, videoLink } }: SlideProps) {
   return (
     <article className="@container relative rounded-xl bg-background p-3 select-none">
       <Header localizedContent={localizedContent} experience={experience} />
