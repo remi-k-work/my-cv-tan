@@ -5,9 +5,9 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { loaderEducation } from "@/loaders/education";
 
 // components
-import { PageTitle } from "@/components/page-title";
-import { Certificates } from "@/components/certificates";
-import { Education } from "@/components/education";
+import { PageTitle } from "@/ui/page-title";
+import { Certificates } from "@/ui/certificates";
+import { Education } from "@/ui/education";
 
 export const Route = createFileRoute("/education")({ loader: () => loaderEducation(), component: EducationPage });
 

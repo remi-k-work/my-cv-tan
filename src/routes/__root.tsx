@@ -8,10 +8,10 @@ import { cn } from "@/lib/utils";
 import { loaderRoot } from "@/loaders/root";
 
 // components
-import { AtomRegistryProvider } from "@/components/atom-registry-provider";
-import { Header } from "@/components/header";
-import { Skills } from "@/components/skills";
-import { Toaster } from "@/components/ui/sonner";
+import { AtomRegistryProvider } from "@/ui/atom-registry-provider";
+import { Header } from "@/ui/header";
+import { Skills } from "@/ui/skills";
+import { Toaster } from "@/ui/ui/sonner";
 
 // assets
 import "@fontsource/outfit";

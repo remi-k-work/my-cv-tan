@@ -2,7 +2,7 @@
 import { Header } from "./header";
 import { ScreenShots } from "./screen-shots";
 import { SkillsUsed } from "./skills-used";
-import { TypeWriterOutput } from "@/components/typewriter-output";
+import { TypeWriterOutput } from "@/ui/typewriter-output";
 
 // types
 import type { Experience, LocalizedContent } from "@/domain";

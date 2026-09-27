@@ -7,7 +7,7 @@ import { LangApiClient } from "@/features/data/http/client";
 import { RpcDataClient } from "@/features/data/rpc/client";
 
 // components
-import { sharedAtomRegistry } from "@/components/atom-registry-provider";
+import { sharedAtomRegistry } from "@/ui/atom-registry-provider";
 
 const sharedMemoMap = Layer.makeMemoMapUnsafe();
 const runtimeFactory = Atom.context({ memoMap: sharedMemoMap });

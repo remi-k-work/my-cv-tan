@@ -3,7 +3,7 @@ import { useAtomValue } from "@effect/atom-react";
 import { AsyncResult } from "effect/unstable/reactivity";
 
 // components
-import { InfoLine } from "@/components/info-line";
+import { InfoLine } from "@/ui/info-line";
 
 // types
 import type { ContactForm } from "@/features/contact-me/domain";

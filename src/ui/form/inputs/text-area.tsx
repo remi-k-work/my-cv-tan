@@ -7,7 +7,7 @@ import { FormReact } from "@lucas-barake/effect-form-react";
 import { AnimatePresence } from "motion/react";
 
 // components
-import { ErrorLine } from "@/components/form";
+import { ErrorLine } from "@/ui/form";
 
 // types
 import type { ComponentPropsWithoutRef } from "react";

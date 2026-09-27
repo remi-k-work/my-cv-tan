@@ -5,7 +5,7 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { loaderContact } from "@/loaders/contact";
 
 // components
-import { PageTitle } from "@/components/page-title";
+import { PageTitle } from "@/ui/page-title";
 import { ContactForm } from "@/features/contact-me/ui/contact-form";
 import { ContactMap } from "@/features/contact-me/ui/contact-map";
 

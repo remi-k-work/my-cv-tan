@@ -7,7 +7,7 @@ import { RuntimeAtom } from "@/lib/runtime-client";
 import { CaptchaInputField, EmailField, MessageField, NameField, SubjectField } from ".";
 
 // components
-import { TextAreaInput, TextInput } from "@/components/form";
+import { TextAreaInput, TextInput } from "@/ui/form";
 
 // types
 import type { PreferredLanguage } from "@/domain";
