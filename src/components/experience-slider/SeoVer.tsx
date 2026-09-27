@@ -2,10 +2,10 @@
 import SlideSeo from "./slide/SeoVer";
 
 // types
-import type { Experience } from "@/domain";
+import type { ExperienceList } from "@/domain";
 
 interface ExperienceSliderSeoProps {
-  experienceList: ReadonlyArray<Experience>;
+  experienceList: ExperienceList;
 }
 
 export default function ExperienceSliderSeo({ experienceList }: ExperienceSliderSeoProps) {

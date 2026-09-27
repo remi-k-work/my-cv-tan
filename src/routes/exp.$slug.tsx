@@ -1,10 +1,14 @@
 // tanstack
 import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createIsomorphicFn } from "@tanstack/react-start";
 
 // services, features, and other libraries
-import DataLoader from "@/lib/DataLoader";
-import { getRandomInt } from "@/lib/helpers";
-import { getLang } from "@/server/i18n.functions";
+import { Effect, Option } from "effect";
+import { RuntimeServer } from "@/lib/runtime-server";
+import { RuntimeClient } from "@/lib/runtime-client";
+import { Data } from "@/features/data/services/data";
+import { Lang } from "@/features/data/services/lang";
+import { RpcDataClient } from "@/features/data/rpc/client";
 
 // components
 import { PageTitle } from "@/components/page-title";
@@ -12,27 +16,67 @@ import ExperienceModal from "@/components/ExperienceModal";
 import ExperienceDetails from "@/components/experience-details";
 import ExperienceDetailsSeo from "@/components/experience-details/SeoVer";
 
+const loader = (slug: string) =>
+  createIsomorphicFn()
+    .server(() =>
+      RuntimeServer.runPromise(
+        Effect.gen(function* () {
+          const { resolve } = yield* Lang;
+          const data = yield* Data;
+          const preferredLanguage = yield* resolve(Option.none());
+
+          const { randomPageTitles, localizedContent, experience } = yield* Effect.all(
+            {
+              randomPageTitles: data.randomPageTitles(Option.some(preferredLanguage), Option.none()),
+              localizedContent: data.localizedContent(Option.some(preferredLanguage), Option.none()),
+              experience: data.experience(slug, Option.some(preferredLanguage), Option.none()),
+            },
+            { concurrency: "unbounded" }
+          ).pipe(Effect.tapError(Effect.logError));
+
+          return {
+            randomPageTitles: randomPageTitles.pipe(Option.getOrNull),
+            localizedContent: localizedContent.pipe(Option.getOrNull),
+            experience: experience.pipe(Option.getOrNull),
+          } as const;
+        })
+      )
+    )
+    .client(() =>
+      RuntimeClient.runPromise(
+        Effect.gen(function* () {
+          const rpcLangClient = yield* RpcDataClient;
+          const { randomPageTitles, localizedContent, experience } = yield* Effect.all(
+            {
+              randomPageTitles: rpcLangClient.randomPageTitles(),
+              localizedContent: rpcLangClient.localizedContent(),
+              experience: rpcLangClient.experience({ slug }),
+            },
+            { concurrency: "unbounded" }
+          ).pipe(Effect.tapError(Effect.logError));
+
+          return {
+            randomPageTitles: randomPageTitles.pipe(Option.getOrNull),
+            localizedContent: localizedContent.pipe(Option.getOrNull),
+            experience: experience.pipe(Option.getOrNull),
+          } as const;
+        })
+      )
+    )();
+
 export const Route = createFileRoute("/exp/$slug")({
   validateSearch: (search) => ({
     modal: search.modal === true || search.modal === "1" || search.modal === 1,
   }),
   loaderDeps: ({ search }) => ({ modal: search.modal }),
-  loader: async ({ params }) => {
-    const { slug } = params;
-
-    const preferredLanguage = await getLang();
-    const loader = DataLoader.fromLang(preferredLanguage);
-    const experience = loader.experienceList.find((exp) => exp.slug === slug);
-    if (!experience) throw notFound();
-
-    return { pageTitlesList: loader.pageTitlesList, localizedContent: loader.localizedContent, experience } as const;
-  },
+  loader: ({ params }) => loader(params.slug),
   component: ExpPage,
 });
 
 function ExpPage() {
   const { modal } = Route.useSearch();
-  const { pageTitlesList, localizedContent, experience } = Route.useLoaderData();
+  const { randomPageTitles, localizedContent, experience } = Route.useLoaderData();
+  if (!randomPageTitles || !localizedContent || !experience) return notFound();
 
   const details = (
     <>
@@ -49,7 +93,7 @@ function ExpPage() {
 
   return (
     <>
-      <PageTitle titleTheme={getRandomInt(0, 2)} pagePath="/" pageTitlesList={pageTitlesList} />
+      <PageTitle pagePath="/" pageTitles={randomPageTitles} />
       {details}
     </>
   );

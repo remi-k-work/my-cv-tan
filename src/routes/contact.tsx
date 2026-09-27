@@ -1,5 +1,5 @@
 // tanstack
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 import { createIsomorphicFn } from "@tanstack/react-start";
 
 // services, features, and other libraries
@@ -33,8 +33,8 @@ const loader = createIsomorphicFn()
 
         return {
           preferredLanguage,
-          randomPageTitles: randomPageTitles.valueOrUndefined ?? {},
-          localizedContent: localizedContent.valueOrUndefined ?? {},
+          randomPageTitles: randomPageTitles.pipe(Option.getOrNull),
+          localizedContent: localizedContent.pipe(Option.getOrNull),
         } as const;
       })
     )
@@ -54,8 +54,8 @@ const loader = createIsomorphicFn()
 
         return {
           preferredLanguage,
-          randomPageTitles: randomPageTitles.valueOrUndefined ?? {},
-          localizedContent: localizedContent.valueOrUndefined ?? {},
+          randomPageTitles: randomPageTitles.pipe(Option.getOrNull),
+          localizedContent: localizedContent.pipe(Option.getOrNull),
         } as const;
       })
     )
@@ -65,6 +65,7 @@ export const Route = createFileRoute("/contact")({ loader: () => loader(), compo
 
 function ContactPage() {
   const { preferredLanguage, randomPageTitles, localizedContent } = Route.useLoaderData();
+  if (!randomPageTitles || !localizedContent) return notFound();
 
   return (
     <>

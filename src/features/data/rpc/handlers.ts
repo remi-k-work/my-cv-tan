@@ -39,6 +39,12 @@ const RpcDataLayer = RpcData.toLayer({
       const { educationList } = yield* Data;
       return yield* educationList(Option.none(), Option.some(headers));
     }),
+
+  experience: ({ slug }, { headers }) =>
+    Effect.gen(function* () {
+      const { experience } = yield* Data;
+      return yield* experience(slug, Option.none(), Option.some(headers));
+    }),
 }).pipe(Layer.provide([Lang.layer, Data.layer]));
 
 const RpcLayer = RpcServer.layerHttp({

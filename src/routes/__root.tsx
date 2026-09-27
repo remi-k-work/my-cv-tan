@@ -1,7 +1,7 @@
 import "@/assets/styles/globals.css";
 
 // tanstack
-import { Outlet, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { Outlet, createRootRoute, HeadContent, Scripts, notFound } from "@tanstack/react-router";
 import { createIsomorphicFn } from "@tanstack/react-start";
 
 // services, features, and other libraries
@@ -41,7 +41,7 @@ const loader = createIsomorphicFn()
           { concurrency: "unbounded" }
         ).pipe(Effect.tapError(Effect.logError));
 
-        return { preferredLanguage, localizedContent: localizedContent.valueOrUndefined ?? {} } as const;
+        return { preferredLanguage, localizedContent: localizedContent.pipe(Option.getOrNull) } as const;
       })
     )
   )
@@ -54,7 +54,7 @@ const loader = createIsomorphicFn()
           { concurrency: "unbounded" }
         ).pipe(Effect.tapError(Effect.logError));
 
-        return { preferredLanguage, localizedContent: localizedContent.valueOrUndefined ?? {} } as const;
+        return { preferredLanguage, localizedContent: localizedContent.pipe(Option.getOrNull) } as const;
       })
     )
   );
@@ -63,6 +63,7 @@ export const Route = createRootRoute({ head: () => ROOT_HEAD, loader: () => load
 
 function RootComponent() {
   const { preferredLanguage, localizedContent } = Route.useLoaderData();
+  if (!localizedContent) return notFound();
 
   return (
     <RootDocument>

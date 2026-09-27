@@ -7,26 +7,27 @@ export type PagePath = typeof PagePath.Type;
 export type PageTitles = typeof PageTitles.Type;
 export type PageTitlesList = typeof PageTitlesList.Type;
 export type LocalizedContent = typeof LocalizedContent.Type;
+export type Experience = typeof Experience.Type;
 export type ExperienceList = typeof ExperienceList.Type;
 export type EducationList = typeof EducationList.Type;
 
 export const PreferredLanguage = Schema.Literals(["en", "pl"]);
 
 const PagePath = Schema.Literals(["/", "/education", "/contact"]);
-class PageTitle extends Schema.Class<PageTitle>("PageTitle")({
+const PageTitle = Schema.Struct({
   eyebrow: Schema.Trim.check(Schema.isNonEmpty()),
   heading: Schema.Trim.check(Schema.isNonEmpty()),
   intro: Schema.Trim.check(Schema.isNonEmpty()),
-}) {}
+});
 export const PageTitles = Schema.Record(PagePath, PageTitle);
-export const PageTitlesList = Schema.NonEmptyArray(PageTitles);
+export const PageTitlesList = Schema.Array(PageTitles);
 
 const LocalizedSection = Schema.Trim.check(Schema.isNonEmpty());
 const LocalizedKey = Schema.Trim.check(Schema.isNonEmpty());
 const LocalizedValue = Schema.Trim.check(Schema.isNonEmpty());
 export const LocalizedContent = Schema.Record(LocalizedSection, Schema.Record(LocalizedKey, LocalizedValue));
 
-export class Experience extends Schema.Class<Experience>("Experience")({
+export const Experience = Schema.Struct({
   type: Schema.Literals(["e", "p"]),
   slug: Schema.Trim.check(Schema.isNonEmpty()),
   year: Schema.Trim.check(Schema.isNonEmpty()),
@@ -38,13 +39,13 @@ export class Experience extends Schema.Class<Experience>("Experience")({
   videoLink: Schema.optionalKey(Schema.Trim.check(Schema.isNonEmpty())),
   imageName: Schema.Trim.check(Schema.isNonEmpty()),
   skillsUsed: Schema.NonEmptyArray(Schema.Trim.check(Schema.isNonEmpty())),
-}) {}
-export const ExperienceList = Schema.NonEmptyArray(Experience);
+});
+export const ExperienceList = Schema.Array(Experience);
 
-class Education extends Schema.Class<Education>("Education")({
+const Education = Schema.Struct({
   name: Schema.Trim.check(Schema.isNonEmpty()),
   year: Schema.Trim.check(Schema.isNonEmpty()),
   location: Schema.Trim.check(Schema.isNonEmpty()),
   info: Schema.Trim.check(Schema.isNonEmpty()),
-}) {}
-export const EducationList = Schema.NonEmptyArray(Education);
+});
+export const EducationList = Schema.Array(Education);

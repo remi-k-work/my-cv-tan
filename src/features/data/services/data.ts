@@ -15,7 +15,7 @@ import educationEn from "@/assets/data/en/education.json";
 import educationPl from "@/assets/data/pl/education.json";
 
 // types
-import type { PreferredLanguage } from "@/domain";
+import type { Experience, PreferredLanguage } from "@/domain";
 
 export class Data extends Context.Service<Data>()("Data", {
   make: Effect.gen(function* () {
@@ -64,7 +64,21 @@ export class Data extends Context.Service<Data>()("Data", {
       return Schema.decodeUnknownOption(EducationList)(matchPreferredLanguage(resolvedLanguage, educationEn, educationPl));
     });
 
-    return { randomPageTitles, localizedContent, experienceList, educationList } as const;
+    const experience = Effect.fn("experience")(function* (
+      slug: Experience["slug"],
+      preferredLanguage: Option.Option<PreferredLanguage>,
+      headers: Option.Option<Headers.Headers>
+    ) {
+      const resolvedLanguage = yield* Option.match(preferredLanguage, {
+        onNone: () => resolve(headers),
+        onSome: Effect.succeed,
+      });
+      return Schema.decodeUnknownOption(ExperienceList)(matchPreferredLanguage(resolvedLanguage, experienceEn, experiencePl)).pipe(
+        Option.flatMap(Array.findFirst((exp) => exp.slug === slug))
+      );
+    });
+
+    return { randomPageTitles, localizedContent, experienceList, educationList, experience } as const;
   }),
 }) {
   static readonly layer = Layer.effect(this, this.make).pipe(Layer.provide(Lang.layer));

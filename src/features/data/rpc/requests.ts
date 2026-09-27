@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { Schema } from "effect";
 import { Rpc, RpcGroup } from "effect/unstable/rpc";
-import { EducationList, ExperienceList, LocalizedContent, PageTitles, PreferredLanguage } from "@/domain";
+import { EducationList, Experience, ExperienceList, LocalizedContent, PageTitles, PreferredLanguage } from "@/domain";
 import { RpcLogger } from "@/services/rpc-logger";
 
 export class RpcData extends RpcGroup.make(
@@ -23,5 +23,10 @@ export class RpcData extends RpcGroup.make(
 
   Rpc.make("educationList", {
     success: Schema.Option(EducationList),
+  }),
+
+  Rpc.make("experience", {
+    payload: { slug: Experience.fields.slug },
+    success: Schema.Option(Experience),
   })
 ).middleware(RpcLogger) {}
