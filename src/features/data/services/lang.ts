@@ -13,12 +13,11 @@ export class Lang extends Context.Service<Lang>()("Lang", {
     const resolve = Effect.fn("resolve")(function* (headers: Option.Option<Headers.Headers>) {
       // Try obtaining it from a local cookie first
       const preferredLanguageFromCookie = yield* getPreferredLanguageFromCookie(headers);
+      if (Option.isSome(preferredLanguageFromCookie)) return preferredLanguageFromCookie.value;
 
       // Otherwise, use the client's preferred language
       const acceptLanguageHeader = yield* getAcceptLanguageHeader(headers);
-      const preferredLanguageFromClient = yield* resolveAcceptLanguageEffect(acceptLanguageHeader);
-
-      return Option.getOrElse(preferredLanguageFromCookie, () => preferredLanguageFromClient);
+      return yield* resolveAcceptLanguageEffect(acceptLanguageHeader);
     });
 
     const update = Effect.fn("update")((preferredLanguage: PreferredLanguage) =>
