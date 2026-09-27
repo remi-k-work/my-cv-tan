@@ -19,7 +19,7 @@ interface DotProps {
   index: number;
 }
 
-export default function Dot({ emblaApi, index }: DotProps) {
+export function Dot({ emblaApi, index }: DotProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const onSelect = useCallback((emblaApi: EmblaCarouselType) => {

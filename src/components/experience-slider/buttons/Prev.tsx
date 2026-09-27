@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Button } from "@base-ui/react";
 
 // assets
-import PrevIcon from "@/assets/icons/Prev";
+import { PrevIcon } from "@/assets/icons";
 
 // types
 import type { EmblaCarouselType } from "embla-carousel";
@@ -14,7 +14,7 @@ interface PrevProps {
   emblaApi?: EmblaCarouselType;
 }
 
-export default function Prev({ emblaApi }: PrevProps) {
+export function Prev({ emblaApi }: PrevProps) {
   const [isDisabled, setIsDisabled] = useState(true);
 
   const onSelect = useCallback((emblaApi: EmblaCarouselType) => {

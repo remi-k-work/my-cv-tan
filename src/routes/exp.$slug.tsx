@@ -6,9 +6,9 @@ import { loaderExp } from "@/loaders/exp";
 
 // components
 import { PageTitle } from "@/components/page-title";
-import ExperienceModal from "@/components/ExperienceModal";
-import ExperienceDetails from "@/components/experience-details";
-import ExperienceDetailsSeo from "@/components/experience-details/SeoVer";
+import { ExperienceModal } from "@/components/experience-modal";
+import { ExperienceDetails } from "@/components/experience-details";
+import { ExperienceDetailsSeo } from "@/components/experience-details/seo-ver";
 
 export const Route = createFileRoute("/exp/$slug")({
   validateSearch: (search) => ({ modal: search.modal === true || search.modal === "1" || search.modal === 1 }),

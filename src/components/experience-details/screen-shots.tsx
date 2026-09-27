@@ -9,7 +9,7 @@ interface ScreenShotsProps {
 const SCREENSHOT_WIDTH = 1600;
 const SCREENSHOT_HEIGHT = 900;
 
-export default function ScreenShots({ experience: { role, imageName } }: ScreenShotsProps) {
+export function ScreenShots({ experience: { role, imageName } }: ScreenShotsProps) {
   return (
     <article className="grid">
       <img

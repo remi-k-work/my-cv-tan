@@ -6,7 +6,7 @@ interface SkillsUsedProps {
   experience: Experience;
 }
 
-export default function SkillsUsed({ localizedContent, experience: { skillsUsed } }: SkillsUsedProps) {
+export function SkillsUsed({ localizedContent, experience: { skillsUsed } }: SkillsUsedProps) {
   return (
     <aside className="my-4">
       <h4 className="text-sm font-semibold tracking-widest text-accent-foreground">{localizedContent["experienceDetails"]["skillsUsed"]}</h4>

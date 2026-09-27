@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 
 // assets
 import { GlobeAltIcon, InformationCircleIcon, VideoCameraIcon } from "@heroicons/react/24/solid";
-import GitHubIcon from "@/assets/icons/GitHub";
+import { GitHubIcon } from "@/assets/icons";
 
 // types
 import type { Experience, LocalizedContent } from "@/domain";
@@ -13,7 +13,7 @@ interface HeaderProps {
   experience: Experience;
 }
 
-export default function Header({ localizedContent, experience: { slug, year, role, company, gitHubLink, liveLink, videoLink } }: HeaderProps) {
+export function Header({ localizedContent, experience: { slug, year, role, company, gitHubLink, liveLink, videoLink } }: HeaderProps) {
   return (
     <header className="mb-4 flex min-h-28 gap-4 @md:min-h-auto">
       <section className="flex-4">

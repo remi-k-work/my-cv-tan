@@ -7,8 +7,8 @@ import { loaderIndex } from "@/loaders/index";
 
 // components
 import { PageTitle } from "@/components/page-title";
-import ExperienceSlider from "@/components/experience-slider";
-import ExperienceSliderSeo from "@/components/experience-slider/SeoVer";
+import { ExperienceSlider } from "@/components/experience-slider";
+import { ExperienceSliderSeo } from "@/components/experience-slider/seo-ver";
 
 export const Route = createFileRoute("/")({ loader: () => loaderIndex(), component: HomePage });
 

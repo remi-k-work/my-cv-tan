@@ -8,9 +8,7 @@ interface ExperienceDetailsSeoProps {
   experience: Experience;
 }
 
-export default function ExperienceDetailsSeo({
-  experience: { year, role, company, txt, skillsUsed, gitHubLink, liveLink, videoLink },
-}: ExperienceDetailsSeoProps) {
+export function ExperienceDetailsSeo({ experience: { year, role, company, txt, skillsUsed, gitHubLink, liveLink, videoLink } }: ExperienceDetailsSeoProps) {
   return (
     <article className="sr-only">
       <h2 className="text-xl">{role}</h2>

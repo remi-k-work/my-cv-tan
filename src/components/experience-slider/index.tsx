@@ -3,9 +3,9 @@ import useEmblaCarousel from "embla-carousel-react";
 
 // components
 import Slide from "./slide";
-import Prev from "./buttons/Prev";
-import Next from "./buttons/Next";
-import Dot from "./buttons/Dot";
+import { Prev } from "./buttons/prev";
+import { Next } from "./buttons/next";
+import { Dot } from "./buttons/dot";
 
 // types
 import type { ExperienceList, LocalizedContent } from "@/domain";
@@ -15,7 +15,7 @@ interface ExperienceSliderProps {
   experienceList: ExperienceList;
 }
 
-export default function ExperienceSlider({ localizedContent, experienceList }: ExperienceSliderProps) {
+export function ExperienceSlider({ localizedContent, experienceList }: ExperienceSliderProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel();
 
   return (

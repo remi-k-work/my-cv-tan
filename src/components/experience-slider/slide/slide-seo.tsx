@@ -8,7 +8,7 @@ interface SlideSeoProps {
   experience: Experience;
 }
 
-export default function SlideSeo({ experience: { year, role, company, txt, skillsUsed, gitHubLink, liveLink, videoLink } }: SlideSeoProps) {
+export function SlideSeo({ experience: { year, role, company, txt, skillsUsed, gitHubLink, liveLink, videoLink } }: SlideSeoProps) {
   return (
     <>
       <h2 className="text-xl">{role}</h2>

@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Button } from "@base-ui/react";
 
 // assets
-import NextIcon from "@/assets/icons/Next";
+import { NextIcon } from "@/assets/icons";
 
 // types
 import type { EmblaCarouselType } from "embla-carousel";
@@ -14,7 +14,7 @@ interface NextProps {
   emblaApi?: EmblaCarouselType;
 }
 
-export default function Next({ emblaApi }: NextProps) {
+export function Next({ emblaApi }: NextProps) {
   const [isDisabled, setIsDisabled] = useState(true);
 
   const onSelect = useCallback((emblaApi: EmblaCarouselType) => {

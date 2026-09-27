@@ -1,5 +1,5 @@
 // components
-import SlideSeo from "./slide/SeoVer";
+import { SlideSeo } from "./slide/slide-seo";
 
 // types
 import type { ExperienceList } from "@/domain";
@@ -8,7 +8,7 @@ interface ExperienceSliderSeoProps {
   experienceList: ExperienceList;
 }
 
-export default function ExperienceSliderSeo({ experienceList }: ExperienceSliderSeoProps) {
+export function ExperienceSliderSeo({ experienceList }: ExperienceSliderSeoProps) {
   return (
     <article className="sr-only">
       {experienceList.map((experience, index) => (

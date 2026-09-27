@@ -9,8 +9,8 @@ import { loaderRoot } from "@/loaders/root";
 
 // components
 import { AtomRegistryProvider } from "@/components/atom-registry-provider";
-import Header from "@/components/header";
-import MySkills from "@/components/MySkills";
+import { Header } from "@/components/header";
+import { Skills } from "@/components/skills";
 import { Toaster } from "@/components/ui/sonner";
 
 // assets
@@ -32,7 +32,7 @@ function RootComponent() {
     <RootDocument>
       <AtomRegistryProvider>
         <Header preferredLanguage={preferredLanguage} localizedContent={localizedContent} />
-        <MySkills />
+        <Skills />
         <main className="[grid-area:main]">
           <Outlet />
         </main>

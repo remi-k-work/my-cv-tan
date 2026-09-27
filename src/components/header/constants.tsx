@@ -1,7 +1,6 @@
 // assets
 import { AcademicCapIcon, DocumentTextIcon, HomeIcon, PhoneIcon, VideoCameraIcon } from "@heroicons/react/24/solid";
-import LinkedInIcon from "@/assets/icons/LinkedIn";
-import GitHubIcon from "@/assets/icons/GitHub";
+import { GitHubIcon, LinkedInIcon } from "@/assets/icons";
 
 // types
 import type { LocalizedContent } from "@/domain";

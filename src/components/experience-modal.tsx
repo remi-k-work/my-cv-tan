@@ -25,7 +25,7 @@ interface ExperienceModalProps {
 // constants
 const CLOSE_DURATION = 1000;
 
-export default function ExperienceModal({ localizedContent, children }: ExperienceModalProps) {
+export function ExperienceModal({ localizedContent, children }: ExperienceModalProps) {
   // To be able to call showModal() method on the dialog
   const dialogRef = useRef<HTMLDialogElement>(null);
 

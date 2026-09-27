@@ -7,11 +7,11 @@ import prattTrans from "@/assets/my-certificates-pratt-trans.webp";
 // types
 import type { LocalizedContent } from "@/domain";
 
-interface MyCertificatesProps {
+interface CertificatesProps {
   localizedContent: LocalizedContent;
 }
 
-export default function MyCertificates({ localizedContent }: MyCertificatesProps) {
+export function Certificates({ localizedContent }: CertificatesProps) {
   return (
     <figure className="mx-auto w-full max-w-4xl">
       <figcaption className="mb-4 place-self-end rounded-ss-xl rounded-ee-xl bg-primary-foreground p-3 italic">

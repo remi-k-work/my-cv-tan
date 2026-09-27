@@ -1,7 +1,7 @@
 // types
 import type { ComponentPropsWithoutRef } from "react";
 
-export default function NextIcon({ className }: ComponentPropsWithoutRef<"svg">) {
+export function NextIcon({ className }: ComponentPropsWithoutRef<"svg">) {
   return (
     <svg viewBox="0 0 532 532" className={className}>
       <path

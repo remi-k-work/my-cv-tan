@@ -29,7 +29,7 @@ export class Data extends Context.Service<Data>()("Data", {
         onNone: () => resolve(headers),
         onSome: Effect.succeed,
       });
-      return Schema.decodeUnknownOption(PageTitlesList)(matchPreferredLanguage(resolvedLanguage, pageTitlesEn, pageTitlesPl)).pipe(
+      return Schema.decodeOption(PageTitlesList)(matchPreferredLanguage(resolvedLanguage, pageTitlesEn, pageTitlesPl)).pipe(
         Option.flatMap(Array.get(yield* Random.nextIntBetween(0, pageTitlesEn.length - 1)))
       );
     });
@@ -61,7 +61,7 @@ export class Data extends Context.Service<Data>()("Data", {
         onNone: () => resolve(headers),
         onSome: Effect.succeed,
       });
-      return Schema.decodeUnknownOption(EducationList)(matchPreferredLanguage(resolvedLanguage, educationEn, educationPl));
+      return Schema.decodeOption(EducationList)(matchPreferredLanguage(resolvedLanguage, educationEn, educationPl));
     });
 
     const experience = Effect.fn("experience")(function* (

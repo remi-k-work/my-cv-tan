@@ -1,7 +1,7 @@
 // types
 import type { ComponentPropsWithoutRef } from "react";
 
-export default function PlFlagIcon({ className }: ComponentPropsWithoutRef<"svg">) {
+export function PlFlagIcon({ className }: ComponentPropsWithoutRef<"svg">) {
   return (
     <svg viewBox="0 0 512 512" className={className}>
       <g fillRule="evenodd">

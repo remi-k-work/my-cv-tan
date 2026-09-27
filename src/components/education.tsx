@@ -4,12 +4,12 @@ import { Fragment } from "react";
 // types
 import type { EducationList, LocalizedContent } from "@/domain";
 
-interface MyEducationProps {
+interface EducationProps {
   localizedContent: LocalizedContent;
   educationList: EducationList;
 }
 
-export default function MyEducation({ localizedContent, educationList }: MyEducationProps) {
+export function Education({ localizedContent, educationList }: EducationProps) {
   return (
     <figure className="mx-auto w-full max-w-2xl">
       <figcaption className="mb-4 place-self-end rounded-ss-xl rounded-ee-xl bg-primary-foreground p-3 italic">

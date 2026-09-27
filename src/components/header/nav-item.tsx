@@ -15,7 +15,7 @@ interface NavItemProps {
   animDelay: number;
 }
 
-export default function NavItem({ href, title, icon, isExternal = false, animDelay }: NavItemProps) {
+export function NavItem({ href, title, icon, isExternal = false, animDelay }: NavItemProps) {
   const { pathname } = useLocation();
   const isActive = href === pathname;
 

@@ -7,7 +7,7 @@ interface TypeWriterOutputProps {
   fullText: string;
 }
 
-export default function TypeWriterOutput({ fullText }: TypeWriterOutputProps) {
+export function TypeWriterOutput({ fullText }: TypeWriterOutputProps) {
   const { elementRef, isRunning } = useTypeWriter(fullText);
 
   return (

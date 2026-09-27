@@ -1,8 +1,8 @@
 // react
 import { useRef, useState, useEffect } from "react";
 
-// other libraries
-import TypeWriter from "@/lib/TypeWriter";
+// services, features, and other libraries
+import TypeWriter from "@/lib/typewriter";
 
 export function useTypeWriter(fullText: string) {
   // State to track the animation status, causing minimal re-renders

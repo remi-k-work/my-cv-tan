@@ -1,7 +1,7 @@
 // types
 import type { ComponentPropsWithoutRef } from "react";
 
-export default function UsFlagIcon({ className }: ComponentPropsWithoutRef<"svg">) {
+export function UsFlagIcon({ className }: ComponentPropsWithoutRef<"svg">) {
   return (
     <svg viewBox="0 0 512 512" className={className}>
       <path fill="#bd3d44" d="M0 0h512v512H0" />

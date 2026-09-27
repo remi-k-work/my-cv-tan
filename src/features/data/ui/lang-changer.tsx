@@ -15,8 +15,7 @@ import { matchPreferredLanguage } from "@/domain";
 import { Button } from "@base-ui/react";
 
 // assets
-import UsFlagIcon from "@/assets/icons/UsFlag";
-import PlFlagIcon from "@/assets/icons/PlFlag";
+import { PlFlagIcon, UsFlagIcon } from "@/assets/icons";
 
 // types
 import type { PreferredLanguage } from "@/domain";
@@ -25,7 +24,7 @@ interface LangChangerProps {
   preferredLanguage: PreferredLanguage;
 }
 
-export default function LangChanger({ preferredLanguage }: LangChangerProps) {
+export function LangChanger({ preferredLanguage }: LangChangerProps) {
   const update = useAtomSet(updateAtom, { mode: "promise" });
 
   // To display a pending status while the server action is running

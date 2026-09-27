@@ -11,7 +11,7 @@ import nextjs from "@/assets/my-skills-nextjs.svg";
 import inkscape from "@/assets/my-skills-inkscape.svg";
 import gimp from "@/assets/my-skills-gimp.svg";
 
-export default function MySkills() {
+export function Skills() {
   return (
     <aside
       className={cn(

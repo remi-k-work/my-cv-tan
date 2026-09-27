@@ -1,6 +1,6 @@
 // components
-import Header from "./Header";
-import ScreenShots from "./ScreenShots";
+import { Header } from "./header";
+import { ScreenShots } from "./screen-shots";
 
 // types
 import type { Experience, LocalizedContent } from "@/domain";

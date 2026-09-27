@@ -1,7 +1,7 @@
 // types
 import type { ComponentPropsWithoutRef } from "react";
 
-export default function GitHubIcon({ className }: ComponentPropsWithoutRef<"svg">) {
+export function GitHubIcon({ className }: ComponentPropsWithoutRef<"svg">) {
   return (
     <svg viewBox="0 0 24 24" className={className}>
       <path

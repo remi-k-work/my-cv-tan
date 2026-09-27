@@ -2,8 +2,8 @@
 import { cn } from "@/lib/utils";
 
 // components
-import NavItem from "./NavItem";
-import LangChanger from "@/features/data/ui/lang-changer";
+import { NavItem } from "./nav-item";
+import { LangChanger } from "@/features/data/ui/lang-changer";
 
 // types
 import type { LocalizedContent, PreferredLanguage } from "@/domain";
@@ -16,7 +16,7 @@ interface HeaderProps {
 // constants
 import { NAV_ITEMS } from "./constants";
 
-export default function Header({ preferredLanguage, localizedContent }: HeaderProps) {
+export function Header({ preferredLanguage, localizedContent }: HeaderProps) {
   return (
     <header
       className={cn(

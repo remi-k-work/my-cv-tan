@@ -1,8 +1,8 @@
 // components
-import Header from "./Header";
-import ScreenShots from "./ScreenShots";
-import SkillsUsed from "./SkillsUsed";
-import TypeWriterOutput from "@/components/TypeWriterOutput";
+import { Header } from "./header";
+import { ScreenShots } from "./screen-shots";
+import { SkillsUsed } from "./skills-used";
+import { TypeWriterOutput } from "@/components/typewriter-output";
 
 // types
 import type { Experience, LocalizedContent } from "@/domain";
@@ -15,7 +15,7 @@ interface ExperienceDetailsProps {
 // constants
 const MAX_CHUNK_LENGTH = 80;
 
-export default function ExperienceDetails({ localizedContent, experience, experience: { txt, liveLink, videoLink } }: ExperienceDetailsProps) {
+export function ExperienceDetails({ localizedContent, experience, experience: { txt, liveLink, videoLink } }: ExperienceDetailsProps) {
   // Use the helper function to create perfectly chunked paragraphs
   const paras = chunkTextByWords(txt, MAX_CHUNK_LENGTH);
 
