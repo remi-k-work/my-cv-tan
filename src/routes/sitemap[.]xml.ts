@@ -16,7 +16,7 @@ function buildSitemap(): string {
     { loc: `${BASE_URL}/education`, changefreq: "monthly", priority: "0.8" },
     { loc: `${BASE_URL}/contact`, changefreq: "monthly", priority: "0.5" },
     { loc: `${BASE_URL}/my-cv.pdf`, changefreq: "monthly", priority: "0.4" },
-    ...eSlugs.map((slug) => ({ loc: `${BASE_URL}/exp/${slug}`, changefreq: "monthly", priority: "0.6" })),
+    ...eSlugs.map((slug) => ({ loc: `${BASE_URL}/${slug}`, changefreq: "monthly", priority: "0.6" })),
   ];
 
   const entries = urls

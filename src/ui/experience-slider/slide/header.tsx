@@ -24,7 +24,7 @@ export function Header({ localizedContent, experience: { slug, year, role, compa
       <section className="flex-3">
         <div className="flex flex-wrap items-center justify-end gap-2">
           <Link
-            to="/exp/$slug"
+            to="/{-$slug}"
             params={{ slug }}
             search={{ modal: true }}
             title={localizedContent["experienceSlide"]["moreInfo"]}
