@@ -1,11 +1,16 @@
 // services, features, and other libraries
-import { Context, Layer, Match } from "effect";
+import { Array, Context, Layer, Match, Option, pipe, String } from "effect";
 import { RpcClient, RpcGroup, RpcSerialization } from "effect/unstable/rpc";
 import { FetchHttpClient } from "effect/unstable/http";
 
 // types
 import type { Rpc } from "effect/unstable/rpc";
 import type { PreferredLanguage } from ".";
+
+interface ChunkAcc {
+  readonly chunks: ReadonlyArray<string>;
+  readonly current: string;
+}
 
 // constants
 import { EXCERPT_SUFFIX } from ".";
@@ -29,34 +34,49 @@ export const matchPreferredLanguage = <T>(preferredLanguage: PreferredLanguage, 
   ) as T;
 
 // A helper function to split text while respecting word boundaries
-export function chunkTextByWords(text: string, maxLength: number) {
-  const chunks: string[] = [];
-  // First, split the entire text into individual words
-  const words = text.split(" ");
-  let currentChunk = "";
+export const chunkTextByWords = (text: string, maxLength: number) => {
+  // Sanitize input and split into non-empty words
+  const words = pipe(text, String.split(/\s+/), Array.filter(String.isNonEmpty));
 
-  for (const word of words) {
-    // If adding the next word doesn't exceed the max length, add it
-    if ((currentChunk + " " + word).length <= maxLength) {
-      currentChunk += (currentChunk ? " " : "") + word;
-    } else {
-      // Otherwise, push the current chunk to the array and start a new one
-      chunks.push(currentChunk);
-      currentChunk = word;
-    }
-  }
+  // Reduce words into immutable chunks
+  const initialState: ChunkAcc = { chunks: [], current: "" };
 
-  // Add the last remaining chunk
-  if (currentChunk) {
-    chunks.push(currentChunk);
-  }
+  // Reduce words into chunks
+  const { chunks, current } = pipe(
+    words,
+    Array.reduce(initialState, (acc, word) => {
+      // If no active chunk, start one with the current word
+      if (String.isEmpty(acc.current)) return { ...acc, current: word };
 
-  return chunks;
-}
+      const nextCandidate = `${acc.current} ${word}`;
 
-export function excerpt(text: string, maxLength: number) {
-  if (text.length <= maxLength) return text;
-  const cut = text.slice(0, maxLength);
-  const lastSpace = cut.lastIndexOf(" ");
-  return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()}${EXCERPT_SUFFIX}`;
-}
+      // Append word if it fits within maxLength
+      if (String.length(nextCandidate) <= maxLength) return { ...acc, current: nextCandidate };
+
+      // Otherwise push current chunk and start a new chunk
+      return { chunks: Array.append(acc.chunks, acc.current), current: word };
+    })
+  );
+
+  // Flush the final chunk into the array and return the completed array
+  return String.isEmpty(current) ? chunks : Array.append(chunks, current);
+};
+
+export const excerpt = (text: string, maxLength: number) => {
+  // Return early if text fits within limits
+  if (String.length(text) <= maxLength) return text;
+
+  // Take the first maxLength characters from the left
+  const cut = pipe(text, String.takeLeft(maxLength));
+
+  // Find last word boundary using Option
+  const wordBoundedText = pipe(
+    cut,
+    String.lastIndexOf(" "),
+    Option.filter((index) => index > 0),
+    Option.map((index) => pipe(cut, String.takeLeft(index))),
+    Option.getOrElse(() => cut)
+  );
+
+  return `${String.trimEnd(wordBoundedText)}${EXCERPT_SUFFIX}`;
+};
