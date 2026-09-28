@@ -35,9 +35,16 @@ const wrapWithUrlSet = (entries: string) =>
 const main = Effect.gen(function* () {
   const data = yield* Data;
 
-  const slugs = yield* data
-    .experienceList(Option.some("en"), Option.none())
-    .pipe(Effect.map(Option.map(Array.map((exp) => exp.slug))), Effect.map(Option.getOrElse(() => Array.empty<string>())));
+  const maybeList = yield* data.experienceList(Option.some("en"), Option.none());
+  if (Option.isNone(maybeList)) yield* Effect.logWarning("sitemap: experienceList decode failed, emitting static URLs only");
+
+  const slugs = Option.getOrElse(
+    Option.map(
+      maybeList,
+      Array.map((exp) => exp.slug)
+    ),
+    Array.empty<string>
+  );
   const today = (yield* DateTime.now).pipe(DateTime.formatIsoDate);
 
   return pipe(slugs, Array.map(createDynamicEntry), Array.prependAll(STATIC_URLS), Array.map(toXmlNode(today)), Array.join("\n"), wrapWithUrlSet);
