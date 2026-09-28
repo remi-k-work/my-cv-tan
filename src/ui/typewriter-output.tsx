@@ -14,6 +14,8 @@ export function TypeWriterOutput({ fullText }: TypeWriterOutputProps) {
     <p
       ref={elementRef}
       className={cn("mx-auto max-w-[35ch] text-center text-wrap sm:max-w-prose", isRunning && "after:animate-cursor-blink after:content-['▋']")}
-    />
+    >
+      {fullText}
+    </p>
   );
 }

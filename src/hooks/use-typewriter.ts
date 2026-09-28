@@ -15,6 +15,9 @@ export function useTypeWriter(fullText: string) {
     // We check elementRef to make sure the component is still mounted
     if (!elementRef.current) return;
 
+    // Clear the SSR-rendered full text, then always animate the typewriter
+    elementRef.current.textContent = "";
+
     // Create a new typewriter instance for the given text
     const controller = new AbortController();
     const typewriter = new TypeWriter(controller.signal, (text: string) => {

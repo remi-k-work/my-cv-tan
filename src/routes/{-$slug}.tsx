@@ -8,9 +8,7 @@ import { loaderIndex } from "@/loaders/index";
 // components
 import { PageTitle } from "@/ui/page-title";
 import { ExperienceSlider } from "@/ui/experience-slider";
-import { ExperienceSliderSeo } from "@/ui/experience-slider/seo-ver";
 import { ExperienceDetails } from "@/ui/experience-details";
-import { ExperienceDetailsSeo } from "@/ui/experience-details/seo-ver";
 import { ExperienceModal } from "@/ui/experience-modal";
 
 export const Route = createFileRoute("/{-$slug}")({
@@ -38,7 +36,6 @@ function HomePage() {
               <figcaption className="mb-4 place-self-end rounded-ss-xl rounded-ee-xl bg-primary-foreground p-3 italic">
                 {localizedContent["pageHome"]["experience"]}
               </figcaption>
-              <ExperienceSliderSeo experienceList={Array.filter(experienceList, ({ type }) => type === "e")} />
               <ExperienceSlider localizedContent={localizedContent} experienceList={Array.filter(experienceList, ({ type }) => type === "e")} />
             </figure>
           </section>
@@ -47,7 +44,6 @@ function HomePage() {
               <figcaption className="mb-4 place-self-end rounded-ss-xl rounded-ee-xl bg-primary-foreground p-3 italic">
                 {localizedContent["pageHome"]["portfolioProjects"]}
               </figcaption>
-              <ExperienceSliderSeo experienceList={Array.filter(experienceList, ({ type }) => type === "p")} />
               <ExperienceSlider localizedContent={localizedContent} experienceList={Array.filter(experienceList, ({ type }) => type === "p")} />
             </figure>
           </section>
@@ -59,13 +55,7 @@ function HomePage() {
   const { randomPageTitles, localizedContent, experience } = loaderData;
   if (!randomPageTitles || !localizedContent || !experience) throw notFound();
 
-  const details = (
-    <>
-      <ExperienceDetailsSeo experience={experience} />
-      <ExperienceDetails localizedContent={localizedContent} experience={experience} />
-    </>
-  );
-
+  const details = <ExperienceDetails localizedContent={localizedContent} experience={experience} />;
   if (modal) return <ExperienceModal localizedContent={localizedContent}>{details}</ExperienceModal>;
 
   return (
