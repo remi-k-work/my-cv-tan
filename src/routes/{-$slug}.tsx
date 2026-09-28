@@ -14,7 +14,9 @@ import { ExperienceDetailsSeo } from "@/ui/experience-details/seo-ver";
 import { ExperienceModal } from "@/ui/experience-modal";
 
 export const Route = createFileRoute("/{-$slug}")({
-  validateSearch: (search) => ({ modal: search.modal === true || search.modal === "1" || search.modal === 1 }),
+  validateSearch: (search) => ({
+    modal: search.modal === true || search.modal === "1" || search.modal === 1 ? true : undefined,
+  }),
   loader: ({ params }) => loaderIndex(Option.fromNullishOr(params.slug)),
   component: HomePage,
 });
@@ -64,11 +66,7 @@ function HomePage() {
     </>
   );
 
-  // In-app clicks link with ?modal=1 to preserve the Next.js intercepting-modal UX;
-  // direct loads / refreshes render the full page (SEO-friendly).
-  if (modal) {
-    return <ExperienceModal localizedContent={localizedContent}>{details}</ExperienceModal>;
-  }
+  if (modal) return <ExperienceModal localizedContent={localizedContent}>{details}</ExperienceModal>;
 
   return (
     <>

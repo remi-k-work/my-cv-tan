@@ -27,6 +27,7 @@ export function Header({ localizedContent, experience: { slug, year, role, compa
             to="/{-$slug}"
             params={{ slug }}
             search={{ modal: true }}
+            mask={{ to: "/{-$slug}", params: { slug }, search: { modal: undefined }, unmaskOnReload: true }}
             title={localizedContent["experienceSlide"]["moreInfo"]}
             className="rounded-full border border-primary-foreground p-1 text-primary-foreground hover:scale-110 hover:border-accent-foreground hover:text-accent-foreground"
           >
