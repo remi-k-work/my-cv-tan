@@ -6,7 +6,7 @@ import { absoluteUrl, jsonLdScript } from "./helpers";
 import type { Experience } from "@/domain";
 
 // constants
-import { SITE_NAME, SITE_URL } from "./constants";
+import { AVATAR_IMAGE, HOME_COUNTRY, HOME_LOCALITY, META_DESCRIPTION_LENGTH, SITE_NAME, SITE_URL, SOCIAL_LINKS } from "./constants";
 
 // Site-wide structured data: the site itself plus its author
 export const websitePersonJsonLd = () =>
@@ -25,8 +25,18 @@ export const websitePersonJsonLd = () =>
         "@id": `${SITE_URL}/#person`,
         name: SITE_NAME,
         url: SITE_URL,
+        image: AVATAR_IMAGE,
         jobTitle: "Web Developer",
         knowsAbout: ["Web Development", "TypeScript", "React"],
+        homeLocation: {
+          "@type": "Place",
+          address: {
+            "@type": "PostalAddress",
+            addressLocality: HOME_LOCALITY,
+            addressCountry: HOME_COUNTRY,
+          },
+        },
+        sameAs: [...SOCIAL_LINKS],
       },
     ],
   });
@@ -37,10 +47,31 @@ export const experienceJsonLd = (slug: string, { role, company, txt, imageName, 
     "@context": "https://schema.org",
     "@type": "Article",
     headline: `${role} at ${company}`,
-    description: excerpt(txt, 160),
+    description: excerpt(txt, META_DESCRIPTION_LENGTH),
     image: absoluteUrl(`/images/${imageName}-a.webp`),
     url: absoluteUrl(`/${slug}`),
     inLanguage: ["en", "pl"],
     author: { "@id": `${SITE_URL}/#person` },
     about: skillsUsed,
+  });
+
+// Breadcrumb trail for a single experience / project page
+export const experienceBreadcrumbJsonLd = (slug: string, { role, company }: Experience) =>
+  jsonLdScript({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: SITE_URL,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: `${role} at ${company}`,
+        item: absoluteUrl(`/${slug}`),
+      },
+    ],
   });

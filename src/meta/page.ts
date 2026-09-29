@@ -2,15 +2,15 @@
 import { Option, pipe } from "effect";
 import { excerpt } from "@/domain";
 import { absoluteUrl, canonicalLink, hreflangLinks } from "./helpers";
-import { socialMeta } from "./social";
-import { experienceJsonLd } from "./json-ld";
+import { globalSocialImage, socialMeta } from "./social";
+import { experienceBreadcrumbJsonLd, experienceJsonLd } from "./json-ld";
 
 // types
 import type { Experience, PagePath, PageTitles } from "@/domain";
 import type { DocumentHead } from "./constants";
 
 // constants
-import { DESCRIPTION, GLOBAL_IMAGE, SITE_NAME, TITLE } from "./constants";
+import { DESCRIPTION, META_DESCRIPTION_LENGTH, SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH, SITE_NAME, TITLE } from "./constants";
 
 // Localized document head with a static fallback when loader data is missing
 const localizedPageHead = (pageTitles: PageTitles | null, pagePath: PagePath) => {
@@ -22,7 +22,7 @@ const localizedPageHead = (pageTitles: PageTitles | null, pagePath: PagePath) =>
   );
 
   const description = pageTitle.pipe(
-    Option.map(({ intro }) => excerpt(intro, 160)),
+    Option.map(({ intro }) => excerpt(intro, META_DESCRIPTION_LENGTH)),
     Option.getOrElse(() => DESCRIPTION)
   );
 
@@ -30,7 +30,7 @@ const localizedPageHead = (pageTitles: PageTitles | null, pagePath: PagePath) =>
     meta: [
       { title: `${SITE_NAME} ● ${title}` },
       { name: "description", content: description },
-      ...socialMeta({ title, description, path: pagePath, image: GLOBAL_IMAGE, ogType: "website" }),
+      ...socialMeta({ title, description, path: pagePath, image: globalSocialImage(), ogType: "website" }),
     ],
     links: [canonicalLink(pagePath), ...hreflangLinks(pagePath)],
   } as const satisfies DocumentHead;
@@ -46,12 +46,12 @@ export const experienceHead = (slug: string, experience: Experience) => {
 
   const path = `/${slug}`;
   const title = `${SITE_NAME} ● ${role} at ${company}`;
-  const description = excerpt(txt, 160);
+  const description = excerpt(txt, META_DESCRIPTION_LENGTH);
   const image = pipe(
     Option.fromNullishOr(imageName),
     Option.filter((name) => name.length > 0),
-    Option.map((name) => absoluteUrl(`/images/${name}-a.webp`)),
-    Option.getOrElse(() => GLOBAL_IMAGE)
+    Option.map((name) => ({ src: absoluteUrl(`/images/${name}-a.webp`), mime: "image/webp" as const, width: SCREENSHOT_WIDTH, height: SCREENSHOT_HEIGHT })),
+    Option.getOrElse(globalSocialImage)
   );
 
   return {
@@ -59,9 +59,9 @@ export const experienceHead = (slug: string, experience: Experience) => {
       { title },
       { name: "description", content: description },
       { name: "author", content: SITE_NAME },
-      ...socialMeta({ title, description, path, image, ogType: "article" }),
+      ...socialMeta({ title, description, path, image, ogType: "article", twitterImage: globalSocialImage() }),
     ],
     links: [canonicalLink(path), ...hreflangLinks(path)],
-    scripts: [experienceJsonLd(slug, experience)],
+    scripts: [experienceJsonLd(slug, experience), experienceBreadcrumbJsonLd(slug, experience)],
   } as const satisfies DocumentHead;
 };
