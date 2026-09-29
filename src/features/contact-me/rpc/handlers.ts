@@ -13,8 +13,7 @@ const RpcContactMeLayer = RpcContactMe.toLayer({
     Effect.gen(function* () {
       // Send the contact form with validated data
       const { send } = yield* Send;
-      yield* Effect.void;
-      // yield* send(name, email, subject, message);
+      yield* send(name, email, subject, message);
     }),
 }).pipe(Layer.provide(Send.layer));
 
