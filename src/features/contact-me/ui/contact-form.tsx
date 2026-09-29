@@ -39,7 +39,7 @@ export function ContactForm({ preferredLanguage, localizedContent }: ContactForm
       >
         <contactFormL.name
           label={localizedContent["contactForm"]["labelName"]}
-          size={30}
+          size={20}
           maxLength={26}
           spellCheck={false}
           autoComplete="name"
@@ -47,7 +47,7 @@ export function ContactForm({ preferredLanguage, localizedContent }: ContactForm
         />
         <contactFormL.email
           label={localizedContent["contactForm"]["labelEmail"]}
-          size={30}
+          size={20}
           maxLength={50}
           spellCheck={false}
           autoComplete="email"
@@ -55,7 +55,7 @@ export function ContactForm({ preferredLanguage, localizedContent }: ContactForm
         />
         <contactFormL.subject
           label={localizedContent["contactForm"]["labelSubject"]}
-          size={30}
+          size={20}
           maxLength={41}
           spellCheck
           autoComplete="off"
@@ -63,7 +63,7 @@ export function ContactForm({ preferredLanguage, localizedContent }: ContactForm
         />
         <contactFormL.message
           label={localizedContent["contactForm"]["labelMessage"]}
-          cols={40}
+          cols={30}
           rows={8}
           maxLength={2049}
           spellCheck
@@ -75,7 +75,7 @@ export function ContactForm({ preferredLanguage, localizedContent }: ContactForm
         <br />
         <contactFormL.captchaInput
           label={localizedContent["contactForm"]["labelCaptcha"]}
-          size={30}
+          size={20}
           maxLength={7}
           spellCheck={false}
           autoComplete="off"
