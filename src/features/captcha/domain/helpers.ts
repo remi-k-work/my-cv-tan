@@ -2,7 +2,7 @@
 import { Array, Effect, Random } from "effect";
 
 // constants
-import { CAPTCHA_HEIGHT, CAPTCHA_WIDTH, LETTER_FONTS } from ".";
+import { CAPTCHA_HEIGHT, CAPTCHA_WIDTH, LETTER_FONTS } from "./constants";
 
 const randomElement = <A>(items: ReadonlyArray<A>) => Random.nextIntBetween(0, items.length - 1).pipe(Effect.map((index) => items[index]));
 

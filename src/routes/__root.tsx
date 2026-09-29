@@ -5,6 +5,7 @@ import { Outlet, createRootRoute, HeadContent, Scripts, notFound } from "@tansta
 
 // services, features, and other libraries
 import { cn } from "@/lib/utils";
+import { ROOT_HEAD } from "@/meta";
 import { loaderRoot } from "@/loaders/root";
 
 // components
@@ -18,9 +19,12 @@ import "@fontsource/outfit";
 
 // types
 import type { ReactNode } from "react";
+import type { PreferredLanguage } from "@/domain";
 
-// constants
-import { ROOT_HEAD } from "@/domain";
+interface RootDocumentProps {
+  preferredLanguage: PreferredLanguage;
+  children: ReactNode;
+}
 
 export const Route = createRootRoute({ head: () => ROOT_HEAD, loader: () => loaderRoot(), component: RootComponent });
 
@@ -29,7 +33,7 @@ function RootComponent() {
   if (!localizedContent) throw notFound();
 
   return (
-    <RootDocument>
+    <RootDocument preferredLanguage={preferredLanguage}>
       <AtomRegistryProvider>
         <Header preferredLanguage={preferredLanguage} localizedContent={localizedContent} />
         <Skills />
@@ -42,9 +46,9 @@ function RootComponent() {
   );
 }
 
-function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
+function RootDocument({ preferredLanguage, children }: RootDocumentProps) {
   return (
-    <html lang="en" translate="no">
+    <html lang={preferredLanguage} translate="no">
       <head>
         <HeadContent />
       </head>

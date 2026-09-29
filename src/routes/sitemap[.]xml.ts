@@ -23,6 +23,8 @@ const STATIC_URLS = [
   { loc: `${BASE_URL}/education`, changefreq: "monthly", priority: "0.8" },
   { loc: `${BASE_URL}/contact`, changefreq: "monthly", priority: "0.5" },
   { loc: `${BASE_URL}/my-cv.pdf`, changefreq: "monthly", priority: "0.4" },
+  { loc: `${BASE_URL}/my-cv-pl.pdf`, changefreq: "monthly", priority: "0.4" },
+  { loc: `${BASE_URL}/my-certificates.pdf`, changefreq: "monthly", priority: "0.4" },
 ] as const;
 
 // Pure functions extracted for clean pipelines
@@ -36,7 +38,7 @@ const main = Effect.gen(function* () {
   const data = yield* Data;
 
   const maybeList = yield* data.experienceList(Option.some("en"), Option.none());
-  if (Option.isNone(maybeList)) yield* Effect.logWarning("sitemap: experienceList decode failed, emitting static URLs only");
+  if (Option.isNone(maybeList)) yield* Effect.logError("[SITEMAP.XML]: experienceList decode failed, emitting static URLs only");
 
   const slugs = Option.getOrElse(
     Option.map(

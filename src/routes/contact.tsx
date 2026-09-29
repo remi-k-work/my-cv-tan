@@ -3,13 +3,18 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 
 // services, features, and other libraries
 import { loaderContact } from "@/loaders/contact";
+import { contactHead } from "@/meta";
 
 // components
 import { PageTitle } from "@/ui/page-title";
 import { ContactForm } from "@/features/contact-me/ui/contact-form";
 import { ContactMap } from "@/features/contact-me/ui/contact-map";
 
-export const Route = createFileRoute("/contact")({ loader: () => loaderContact(), component: ContactPage });
+export const Route = createFileRoute("/contact")({
+  loader: () => loaderContact(),
+  head: ({ loaderData }) => contactHead(loaderData?.randomPageTitles ?? null),
+  component: ContactPage,
+});
 
 function ContactPage() {
   const { preferredLanguage, randomPageTitles, localizedContent } = Route.useLoaderData();

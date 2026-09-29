@@ -4,6 +4,7 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 // services, features, and other libraries
 import { Array, Option } from "effect";
 import { loaderIndex } from "@/loaders/index";
+import { experienceHead, homeListHead } from "@/meta";
 
 // components
 import { PageTitle } from "@/ui/page-title";
@@ -16,6 +17,10 @@ export const Route = createFileRoute("/{-$slug}")({
     modal: search.modal === true || search.modal === "1" || search.modal === 1 ? true : undefined,
   }),
   loader: ({ params }) => loaderIndex(Option.fromNullishOr(params.slug)),
+  head: ({ loaderData, params }) => {
+    if (loaderData?.type === "item" && loaderData.experience && params.slug) return experienceHead(params.slug, loaderData.experience);
+    return homeListHead(loaderData?.type === "list" ? loaderData.randomPageTitles : null);
+  },
   component: HomePage,
 });
 

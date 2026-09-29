@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { Effect, Schema } from "effect";
-import { EmailField, MessageField, NameField, SubjectField } from ".";
+import { EmailField, MessageField, NameField, SubjectField } from "./fields";
 
 // types
 export type Name = (typeof SendRequest)["Type"]["template_params"]["name"];

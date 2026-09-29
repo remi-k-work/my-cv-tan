@@ -4,7 +4,7 @@ import { FormBuilder, FormReact } from "@lucas-barake/effect-form-react";
 import { RpcCaptchaClient } from "@/features/captcha/rpc/client";
 import { RpcContactMeClient } from "@/features/contact-me/rpc/client";
 import { RuntimeAtom } from "@/lib/runtime-client";
-import { CaptchaInputField, EmailField, MessageField, NameField, SubjectField } from ".";
+import { CaptchaInputField, EmailField, MessageField, NameField, SubjectField } from "./fields";
 
 // components
 import { TextAreaInput, TextInput } from "@/ui/form";

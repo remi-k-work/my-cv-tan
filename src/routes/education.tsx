@@ -3,13 +3,18 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 
 // services, features, and other libraries
 import { loaderEducation } from "@/loaders/education";
+import { educationHead } from "@/meta";
 
 // components
 import { PageTitle } from "@/ui/page-title";
 import { Certificates } from "@/ui/certificates";
 import { Education } from "@/ui/education";
 
-export const Route = createFileRoute("/education")({ loader: () => loaderEducation(), component: EducationPage });
+export const Route = createFileRoute("/education")({
+  loader: () => loaderEducation(),
+  head: ({ loaderData }) => educationHead(loaderData?.randomPageTitles ?? null),
+  component: EducationPage,
+});
 
 function EducationPage() {
   const { randomPageTitles, localizedContent, educationList } = Route.useLoaderData();
