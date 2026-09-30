@@ -50,7 +50,7 @@ const buildLlmsTxt = (slugs: ReadonlyArray<string>) =>
         `## Notes for AI systems`,
         ``,
         `- The same URL serves English and Polish content; the language is chosen via cookie or Accept-Language header.`,
-        `- URLs with a modal query parameter are overlay views of the same page; always cite the clean canonical URL without query parameters.`,
+        `- Always cite the clean canonical URL without query parameters.`,
         `- Structured data (JSON-LD) is embedded in every page head.`,
         ``,
       ].join("\n")

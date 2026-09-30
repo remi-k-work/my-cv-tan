@@ -1,11 +1,17 @@
 // tanstack
 import { Link } from "@tanstack/react-router";
 
+// services, features, and other libraries
+import { Option } from "effect";
+import { useAtomSet } from "@effect/atom-react";
+import { experienceAtom } from "@/features/modals/state";
+
 // assets
 import { GlobeAltIcon, InformationCircleIcon, VideoCameraIcon } from "@heroicons/react/24/solid";
 import { GitHubIcon } from "@/assets/icons";
 
 // types
+import type { MouseEvent } from "react";
 import type { Experience, LocalizedContent } from "@/domain";
 
 interface HeaderProps {
@@ -13,7 +19,15 @@ interface HeaderProps {
   experience: Experience;
 }
 
-export function Header({ localizedContent, experience: { slug, year, role, company, gitHubLink, liveLink, videoLink } }: HeaderProps) {
+export function Header({ localizedContent, experience }: HeaderProps) {
+  const { slug, year, role, company, gitHubLink, liveLink, videoLink } = experience;
+  const setExperience = useAtomSet(experienceAtom);
+
+  function handleMoreInfoClicked(ev: MouseEvent) {
+    ev.preventDefault();
+    setExperience(Option.some(experience));
+  }
+
   return (
     <header className="mb-4 flex min-h-28 gap-4 @md:min-h-auto">
       <section className="flex-4">
@@ -26,8 +40,7 @@ export function Header({ localizedContent, experience: { slug, year, role, compa
           <Link
             to="/{-$slug}"
             params={{ slug }}
-            search={{ modal: true }}
-            mask={{ to: "/{-$slug}", params: { slug }, search: { modal: undefined }, unmaskOnReload: true }}
+            onClick={handleMoreInfoClicked}
             title={localizedContent["experienceSlide"]["moreInfo"]}
             className="rounded-full border border-primary-foreground p-1 text-primary-foreground hover:scale-110 hover:border-accent-foreground hover:text-accent-foreground"
           >

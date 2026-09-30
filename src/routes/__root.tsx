@@ -34,14 +34,18 @@ function RootComponent() {
 
   return (
     <RootDocument preferredLanguage={preferredLanguage}>
-      <AtomRegistryProvider>
+      <div
+        className={cn(
+          "isolate grid grid-cols-[1fr] grid-rows-[11rem_1fr_7rem] [grid-template-areas:'header''main''skills']",
+          "lg:grid-cols-[11rem_1rem_1fr_1rem] lg:grid-rows-[7rem_1fr] lg:[grid-template-areas:'skills_header_header_header''skills_._main_.']"
+        )}
+      >
         <Header preferredLanguage={preferredLanguage} localizedContent={localizedContent} />
         <Skills />
         <main className="[grid-area:main]">
           <Outlet />
         </main>
-        <Toaster richColors />
-      </AtomRegistryProvider>
+      </div>
     </RootDocument>
   );
 }
@@ -52,14 +56,11 @@ function RootDocument({ preferredLanguage, children }: RootDocumentProps) {
       <head>
         <HeadContent />
       </head>
-      <body
-        className={cn(
-          "grid font-outfit antialiased",
-          "grid-cols-[1fr] grid-rows-[11rem_1fr_7rem] [grid-template-areas:'header''main''skills']",
-          "lg:grid-cols-[11rem_1rem_1fr_1rem] lg:grid-rows-[7rem_1fr] lg:[grid-template-areas:'skills_header_header_header''skills_._main_.']"
-        )}
-      >
-        {children}
+      <body className="relative font-outfit antialiased">
+        <AtomRegistryProvider>
+          {children}
+          <Toaster richColors />
+        </AtomRegistryProvider>
         <Scripts />
       </body>
     </html>

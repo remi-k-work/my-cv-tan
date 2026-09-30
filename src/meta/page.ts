@@ -40,7 +40,8 @@ export const homeListHead = (pageTitles: PageTitles | null) => localizedPageHead
 export const educationHead = (pageTitles: PageTitles | null) => localizedPageHead(pageTitles, "/education");
 export const contactHead = (pageTitles: PageTitles | null) => localizedPageHead(pageTitles, "/contact");
 
-// Detail head always canonicalizes to the clean /{slug} URL, so ?modal=true never becomes a duplicate
+// Detail head always canonicalizes to the clean /{slug} URL, so stray query
+// parameters never become duplicates
 export const experienceHead = (slug: string, experience: Experience) => {
   const { role, company, txt, imageName } = experience;
 
