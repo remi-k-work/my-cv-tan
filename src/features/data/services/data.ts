@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { Array, Context, Effect, Layer, Option, Random, Schema } from "effect";
-import { Headers } from "effect/unstable/http";
+import { Headers } from "effect/http";
 import { EducationList, ExperienceList, LocalizedContent, matchPreferredLanguage, PageTitlesList } from "@/domain";
 import { Lang } from "./lang";
 

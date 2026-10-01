@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { Layer, Logger, ManagedRuntime } from "effect";
-import { Atom, AtomRegistry, Reactivity } from "effect/unstable/reactivity";
+import { Atom, AtomRegistry, Reactivity } from "effect/reactivity";
 import { RpcCaptchaClient } from "@/features/captcha/rpc/client";
 import { RpcContactMeClient } from "@/features/contact-me/rpc/client";
 import { LangApiClient } from "@/features/data/http/client";

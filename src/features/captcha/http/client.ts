@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { Context, Layer } from "effect";
-import { FetchHttpClient } from "effect/unstable/http";
-import { HttpApiClient } from "effect/unstable/httpapi";
+import { FetchHttpClient } from "effect/http";
+import { HttpApiClient } from "effect/http-api";
 import { CaptchaApi } from "./api";
 
 export class CaptchaApiClient extends Context.Service<CaptchaApiClient, HttpApiClient.ForApi<typeof CaptchaApi>>()("CaptchaApiClient", {

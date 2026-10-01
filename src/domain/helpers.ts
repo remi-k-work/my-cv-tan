@@ -1,10 +1,10 @@
 // services, features, and other libraries
 import { Context, Layer, Match, Option, pipe, String } from "effect";
-import { RpcClient, RpcGroup, RpcSerialization } from "effect/unstable/rpc";
-import { FetchHttpClient } from "effect/unstable/http";
+import { RpcClient, RpcGroup, RpcSerialization } from "effect/rpc";
+import { FetchHttpClient } from "effect/http";
 
 // types
-import type { Rpc } from "effect/unstable/rpc";
+import type { Rpc } from "effect/rpc";
 import type { PreferredLanguage } from "./models";
 
 // constants

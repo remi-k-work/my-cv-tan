@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { Effect, Layer } from "effect";
-import { RpcSerialization, RpcServer } from "effect/unstable/rpc";
-import { HttpServer, HttpRouter } from "effect/unstable/http";
+import { RpcSerialization, RpcServer } from "effect/rpc";
+import { HttpServer, HttpRouter } from "effect/http";
 import { RpcCaptcha } from "./requests";
 import { Captcha } from "@/features/captcha/services/captcha";
 import { RpcLoggerLive } from "@/services/rpc-logger";

@@ -1,7 +1,7 @@
 // oxlint-disable effecttsgo/process-env
 
 // types
-import type { Cookies } from "effect/unstable/http";
+import type { Cookies } from "effect/http";
 
 // constants
 export const CAPTCHA_COOKIE_NAME = "captcha";

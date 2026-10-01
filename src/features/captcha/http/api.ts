@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { Schema } from "effect";
-import { HttpApi, HttpApiEndpoint, HttpApiGroup, HttpApiSchema } from "effect/unstable/httpapi";
+import { HttpApi, HttpApiEndpoint, HttpApiGroup, HttpApiSchema } from "effect/http-api";
 
 const CaptchaSvg = Schema.String.pipe(HttpApiSchema.asText({ contentType: "image/svg+xml" }));
 

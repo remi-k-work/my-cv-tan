@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { RegistryContext, scheduleTask } from "@effect/atom-react";
-import { AtomRegistry } from "effect/unstable/reactivity";
+import { AtomRegistry } from "effect/reactivity";
 
 // types
 import type { ReactNode } from "react";

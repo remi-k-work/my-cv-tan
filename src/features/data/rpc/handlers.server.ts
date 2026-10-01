@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { Effect, Layer, Option } from "effect";
-import { RpcSerialization, RpcServer } from "effect/unstable/rpc";
-import { HttpServer, HttpRouter } from "effect/unstable/http";
+import { RpcSerialization, RpcServer } from "effect/rpc";
+import { HttpServer, HttpRouter } from "effect/http";
 import { RpcData } from "./requests";
 import { Lang } from "@/features/data/services/lang";
 import { Data } from "@/features/data/services/data";

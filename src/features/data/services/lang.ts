@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { Context, Effect, Layer, Option } from "effect";
-import { Headers, HttpEffect, HttpServerResponse } from "effect/unstable/http";
+import { Headers, HttpEffect, HttpServerResponse } from "effect/http";
 import { getAcceptLanguageHeader, getPreferredLanguageFromCookie, resolveAcceptLanguageEffect } from "@/features/data/domain";
 import { PreferredLanguage } from "@/domain";
 

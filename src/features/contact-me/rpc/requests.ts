@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Rpc, RpcGroup } from "effect/unstable/rpc";
+import { Rpc, RpcGroup } from "effect/rpc";
 import { SendError } from "@/domain";
 import { EmailField, MessageField, NameField, SubjectField } from "@/features/contact-me/domain";
 import { RpcLogger } from "@/services/rpc-logger";

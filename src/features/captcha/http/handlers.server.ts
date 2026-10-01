@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { Effect, Layer } from "effect";
-import { HttpEffect, HttpRouter, HttpServer, HttpServerResponse } from "effect/unstable/http";
-import { HttpApiBuilder, HttpApiSchema } from "effect/unstable/httpapi";
+import { HttpEffect, HttpRouter, HttpServer, HttpServerResponse } from "effect/http";
+import { HttpApiBuilder, HttpApiSchema } from "effect/http-api";
 import { createCaptchaSvg } from "@/features/captcha/domain";
 import { Captcha } from "@/features/captcha/services/captcha";
 import { CaptchaApi } from "./api";

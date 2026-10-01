@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { Match } from "effect";
 import { useAtomSubscribe } from "@effect/atom-react";
-import { AsyncResult } from "effect/unstable/reactivity";
+import { AsyncResult } from "effect/reactivity";
 
 // components
 import { toast } from "sonner";

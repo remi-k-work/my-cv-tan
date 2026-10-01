@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { Config, Context, Effect, flow, Layer, Schedule, Schema } from "effect";
-import { FetchHttpClient, HttpClient, HttpClientRequest } from "effect/unstable/http";
+import { FetchHttpClient, HttpClient, HttpClientRequest } from "effect/http";
 import { SendError } from "@/domain";
 import { SendRequest } from "@/features/contact-me/domain";
 

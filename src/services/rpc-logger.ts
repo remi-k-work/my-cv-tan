@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { Effect, Exit, Layer } from "effect";
-import { RpcMiddleware } from "effect/unstable/rpc";
+import { RpcMiddleware } from "effect/rpc";
 
 export class RpcLogger extends RpcMiddleware.Service<RpcLogger>()("RpcLogger") {}
 

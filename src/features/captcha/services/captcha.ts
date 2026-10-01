@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { Array, Context, Crypto, Effect, Encoding, Layer, Option, Record, String } from "effect";
-import { Cookies, Headers } from "effect/unstable/http";
+import { Cookies, Headers } from "effect/http";
 import { BrowserCrypto } from "@effect/platform-browser";
 import { commitToCaptcha, verifyCaptchaString } from "@/features/captcha/domain";
 import { CaptchaError } from "@/domain";

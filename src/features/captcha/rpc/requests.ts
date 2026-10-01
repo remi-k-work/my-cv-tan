@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { Schema } from "effect";
-import { Rpc, RpcGroup } from "effect/unstable/rpc";
+import { Rpc, RpcGroup } from "effect/rpc";
 import { CaptchaError } from "@/domain";
 import { CaptchaInputField } from "@/features/contact-me/domain";
 import { RpcLogger } from "@/services/rpc-logger";

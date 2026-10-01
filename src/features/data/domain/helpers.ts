@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { Effect, Option, Record, Schema, String } from "effect";
-import { Cookies, Headers } from "effect/unstable/http";
+import { Cookies, Headers } from "effect/http";
 import { PreferredLanguage } from "@/domain";
 import { getCookieEffect, getRequestHeaderEffect } from "@/domain/helpers.server";
 import { resolveAcceptLanguage } from "resolve-accept-language";
