@@ -2,7 +2,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 // services, features, and other libraries
-import { handler } from "@/features/captcha/http/handlers";
+import { handler } from "@/features/captcha/http/handlers.server";
 
 const effectHandler = ({ request }: { request: Request }) => handler.handler(request);
 

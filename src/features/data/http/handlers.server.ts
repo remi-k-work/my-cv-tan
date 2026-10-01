@@ -1,5 +1,3 @@
-import "@tanstack/react-start/server-only";
-
 // services, features, and other libraries
 import { Effect, Layer } from "effect";
 import { HttpRouter, HttpServer } from "effect/unstable/http";
