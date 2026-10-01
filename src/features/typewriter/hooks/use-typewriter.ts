@@ -2,7 +2,7 @@
 import { useRef, useState, useEffect } from "react";
 
 // services, features, and other libraries
-import TypeWriter from "@/lib/typewriter";
+import TypeWriter from "@/features/typewriter/services/typewriter";
 
 export function useTypeWriter(fullText: string) {
   // State to track the animation status, causing minimal re-renders

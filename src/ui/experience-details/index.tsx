@@ -1,11 +1,11 @@
 // services, features, and other libraries
-import { chunkTextByWords } from "@/domain";
+import { chunkTextByWords } from "@/features/typewriter/domain";
 
 // components
 import { Header } from "./header";
 import { ScreenShots } from "./screen-shots";
 import { SkillsUsed } from "./skills-used";
-import { TypeWriterOutput } from "@/ui/typewriter-output";
+import { TypeWriterOutput } from "@/features/typewriter/ui/typewriter-output";
 
 // types
 import type { Experience, LocalizedContent } from "@/domain";
@@ -16,7 +16,7 @@ interface ExperienceDetailsProps {
 }
 
 // constants
-import { MAX_CHUNK_LENGTH } from "@/domain";
+import { MAX_CHUNK_LENGTH } from "@/features/typewriter/domain";
 
 export function ExperienceDetails({ localizedContent, experience, experience: { txt, liveLink, videoLink } }: ExperienceDetailsProps) {
   // Use the helper function to create perfectly chunked paragraphs

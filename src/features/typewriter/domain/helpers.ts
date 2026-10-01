@@ -1,0 +1,37 @@
+// services, features, and other libraries
+import { Array, pipe, String } from "effect";
+
+// types
+interface ChunkAcc {
+  readonly chunks: ReadonlyArray<string>;
+  readonly current: string;
+}
+
+// A helper function to split text while respecting word boundaries
+export const chunkTextByWords = (text: string, maxLength: number) => {
+  // Sanitize input and split into non-empty words
+  const words = pipe(text, String.split(/\s+/), Array.filter(String.isNonEmpty));
+
+  // Reduce words into immutable chunks
+  const initialState: ChunkAcc = { chunks: [], current: "" };
+
+  // Reduce words into chunks
+  const { chunks, current } = pipe(
+    words,
+    Array.reduce(initialState, (acc, word) => {
+      // If no active chunk, start one with the current word
+      if (String.isEmpty(acc.current)) return { ...acc, current: word };
+
+      const nextCandidate = `${acc.current} ${word}`;
+
+      // Append word if it fits within maxLength
+      if (String.length(nextCandidate) <= maxLength) return { ...acc, current: nextCandidate };
+
+      // Otherwise push current chunk and start a new chunk
+      return { chunks: Array.append(acc.chunks, acc.current), current: word };
+    })
+  );
+
+  // Flush the final chunk into the array and return the completed array
+  return String.isEmpty(current) ? chunks : Array.append(chunks, current);
+};

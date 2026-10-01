@@ -17,7 +17,7 @@ export default class TypeWriter {
     private readonly onUpdate: (text: string) => void,
     private readonly shouldLoop: boolean = false,
     private readonly typingSpeed: number = 80,
-    private readonly deletingSpeed: number = 80,
+    private readonly deletingSpeed: number = 80
   ) {}
 
   // A private setter to automatically call the onUpdate callback
