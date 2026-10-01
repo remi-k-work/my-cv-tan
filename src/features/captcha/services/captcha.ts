@@ -1,5 +1,6 @@
 // services, features, and other libraries
-import { Array, Context, Crypto, Effect, Encoding, Layer, Option, Record, String } from "effect";
+import { Array, Context, Crypto, Effect, Layer, Option, Record, String } from "effect";
+import { Base64Url } from "effect/encoding";
 import { Cookies, Headers } from "effect/http";
 import { BrowserCrypto } from "@effect/platform-browser";
 import { commitToCaptcha, verifyCaptchaString } from "@/features/captcha/domain";
@@ -25,7 +26,7 @@ export class Captcha extends Context.Service<Captcha>()("Captcha", {
       function* (captchaString: string) {
         const salt = yield* crypto.randomBytes(SALT_BYTES);
         const commitment = yield* commitToCaptcha(salt, captchaString);
-        return `${Encoding.encodeBase64Url(salt)}.${Encoding.encodeBase64Url(commitment)}`;
+        return `${Base64Url.encode(salt)}.${Base64Url.encode(commitment)}`;
       },
       Effect.provideService(Crypto.Crypto, crypto),
       Effect.mapError((cause) => new CaptchaError({ cause }))

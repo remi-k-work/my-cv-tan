@@ -1,5 +1,6 @@
 // services, features, and other libraries
-import { Config, Crypto, Effect, Encoding, Match, Option, Redacted, Schema } from "effect";
+import { Config, Crypto, Effect, Match, Option, Redacted, Schema } from "effect";
+import { Base64Url } from "effect/encoding";
 
 // constants
 const textEncoder = new TextEncoder();
@@ -32,7 +33,7 @@ export const verifyCaptchaString = Effect.fn("verifyCaptchaString")((sealed: str
           if (Option.isNone(parts)) return false;
           const [salt, expected] = parts.value;
           const actual = yield* commitToCaptcha(salt, captchaInput);
-          return Encoding.encodeBase64Url(actual) === Encoding.encodeBase64Url(expected);
+          return Base64Url.encode(actual) === Base64Url.encode(expected);
         })
     ),
     Match.orElse(() => Effect.succeed(false))

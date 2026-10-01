@@ -57,6 +57,11 @@
     "react/no-children-prop": "off",
     // --- Architectural Effect guidance; matches Effect's own correctness preset. ---
     "effecttsgo/any-unknown-in-error-context": "warn",
+    // --- Downgraded to warn: Effect v4 marks Rpc, HttpApi, Atom (and related)
+    // modules `@stability unstable`, but they are this app's core architecture
+    // (contact form, captcha, data loading). The rule stays visible as a
+    // reminder to check release notes on upgrades, without blocking lint.
+    "effecttsgo/unstable-api-usage": "warn",
     // --- @effect/vitest support ---
     // Tests use `it.effect(...)`; teach the rule these are test blocks so the
     // rule keeps working as intended instead of false-positive errors.

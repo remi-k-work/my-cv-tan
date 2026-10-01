@@ -25,6 +25,9 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "effect/unstable/reactivity/*": [
+        "./node_modules/effect/dist/reactivity/*"
       ]
     },
     "plugins": [
