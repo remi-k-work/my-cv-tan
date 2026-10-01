@@ -3,7 +3,7 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 
 // services, features, and other libraries
 import { loaderEducation } from "@/loaders/education";
-import { educationHead } from "@/meta";
+import { educationHead } from "@/features/meta/domain";
 
 // components
 import { PageTitle } from "@/ui/page-title";

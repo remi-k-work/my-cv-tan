@@ -5,7 +5,7 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { Array, Option } from "effect";
 import { useAtomValue } from "@effect/atom-react";
 import { loaderIndex } from "@/loaders/index";
-import { experienceHead, homeListHead } from "@/meta";
+import { experienceHead, homeListHead } from "@/features/meta/domain";
 import { experienceAtom } from "@/features/modals/state";
 
 // components

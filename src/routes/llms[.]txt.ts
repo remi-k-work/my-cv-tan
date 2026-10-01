@@ -9,7 +9,7 @@ import { RuntimeServer } from "@/lib/runtime-server";
 import { Data } from "@/features/data/services/data";
 
 // constants
-import { DESCRIPTION, SITE_NAME, SITE_URL, SOCIAL_LINKS, TITLE } from "@/meta";
+import { DESCRIPTION, SITE_NAME, SITE_URL, SOCIAL_LINKS, TITLE } from "@/features/meta/domain";
 
 // Machine-readable site summary for AI systems (GEO)
 const buildLlmsTxt = (slugs: ReadonlyArray<string>) =>

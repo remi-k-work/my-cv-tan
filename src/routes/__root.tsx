@@ -5,7 +5,7 @@ import { Outlet, createRootRoute, HeadContent, Scripts, notFound } from "@tansta
 
 // services, features, and other libraries
 import { cn } from "@/lib/utils";
-import { ROOT_HEAD } from "@/meta";
+import { ROOT_HEAD } from "@/features/meta/domain";
 import { loaderRoot } from "@/loaders/root";
 
 // components
