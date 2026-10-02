@@ -5,7 +5,7 @@ import { chunkTextByWords } from "@/features/typewriter/domain";
 import { Header } from "./header";
 import { ScreenShots } from "./screen-shots";
 import { SkillsUsed } from "./skills-used";
-import { TypeWriterOutput } from "@/features/typewriter/ui/typewriter-output";
+import { Typewriter } from "@/features/typewriter/ui/typewriter";
 
 // types
 import type { Experience, LocalizedContent } from "@/domain";
@@ -34,7 +34,7 @@ export function ExperienceDetails({ localizedContent, experience, experience: { 
       )}
       <SkillsUsed localizedContent={localizedContent} experience={experience} />
       {paras.map((para, index) => (
-        <TypeWriterOutput key={index} fullText={para} />
+        <Typewriter key={index} fullText={para} />
       ))}
     </article>
   );

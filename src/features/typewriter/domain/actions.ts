@@ -53,7 +53,7 @@ export const planScript = Effect.fnUntraced(function* (
 ): Effect.fn.Return<ReadonlyArray<TypewriterOp>> {
   const words = fullText.split(" ");
 
-  const ops = yield* Effect.forEach(words, (word) =>
+  const typewriterOps = yield* Effect.forEach(words, (word) =>
     Effect.gen(function* () {
       const typoWord = yield* typo(word);
       const pauseAfterWord = yield* Random.nextIntBetween(60, 100);
@@ -71,5 +71,5 @@ export const planScript = Effect.fnUntraced(function* (
     })
   );
 
-  return Array.flatten(ops);
+  return Array.flatten(typewriterOps);
 });

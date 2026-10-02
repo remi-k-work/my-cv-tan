@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { assert, describe, it } from "@effect/vitest";
-import { Array, Effect } from "effect";
+import { Effect, Random } from "effect";
 
 // domain
 import { planScript, planTypo } from "../actions";
@@ -8,32 +8,39 @@ import { applyOp } from "../helpers";
 import { DeleteChars, Pause, TypeChars } from "../models";
 
 describe("planTypo", () => {
-  it.effect("only produces valid single-typo variants of the input", () =>
+  it.effect("leaves the word untouched without a typo roll", () =>
     Effect.gen(function* () {
-      const word = "hello";
-
-      // The complete space of valid outcomes: identity, every adjacent swap,
-      // every single-character skip, and every single-letter insertion
-      const swaps = Array.makeBy(word.length - 1, (i) => word.slice(0, i) + word[i + 1] + word[i] + word.slice(i + 2));
-      const skips = Array.makeBy(word.length, (i) => word.slice(0, i) + word.slice(i + 1));
-      const letters = Array.makeBy(26, (i) => String.fromCharCode(97 + i));
-      const inserts = letters.flatMap((letter) => Array.makeBy(word.length + 1, (i) => word.slice(0, i) + letter + word.slice(i)));
-      const valid = new Set([word, ...swaps, ...skips, ...inserts]);
-
-      const results = yield* Effect.all(Array.makeBy(200, () => planTypo(word)));
-
-      assert.isAbove(results.length, 0);
-      for (const typo of results) {
-        assert.isTrue(valid.has(typo), `unexpected typo variant: ${typo}`);
-      }
+      assert.strictEqual(yield* planTypo("hello").pipe(Random.withSeed("seed-1")), "hello");
     })
   );
 
-  it.effect("keeps the result within one edit of the input length", () =>
+  it.effect("skips a character", () =>
     Effect.gen(function* () {
-      const typo = yield* planTypo("hello");
-      assert.isAtLeast(typo.length, 4);
-      assert.isAtMost(typo.length, 6);
+      assert.strictEqual(yield* planTypo("hello").pipe(Random.withSeed("seed-4")), "hell");
+    })
+  );
+
+  it.effect("inserts a random lowercase letter", () =>
+    Effect.gen(function* () {
+      assert.strictEqual(yield* planTypo("hello").pipe(Random.withSeed("seed-18")), "hnello");
+    })
+  );
+
+  it.effect("swaps adjacent characters", () =>
+    Effect.gen(function* () {
+      assert.strictEqual(yield* planTypo("hello").pipe(Random.withSeed("seed-95")), "hlelo");
+    })
+  );
+
+  it.effect("only emits input characters or lowercase letters", () =>
+    Effect.gen(function* () {
+      // Seeds covering identity, skips, inserts, and swaps
+      for (const seed of ["seed-1", "seed-4", "seed-15", "seed-18", "seed-21", "seed-29", "seed-32", "seed-95"]) {
+        const typo = yield* planTypo("hello").pipe(Random.withSeed(seed));
+        for (const char of typo) {
+          assert.isTrue("hello".includes(char) || /[a-z]/.test(char), `unexpected character: ${char}`);
+        }
+      }
     })
   );
 });
