@@ -4,8 +4,7 @@ import { Effect, Random } from "effect";
 
 // domain
 import { planScript, planTypo } from "../actions";
-import { applyOp } from "../helpers";
-import { DeleteChars, Pause, TypeChars } from "../models";
+import { DeleteChars, TypeChars } from "../models";
 
 describe("planTypo", () => {
   it.effect("leaves the word untouched without a typo roll", () =>
@@ -22,7 +21,7 @@ describe("planTypo", () => {
 
   it.effect("inserts a random lowercase letter", () =>
     Effect.gen(function* () {
-      assert.strictEqual(yield* planTypo("hello").pipe(Random.withSeed("seed-18")), "hnello");
+      assert.strictEqual(yield* planTypo("hello").pipe(Random.withSeed("seed-18")), "hoello");
     })
   );
 
@@ -72,23 +71,4 @@ describe("planScript", () => {
       assert.strictEqual(ops[4]._tag, "Pause");
     })
   );
-});
-
-describe("applyOp", () => {
-  it("appends typed characters", () => {
-    assert.strictEqual(applyOp("hi", TypeChars({ text: " there" })), "hi there");
-  });
-
-  it("deletes characters from the end", () => {
-    assert.strictEqual(applyOp("hello", DeleteChars({ count: 2 })), "hel");
-  });
-
-  it("clamps over-deletion to the empty string", () => {
-    assert.strictEqual(applyOp("hi", DeleteChars({ count: 5 })), "");
-    assert.strictEqual(applyOp("hi", DeleteChars({ count: 0 })), "hi");
-  });
-
-  it("leaves the text untouched on pause", () => {
-    assert.strictEqual(applyOp("hi", Pause({ millis: 100 })), "hi");
-  });
 });

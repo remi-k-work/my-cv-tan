@@ -13,9 +13,4 @@ export type TypewriterOp = Data.TaggedEnum<{
   readonly Pause: { readonly millis: number };
 }>;
 
-export interface TypewriterFrame {
-  readonly text: string;
-  readonly holdMillis: number;
-}
-
 export const { TypeChars, DeleteChars, Pause } = Data.taggedEnum<TypewriterOp>();
