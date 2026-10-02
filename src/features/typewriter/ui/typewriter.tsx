@@ -21,6 +21,13 @@ export function Typewriter({ fullText }: TypewriterProps) {
   const isRunning = AsyncResult.isWaiting(typewriter);
 
   return (
-    <p className={cn("mx-auto max-w-[35ch] text-center text-wrap sm:max-w-prose", isRunning && "after:animate-cursor-blink after:content-['▋']")}>{currText}</p>
+    <p
+      className={cn(
+        "mx-auto min-h-12 max-w-[35ch] text-center text-wrap sm:min-h-auto sm:max-w-prose",
+        isRunning && "after:animate-cursor-blink after:content-['▋']"
+      )}
+    >
+      {currText}
+    </p>
   );
 }
