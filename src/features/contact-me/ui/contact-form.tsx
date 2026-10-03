@@ -30,7 +30,7 @@ export function ContactForm({ preferredLanguage, localizedContent }: ContactForm
   return (
     <contactFormL.Initialize defaultValues={{ name: "", email: "", subject: "", message: "", captchaInput: "" }}>
       <form
-        className="mx-auto w-full max-w-4xl rounded-xl bg-background p-3"
+        className="mx-auto w-full max-w-4xl rounded-xl bg-surface-1 p-3"
         onSubmit={(ev) => {
           ev.preventDefault();
           ev.stopPropagation();

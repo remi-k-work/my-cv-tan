@@ -9,7 +9,7 @@ import { useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Button } from "@base-ui/react";
 
 // assets
-import { HandThumbDownIcon, HandThumbUpIcon, XCircleIcon } from "@heroicons/react/24/solid";
+import { ArrowLeftCircleIcon, PaperAirplaneIcon, XCircleIcon } from "@heroicons/react/24/solid";
 import { Loader2 } from "lucide-react";
 
 // types
@@ -39,15 +39,15 @@ export function FormSubmit({ contactForm, localizedContent }: FormSubmitProps) {
   return (
     <section className="flex flex-wrap gap-3 *:flex-1 md:gap-6">
       <Button className="button" type="submit" disabled={!canSubmit}>
-        {waiting ? <Loader2 className="size-9 animate-spin" /> : <HandThumbUpIcon className="size-9" />}
+        {waiting ? <Loader2 className="size-9 animate-spin" /> : <PaperAirplaneIcon className="size-9" />}
         {waiting ? localizedContent["formSubmit"]["sending"] : localizedContent["formSubmit"]["send"]}
       </Button>
-      <Button className="button border-destructive-foreground text-destructive-foreground hover:shadow-destructive-foreground" onClick={() => reset()}>
+      <Button className="button bg-destructive" onClick={() => reset()}>
         <XCircleIcon className="size-9" />
         {localizedContent["formSubmit"]["reset"]}
       </Button>
-      <Button className="button border-secondary-foreground text-secondary-foreground hover:shadow-secondary-foreground" onClick={() => router.history.back()}>
-        <HandThumbDownIcon className="size-9" />
+      <Button className="button bg-secondary" onClick={() => router.history.back()}>
+        <ArrowLeftCircleIcon className="size-9" />
         {localizedContent["formSubmit"]["cancel"]}
       </Button>
     </section>
@@ -58,15 +58,15 @@ export function FormSubmitSkeleton() {
   return (
     <section className="flex flex-wrap gap-3 *:flex-1 md:gap-6">
       <Button className="button" type="submit" disabled>
-        <HandThumbUpIcon className="size-9" />
+        <PaperAirplaneIcon className="size-9" />
         &nbsp;
       </Button>
-      <Button className="button border-destructive-foreground text-destructive-foreground hover:shadow-destructive-foreground" disabled>
+      <Button className="button bg-destructive" disabled>
         <XCircleIcon className="size-9" />
         &nbsp;
       </Button>
-      <Button className="button border-secondary-foreground text-secondary-foreground hover:shadow-secondary-foreground" disabled>
-        <HandThumbDownIcon className="size-9" />
+      <Button className="button bg-secondary" disabled>
+        <ArrowLeftCircleIcon className="size-9" />
         &nbsp;
       </Button>
     </section>

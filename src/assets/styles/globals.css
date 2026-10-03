@@ -12,47 +12,27 @@
   /* font (Fontsource replaces next/font/google) */
   --font-outfit: "Outfit", ui-sans-serif, system-ui, sans-serif;
 
-  /* our colors */
-  --clr-primary-200: oklch(0.5783 0.0643 274.44 / 1);
-  --clr-primary-400: oklch(0.5744 0.1383 272.82 / 0.9);
-  --clr-primary-800: oklch(0.2506 0.0647 270.92 / 1);
-
-  /* shadcn/ui (dark) */
-  --background: oklch(0.2779 0.0668 271.89 / 1);
-  --foreground: oklch(1 0 89.88 / 1);
-  --primary: transparent;
-  --primary-foreground: oklch(0.4374 0.0976 272.26 / 1);
-  --secondary: transparent;
-  --secondary-foreground: oklch(0.6242 0.1884 274.19 / 1);
-  --muted: oklch(0.268 0.007 34.298);
-  --muted-foreground: oklch(0.4374 0.0976 272.26 / 1);
-  --accent: transparent;
-  --accent-foreground: oklch(0.7478 0.1765 163.47 / 1);
-  --destructive: transparent;
-  --destructive-foreground: oklch(0.7478 0.1765 163.47 / 1);
-  --border: oklch(1 0 0 / 10%);
+  --text-1: oklch(1 0 0);
+  --text-2: oklch(0.5783 0.0643 274.44);
+  --surface-2: oklch(0.2779 0.0668 271.89);
+  --surface-1: oklch(0.2506 0.0647 270.92);
+  --primary: oklch(0.4374 0.0976 272.26);
+  --secondary: oklch(0.6242 0.1884 274.19);
+  --accent: oklch(0.7478 0.1765 163.47);
+  --destructive: oklch(0.7478 0.1765 163.47);
 }
 
 @theme inline {
   --font-outfit: var(--font-outfit);
 
-  --color-clr-primary-200: var(--clr-primary-200);
-  --color-clr-primary-400: var(--clr-primary-400);
-  --color-clr-primary-800: var(--clr-primary-800);
-
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-text-1: var(--text-1);
+  --color-text-2: var(--text-2);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
   --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
 }
 
 @utility container {
@@ -61,16 +41,15 @@
 
 @layer components {
   .button {
-    @apply flex shrink-0 items-center justify-center gap-2 rounded-xl border bg-primary px-4 py-2 tracking-widest uppercase select-none;
-    @apply border-primary-foreground text-primary-foreground hover:shadow-primary-foreground;
-    @apply hover:shadow-md;
+    @apply flex shrink-0 items-center justify-center gap-2 rounded-xl border bg-primary px-4 py-2 tracking-widest uppercase shadow-sm select-none;
+    @apply hover:shadow-accent;
     @apply active:scale-95 active:shadow-none;
     @apply data-disabled:pointer-events-none data-disabled:opacity-50 data-disabled:shadow-none;
     @apply [&_svg]:pointer-events-none [&_svg]:shrink-0;
   }
 
   .label {
-    @apply p-1 text-sm tracking-widest text-clr-primary-200 uppercase select-none;
+    @apply p-1 text-sm tracking-widest text-text-2 uppercase select-none;
     @apply group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50;
     @apply peer-disabled:cursor-not-allowed peer-disabled:opacity-50;
   }
@@ -78,35 +57,35 @@
   .input {
     @apply border px-2 py-1 font-normal any-pointer-coarse:text-base;
     @apply disabled:cursor-not-allowed disabled:opacity-50;
-    @apply placeholder:text-muted-foreground;
+    @apply placeholder:text-text-2;
   }
 
   .textarea {
     @apply flex field-sizing-fixed border px-3 py-2;
     @apply disabled:cursor-not-allowed disabled:opacity-50;
-    @apply placeholder:text-muted-foreground;
+    @apply placeholder:text-text-2;
   }
 }
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-primary/50 outline-accent/50;
   }
 
   html {
     color-scheme: dark;
-    scrollbar-color: var(--primary-foreground) var(--background);
+    scrollbar-color: var(--text-1) var(--surface-1);
   }
 
   body {
-    @apply min-h-dvh bg-background text-base font-light text-foreground;
+    @apply min-h-dvh bg-surface-1 text-base text-text-1;
   }
 
   a,
   button,
   input,
   textarea {
-    @apply transition duration-1000 ease-in-out focus-visible:outline focus-visible:outline-offset-1 focus-visible:outline-accent-foreground;
+    @apply transition duration-500 ease-in-out focus-visible:outline focus-visible:outline-offset-1 focus-visible:outline-accent;
   }
 
   h1,

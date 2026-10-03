@@ -36,23 +36,23 @@ export function ExperienceModal({ localizedContent, children }: ExperienceModalP
         <Dialog.Viewport className="fixed inset-0 flex items-center justify-center overflow-hidden">
           <Dialog.Popup
             className={cn(
-              "relative max-h-[90dvh] w-[90dvw] max-w-3xl overflow-auto bg-background p-1 text-foreground",
+              "relative max-h-[90dvh] w-[90dvw] max-w-3xl overflow-auto bg-surface-1 p-1 text-text-1",
               "transition duration-300 ease-in-out",
               "data-ending-style:scale-90 data-ending-style:opacity-0 data-starting-style:scale-90 data-starting-style:opacity-0"
             )}
           >
             <header className="flex items-center justify-between gap-4 p-1">
-              <section className="flex items-center gap-2">
-                <InformationCircleIcon className="size-11 flex-none text-secondary-foreground" />
-                <h3 className="inline-grid flex-1 overflow-clip text-xl tracking-widest text-secondary-foreground uppercase">
+              <section className="flex items-center gap-2 text-text-2">
+                <InformationCircleIcon className="size-11 flex-none" />
+                <h3 className="inline-grid flex-1 overflow-clip text-xl tracking-widest uppercase">
                   <span className="col-span-full row-span-full animate-reveal-text [clip-path:inset(0_100%_0_0)]">
                     {localizedContent["experienceModal"]["projectInfo"]}
                   </span>
                   <span
                     className={cn(
                       "col-span-full row-span-full flex animate-sweep-light-bar",
-                      "before:h-full before:w-2 before:flex-none before:rounded-lg before:bg-accent-foreground before:shadow-[0_0_6px_#DFFF00,0_0_12px_#DFFF00] before:content-['']",
-                      "after:-z-1 after:flex-1 after:bg-background after:content-['']"
+                      "before:h-full before:w-2 before:flex-none before:rounded-lg before:bg-accent before:shadow-[0_0_6px_#DFFF00,0_0_12px_#DFFF00] before:content-['']",
+                      "after:-z-1 after:flex-1 after:bg-surface-1 after:content-['']"
                     )}
                   />
                 </h3>

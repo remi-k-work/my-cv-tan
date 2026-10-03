@@ -24,10 +24,10 @@ function ContactPage() {
     <>
       <PageTitle pagePath="/contact" pageTitles={randomPageTitles} />
       <article className="grid auto-rows-fr grid-cols-1 gap-4 xl:grid-cols-2">
-        <section className="rounded-xl bg-clr-primary-800 p-4">
+        <section className="rounded-xl bg-surface-2 p-4">
           <ContactForm preferredLanguage={preferredLanguage} localizedContent={localizedContent} />
         </section>
-        <section className="rounded-xl bg-clr-primary-800 p-4">
+        <section className="rounded-xl bg-surface-2 p-4">
           <ContactMap localizedContent={localizedContent} />
         </section>
       </article>

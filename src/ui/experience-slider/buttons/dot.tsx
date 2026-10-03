@@ -38,7 +38,7 @@ export function Dot({ emblaApi, index }: DotProps) {
   }, [emblaApi, onSelect]);
 
   return (
-    <Button className={cn("button rounded-full p-2", index === selectedIndex && "text-clr-primary-200")} onClick={() => emblaApi?.scrollTo(index)}>
+    <Button className={cn("button p-2", index === selectedIndex && "text-accent")} onClick={() => emblaApi?.scrollTo(index)}>
       {index === selectedIndex ? <ViewfinderCircleIconS className="size-6" /> : <ViewfinderCircleIconO className="size-6" />}
     </Button>
   );

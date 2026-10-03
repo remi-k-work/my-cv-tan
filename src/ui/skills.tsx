@@ -15,7 +15,7 @@ export function Skills() {
   return (
     <aside
       className={cn(
-        "z-9 grid w-full bg-clr-primary-800 [grid-area:skills]",
+        "z-9 grid w-full bg-surface-2 [grid-area:skills]",
         "max-lg:fixed max-lg:bottom-0 max-lg:h-28",
 
         "before:fixed before:content-['']",
@@ -24,11 +24,11 @@ export function Skills() {
         "max-lg:before:bottom-14 max-lg:before:left-0 max-lg:before:h-px max-lg:before:w-full",
         "lg:before:left-11 lg:before:h-full lg:before:w-px",
 
-        "before:from-primary-foreground before:via-accent-foreground before:via-5% before:to-primary-foreground before:to-10%",
+        "before:from-primary before:via-accent before:via-5% before:to-primary before:to-10%",
         "max-lg:before:animate-spark-h max-lg:before:bg-linear-to-r max-lg:before:bg-size-[200%]",
         "lg:before:animate-spark-v lg:before:bg-linear-to-b lg:before:bg-size-[100%_200%]",
 
-        "lg:after:from-primary-foreground lg:after:via-accent-foreground lg:after:via-5% lg:after:to-primary-foreground lg:after:to-10%",
+        "lg:after:from-primary lg:after:via-accent lg:after:via-5% lg:after:to-primary lg:after:to-10%",
         "lg:after:direction-[reverse] lg:after:animate-spark-v lg:after:bg-linear-to-b lg:after:bg-size-[100%_200%]"
       )}
     >

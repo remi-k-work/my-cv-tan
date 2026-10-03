@@ -23,10 +23,7 @@ export function InfoLine({ message, className }: InfoLineProps) {
         <motion.p
           role="status"
           aria-live="polite"
-          className={cn(
-            "my-3 flex max-w-none items-center justify-center gap-2 border border-destructive-foreground px-3 py-2 text-destructive-foreground",
-            className
-          )}
+          className={cn("my-3 flex max-w-none items-center justify-center gap-2 border border-destructive px-3 py-2 text-destructive", className)}
           layout
           initial={{ opacity: 0, scale: MOTION_TOKENS.scale.press, y: MOTION_TOKENS.distance.sm }}
           animate={{ opacity: 1, scale: 1, y: 0 }}

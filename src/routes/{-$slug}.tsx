@@ -35,17 +35,17 @@ function HomePage() {
       <>
         <PageTitle pagePath="/" pageTitles={randomPageTitles} />
         <article className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-          <section className="rounded-xl bg-clr-primary-800 p-4">
+          <section className="rounded-xl bg-surface-2 p-4">
             <figure className="mx-auto w-full max-w-4xl">
-              <figcaption className="mb-4 place-self-end rounded-ss-xl rounded-ee-xl bg-primary-foreground p-3 italic">
+              <figcaption className="mb-4 place-self-end rounded-ss-xl rounded-ee-xl bg-surface-1 p-3 tracking-widest text-text-2 uppercase">
                 {localizedContent["pageHome"]["experience"]}
               </figcaption>
               <ExperienceSlider localizedContent={localizedContent} experienceList={Array.filter(experienceList, ({ type }) => type === "e")} />
             </figure>
           </section>
-          <section className="rounded-xl bg-clr-primary-800 p-4">
+          <section className="rounded-xl bg-surface-2 p-4">
             <figure className="mx-auto w-full max-w-4xl">
-              <figcaption className="mb-4 place-self-end rounded-ss-xl rounded-ee-xl bg-primary-foreground p-3 italic">
+              <figcaption className="mb-4 place-self-end rounded-ss-xl rounded-ee-xl bg-surface-1 p-3 tracking-widest text-text-2 uppercase">
                 {localizedContent["pageHome"]["portfolioProjects"]}
               </figcaption>
               <ExperienceSlider localizedContent={localizedContent} experienceList={Array.filter(experienceList, ({ type }) => type === "p")} />

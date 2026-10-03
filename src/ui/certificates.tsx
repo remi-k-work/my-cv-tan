@@ -14,7 +14,7 @@ interface CertificatesProps {
 export function Certificates({ localizedContent }: CertificatesProps) {
   return (
     <figure className="mx-auto w-full max-w-4xl">
-      <figcaption className="mb-4 place-self-end rounded-ss-xl rounded-ee-xl bg-primary-foreground p-3 italic">
+      <figcaption className="mb-4 place-self-end rounded-ss-xl rounded-ee-xl bg-surface-1 p-3 tracking-widest text-text-2 uppercase">
         {localizedContent["myCertificates"]["myCertificates"]}
       </figcaption>
       <a href="/my-certificates.pdf" target="_blank" rel="noopener noreferrer" className="space-y-4">

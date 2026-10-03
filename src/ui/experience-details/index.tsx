@@ -23,7 +23,7 @@ export function ExperienceDetails({ localizedContent, experience, experience: { 
   const paras = chunkTextByWords(txt, MAX_CHUNK_LENGTH);
 
   return (
-    <article className="mx-auto w-full max-w-4xl rounded-xl bg-clr-primary-800 p-3">
+    <article className="mx-auto w-full max-w-4xl rounded-xl bg-surface-2 p-3">
       <Header localizedContent={localizedContent} experience={experience} />
       {liveLink || videoLink ? (
         <a href={videoLink ?? liveLink} target="_blank" rel="noopener noreferrer">

@@ -33,8 +33,8 @@ export function Prev({ emblaApi }: PrevProps) {
   }, [emblaApi, onSelect]);
 
   return (
-    <Button className="button" disabled={isDisabled} onClick={() => emblaApi?.scrollPrev()}>
-      <PrevIcon className="size-9" />
+    <Button className="button p-2" disabled={isDisabled} onClick={() => emblaApi?.scrollPrev()}>
+      <PrevIcon className="size-6" />
     </Button>
   );
 }

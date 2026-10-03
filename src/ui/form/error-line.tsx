@@ -16,7 +16,7 @@ export function ErrorLine({ message }: ErrorLineProps) {
   return (
     <motion.p
       role="alert"
-      className="flex max-w-none items-center gap-2 overflow-clip rounded-b-xl border border-destructive-foreground px-3 py-2 text-destructive-foreground"
+      className="flex max-w-none items-center gap-2 overflow-clip rounded-b-xl border border-destructive px-3 py-2 text-destructive"
       layout
       initial={{ opacity: 0, y: "-25%", height: 0 }}
       animate={{ opacity: 1, y: "0%", height: "auto" }}

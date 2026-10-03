@@ -24,10 +24,10 @@ function EducationPage() {
     <>
       <PageTitle pagePath="/education" pageTitles={randomPageTitles} />
       <article className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <section className="rounded-xl bg-clr-primary-800 p-4">
+        <section className="rounded-xl bg-surface-2 p-4">
           <Certificates localizedContent={localizedContent} />
         </section>
-        <section className="rounded-xl bg-clr-primary-800 p-4">
+        <section className="rounded-xl bg-surface-2 p-4">
           <Education localizedContent={localizedContent} educationList={educationList} />
         </section>
       </article>

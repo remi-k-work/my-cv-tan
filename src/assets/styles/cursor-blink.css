@@ -4,10 +4,10 @@
   @keyframes cursor-blink {
     from,
     to {
-      color: var(--color-muted-foreground);
+      color: var(--color-text-2);
     }
     50% {
-      color: var(--color-accent-foreground);
+      color: var(--color-accent);
     }
   }
 }

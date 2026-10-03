@@ -28,12 +28,12 @@ export function ContactMap({ localizedContent }: ContactMapProps) {
           <ReactLeaflet localizedContent={localizedContent} />
         </Suspense>
       </ClientOnly>
-      <div className="absolute inset-e-4 top-4 bg-background/90 p-3 text-sm">
+      <div className="absolute inset-e-4 top-4 bg-surface-1/90 p-3 text-sm">
         <img src={avatar} width={288} height={288} alt="Avatar" className="max-h-32 w-full object-cover" loading="lazy" />
         <p className="mt-4">Remi</p>
-        <p className="text-clr-primary-200">Broniewskiego 24</p>
-        <p className="text-clr-primary-200">35-206 Rzeszów</p>
-        <p className="mb-4 text-clr-primary-200">{localizedContent["contactMap"]["poland"]}</p>
+        <p className="text-text-2">Broniewskiego 24</p>
+        <p className="text-text-2">35-206 Rzeszów</p>
+        <p className="mb-4 text-text-2">{localizedContent["contactMap"]["poland"]}</p>
         <a href="mailto:remi.k.work@proton.me" className="underline">
           remi.k.work@proton.me
         </a>
