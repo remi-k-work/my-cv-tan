@@ -2,9 +2,7 @@
 import { Match } from "effect";
 import { useAtomSubscribe } from "@effect/atom-react";
 import { AsyncResult } from "effect/reactivity";
-
-// components
-import { toast } from "sonner";
+import { toastManager } from "@/ui/toastify";
 
 // types
 import type { ContactForm } from "@/features/contact-me/domain";
@@ -18,24 +16,30 @@ export function useSubmitToast(contactForm: ContactForm, localizedContent: Local
       AsyncResult.matchWithWaiting(submitResult, {
         onWaiting: () => {},
         onSuccess: () => {
-          toast.success(localizedContent["contactFormFeedback"]["success"], { description: localizedContent["contactFormFeedback"]["messageSent"] });
+          toastManager.add({ title: localizedContent["contactFormFeedback"]["success"], description: localizedContent["contactFormFeedback"]["messageSent"] });
         },
         onError: (error) => {
           Match.value(error).pipe(
             Match.tag("SchemaError", () => {
-              toast.warning(localizedContent["contactFormFeedback"]["missingFields"], {
+              toastManager.add({
+                type: "error",
+                title: localizedContent["contactFormFeedback"]["missingFields"],
                 description: localizedContent["contactFormFeedback"]["pleaseCorrect"],
               });
             }),
             Match.orElse(() => {
-              toast.error(localizedContent["contactFormFeedback"]["serverError"], {
+              toastManager.add({
+                type: "error",
+                title: localizedContent["contactFormFeedback"]["serverError"],
                 description: localizedContent["contactFormFeedback"]["messageNotSent"],
               });
             })
           );
         },
         onDefect: () => {
-          toast.error(localizedContent["contactFormFeedback"]["serverError"], {
+          toastManager.add({
+            type: "error",
+            title: localizedContent["contactFormFeedback"]["serverError"],
             description: localizedContent["contactFormFeedback"]["messageNotSent"],
           });
         },

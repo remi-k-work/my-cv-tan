@@ -10,9 +10,9 @@ import { loaderRoot } from "@/loaders/root";
 
 // components
 import { AtomRegistryProvider } from "@/ui/atom-registry-provider";
+import { Toastify } from "@/ui/toastify";
 import { Header } from "@/ui/header";
 import { Skills } from "@/ui/skills";
-import { Toaster } from "@/ui/ui/sonner";
 
 // assets
 import "@fontsource/outfit";
@@ -58,8 +58,7 @@ function RootDocument({ preferredLanguage, children }: RootDocumentProps) {
       </head>
       <body className="relative font-outfit antialiased">
         <AtomRegistryProvider>
-          {children}
-          <Toaster richColors />
+          <Toastify>{children}</Toastify>
         </AtomRegistryProvider>
         <Scripts />
       </body>
