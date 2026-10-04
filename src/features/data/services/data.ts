@@ -1,7 +1,9 @@
 // services, features, and other libraries
 import { Array, Context, Effect, Layer, Option, Random, Schema } from "effect";
 import { Headers } from "effect/http";
-import { EducationList, ExperienceList, LocalizedContent, matchPreferredLanguage, PageTitlesList } from "@/domain";
+import { ExperienceList } from "@/features/experience/domain";
+import { EducationList } from "@/features/education/domain";
+import { LocalizedContent, matchPreferredLanguage, PageTitlesList } from "@/domain";
 import { Lang } from "./lang";
 
 // assets
@@ -15,7 +17,8 @@ import educationEn from "@/assets/data/en/education.json";
 import educationPl from "@/assets/data/pl/education.json";
 
 // types
-import type { Experience, PreferredLanguage } from "@/domain";
+import type { PreferredLanguage } from "@/domain";
+import type { Experience } from "@/features/experience/domain";
 
 export class Data extends Context.Service<Data>()("Data", {
   make: Effect.gen(function* () {

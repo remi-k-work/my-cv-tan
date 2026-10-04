@@ -2,7 +2,8 @@
 import { Fragment } from "react";
 
 // types
-import type { EducationList, LocalizedContent } from "@/domain";
+import type { LocalizedContent } from "@/domain";
+import type { EducationList } from "@/features/education/domain";
 
 interface EducationProps {
   localizedContent: LocalizedContent;

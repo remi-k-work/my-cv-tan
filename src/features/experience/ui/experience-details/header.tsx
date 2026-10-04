@@ -3,7 +3,8 @@ import { GlobeAltIcon, VideoCameraIcon } from "@heroicons/react/24/solid";
 import { GitHubIcon } from "@/assets/icons";
 
 // types
-import type { Experience, LocalizedContent } from "@/domain";
+import type { LocalizedContent } from "@/domain";
+import type { Experience } from "@/features/experience/domain";
 
 interface HeaderProps {
   localizedContent: LocalizedContent;

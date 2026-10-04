@@ -8,7 +8,8 @@ import { Next } from "./buttons/next";
 import { Dot } from "./buttons/dot";
 
 // types
-import type { ExperienceList, LocalizedContent } from "@/domain";
+import type { LocalizedContent } from "@/domain";
+import type { ExperienceList } from "@/features/experience/domain";
 
 interface ExperienceSliderProps {
   localizedContent: LocalizedContent;

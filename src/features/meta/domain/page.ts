@@ -1,12 +1,13 @@
 // services, features, and other libraries
 import { Option, pipe } from "effect";
-import { excerpt } from "@/domain";
+import { excerpt } from "@/features/experience/domain";
 import { absoluteUrl, canonicalLink, hreflangLinks } from "./helpers";
 import { globalSocialImage, socialMeta } from "./social";
 import { experienceBreadcrumbJsonLd, experienceJsonLd } from "./json-ld";
 
 // types
-import type { Experience, PagePath, PageTitles } from "@/domain";
+import type { PagePath, PageTitles } from "@/domain";
+import type { Experience } from "@/features/experience/domain";
 import type { DocumentHead } from "./constants";
 
 // constants

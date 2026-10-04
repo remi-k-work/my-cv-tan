@@ -1,7 +1,9 @@
 // services, features, and other libraries
 import { Schema } from "effect";
 import { Rpc, RpcGroup } from "effect/rpc";
-import { EducationList, Experience, ExperienceList, LocalizedContent, PageTitles, PreferredLanguage } from "@/domain";
+import { Experience, ExperienceList } from "@/features/experience/domain";
+import { EducationList } from "@/features/education/domain";
+import { LocalizedContent, PageTitles, PreferredLanguage } from "@/domain";
 import { RpcLogger } from "@/services/rpc-logger";
 
 export class RpcData extends RpcGroup.make(

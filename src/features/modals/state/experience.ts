@@ -3,6 +3,6 @@ import { Option } from "effect";
 import { Atom } from "effect/reactivity";
 
 // types
-import type { Experience } from "@/domain";
+import type { Experience } from "@/features/experience/domain";
 
 export const experienceAtom = Atom.make<Option.Option<Experience>>(Option.none());

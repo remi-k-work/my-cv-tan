@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { excerpt } from "@/domain";
+import { excerpt } from "@/features/experience/domain";
 import { globalSocialImage, socialMeta } from "./social";
 import { websitePersonJsonLd } from "./json-ld";
 

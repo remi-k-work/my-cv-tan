@@ -10,8 +10,8 @@ import { experienceAtom } from "@/features/modals/state";
 
 // components
 import { PageTitle } from "@/ui/page-title";
-import { ExperienceSlider } from "@/ui/experience-slider";
-import { ExperienceDetails } from "@/ui/experience-details";
+import { ExperienceSlider } from "@/features/experience/ui/experience-slider";
+import { ExperienceDetails } from "@/features/experience/ui/experience-details";
 import { ExperienceModal } from "@/features/modals/ui/experience";
 
 export const Route = createFileRoute("/{-$slug}")({

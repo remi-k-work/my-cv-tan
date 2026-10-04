@@ -7,8 +7,8 @@ import { educationHead } from "@/features/meta/domain";
 
 // components
 import { PageTitle } from "@/ui/page-title";
-import { Certificates } from "@/ui/certificates";
-import { Education } from "@/ui/education";
+import { Certificates } from "@/features/education/ui/certificates";
+import { Education } from "@/features/education/ui/education";
 
 export const Route = createFileRoute("/education")({
   loader: () => loaderEducation(),

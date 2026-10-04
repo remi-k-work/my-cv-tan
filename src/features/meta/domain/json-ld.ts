@@ -1,9 +1,9 @@
 // services, features, and other libraries
-import { excerpt } from "@/domain";
+import { excerpt } from "@/features/experience/domain";
 import { absoluteUrl, jsonLdScript } from "./helpers";
 
 // types
-import type { Experience } from "@/domain";
+import type { Experience } from "@/features/experience/domain";
 
 // constants
 import { AVATAR_IMAGE, HOME_COUNTRY, HOME_LOCALITY, META_DESCRIPTION_LENGTH, SITE_NAME, SITE_URL, SOCIAL_LINKS } from "./constants";

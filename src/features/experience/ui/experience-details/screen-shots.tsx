@@ -1,13 +1,12 @@
 // types
-import type { Experience } from "@/domain";
+import type { Experience } from "@/features/experience/domain";
 
 interface ScreenShotsProps {
   experience: Experience;
 }
 
 // constants
-const SCREENSHOT_WIDTH = 1600;
-const SCREENSHOT_HEIGHT = 900;
+import { SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT } from "@/features/experience/domain";
 
 export function ScreenShots({ experience: { role, imageName } }: ScreenShotsProps) {
   return (

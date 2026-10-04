@@ -8,7 +8,8 @@ import { SkillsUsed } from "./skills-used";
 import { Typewriter } from "@/features/typewriter/ui/typewriter";
 
 // types
-import type { Experience, LocalizedContent } from "@/domain";
+import type { LocalizedContent } from "@/domain";
+import type { Experience } from "@/features/experience/domain";
 
 interface ExperienceDetailsProps {
   localizedContent: LocalizedContent;

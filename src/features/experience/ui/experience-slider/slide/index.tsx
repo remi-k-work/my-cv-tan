@@ -1,12 +1,13 @@
 // services, features, and other libraries
-import { excerpt } from "@/domain";
+import { excerpt } from "@/features/experience/domain";
 
 // components
 import { Header } from "./header";
 import { ScreenShots } from "./screen-shots";
 
 // types
-import type { Experience, LocalizedContent } from "@/domain";
+import type { LocalizedContent } from "@/domain";
+import type { Experience } from "@/features/experience/domain";
 
 interface SlideProps {
   localizedContent: LocalizedContent;
