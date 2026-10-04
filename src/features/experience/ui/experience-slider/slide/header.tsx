@@ -6,6 +6,9 @@ import { Option } from "effect";
 import { useAtomSet } from "@effect/atom-react";
 import { experienceAtom } from "@/features/modals/state";
 
+// components
+import { LinkChip } from "@/features/experience/ui/link-chip";
+
 // assets
 import { GlobeAltIcon, InformationCircleIcon, VideoCameraIcon } from "@heroicons/react/24/solid";
 import { GitHubIcon } from "@/assets/icons";
@@ -48,37 +51,19 @@ export function Header({ localizedContent, experience }: HeaderProps) {
             <InformationCircleIcon className="size-9" />
           </Link>
           {liveLink && (
-            <a
-              className="rounded-full border border-text-1 p-1 hover:scale-110 hover:border-accent hover:text-accent"
-              href={liveLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              title={localizedContent["experienceSlide"]["liveLink"]}
-            >
+            <LinkChip href={liveLink} title={localizedContent["experienceSlide"]["liveLink"]}>
               <GlobeAltIcon className="size-9" />
-            </a>
+            </LinkChip>
           )}
           {gitHubLink && (
-            <a
-              className="rounded-full border border-text-1 p-1 hover:scale-110 hover:border-accent hover:text-accent"
-              href={gitHubLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              title={localizedContent["experienceSlide"]["goAndSee"]}
-            >
+            <LinkChip href={gitHubLink} title={localizedContent["experienceSlide"]["goAndSee"]}>
               <GitHubIcon className="size-9" />
-            </a>
+            </LinkChip>
           )}
           {videoLink && (
-            <a
-              className="rounded-full border border-text-1 p-1 hover:scale-110 hover:border-accent hover:text-accent"
-              href={videoLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              title={localizedContent["experienceSlide"]["watchVideo"]}
-            >
+            <LinkChip href={videoLink} title={localizedContent["experienceSlide"]["watchVideo"]}>
               <VideoCameraIcon className="size-9" />
-            </a>
+            </LinkChip>
           )}
         </div>
       </section>

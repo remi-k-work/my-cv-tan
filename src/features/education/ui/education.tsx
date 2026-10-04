@@ -1,6 +1,9 @@
 // react
 import { Fragment } from "react";
 
+// components
+import { PanelCaption } from "@/ui/panel-caption";
+
 // types
 import type { LocalizedContent } from "@/domain";
 import type { EducationList } from "@/features/education/domain";
@@ -13,9 +16,7 @@ interface EducationProps {
 export function Education({ localizedContent, educationList }: EducationProps) {
   return (
     <figure className="mx-auto w-full max-w-4xl">
-      <figcaption className="mb-4 place-self-end rounded-ss-xl rounded-ee-xl bg-surface-1 p-3 tracking-widest text-text-2 uppercase">
-        {localizedContent["myEducation"]["myEducation"]}
-      </figcaption>
+      <PanelCaption>{localizedContent["myEducation"]["myEducation"]}</PanelCaption>
       <dl>
         {educationList.map(({ name, year, location, info }, index) => (
           <Fragment key={index}>

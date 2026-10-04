@@ -1,3 +1,6 @@
+// components
+import { LinkChip } from "@/features/experience/ui/link-chip";
+
 // assets
 import { GlobeAltIcon, VideoCameraIcon } from "@heroicons/react/24/solid";
 import { GitHubIcon } from "@/assets/icons";
@@ -22,37 +25,19 @@ export function Header({ localizedContent, experience: { year, role, company, gi
       <section className="flex-3">
         <div className="flex flex-wrap items-center justify-end gap-2">
           {liveLink && (
-            <a
-              className="rounded-full border border-text-1 p-1 hover:scale-110 hover:border-accent hover:text-accent"
-              href={liveLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              title={localizedContent["experienceDetails"]["liveLink"]}
-            >
+            <LinkChip href={liveLink} title={localizedContent["experienceDetails"]["liveLink"]}>
               <GlobeAltIcon className="size-11" />
-            </a>
+            </LinkChip>
           )}
           {gitHubLink && (
-            <a
-              className="rounded-full border border-text-1 p-1 hover:scale-110 hover:border-accent hover:text-accent"
-              href={gitHubLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              title={localizedContent["experienceDetails"]["goAndSee"]}
-            >
+            <LinkChip href={gitHubLink} title={localizedContent["experienceDetails"]["goAndSee"]}>
               <GitHubIcon className="size-11" />
-            </a>
+            </LinkChip>
           )}
           {videoLink && (
-            <a
-              className="rounded-full border border-text-1 p-1 hover:scale-110 hover:border-accent hover:text-accent"
-              href={videoLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              title={localizedContent["experienceDetails"]["watchVideo"]}
-            >
+            <LinkChip href={videoLink} title={localizedContent["experienceDetails"]["watchVideo"]}>
               <VideoCameraIcon className="size-11" />
-            </a>
+            </LinkChip>
           )}
         </div>
       </section>

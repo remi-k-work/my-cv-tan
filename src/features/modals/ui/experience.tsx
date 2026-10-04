@@ -6,6 +6,7 @@ import { experienceAtom } from "@/features/modals/state";
 
 // components
 import { Button, Dialog } from "@base-ui/react";
+import { RevealText } from "@/ui/reveal-text";
 
 // assets
 import { InformationCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
@@ -45,16 +46,7 @@ export function ExperienceModal({ localizedContent, children }: ExperienceModalP
               <section className="flex items-center gap-2 text-text-2">
                 <InformationCircleIcon className="size-11 flex-none" />
                 <h3 className="inline-grid flex-1 overflow-clip text-xl tracking-widest uppercase">
-                  <span className="col-span-full row-span-full animate-reveal-text [clip-path:inset(0_100%_0_0)]">
-                    {localizedContent["experienceModal"]["projectInfo"]}
-                  </span>
-                  <span
-                    className={cn(
-                      "col-span-full row-span-full flex animate-sweep-light-bar",
-                      "before:h-full before:w-2 before:flex-none before:rounded-lg before:bg-accent before:shadow-[0_0_6px_#DFFF00,0_0_12px_#DFFF00] before:content-['']",
-                      "after:-z-1 after:flex-1 after:bg-surface-1 after:content-['']"
-                    )}
-                  />
+                  <RevealText>{localizedContent["experienceModal"]["projectInfo"]}</RevealText>
                 </h3>
               </section>
               <Button className="button" onClick={() => setExperience(Option.none())}>

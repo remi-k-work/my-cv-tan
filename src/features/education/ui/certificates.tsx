@@ -1,3 +1,6 @@
+// components
+import { PanelCaption } from "@/ui/panel-caption";
+
 // assets
 import artcom from "@/assets/my-certificates-artcom.webp";
 import alcc from "@/assets/my-certificates-alcc.webp";
@@ -14,9 +17,7 @@ interface CertificatesProps {
 export function Certificates({ localizedContent }: CertificatesProps) {
   return (
     <figure className="mx-auto w-full max-w-4xl">
-      <figcaption className="mb-4 place-self-end rounded-ss-xl rounded-ee-xl bg-surface-1 p-3 tracking-widest text-text-2 uppercase">
-        {localizedContent["myCertificates"]["myCertificates"]}
-      </figcaption>
+      <PanelCaption>{localizedContent["myCertificates"]["myCertificates"]}</PanelCaption>
       <a href="/my-certificates.pdf" target="_blank" rel="noopener noreferrer" className="space-y-4">
         <img src={artcom} width={1222} height={870} alt="ARTCOM" loading="lazy" className="h-auto w-full" />
         <img src={alcc} width={1222} height={870} alt="ALCC" loading="lazy" className="h-auto w-full" />
