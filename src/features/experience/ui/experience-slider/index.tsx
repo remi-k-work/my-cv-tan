@@ -1,11 +1,13 @@
+// react
+import { useCallback } from "react";
+
 // services, features, and other libraries
 import useEmblaCarousel from "embla-carousel-react";
+import { useEmblaSelect } from "@/features/experience/hooks";
 
 // components
 import { Slide } from "./slide";
-import { Prev } from "./buttons/prev";
-import { Next } from "./buttons/next";
-import { Dot } from "./buttons/dot";
+import { Dot, Next, Prev } from "./buttons";
 
 // types
 import type { LocalizedContent } from "@/domain";
@@ -18,6 +20,12 @@ interface ExperienceSliderProps {
 
 export function ExperienceSlider({ localizedContent, experienceList }: ExperienceSliderProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel();
+  const { selectedIndex, canScrollPrev, canScrollNext } = useEmblaSelect(emblaApi);
+
+  const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
+  const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
+  const scrollTo = useCallback((index: number) => () => emblaApi?.scrollTo(index), [emblaApi]);
+  const snapCount = emblaApi?.scrollSnapList().length ?? 0;
 
   return (
     <article className="grid grid-cols-[auto_1fr] grid-rows-[1fr_auto] gap-4 [grid-template-areas:'viewport_viewport''prevnext_dots']">
@@ -31,12 +39,12 @@ export function ExperienceSlider({ localizedContent, experienceList }: Experienc
         </div>
       </section>
       <header className="flex items-center gap-4 [grid-area:prevnext]">
-        <Prev emblaApi={emblaApi} />
-        <Next emblaApi={emblaApi} />
+        <Prev disabled={!canScrollPrev} onPrev={scrollPrev} />
+        <Next disabled={!canScrollNext} onNext={scrollNext} />
       </header>
       <footer className="flex flex-wrap items-center justify-end gap-1 [grid-area:dots]">
-        {emblaApi?.scrollSnapList().map((_, index) => (
-          <Dot key={index} emblaApi={emblaApi} index={index} />
+        {Array.from({ length: snapCount }, (_, index) => (
+          <Dot key={index} selected={index === selectedIndex} onSelect={scrollTo(index)} />
         ))}
       </footer>
     </article>
