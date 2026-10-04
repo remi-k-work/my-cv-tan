@@ -1,12 +1,12 @@
 // types
 import type { Experience } from "@/features/experience/domain";
 
-// constants
-import { SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT } from "@/features/experience/domain";
-
 interface ScreenShotsProps {
   experience: Experience;
 }
+
+// constants
+import { SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT } from "@/features/experience/domain";
 
 // The experience's cycling screenshots; links to the project's video or live site when it has one
 export function ScreenShots({ experience: { role, imageName, liveLink, videoLink } }: ScreenShotsProps) {
