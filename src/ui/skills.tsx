@@ -11,6 +11,55 @@ import nextjs from "@/assets/my-skills-nextjs.svg";
 import inkscape from "@/assets/my-skills-inkscape.svg";
 import gimp from "@/assets/my-skills-gimp.svg";
 
+// types
+interface SkillSource {
+  src: string;
+  alt: string;
+}
+
+type SlidePhase = keyof typeof SLIDE_PHASE_CLASSES;
+type SlideDelay = keyof typeof SLIDE_DELAY_CLASSES;
+
+// constants
+// Kept as literal class strings so Tailwind can generate them
+const SLIDE_PHASE_CLASSES = {
+  stay: "max-lg:animate-slide-bt lg:animate-slide-lr [--_dest-opacity:1]",
+  out: "max-lg:animate-slide-bt-fade-out lg:animate-slide-lr-fade-out [--_dest-opacity:1]",
+  in: "max-lg:animate-slide-bt-fade-in lg:animate-slide-lr-fade-in [--_dest-opacity:0]",
+} as const;
+
+const SLIDE_DELAY_CLASSES = {
+  "0.2s": "max-lg:[animation-delay:0.2s] lg:[animation-delay:0.2s]",
+  "0.4s": "max-lg:[animation-delay:0.4s] lg:[animation-delay:0.4s]",
+  "0.6s,8s": "max-lg:[animation-delay:0.6s,8s] lg:[animation-delay:0.6s,8s]",
+  "0.8s,16s": "max-lg:[animation-delay:0.8s,16s] lg:[animation-delay:0.8s,16s]",
+} as const;
+
+function SkillIcon({ src, alt, delay, phase = "stay" }: SkillSource & { delay?: SlideDelay; phase?: SlidePhase }) {
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={cn(
+        "max-h-24 w-full max-w-24 opacity-0",
+        "max-lg:translate-y-full lg:-translate-x-full",
+        SLIDE_PHASE_CLASSES[phase],
+        delay !== undefined && SLIDE_DELAY_CLASSES[delay]
+      )}
+    />
+  );
+}
+
+// Two skills trading places in a single cell: the first slides in then periodically fades out while the second fades in
+function SwappingSkillPair({ first, second, delay }: { first: SkillSource; second: SkillSource; delay: SlideDelay }) {
+  return (
+    <li className="grid *:col-span-full *:row-span-full">
+      <SkillIcon {...first} delay={delay} phase="out" />
+      <SkillIcon {...second} delay={delay} phase="in" />
+    </li>
+  );
+}
+
 export function Skills() {
   return (
     <aside
@@ -40,87 +89,14 @@ export function Skills() {
         )}
       >
         <li>
-          <img
-            src={html}
-            alt="HTML"
-            className={cn(
-              "max-h-24 w-full max-w-24 opacity-0 [--_dest-opacity:1]",
-              "max-lg:translate-y-full max-lg:animate-slide-bt",
-              "lg:-translate-x-full lg:animate-slide-lr"
-            )}
-          />
+          <SkillIcon src={html} alt="HTML" />
         </li>
         <li>
-          <img
-            src={css}
-            alt="CSS"
-            className={cn(
-              "max-h-24 w-full max-w-24 opacity-0 [--_dest-opacity:1]",
-              "max-lg:translate-y-full max-lg:animate-slide-bt max-lg:[animation-delay:0.2s]",
-              "lg:-translate-x-full lg:animate-slide-lr lg:[animation-delay:0.2s]"
-            )}
-          />
+          <SkillIcon src={css} alt="CSS" delay="0.2s" />
         </li>
-        <li className="grid *:col-span-full *:row-span-full">
-          <img
-            src={javascript}
-            alt="JavaScript"
-            className={cn(
-              "max-h-24 w-full max-w-24 opacity-0 [--_dest-opacity:1]",
-              "max-lg:translate-y-full max-lg:animate-slide-bt-fade-out max-lg:[animation-delay:0.4s]",
-              "lg:-translate-x-full lg:animate-slide-lr-fade-out lg:[animation-delay:0.4s]"
-            )}
-          />
-          <img
-            src={typescript}
-            alt="TypeScript"
-            className={cn(
-              "max-h-24 w-full max-w-24 opacity-0 [--_dest-opacity:0]",
-              "max-lg:translate-y-full max-lg:animate-slide-bt-fade-in max-lg:[animation-delay:0.4s]",
-              "lg:-translate-x-full lg:animate-slide-lr-fade-in lg:[animation-delay:0.4s]"
-            )}
-          />
-        </li>
-        <li className="grid *:col-span-full *:row-span-full">
-          <img
-            src={react}
-            alt="React"
-            className={cn(
-              "max-h-24 w-full max-w-24 opacity-0 [--_dest-opacity:1]",
-              "max-lg:translate-y-full max-lg:animate-slide-bt-fade-out max-lg:[animation-delay:0.6s,8s]",
-              "lg:-translate-x-full lg:animate-slide-lr-fade-out lg:[animation-delay:0.6s,8s]"
-            )}
-          />
-          <img
-            src={nextjs}
-            alt="NextJS"
-            className={cn(
-              "max-h-24 w-full max-w-24 opacity-0 [--_dest-opacity:0]",
-              "max-lg:translate-y-full max-lg:animate-slide-bt-fade-in max-lg:[animation-delay:0.6s,8s]",
-              "lg:-translate-x-full lg:animate-slide-lr-fade-in lg:[animation-delay:0.6s,8s]"
-            )}
-          />
-        </li>
-        <li className="grid *:col-span-full *:row-span-full">
-          <img
-            src={inkscape}
-            alt="Inkscape"
-            className={cn(
-              "max-h-24 w-full max-w-24 opacity-0 [--_dest-opacity:1]",
-              "max-lg:translate-y-full max-lg:animate-slide-bt-fade-out max-lg:[animation-delay:0.8s,16s]",
-              "lg:-translate-x-full lg:animate-slide-lr-fade-out lg:[animation-delay:0.8s,16s]"
-            )}
-          />
-          <img
-            src={gimp}
-            alt="GIMP"
-            className={cn(
-              "max-h-24 w-full max-w-24 opacity-0 [--_dest-opacity:0]",
-              "max-lg:translate-y-full max-lg:animate-slide-bt-fade-in max-lg:[animation-delay:0.8s,16s]",
-              "lg:-translate-x-full lg:animate-slide-lr-fade-in lg:[animation-delay:0.8s,16s]"
-            )}
-          />
-        </li>
+        <SwappingSkillPair delay="0.4s" first={{ src: javascript, alt: "JavaScript" }} second={{ src: typescript, alt: "TypeScript" }} />
+        <SwappingSkillPair delay="0.6s,8s" first={{ src: react, alt: "React" }} second={{ src: nextjs, alt: "NextJS" }} />
+        <SwappingSkillPair delay="0.8s,16s" first={{ src: inkscape, alt: "Inkscape" }} second={{ src: gimp, alt: "GIMP" }} />
       </ul>
     </aside>
   );
