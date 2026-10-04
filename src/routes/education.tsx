@@ -12,7 +12,7 @@ import { Education } from "@/features/education/ui/education";
 
 export const Route = createFileRoute("/education")({
   loader: () => loaderEducation(),
-  head: ({ loaderData }) => educationHead(loaderData?.randomPageTitles ?? null),
+  head: ({ loaderData }) => educationHead(loaderData?.randomPageTitles ?? null, loaderData?.educationList ?? null),
   component: EducationPage,
 });
 

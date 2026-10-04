@@ -18,7 +18,10 @@ export const Route = createFileRoute("/{-$slug}")({
   loader: ({ params }) => loaderIndex(Option.fromNullishOr(params.slug)),
   head: ({ loaderData, params }) => {
     if (loaderData?.type === "item" && loaderData.experience && params.slug) return experienceHead(params.slug, loaderData.experience);
-    return homeListHead(loaderData?.type === "list" ? loaderData.randomPageTitles : null);
+    return homeListHead(
+      loaderData?.type === "list" ? loaderData.randomPageTitles : null,
+      loaderData?.type === "list" ? loaderData.experienceList : null
+    );
   },
   component: HomePage,
 });

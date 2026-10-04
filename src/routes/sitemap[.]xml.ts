@@ -16,8 +16,12 @@ interface SitemapEntry {
 }
 
 // constants
-const BASE_URL = "https://www.remiforge.dev";
+import { SITE_URL } from "@/features/meta/domain";
 
+const BASE_URL = SITE_URL;
+
+// HTML canonical URLs only: Markdown twins (*.md) are deliberately excluded to avoid
+// duplicate-content dilution; crawlers discover them via llms.txt and <link rel="alternate">.
 const STATIC_URLS = [
   { loc: BASE_URL, changefreq: "monthly", priority: "1.0" },
   { loc: `${BASE_URL}/education`, changefreq: "monthly", priority: "0.8" },

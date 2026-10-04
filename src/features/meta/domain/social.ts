@@ -42,7 +42,7 @@ export const socialMeta = ({ title, description, path, image, ogType, twitterIma
     { property: "og:title", content: title },
     { property: "og:description", content: description },
     { property: "og:image", content: image.src },
-    { property: "og:image:alt", content: description },
+    { property: "og:image:alt", content: title },
     { property: "og:image:type", content: image.mime },
     ...dimensions,
     { property: "og:type", content: ogType },
@@ -54,6 +54,6 @@ export const socialMeta = ({ title, description, path, image, ogType, twitterIma
     { name: "twitter:title", content: title },
     { name: "twitter:description", content: description },
     { name: "twitter:image", content: twitter.src },
-    { name: "twitter:image:alt", content: description },
+    { name: "twitter:image:alt", content: title },
   ] as const;
 };

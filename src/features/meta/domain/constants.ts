@@ -29,3 +29,13 @@ export const SOCIAL_LINKS = ["https://github.com/remi-k-work", "https://linkedin
 
 export const HOME_LOCALITY = "Rzeszów";
 export const HOME_COUNTRY = "PL";
+
+// Machine-readable discovery documents (GEO): advertised via <link rel="alternate"> in every head
+export const LLMS_TXT_HREF = "/llms.txt";
+export const HOME_MD_HREF = "/index.md";
+export const EDUCATION_MD_HREF = "/education.md";
+export const CONTACT_MD_HREF = "/contact.md";
+export const experienceMdHref = (slug: string) => `/${slug}.md`;
+
+// Base keyword set for the site; experience pages extend it with their own skillsUsed
+export const BASE_KEYWORDS = ["web developer", "TypeScript", "React", "portfolio", "Remi Forge"] as const;

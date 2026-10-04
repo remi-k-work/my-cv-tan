@@ -10,10 +10,14 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as ContactDotmdRouteImport } from './routes/contact[.]md'
 import { Route as EducationRouteImport } from './routes/education'
+import { Route as EducationDotmdRouteImport } from './routes/education[.]md'
+import { Route as IndexDotmdRouteImport } from './routes/index[.]md'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as Char123slugChar125DotmdRouteImport } from './routes/{$slug}[.]md'
 import { Route as Char123SlugChar125RouteImport } from './routes/{-$slug}'
 import { Route as ApiCaptchaRouteImport } from './routes/api.captcha'
 import { Route as ApiLangRouteImport } from './routes/api.lang'
@@ -28,9 +32,24 @@ const ContactRoute = ContactRouteImport.update({
   path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContactDotmdRoute = ContactDotmdRouteImport.update({
+  id: '/contact.md',
+  path: '/contact.md',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EducationRoute = EducationRouteImport.update({
   id: '/education',
   path: '/education',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EducationDotmdRoute = EducationDotmdRouteImport.update({
+  id: '/education.md',
+  path: '/education.md',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexDotmdRoute = IndexDotmdRouteImport.update({
+  id: '/index.md',
+  path: '/index.md',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
@@ -46,6 +65,11 @@ const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Char123slugChar125DotmdRoute = Char123slugChar125DotmdRouteImport.update({
+  id: '/{$slug}.md',
+  path: '/{$slug}.md',
   getParentRoute: () => rootRouteImport,
 } as any)
 const Char123SlugChar125Route = Char123SlugChar125RouteImport.update({
@@ -91,10 +115,14 @@ const ApiRpcDataRoute = ApiRpcDataRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
+  '/contact.md': typeof ContactDotmdRoute
   '/education': typeof EducationRoute
+  '/education.md': typeof EducationDotmdRoute
+  '/index.md': typeof IndexDotmdRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/{$slug}.md': typeof Char123slugChar125DotmdRoute
   '/{-$slug}': typeof Char123SlugChar125Route
   '/api/captcha': typeof ApiCaptchaRoute
   '/api/lang': typeof ApiLangRoute
@@ -106,10 +134,14 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
+  '/contact.md': typeof ContactDotmdRoute
   '/education': typeof EducationRoute
+  '/education.md': typeof EducationDotmdRoute
+  '/index.md': typeof IndexDotmdRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/{$slug}.md': typeof Char123slugChar125DotmdRoute
   '/{-$slug}': typeof Char123SlugChar125Route
   '/api/captcha': typeof ApiCaptchaRoute
   '/api/lang': typeof ApiLangRoute
@@ -122,10 +154,14 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/contact': typeof ContactRoute
+  '/contact.md': typeof ContactDotmdRoute
   '/education': typeof EducationRoute
+  '/education.md': typeof EducationDotmdRoute
+  '/index.md': typeof IndexDotmdRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/{$slug}.md': typeof Char123slugChar125DotmdRoute
   '/{-$slug}': typeof Char123SlugChar125Route
   '/api/captcha': typeof ApiCaptchaRoute
   '/api/lang': typeof ApiLangRoute
@@ -139,10 +175,14 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/contact'
+    | '/contact.md'
     | '/education'
+    | '/education.md'
+    | '/index.md'
     | '/llms.txt'
     | '/robots.txt'
     | '/sitemap.xml'
+    | '/{$slug}.md'
     | '/{-$slug}'
     | '/api/captcha'
     | '/api/lang'
@@ -154,10 +194,14 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/contact'
+    | '/contact.md'
     | '/education'
+    | '/education.md'
+    | '/index.md'
     | '/llms.txt'
     | '/robots.txt'
     | '/sitemap.xml'
+    | '/{$slug}.md'
     | '/{-$slug}'
     | '/api/captcha'
     | '/api/lang'
@@ -169,10 +213,14 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/contact'
+    | '/contact.md'
     | '/education'
+    | '/education.md'
+    | '/index.md'
     | '/llms.txt'
     | '/robots.txt'
     | '/sitemap.xml'
+    | '/{$slug}.md'
     | '/{-$slug}'
     | '/api/captcha'
     | '/api/lang'
@@ -185,10 +233,14 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
+  ContactDotmdRoute: typeof ContactDotmdRoute
   EducationRoute: typeof EducationRoute
+  EducationDotmdRoute: typeof EducationDotmdRoute
+  IndexDotmdRoute: typeof IndexDotmdRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  Char123slugChar125DotmdRoute: typeof Char123slugChar125DotmdRoute
   Char123SlugChar125Route: typeof Char123SlugChar125Route
   ApiCaptchaRoute: typeof ApiCaptchaRoute
   ApiLangRoute: typeof ApiLangRoute
@@ -208,11 +260,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contact.md': {
+      id: '/contact.md'
+      path: '/contact.md'
+      fullPath: '/contact.md'
+      preLoaderRoute: typeof ContactDotmdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/education': {
       id: '/education'
       path: '/education'
       fullPath: '/education'
       preLoaderRoute: typeof EducationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/education.md': {
+      id: '/education.md'
+      path: '/education.md'
+      fullPath: '/education.md'
+      preLoaderRoute: typeof EducationDotmdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/index.md': {
+      id: '/index.md'
+      path: '/index.md'
+      fullPath: '/index.md'
+      preLoaderRoute: typeof IndexDotmdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/llms.txt': {
@@ -234,6 +307,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/{$slug}.md': {
+      id: '/{$slug}.md'
+      path: '/{$slug}.md'
+      fullPath: '/{$slug}.md'
+      preLoaderRoute: typeof Char123slugChar125DotmdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/{-$slug}': {
@@ -297,10 +377,14 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
+  ContactDotmdRoute: ContactDotmdRoute,
   EducationRoute: EducationRoute,
+  EducationDotmdRoute: EducationDotmdRoute,
+  IndexDotmdRoute: IndexDotmdRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  Char123slugChar125DotmdRoute: Char123slugChar125DotmdRoute,
   Char123SlugChar125Route: Char123SlugChar125Route,
   ApiCaptchaRoute: ApiCaptchaRoute,
   ApiLangRoute: ApiLangRoute,
