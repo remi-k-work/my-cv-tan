@@ -21,14 +21,19 @@ export class Data extends Context.Service<Data>()("Data", {
   make: Effect.gen(function* () {
     const { resolve } = yield* Lang;
 
+    // Resolves the effective language; an explicit preference wins, otherwise it falls back to cookie/Accept-Language resolution
+    const resolveLanguage = Effect.fnUntraced(function* (preferredLanguage: Option.Option<PreferredLanguage>, headers: Option.Option<Headers.Headers>) {
+      return yield* Option.match(preferredLanguage, {
+        onNone: () => resolve(headers),
+        onSome: Effect.succeed,
+      });
+    });
+
     const randomPageTitles = Effect.fn("randomPageTitles")(function* (
       preferredLanguage: Option.Option<PreferredLanguage>,
       headers: Option.Option<Headers.Headers>
     ) {
-      const resolvedLanguage = yield* Option.match(preferredLanguage, {
-        onNone: () => resolve(headers),
-        onSome: Effect.succeed,
-      });
+      const resolvedLanguage = yield* resolveLanguage(preferredLanguage, headers);
       return Schema.decodeOption(PageTitlesList)(matchPreferredLanguage(resolvedLanguage, pageTitlesEn, pageTitlesPl)).pipe(
         Option.flatMap(Array.get(yield* Random.nextIntBetween(0, pageTitlesEn.length - 1)))
       );
@@ -38,10 +43,7 @@ export class Data extends Context.Service<Data>()("Data", {
       preferredLanguage: Option.Option<PreferredLanguage>,
       headers: Option.Option<Headers.Headers>
     ) {
-      const resolvedLanguage = yield* Option.match(preferredLanguage, {
-        onNone: () => resolve(headers),
-        onSome: Effect.succeed,
-      });
+      const resolvedLanguage = yield* resolveLanguage(preferredLanguage, headers);
       return Schema.decodeOption(LocalizedContent)(matchPreferredLanguage(resolvedLanguage, localizedContentEn, localizedContentPl));
     });
 
@@ -49,18 +51,12 @@ export class Data extends Context.Service<Data>()("Data", {
       preferredLanguage: Option.Option<PreferredLanguage>,
       headers: Option.Option<Headers.Headers>
     ) {
-      const resolvedLanguage = yield* Option.match(preferredLanguage, {
-        onNone: () => resolve(headers),
-        onSome: Effect.succeed,
-      });
+      const resolvedLanguage = yield* resolveLanguage(preferredLanguage, headers);
       return Schema.decodeUnknownOption(ExperienceList)(matchPreferredLanguage(resolvedLanguage, experienceEn, experiencePl));
     });
 
     const educationList = Effect.fn("educationList")(function* (preferredLanguage: Option.Option<PreferredLanguage>, headers: Option.Option<Headers.Headers>) {
-      const resolvedLanguage = yield* Option.match(preferredLanguage, {
-        onNone: () => resolve(headers),
-        onSome: Effect.succeed,
-      });
+      const resolvedLanguage = yield* resolveLanguage(preferredLanguage, headers);
       return Schema.decodeOption(EducationList)(matchPreferredLanguage(resolvedLanguage, educationEn, educationPl));
     });
 
@@ -69,10 +65,7 @@ export class Data extends Context.Service<Data>()("Data", {
       preferredLanguage: Option.Option<PreferredLanguage>,
       headers: Option.Option<Headers.Headers>
     ) {
-      const resolvedLanguage = yield* Option.match(preferredLanguage, {
-        onNone: () => resolve(headers),
-        onSome: Effect.succeed,
-      });
+      const resolvedLanguage = yield* resolveLanguage(preferredLanguage, headers);
       return Schema.decodeUnknownOption(ExperienceList)(matchPreferredLanguage(resolvedLanguage, experienceEn, experiencePl)).pipe(
         Option.flatMap(Array.findFirst((exp) => exp.slug === slug))
       );

@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Context, Layer, Match, Option, pipe, String } from "effect";
+import { Context, Layer, Option, pipe, String } from "effect";
 import { RpcClient, RpcGroup, RpcSerialization } from "effect/rpc";
 import { FetchHttpClient } from "effect/http";
 
@@ -21,12 +21,7 @@ export const makeRpcClient = <Rpcs extends Rpc.Any>(serviceName: string, group: 
   };
 };
 
-export const matchPreferredLanguage = <T>(preferredLanguage: PreferredLanguage, en: T, pl: T): T =>
-  Match.value(preferredLanguage).pipe(
-    Match.when("en", () => en),
-    Match.when("pl", () => pl),
-    Match.exhaustive
-  ) as T;
+export const matchPreferredLanguage = <T>(preferredLanguage: PreferredLanguage, en: T, pl: T): T => (preferredLanguage === "en" ? en : pl);
 
 export const excerpt = (text: string, maxLength: number) => {
   // Return early if text fits within limits

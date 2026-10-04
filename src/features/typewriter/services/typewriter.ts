@@ -41,8 +41,8 @@ export class Typewriter extends Context.Service<Typewriter>()("Typewriter", {
 
     // Executes a planned script as a stream of progressively visible texts, threading
     // the visible text through the ops and sleeping each frame's hold before emitting it
-    const run = (script: Effect.Effect<ReadonlyArray<TypewriterOp>>) =>
-      Stream.fromIterableEffect(script).pipe(
+    const run = (script: ReadonlyArray<TypewriterOp>) =>
+      Stream.fromIterable(script).pipe(
         Stream.mapAccumEffect(
           () => "",
           (currText, typewriterOp) =>

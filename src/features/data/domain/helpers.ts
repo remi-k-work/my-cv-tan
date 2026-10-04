@@ -26,14 +26,15 @@ export const getAcceptLanguageHeader = Effect.fn("getAcceptLanguage")(function* 
   });
 });
 
-export const resolveAcceptLanguageEffect = Effect.fn("resolveAcceptLanguageEffect")(
-  function* (acceptLanguageHeader: Option.Option<string>) {
-    return yield* Option.match(acceptLanguageHeader, {
-      // Accept-Language header not set? fall back to "en-US"
-      onNone: () => Effect.succeed("en-US"),
-      onSome: (acceptLanguageHeader) => Effect.sync(() => resolveAcceptLanguage(acceptLanguageHeader, ["en-US", "en-GB", "pl-PL"], "en-US")),
-    });
-  },
-  Effect.map(String.includes("pl")),
-  Effect.map((includesPl) => (includesPl ? "pl" : "en"))
-);
+export const resolveAcceptLanguageEffect = Effect.fn("resolveAcceptLanguageEffect")(function* (acceptLanguageHeader: Option.Option<string>) {
+  // Accept-Language header not set? fall back to "en-US"
+  const resolved = yield* Option.match(acceptLanguageHeader, {
+    onNone: () => Effect.succeed("en-US"),
+    onSome: (acceptLanguageHeader) =>
+      Effect.sync(() => resolveAcceptLanguage(acceptLanguageHeader, ["en-US", "en-GB", "pl-PL"], "en-US")).pipe(
+        // Malformed header makes the library throw? recover to the "en-US" default instead of crashing the request
+        Effect.catchDefect(() => Effect.succeed("en-US"))
+      ),
+  });
+  return String.includes("pl")(resolved) ? "pl" : "en";
+});

@@ -4,21 +4,14 @@ import { notFound } from "@tanstack/react-router";
 
 // services, features, and other libraries
 import { Effect, Option } from "effect";
-import { RuntimeServer } from "@/lib/runtime-server";
-import { RuntimeClient } from "@/lib/runtime-client";
-import { Data } from "@/features/data/services/data";
-import { Lang } from "@/features/data/services/lang";
-import { RpcDataClient } from "@/features/data/rpc/client";
+import { clientLoader } from "./shared";
+import { serverLoader } from "./shared.server";
 
 export const loaderIndex = (slug: Option.Option<string>) =>
   createIsomorphicFn()
     .server(() =>
-      RuntimeServer.runPromise(
+      serverLoader((data, preferredLanguage) =>
         Effect.gen(function* () {
-          const { resolve } = yield* Lang;
-          const data = yield* Data;
-          const preferredLanguage = yield* resolve(Option.none());
-
           if (Option.isSome(slug)) {
             const { randomPageTitles, localizedContent, experience } = yield* Effect.all(
               {
@@ -27,7 +20,7 @@ export const loaderIndex = (slug: Option.Option<string>) =>
                 experience: data.experience(slug.value, Option.some(preferredLanguage), Option.none()),
               },
               { concurrency: "unbounded" }
-            ).pipe(Effect.tapError(Effect.logError));
+            );
 
             if (Option.isNone(experience)) throw notFound();
 
@@ -46,7 +39,7 @@ export const loaderIndex = (slug: Option.Option<string>) =>
               experienceList: data.experienceList(Option.some(preferredLanguage), Option.none()),
             },
             { concurrency: "unbounded" }
-          ).pipe(Effect.tapError(Effect.logError));
+          );
 
           return {
             type: "list" as const,
@@ -58,19 +51,17 @@ export const loaderIndex = (slug: Option.Option<string>) =>
       )
     )
     .client(() =>
-      RuntimeClient.runPromise(
+      clientLoader((client) =>
         Effect.gen(function* () {
-          const rpcDataClient = yield* RpcDataClient;
-
           if (Option.isSome(slug)) {
             const { randomPageTitles, localizedContent, experience } = yield* Effect.all(
               {
-                randomPageTitles: rpcDataClient.randomPageTitles(),
-                localizedContent: rpcDataClient.localizedContent(),
-                experience: rpcDataClient.experience({ slug: slug.value }),
+                randomPageTitles: client.randomPageTitles(),
+                localizedContent: client.localizedContent(),
+                experience: client.experience({ slug: slug.value }),
               },
               { concurrency: "unbounded" }
-            ).pipe(Effect.tapError(Effect.logError));
+            );
 
             if (Option.isNone(experience)) throw notFound();
 
@@ -84,12 +75,12 @@ export const loaderIndex = (slug: Option.Option<string>) =>
 
           const { randomPageTitles, localizedContent, experienceList } = yield* Effect.all(
             {
-              randomPageTitles: rpcDataClient.randomPageTitles(),
-              localizedContent: rpcDataClient.localizedContent(),
-              experienceList: rpcDataClient.experienceList(),
+              randomPageTitles: client.randomPageTitles(),
+              localizedContent: client.localizedContent(),
+              experienceList: client.experienceList(),
             },
             { concurrency: "unbounded" }
-          ).pipe(Effect.tapError(Effect.logError));
+          );
 
           return {
             type: "list" as const,

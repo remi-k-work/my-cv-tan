@@ -11,7 +11,7 @@ import { Typewriter } from "../typewriter";
 it.live("emits one frame per character, then holds the pause", () =>
   Effect.gen(function* () {
     const { run } = yield* Typewriter;
-    const script = Effect.succeed([TypeChars({ text: "hi " }), Pause({ millis: 50 })] as const);
+    const script = [TypeChars({ text: "hi " }), Pause({ millis: 50 })];
 
     const frames = yield* Stream.runCollect(run(script));
 
@@ -22,11 +22,7 @@ it.live("emits one frame per character, then holds the pause", () =>
 it.live("deletes characters frame by frame", () =>
   Effect.gen(function* () {
     const { run } = yield* Typewriter;
-    const script = Effect.succeed([
-      TypeChars({ text: "hix " }),
-      DeleteChars({ count: 4 }),
-      TypeChars({ text: "hi " }),
-    ] as const);
+    const script = [TypeChars({ text: "hix " }), DeleteChars({ count: 4 }), TypeChars({ text: "hi " })];
 
     const frames = yield* Stream.runCollect(run(script));
 
@@ -38,7 +34,7 @@ it.live("always finishes on the exact full text", () =>
   Effect.gen(function* () {
     const { plan, run } = yield* Typewriter;
 
-    const frames = yield* Stream.runCollect(run(plan("hello world")));
+    const frames = yield* Stream.runCollect(run(yield* plan("hello world")));
 
     const emitted = Array.from(frames);
     assert.isAbove(emitted.length, 0);
