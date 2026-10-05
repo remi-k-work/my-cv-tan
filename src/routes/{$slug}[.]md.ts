@@ -1,5 +1,3 @@
-// oxlint-disable effecttsgo/async-function
-
 // tanstack
 import { createFileRoute } from "@tanstack/react-router";
 
@@ -15,21 +13,20 @@ const main = (request: Request) =>
     const data = yield* Data;
     const { resolve } = yield* Lang;
 
-    const langOverride = parseLangParam(request.url);
+    const langOverride = yield* parseLangParam(request.url);
     const resolved = yield* resolve(Option.none());
-    const lang = Option.getOrElse(langOverride, () => resolved);
-    const preferredLanguage = Option.some(lang);
+    const preferredLanguage = Option.getOrElse(langOverride, () => resolved);
 
-    const slug = slugFromMdPathname(request.url);
-    if (Option.isNone(slug)) return mdNotFoundResponse(buildNotFoundMd("unknown", lang), lang);
+    const slug = yield* slugFromMdPathname(request.url);
+    if (Option.isNone(slug)) return mdNotFoundResponse(buildNotFoundMd("unknown", preferredLanguage), preferredLanguage);
 
-    const experience = yield* data.experience(slug.value, preferredLanguage, Option.none());
+    const experience = yield* data.experience(slug.value, Option.some(preferredLanguage), Option.none());
     if (Option.isNone(experience)) {
       yield* Effect.logError(`[SLUG.MD]: no experience for slug "${slug.value}", emitting markdown 404`);
-      return mdNotFoundResponse(buildNotFoundMd(slug.value, lang), lang);
+      return mdNotFoundResponse(buildNotFoundMd(slug.value, preferredLanguage), preferredLanguage);
     }
 
-    return mdResponse(buildExperienceMd(experience.value, lang), lang);
+    return mdResponse(buildExperienceMd(experience.value, preferredLanguage), preferredLanguage);
   });
 
 export const Route = createFileRoute("/{$slug}.md")({

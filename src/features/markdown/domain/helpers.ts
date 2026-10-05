@@ -4,8 +4,7 @@ import { Array, pipe, Record, String } from "effect";
 // constants
 import { FRONTMATTER_DELIMITER } from "./constants";
 
-// Normalizes prose from the JSON content bundles into safe Markdown body text:
-// no layout chrome, no raw HTML, heading-safe, blank-line collapsed
+// Normalizes prose from the JSON content bundles into safe Markdown body text; no layout chrome, no raw HTML, heading-safe, blank-line collapsed
 export const escapeMd = (text: string) =>
   pipe(
     text,
@@ -40,4 +39,9 @@ export const mdHeading = (level: 1 | 2 | 3, text: string) => `${"#".repeat(level
 
 export const mdQuote = (text: string) => `> ${escapeMdInline(text)}`;
 
-export const mdBulletList = (items: ReadonlyArray<string>) => pipe(items, Array.map((item) => `- ${item}`), Array.join("\n"));
+export const mdBulletList = (items: ReadonlyArray<string>) =>
+  pipe(
+    items,
+    Array.map((item) => `- ${item}`),
+    Array.join("\n")
+  );

@@ -1,6 +1,9 @@
 // tanstack
 import { createFileRoute } from "@tanstack/react-router";
 
+// services, features, and other libraries
+import { txtResponse } from "@/features/markdown/domain";
+
 export const Route = createFileRoute("/robots.txt")({
   server: {
     handlers: {
@@ -28,7 +31,7 @@ export const Route = createFileRoute("/robots.txt")({
           "Sitemap: https://www.remiforge.dev/sitemap.xml",
           "",
         ].join("\n");
-        return new Response(body, { headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
+        return txtResponse(body);
       },
     },
   },

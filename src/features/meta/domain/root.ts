@@ -1,14 +1,14 @@
 // services, features, and other libraries
 import { excerpt } from "@/features/experience/domain";
 import { llmsAlternateLink } from "./helpers";
-import { globalSocialImage, socialMeta } from "./social";
+import { socialMeta } from "./social";
 import { websitePersonJsonLd } from "./json-ld";
 
 // types
-import type { DocumentHead } from "./constants";
+import type { DocumentHead } from "./models";
 
 // constants
-import { DESCRIPTION, META_DESCRIPTION_LENGTH, SITE_NAME, TITLE } from "./constants";
+import { DESCRIPTION, GLOBAL_SOCIAL_IMAGE, META_DESCRIPTION_LENGTH, SITE_NAME, TITLE } from "./constants";
 
 // Root head builder: every page inherits this, so it must ONLY contain site-wide tags.
 // Page-specific tags (canonical, hreflang, Markdown alternate) live in each route's
@@ -29,7 +29,7 @@ export const buildRootHead = () => {
       { name: "robots", content: "index, follow, max-image-preview:large" },
       { name: "category", content: "technology" },
       { name: "google", content: "notranslate" },
-      ...socialMeta({ title: TITLE, description, path: "/", image: globalSocialImage(), ogType: "website" }),
+      ...socialMeta({ title: TITLE, description, path: "/", image: GLOBAL_SOCIAL_IMAGE, ogType: "website" }),
     ],
     links: [
       { rel: "icon", href: "/icon.svg", type: "image/svg+xml" },

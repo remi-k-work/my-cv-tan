@@ -18,21 +18,19 @@ interface SitemapEntry {
 // constants
 import { SITE_URL } from "@/features/meta/domain";
 
-const BASE_URL = SITE_URL;
-
 // HTML canonical URLs only: Markdown twins (*.md) are deliberately excluded to avoid
 // duplicate-content dilution; crawlers discover them via llms.txt and <link rel="alternate">.
 const STATIC_URLS = [
-  { loc: BASE_URL, changefreq: "monthly", priority: "1.0" },
-  { loc: `${BASE_URL}/education`, changefreq: "monthly", priority: "0.8" },
-  { loc: `${BASE_URL}/contact`, changefreq: "monthly", priority: "0.5" },
-  { loc: `${BASE_URL}/my-cv.pdf`, changefreq: "monthly", priority: "0.4" },
-  { loc: `${BASE_URL}/my-cv-pl.pdf`, changefreq: "monthly", priority: "0.4" },
-  { loc: `${BASE_URL}/my-certificates.pdf`, changefreq: "monthly", priority: "0.4" },
+  { loc: SITE_URL, changefreq: "monthly", priority: "1.0" },
+  { loc: `${SITE_URL}/education`, changefreq: "monthly", priority: "0.8" },
+  { loc: `${SITE_URL}/contact`, changefreq: "monthly", priority: "0.5" },
+  { loc: `${SITE_URL}/my-cv.pdf`, changefreq: "monthly", priority: "0.4" },
+  { loc: `${SITE_URL}/my-cv-pl.pdf`, changefreq: "monthly", priority: "0.4" },
+  { loc: `${SITE_URL}/my-certificates.pdf`, changefreq: "monthly", priority: "0.4" },
 ] as const;
 
 // Pure functions extracted for clean pipelines
-const createDynamicEntry = (slug: string) => ({ loc: `${BASE_URL}/${slug}`, changefreq: "monthly", priority: "0.6" }) as const;
+const createDynamicEntry = (slug: string) => ({ loc: `${SITE_URL}/${slug}`, changefreq: "monthly", priority: "0.6" }) as const;
 const toXmlNode = (today: string) => (u: SitemapEntry) =>
   `  <url>\n    <loc>${u.loc}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n  </url>`;
 const wrapWithUrlSet = (entries: string) =>

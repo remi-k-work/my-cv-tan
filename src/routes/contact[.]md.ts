@@ -1,5 +1,3 @@
-// oxlint-disable effecttsgo/async-function
-
 // tanstack
 import { createFileRoute } from "@tanstack/react-router";
 
@@ -15,14 +13,13 @@ const main = (request: Request) =>
     const data = yield* Data;
     const { resolve } = yield* Lang;
 
-    const langOverride = parseLangParam(request.url);
+    const langOverride = yield* parseLangParam(request.url);
     const resolved = yield* resolve(Option.none());
-    const lang = Option.getOrElse(langOverride, () => resolved);
-    const preferredLanguage = Option.some(lang);
+    const preferredLanguage = Option.getOrElse(langOverride, () => resolved);
 
-    const randomPageTitles = yield* data.randomPageTitles(preferredLanguage, Option.none());
+    const randomPageTitles = yield* data.randomPageTitles(Option.some(preferredLanguage), Option.none());
 
-    return mdResponse(buildContactMd({ pageTitles: Option.getOrNull(randomPageTitles), lang }), lang);
+    return mdResponse(buildContactMd({ pageTitles: Option.getOrNull(randomPageTitles), preferredLanguage }), preferredLanguage);
   });
 
 export const Route = createFileRoute("/contact.md")({

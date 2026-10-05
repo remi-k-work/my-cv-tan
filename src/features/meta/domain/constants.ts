@@ -1,12 +1,3 @@
-// types
-import type { ClassAttributes, DetailedHTMLProps, LinkHTMLAttributes, MetaHTMLAttributes } from "react";
-
-export interface DocumentHead {
-  meta?: (DetailedHTMLProps<MetaHTMLAttributes<HTMLMetaElement>, HTMLMetaElement> | undefined)[];
-  links?: ((ClassAttributes<HTMLLinkElement> & LinkHTMLAttributes<HTMLLinkElement>) | undefined)[];
-  scripts?: ({ type: string; children: string } | undefined)[];
-}
-
 // constants
 export const SITE_URL = "https://www.remiforge.dev";
 export const SITE_NAME = "Remi Forge";
@@ -18,9 +9,8 @@ export const DESCRIPTION =
 export const GLOBAL_IMAGE = `${SITE_URL}/opengraph-image.jpg`;
 export const AVATAR_IMAGE = `${SITE_URL}/avatar.jpg`;
 
-// Verified from the VP8 headers: every /images/{name}-a.webp screenshot is 1600x900
-export const SCREENSHOT_WIDTH = 1600;
-export const SCREENSHOT_HEIGHT = 900;
+// Global share image: jpeg with known dimensions
+export const GLOBAL_SOCIAL_IMAGE = { src: GLOBAL_IMAGE, mime: "image/jpeg", width: 1200, height: 630 } as const;
 
 // Google truncates meta descriptions around 150-160 chars; longer text never displays
 export const META_DESCRIPTION_LENGTH = 160;
@@ -30,12 +20,20 @@ export const SOCIAL_LINKS = ["https://github.com/remi-k-work", "https://linkedin
 export const HOME_LOCALITY = "Rzeszów";
 export const HOME_COUNTRY = "PL";
 
+// Stable JSON-LD @graph node ids: page-level structured data references these entities
+export const PERSON_ID = `${SITE_URL}/#person`;
+export const PUBLISHER_ID = `${SITE_URL}/#publisher`;
+
 // Machine-readable discovery documents (GEO): advertised via <link rel="alternate"> in every head
 export const LLMS_TXT_HREF = "/llms.txt";
 export const HOME_MD_HREF = "/index.md";
 export const EDUCATION_MD_HREF = "/education.md";
 export const CONTACT_MD_HREF = "/contact.md";
-export const experienceMdHref = (slug: string) => `/${slug}.md`;
+export const EXPERIENCE_MD_HREF = (slug: string) => `/${slug}.md`;
 
 // Base keyword set for the site; experience pages extend it with their own skillsUsed
 export const BASE_KEYWORDS = ["web developer", "TypeScript", "React", "portfolio", "Remi Forge"] as const;
+
+export const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] as const;
+export const YEAR_ONLY = /^\d{4}$/;
+export const MONTH_YEAR = /^([A-Z][a-z]{2}) (\d{4})$/;

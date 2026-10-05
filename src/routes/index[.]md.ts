@@ -1,5 +1,3 @@
-// oxlint-disable effecttsgo/async-function
-
 // tanstack
 import { createFileRoute } from "@tanstack/react-router";
 
@@ -15,16 +13,15 @@ const main = (request: Request) =>
     const data = yield* Data;
     const { resolve } = yield* Lang;
 
-    const langOverride = parseLangParam(request.url);
+    const langOverride = yield* parseLangParam(request.url);
     const resolved = yield* resolve(Option.none());
-    const lang = Option.getOrElse(langOverride, () => resolved);
-    const preferredLanguage = Option.some(lang);
+    const preferredLanguage = Option.getOrElse(langOverride, () => resolved);
 
     const { randomPageTitles, localizedContent, experienceList } = yield* Effect.all(
       {
-        randomPageTitles: data.randomPageTitles(preferredLanguage, Option.none()),
-        localizedContent: data.localizedContent(preferredLanguage, Option.none()),
-        experienceList: data.experienceList(preferredLanguage, Option.none()),
+        randomPageTitles: data.randomPageTitles(Option.some(preferredLanguage), Option.none()),
+        localizedContent: data.localizedContent(Option.some(preferredLanguage), Option.none()),
+        experienceList: data.experienceList(Option.some(preferredLanguage), Option.none()),
       },
       { concurrency: "unbounded" }
     );
@@ -35,9 +32,9 @@ const main = (request: Request) =>
         pageTitles: Option.getOrNull(randomPageTitles),
         localizedContent: Option.getOrNull(localizedContent),
         experienceList: Option.getOrElse(experienceList, () => []),
-        lang,
+        preferredLanguage,
       }),
-      lang
+      preferredLanguage
     );
   });
 
