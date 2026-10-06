@@ -3,7 +3,7 @@ import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
 
 // domain
-import { buildSitemapXml, canonicalLink, contactHead, educationListJsonLd, experienceHead, homeListHead, languageFromMatches, ROOT_HEAD, sitemapUnavailableResponse } from "../index";
+import { buildSitemapXml, canonicalLink, contactHead, educationHead, educationListJsonLd, experienceHead, homeListHead, languageFromMatches, ROOT_HEAD, sitemapUnavailableResponse } from "../index";
 
 // types
 import type { EducationList } from "@/features/education/domain";
@@ -39,14 +39,18 @@ it("experienceHead never treats project or employment years as publication dates
   assert.notInclude(undated, "datePublished");
 });
 
-it("root metadata defaults to noindex and valid page heads explicitly allow indexing", () => {
+it("root metadata defaults to noindex and complete page heads explicitly allow indexing", () => {
   assert.include(JSON.stringify(ROOT_HEAD.meta), '"content":"noindex, follow"');
 
   const indexable = homeListHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" });
   assert.include(JSON.stringify(indexable.meta), "index, follow, max-image-preview:large");
+  assert.notInclude(JSON.stringify(indexable.meta), "noindex");
 
-  const incomplete = homeListHead({ pageTitles: stablePageTitles, experienceList: null, preferredLanguage: "en" });
-  assert.include(JSON.stringify(incomplete.meta), "noindex, follow");
+  const emptyEducation = educationHead({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "pl" });
+  assert.include(JSON.stringify(emptyEducation.meta), "index, follow, max-image-preview:large");
+
+  const contact = contactHead({ pageTitles: stablePageTitles, preferredLanguage: "en" });
+  assert.include(JSON.stringify(contact.meta), "index, follow, max-image-preview:large");
 });
 
 it("experienceHead renders og:locale from the resolved language and merges Article + BreadcrumbList into one graph", () => {

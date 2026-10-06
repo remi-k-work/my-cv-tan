@@ -3,9 +3,10 @@ import { createIsomorphicFn } from "@tanstack/react-start";
 import { notFound } from "@tanstack/react-router";
 
 // services, features, and other libraries
-import { Effect, Option } from "effect";
+import { Array, Effect, Option } from "effect";
 import { clientLoader } from "./shared";
 import { serverLoader } from "./shared.server";
+import { requireData } from "@/features/data/domain/required";
 
 export const loaderIndex = (slug: Option.Option<string>) =>
   createIsomorphicFn()
@@ -13,22 +14,26 @@ export const loaderIndex = (slug: Option.Option<string>) =>
       serverLoader((data, preferredLanguage) =>
         Effect.gen(function* () {
           if (Option.isSome(slug)) {
-            const { randomPageTitles, localizedContent, experience } = yield* Effect.all(
+            const { randomPageTitles, localizedContent, experienceList } = yield* Effect.all(
               {
                 randomPageTitles: data.randomPageTitles(Option.some(preferredLanguage), Option.none()),
                 localizedContent: data.localizedContent(Option.some(preferredLanguage), Option.none()),
-                experience: data.experience(slug.value, Option.some(preferredLanguage), Option.none()),
+                experienceList: data.experienceList(Option.some(preferredLanguage), Option.none()),
               },
               { concurrency: "unbounded" }
             );
 
+            const requiredRandomPageTitles = yield* requireData(randomPageTitles, "random page titles");
+            const requiredLocalizedContent = yield* requireData(localizedContent, "localized content");
+            const experiences = yield* requireData(experienceList, "experience list");
+            const experience = Array.findFirst(experiences, (entry) => entry.slug === slug.value);
             if (Option.isNone(experience)) throw notFound();
 
             return {
               type: "item" as const,
-              randomPageTitles: randomPageTitles.pipe(Option.getOrNull),
-              localizedContent: localizedContent.pipe(Option.getOrNull),
-              experience: experience.pipe(Option.getOrNull),
+              randomPageTitles: requiredRandomPageTitles,
+              localizedContent: requiredLocalizedContent,
+              experience: experience.value,
             } as const;
           }
 
@@ -44,10 +49,10 @@ export const loaderIndex = (slug: Option.Option<string>) =>
 
           return {
             type: "list" as const,
-            randomPageTitles: randomPageTitles.pipe(Option.getOrNull),
-            stablePageTitles: stablePageTitles.pipe(Option.getOrNull),
-            localizedContent: localizedContent.pipe(Option.getOrNull),
-            experienceList: experienceList.pipe(Option.getOrNull),
+            randomPageTitles: yield* requireData(randomPageTitles, "random page titles"),
+            stablePageTitles: yield* requireData(stablePageTitles, "stable page titles"),
+            localizedContent: yield* requireData(localizedContent, "localized content"),
+            experienceList: yield* requireData(experienceList, "experience list"),
           } as const;
         })
       )
@@ -56,22 +61,26 @@ export const loaderIndex = (slug: Option.Option<string>) =>
       clientLoader((client) =>
         Effect.gen(function* () {
           if (Option.isSome(slug)) {
-            const { randomPageTitles, localizedContent, experience } = yield* Effect.all(
+            const { randomPageTitles, localizedContent, experienceList } = yield* Effect.all(
               {
                 randomPageTitles: client.randomPageTitles(),
                 localizedContent: client.localizedContent(),
-                experience: client.experience({ slug: slug.value }),
+                experienceList: client.experienceList(),
               },
               { concurrency: "unbounded" }
             );
 
+            const requiredRandomPageTitles = yield* requireData(randomPageTitles, "random page titles");
+            const requiredLocalizedContent = yield* requireData(localizedContent, "localized content");
+            const experiences = yield* requireData(experienceList, "experience list");
+            const experience = Array.findFirst(experiences, (entry) => entry.slug === slug.value);
             if (Option.isNone(experience)) throw notFound();
 
             return {
               type: "item" as const,
-              randomPageTitles: randomPageTitles.pipe(Option.getOrNull),
-              localizedContent: localizedContent.pipe(Option.getOrNull),
-              experience: experience.pipe(Option.getOrNull),
+              randomPageTitles: requiredRandomPageTitles,
+              localizedContent: requiredLocalizedContent,
+              experience: experience.value,
             } as const;
           }
 
@@ -87,10 +96,10 @@ export const loaderIndex = (slug: Option.Option<string>) =>
 
           return {
             type: "list" as const,
-            randomPageTitles: randomPageTitles.pipe(Option.getOrNull),
-            stablePageTitles: stablePageTitles.pipe(Option.getOrNull),
-            localizedContent: localizedContent.pipe(Option.getOrNull),
-            experienceList: experienceList.pipe(Option.getOrNull),
+            randomPageTitles: yield* requireData(randomPageTitles, "random page titles"),
+            stablePageTitles: yield* requireData(stablePageTitles, "stable page titles"),
+            localizedContent: yield* requireData(localizedContent, "localized content"),
+            experienceList: yield* requireData(experienceList, "experience list"),
           } as const;
         })
       )

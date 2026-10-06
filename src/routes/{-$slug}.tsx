@@ -1,5 +1,5 @@
 // tanstack
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
 // services, features, and other libraries
 import { Array, Option } from "effect";
@@ -17,14 +17,14 @@ import { ExperienceModal } from "@/features/modals/ui/experience";
 export const Route = createFileRoute("/{-$slug}")({
   loader: ({ params }) => loaderIndex(Option.fromNullishOr(params.slug)),
   head: ({ loaderData, params, matches }) => {
+    if (!loaderData) return {};
+
     const preferredLanguage = headLanguage(matches);
-    if (loaderData?.type === "item" && loaderData.experience && params.slug)
+    if (loaderData.type === "item" && params.slug)
       return experienceHead({ slug: params.slug, experience: loaderData.experience, preferredLanguage });
-    return homeListHead({
-      pageTitles: loaderData?.type === "list" ? loaderData.stablePageTitles : null,
-      experienceList: loaderData?.type === "list" ? loaderData.experienceList : null,
-      preferredLanguage,
-    });
+    if (loaderData.type === "list")
+      return homeListHead({ pageTitles: loaderData.stablePageTitles, experienceList: loaderData.experienceList, preferredLanguage });
+    return {};
   },
   component: HomePage,
 });
@@ -35,7 +35,6 @@ function HomePage() {
 
   if (loaderData.type === "list") {
     const { randomPageTitles, localizedContent, experienceList } = loaderData;
-    if (!randomPageTitles || !localizedContent || !experienceList) throw notFound();
 
     return (
       <>
@@ -61,7 +60,6 @@ function HomePage() {
   }
 
   const { randomPageTitles, localizedContent, experience } = loaderData;
-  if (!randomPageTitles || !localizedContent || !experience) throw notFound();
 
   return (
     <>

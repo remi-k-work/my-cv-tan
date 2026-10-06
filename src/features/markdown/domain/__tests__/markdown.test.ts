@@ -102,6 +102,10 @@ it("buildHomeMd groups work and projects and links to .md twins", () => {
   assert.notInclude(md, "Cite the canonical HTML URL");
   assert.include(md, `https://www.remiforge.dev/sample-role.md`);
   assert.include(md, `https://www.remiforge.dev/education.md`);
+  assert.strictEqual((md.match(/^# /gm) ?? []).length, 1);
+  assert.strictEqual((md.match(/^## /gm) ?? []).length, 3);
+  assert.notInclude(md, "Navigation");
+  assert.notInclude(md, "Footer");
 });
 
 it("buildHomeMd localizes Markdown structure in Polish", () => {
@@ -161,6 +165,7 @@ it("buildLlmsTxt indexes pages, grouped experience and AI guidance", () => {
   assert.include(txt, `- [Full-Stack Developer at Sample Co](https://www.remiforge.dev/sample-role.md)`);
   assert.include(txt, `## Notes for AI systems`);
   assert.include(txt, `Append \`?lang=pl\` to any \`.md\` URL to request the Polish variant explicitly`);
+  assert.include(txt, "English is the default.");
   assert.include(txt, `Always cite the clean canonical HTML URL from each document's frontmatter`);
 });
 
@@ -208,10 +213,7 @@ it.effect("required-content failures map to non-cacheable 503s and valid missing
   Effect.gen(function* () {
     const unavailableMarkdown = yield* markdownDataResponse(
       "pl",
-      Effect.gen(function* () {
-        yield* requireData(Option.none(), "experience list");
-        return mdResponse("# Complete", "pl");
-      })
+      requireData(Option.none(), "experience list")
     );
     assert.strictEqual(unavailableMarkdown.status, 503);
     assert.strictEqual(unavailableMarkdown.headers.get("Cache-Control"), "no-store");
@@ -219,10 +221,7 @@ it.effect("required-content failures map to non-cacheable 503s and valid missing
     assert.include(unavailableMarkdownBody("pl"), "portfolio");
 
     const unavailableIndex = yield* textDataResponse(
-      Effect.gen(function* () {
-        yield* requireData(Option.none(), "experience list");
-        return txtResponse("# Complete");
-      })
+      requireData(Option.none(), "experience list")
     );
     assert.strictEqual(unavailableIndex.status, 503);
     assert.strictEqual(unavailableIndex.headers.get("Content-Type"), "text/plain; charset=utf-8");

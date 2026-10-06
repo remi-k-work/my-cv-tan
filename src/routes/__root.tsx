@@ -1,7 +1,7 @@
 import "@/assets/styles/globals.css";
 
 // tanstack
-import { Outlet, createRootRoute, HeadContent, Scripts, notFound } from "@tanstack/react-router";
+import { Outlet, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 
 // services, features, and other libraries
 import { cn } from "@/lib/utils";
@@ -30,7 +30,6 @@ export const Route = createRootRoute({ head: () => ROOT_HEAD, loader: () => load
 
 function RootComponent() {
   const { preferredLanguage, localizedContent } = Route.useLoaderData();
-  if (!localizedContent) throw notFound();
 
   return (
     <RootDocument preferredLanguage={preferredLanguage}>

@@ -1,8 +1,10 @@
 // services, features, and other libraries
 import { Effect, Option } from "effect";
+import { getRequest } from "@tanstack/react-start/server";
 import { RuntimeServer } from "@/lib/runtime-server";
 import { Data } from "@/features/data/services/data";
 import { Lang } from "@/features/data/services/lang";
+import { markHtmlDataUnavailable } from "@/features/data/http/html-response";
 
 // types
 import type { PreferredLanguage } from "@/domain";
@@ -20,5 +22,8 @@ export const serverLoader = <A, E>(use: (data: Data["Service"], preferredLanguag
       const preferredLanguage = yield* resolvePreferredLanguage();
       const data = yield* Data;
       return yield* use(data, preferredLanguage);
-    }).pipe(Effect.tapError(Effect.logError))
+    }).pipe(
+      Effect.tapError((error) => Effect.sync(() => markHtmlDataUnavailable(getRequest(), error))),
+      Effect.tapError(Effect.logError)
+    )
   );

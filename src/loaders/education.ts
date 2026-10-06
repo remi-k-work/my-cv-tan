@@ -5,6 +5,7 @@ import { createIsomorphicFn } from "@tanstack/react-start";
 import { Effect, Option } from "effect";
 import { clientLoader } from "./shared";
 import { serverLoader } from "./shared.server";
+import { requireData } from "@/features/data/domain/required";
 
 export const loaderEducation = createIsomorphicFn()
   .server(() =>
@@ -21,10 +22,10 @@ export const loaderEducation = createIsomorphicFn()
         );
 
         return {
-          randomPageTitles: randomPageTitles.pipe(Option.getOrNull),
-          stablePageTitles: stablePageTitles.pipe(Option.getOrNull),
-          localizedContent: localizedContent.pipe(Option.getOrNull),
-          educationList: educationList.pipe(Option.getOrNull),
+          randomPageTitles: yield* requireData(randomPageTitles, "random page titles"),
+          stablePageTitles: yield* requireData(stablePageTitles, "stable page titles"),
+          localizedContent: yield* requireData(localizedContent, "localized content"),
+          educationList: yield* requireData(educationList, "education list"),
         } as const;
       })
     )
@@ -43,10 +44,10 @@ export const loaderEducation = createIsomorphicFn()
         );
 
         return {
-          randomPageTitles: randomPageTitles.pipe(Option.getOrNull),
-          stablePageTitles: stablePageTitles.pipe(Option.getOrNull),
-          localizedContent: localizedContent.pipe(Option.getOrNull),
-          educationList: educationList.pipe(Option.getOrNull),
+          randomPageTitles: yield* requireData(randomPageTitles, "random page titles"),
+          stablePageTitles: yield* requireData(stablePageTitles, "stable page titles"),
+          localizedContent: yield* requireData(localizedContent, "localized content"),
+          educationList: yield* requireData(educationList, "education list"),
         } as const;
       })
     )

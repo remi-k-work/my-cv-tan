@@ -26,14 +26,13 @@ import {
   TITLE,
 } from "./constants";
 
-// Localized page metadata. Pages opt into indexing only when their required loader data exists.
+// Complete page data opts into indexing; incomplete responses inherit the root noindex policy.
 const localizedPageHead = (
   pageTitles: PageHeadInput["pageTitles"],
   pagePath: PagePath,
   mdHref: string,
   keywords: ReadonlyArray<string>,
-  preferredLanguage: PageHeadInput["preferredLanguage"],
-  isIndexable: boolean
+  preferredLanguage: PageHeadInput["preferredLanguage"]
 ) => {
   const title = pageField(pageTitles, pagePath, "heading", TITLE);
   const description = excerpt(pageField(pageTitles, pagePath, "intro", DESCRIPTION), META_DESCRIPTION_LENGTH);
@@ -46,7 +45,7 @@ const localizedPageHead = (
         { title: `${SITE_NAME} ● ${title}` },
         { name: "description", content: description },
         { name: "keywords", content: keywords.join(", ") },
-        { name: "robots", content: isIndexable ? "index, follow, max-image-preview:large" : "noindex, follow" },
+        { name: "robots", content: "index, follow, max-image-preview:large" },
         ...socialMeta({ title, description, path: pagePath, image: GLOBAL_SOCIAL_IMAGE, ogType: "website", preferredLanguage }),
       ],
       links: [canonicalLink(pagePath), markdownAlternateLink(mdHref)],
@@ -55,19 +54,11 @@ const localizedPageHead = (
 };
 
 // Emits the structured-data script only when the list decoded and is non-empty
-const listJsonLdScript = <T>(list: ReadonlyArray<T> | null, build: (items: ReadonlyArray<T>) => { type: string; children: string }) =>
-  pipe(
-    Option.fromNullishOr(list),
-    Option.filter((items) => items.length > 0),
-    Option.map(build),
-    Option.match({
-      onNone: () => [],
-      onSome: (script) => [script],
-    })
-  );
+const listJsonLdScript = <T>(list: ReadonlyArray<T>, build: (items: ReadonlyArray<T>) => { type: string; children: string }) =>
+  list.length === 0 ? [] : [build(list)];
 
 export const homeListHead = ({ pageTitles, experienceList, preferredLanguage }: HomeHeadInput) => {
-  const { head } = localizedPageHead(pageTitles, "/", HOME_MD_HREF, BASE_KEYWORDS, preferredLanguage, pageTitles !== null && experienceList !== null);
+  const { head } = localizedPageHead(pageTitles, "/", HOME_MD_HREF, BASE_KEYWORDS, preferredLanguage);
   return { ...head, scripts: listJsonLdScript(experienceList, homeItemListJsonLd) };
 };
 
@@ -77,8 +68,7 @@ export const educationHead = ({ pageTitles, educationList, preferredLanguage }: 
     "/education",
     EDUCATION_MD_HREF,
     [...BASE_KEYWORDS, "education", "certificates"],
-    preferredLanguage,
-    pageTitles !== null && educationList !== null
+    preferredLanguage
   );
   return { ...head, scripts: listJsonLdScript(educationList, educationListJsonLd) };
 };
@@ -89,8 +79,7 @@ export const contactHead = ({ pageTitles, preferredLanguage }: PageHeadInput) =>
     "/contact",
     CONTACT_MD_HREF,
     [...BASE_KEYWORDS, "contact", "Rzeszów"],
-    preferredLanguage,
-    pageTitles !== null
+    preferredLanguage
   );
   return { ...head, scripts: [contactPageJsonLd({ title, description, preferredLanguage })] };
 };

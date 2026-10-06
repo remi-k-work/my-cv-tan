@@ -1,5 +1,5 @@
 // tanstack
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
 // services, features, and other libraries
 import { loaderContact } from "@/loaders/contact";
@@ -12,17 +12,15 @@ import { ContactMap } from "@/features/contact-me/ui/contact-map";
 
 export const Route = createFileRoute("/contact")({
   loader: () => loaderContact(),
-  head: ({ loaderData, matches }) =>
-    contactHead({
-      pageTitles: loaderData?.stablePageTitles ?? null,
-      preferredLanguage: headLanguage(matches),
-    }),
+  head: ({ loaderData, matches }) => {
+    if (!loaderData) return {};
+    return contactHead({ pageTitles: loaderData.stablePageTitles, preferredLanguage: headLanguage(matches) });
+  },
   component: ContactPage,
 });
 
 function ContactPage() {
   const { preferredLanguage, randomPageTitles, localizedContent } = Route.useLoaderData();
-  if (!randomPageTitles || !localizedContent) throw notFound();
 
   return (
     <>

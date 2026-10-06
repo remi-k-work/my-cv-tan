@@ -22,16 +22,16 @@ export interface SocialMetaInput {
 
 // Page heads take the locale resolved from the root match (see language.ts)
 export interface PageHeadInput {
-  readonly pageTitles: PageTitles | null;
+  readonly pageTitles: PageTitles;
   readonly preferredLanguage: PreferredLanguage;
 }
 
 export interface HomeHeadInput extends PageHeadInput {
-  readonly experienceList: ExperienceList | null;
+  readonly experienceList: ExperienceList;
 }
 
 export interface EducationHeadInput extends PageHeadInput {
-  readonly educationList: EducationList | null;
+  readonly educationList: EducationList;
 }
 
 export interface ExperienceHeadInput {

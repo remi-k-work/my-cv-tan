@@ -5,6 +5,7 @@ import { createIsomorphicFn } from "@tanstack/react-start";
 import { Effect, Option } from "effect";
 import { clientLoader } from "./shared";
 import { serverLoader } from "./shared.server";
+import { requireData } from "@/features/data/domain/required";
 
 export const loaderContact = createIsomorphicFn()
   .server(() =>
@@ -21,9 +22,9 @@ export const loaderContact = createIsomorphicFn()
 
         return {
           preferredLanguage,
-          randomPageTitles: randomPageTitles.pipe(Option.getOrNull),
-          stablePageTitles: stablePageTitles.pipe(Option.getOrNull),
-          localizedContent: localizedContent.pipe(Option.getOrNull),
+          randomPageTitles: yield* requireData(randomPageTitles, "random page titles"),
+          stablePageTitles: yield* requireData(stablePageTitles, "stable page titles"),
+          localizedContent: yield* requireData(localizedContent, "localized content"),
         } as const;
       })
     )
@@ -43,9 +44,9 @@ export const loaderContact = createIsomorphicFn()
 
         return {
           preferredLanguage,
-          randomPageTitles: randomPageTitles.pipe(Option.getOrNull),
-          stablePageTitles: stablePageTitles.pipe(Option.getOrNull),
-          localizedContent: localizedContent.pipe(Option.getOrNull),
+          randomPageTitles: yield* requireData(randomPageTitles, "random page titles"),
+          stablePageTitles: yield* requireData(stablePageTitles, "stable page titles"),
+          localizedContent: yield* requireData(localizedContent, "localized content"),
         } as const;
       })
     )

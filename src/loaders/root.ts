@@ -5,18 +5,15 @@ import { createIsomorphicFn } from "@tanstack/react-start";
 import { Effect, Option } from "effect";
 import { clientLoader } from "./shared";
 import { serverLoader } from "./shared.server";
+import { requireData } from "@/features/data/domain/required";
 
 export const loaderRoot = createIsomorphicFn()
   .server(() =>
     serverLoader((data, preferredLanguage) =>
-      Effect.map(
-        data.localizedContent(Option.some(preferredLanguage), Option.none()),
-        (localizedContent) =>
-          ({
-            preferredLanguage,
-            localizedContent: localizedContent.pipe(Option.getOrNull),
-          }) as const
-      )
+      Effect.gen(function* () {
+        const localizedContent = yield* data.localizedContent(Option.some(preferredLanguage), Option.none());
+        return { preferredLanguage, localizedContent: yield* requireData(localizedContent, "localized content") } as const;
+      })
     )
   )
   .client(() =>
@@ -27,10 +24,7 @@ export const loaderRoot = createIsomorphicFn()
           { concurrency: "unbounded" }
         );
 
-        return {
-          preferredLanguage,
-          localizedContent: localizedContent.pipe(Option.getOrNull),
-        } as const;
+        return { preferredLanguage, localizedContent: yield* requireData(localizedContent, "localized content") } as const;
       })
     )
   );

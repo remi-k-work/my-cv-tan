@@ -1,5 +1,5 @@
 // tanstack
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
 // services, features, and other libraries
 import { loaderEducation } from "@/loaders/education";
@@ -12,18 +12,19 @@ import { Education } from "@/features/education/ui/education";
 
 export const Route = createFileRoute("/education")({
   loader: () => loaderEducation(),
-  head: ({ loaderData, matches }) =>
-    educationHead({
-      pageTitles: loaderData?.stablePageTitles ?? null,
-      educationList: loaderData?.educationList ?? null,
+  head: ({ loaderData, matches }) => {
+    if (!loaderData) return {};
+    return educationHead({
+      pageTitles: loaderData.stablePageTitles,
+      educationList: loaderData.educationList,
       preferredLanguage: headLanguage(matches),
-    }),
+    });
+  },
   component: EducationPage,
 });
 
 function EducationPage() {
   const { randomPageTitles, localizedContent, educationList } = Route.useLoaderData();
-  if (!randomPageTitles || !localizedContent || !educationList) throw notFound();
 
   return (
     <>
