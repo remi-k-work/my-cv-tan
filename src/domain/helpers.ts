@@ -1,11 +1,11 @@
 // services, features, and other libraries
-import { Context, Layer } from "effect";
+import { Context, Layer, Option, pipe } from "effect";
 import { RpcClient, RpcGroup, RpcSerialization } from "effect/rpc";
 import { FetchHttpClient } from "effect/http";
 
 // types
 import type { Rpc } from "effect/rpc";
-import type { PreferredLanguage } from "./models";
+import type { LocalizedContent, PagePath, PageTitles, PreferredLanguage } from "./models";
 
 // Builds a class-style RPC client service backed by an HTTP protocol layer for a given RPC group
 export const makeRpcClient = <Rpcs extends Rpc.Any>(serviceName: string, group: RpcGroup.RpcGroup<Rpcs>, path: string) => {
@@ -19,3 +19,21 @@ export const makeRpcClient = <Rpcs extends Rpc.Any>(serviceName: string, group: 
 };
 
 export const matchPreferredLanguage = <T>(preferredLanguage: PreferredLanguage, en: T, pl: T): T => (preferredLanguage === "en" ? en : pl);
+
+// Localized page title/intro with a static fallback when loader data is missing or partial
+export const pageField = (pageTitles: PageTitles | null, pagePath: PagePath, key: "heading" | "intro", fallback: string) =>
+  pipe(
+    Option.fromNullishOr(pageTitles),
+    Option.flatMap((titles) => Option.fromNullishOr(titles[pagePath])),
+    Option.map((page) => page[key]),
+    Option.getOrElse(() => fallback)
+  );
+
+// Localized section label from the content bundle, e.g. ("pageHome", "experience")
+export const sectionLabel = (localizedContent: LocalizedContent | null, section: string, key: string, fallback: string) =>
+  pipe(
+    Option.fromNullishOr(localizedContent),
+    Option.flatMap((content) => Option.fromNullishOr(content[section])),
+    Option.flatMap((entries) => Option.fromNullishOr(entries[key])),
+    Option.getOrElse(() => fallback)
+  );

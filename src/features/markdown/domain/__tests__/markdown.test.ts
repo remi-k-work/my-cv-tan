@@ -4,6 +4,7 @@ import { Effect, Option } from "effect";
 
 // domain
 import {
+  buildContactMd,
   buildEducationMd,
   buildExperienceMd,
   buildHomeMd,
@@ -73,6 +74,12 @@ it("buildEducationMd and buildNotFoundMd stay parseable with canonical links", (
   const missing = buildNotFoundMd("bogus", "en");
   assert.include(missing, `# Not Found`);
   assert.include(missing, `https://www.remiforge.dev/index.md`);
+});
+
+it("buildContactMd advertises the same social profiles as the HTML page", () => {
+  const md = buildContactMd({ pageTitles: null, preferredLanguage: "en" });
+  assert.include(md, `GitHub: https://github.com/remi-k-work`);
+  assert.include(md, `LinkedIn: https://linkedin.com/in/remi-k-work`);
 });
 
 it("buildLlmsTxt indexes pages, grouped experience and AI guidance", () => {

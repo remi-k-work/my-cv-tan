@@ -5,7 +5,8 @@ import { absoluteUrl, experienceImageUrl, jsonLdScript, yearToIso } from "./help
 
 // types
 import type { EducationList } from "@/features/education/domain";
-import type { Experience, ExperienceList } from "@/features/experience/domain";
+import type { ExperienceList } from "@/features/experience/domain";
+import type { ExperienceHeadInput } from "./models";
 
 // constants
 import {
@@ -19,6 +20,7 @@ import {
   SITE_NAME,
   SITE_URL,
   SOCIAL_LINKS,
+  WEBSITE_ID,
 } from "./constants";
 
 // Site-wide structured data: the site itself plus its author
@@ -28,10 +30,12 @@ export const websitePersonJsonLd = () =>
     "@graph": [
       {
         "@type": "WebSite",
+        "@id": WEBSITE_ID,
         name: SITE_NAME,
         url: SITE_URL,
         inLanguage: ["en", "pl"],
         author: { "@id": PERSON_ID },
+        publisher: { "@id": PUBLISHER_ID },
       },
       {
         "@type": "Person",
@@ -72,46 +76,52 @@ const datePublished = (year: string) =>
     })
   );
 
-// Structured data for a single experience / project page
-export const experienceJsonLd = (slug: string, { role, company, txt, imageName, skillsUsed, year }: Experience) =>
-  jsonLdScript({
-    "@context": "https://schema.org",
-    "@type": "Article",
-    headline: `${role} at ${company}`,
-    description: excerpt(txt, META_DESCRIPTION_LENGTH),
-    ...datePublished(year),
-    image: pipe(
-      experienceImageUrl(imageName),
-      Option.getOrElse(() => GLOBAL_IMAGE)
-    ),
-    url: absoluteUrl(`/${slug}`),
-    mainEntityOfPage: { "@type": "WebPage", "@id": absoluteUrl(`/${slug}`) },
-    inLanguage: ["en", "pl"],
-    author: { "@id": PERSON_ID },
-    publisher: { "@id": PUBLISHER_ID },
-    about: skillsUsed,
-  });
+// Structured data for a single experience / project page: one graph per page so the
+// Article, its breadcrumbs and its references stay cross-linkable in a single parse
+export const experienceJsonLd = ({ slug, experience, preferredLanguage }: ExperienceHeadInput) => {
+  const { role, company, txt, imageName, skillsUsed, year } = experience;
+  const url = absoluteUrl(`/${slug}`);
 
-// Breadcrumb trail for a single experience / project page
-export const experienceBreadcrumbJsonLd = (slug: string, { role, company }: Experience) =>
-  jsonLdScript({
+  return jsonLdScript({
     "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
+    "@graph": [
       {
-        "@type": "ListItem",
-        position: 1,
-        name: "Home",
-        item: SITE_URL,
+        "@type": "Article",
+        headline: `${role} at ${company}`,
+        description: excerpt(txt, META_DESCRIPTION_LENGTH),
+        ...datePublished(year),
+        image: pipe(
+          experienceImageUrl(imageName),
+          Option.getOrElse(() => GLOBAL_IMAGE)
+        ),
+        url,
+        mainEntityOfPage: { "@type": "WebPage", "@id": url },
+        inLanguage: preferredLanguage,
+        author: { "@id": PERSON_ID },
+        publisher: { "@id": PUBLISHER_ID },
+        // keywords (Text) is the schema-valid slot for skills; Article.about expects Thing
+        keywords: skillsUsed.join(", "),
       },
       {
-        "@type": "ListItem",
-        position: 2,
-        name: `${role} at ${company}`,
-        item: absoluteUrl(`/${slug}`),
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: SITE_URL,
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: `${role} at ${company}`,
+            item: url,
+          },
+        ],
       },
     ],
   });
+};
 
 // ItemList of every experience / project, emitted on the homepage for crawlers and AI citation
 export const homeItemListJsonLd = (experiences: ExperienceList) =>

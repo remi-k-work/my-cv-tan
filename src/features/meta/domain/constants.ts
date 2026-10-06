@@ -21,6 +21,7 @@ export const HOME_LOCALITY = "Rzeszów";
 export const HOME_COUNTRY = "PL";
 
 // Stable JSON-LD @graph node ids: page-level structured data references these entities
+export const WEBSITE_ID = `${SITE_URL}/#website`;
 export const PERSON_ID = `${SITE_URL}/#person`;
 export const PUBLISHER_ID = `${SITE_URL}/#publisher`;
 

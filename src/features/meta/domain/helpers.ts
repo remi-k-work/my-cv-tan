@@ -15,7 +15,10 @@ export const hreflangLinks = (path: string) =>
   );
 
 export const canonicalLink = (path: string) => ({ rel: "canonical", href: absoluteUrl(path) }) as const;
-export const jsonLdScript = (data: unknown) => ({ type: "application/ld+json", children: JSON.stringify(data) }) as const;
+
+// Serialized JSON lives inside a <script> tag; escaping "<" as "\u003C" stops
+// content-sourced strings from breaking out of the tag while staying valid JSON
+export const jsonLdScript = (data: unknown) => ({ type: "application/ld+json", children: JSON.stringify(data).replace(/</g, "\\u003C") }) as const;
 
 // Machine-readable alternate for a page: points crawlers and AI fetchers at the Markdown twin
 export const markdownAlternateLink = (mdHref: string) => ({ rel: "alternate", type: "text/markdown", href: absoluteUrl(mdHref) }) as const;

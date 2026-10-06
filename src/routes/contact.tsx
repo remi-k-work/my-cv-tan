@@ -3,7 +3,7 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 
 // services, features, and other libraries
 import { loaderContact } from "@/loaders/contact";
-import { contactHead } from "@/features/meta/domain";
+import { contactHead, headLanguage } from "@/features/meta/domain";
 
 // components
 import { PageTitle } from "@/ui/page-title";
@@ -12,7 +12,11 @@ import { ContactMap } from "@/features/contact-me/ui/contact-map";
 
 export const Route = createFileRoute("/contact")({
   loader: () => loaderContact(),
-  head: ({ loaderData }) => contactHead(loaderData?.randomPageTitles ?? null),
+  head: ({ loaderData, matches }) =>
+    contactHead({
+      pageTitles: loaderData?.randomPageTitles ?? null,
+      preferredLanguage: headLanguage(matches),
+    }),
   component: ContactPage,
 });
 

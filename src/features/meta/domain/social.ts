@@ -1,5 +1,6 @@
 // services, features, and other libraries
 import { Option, pipe } from "effect";
+import { matchPreferredLanguage } from "@/domain";
 import { absoluteUrl } from "./helpers";
 
 // types
@@ -9,9 +10,12 @@ import type { SocialMetaInput } from "./models";
 import { GLOBAL_SOCIAL_IMAGE, SITE_NAME } from "./constants";
 
 // Shared Open Graph + Twitter Card tags for a page.
+// og:locale mirrors the served language variant so scrapers render the right card.
 // X/Twitter cards only reliably accept jpeg/png, so twitterImage defaults to the jpeg fallback.
-export const socialMeta = ({ title, description, path, image, ogType, twitterImage }: SocialMetaInput) => {
+export const socialMeta = ({ title, description, path, image, ogType, preferredLanguage, twitterImage }: SocialMetaInput) => {
   const twitter = twitterImage ?? GLOBAL_SOCIAL_IMAGE;
+  const locale = matchPreferredLanguage(preferredLanguage, "en_US", "pl_PL");
+  const localeAlternate = matchPreferredLanguage(preferredLanguage, "pl_PL", "en_US");
 
   // Only assert dimensions when both are known; never emit wrong ones
   const dimensions = pipe(
@@ -36,8 +40,8 @@ export const socialMeta = ({ title, description, path, image, ogType, twitterIma
     { property: "og:type", content: ogType },
     { property: "og:url", content: absoluteUrl(path) },
     { property: "og:site_name", content: SITE_NAME },
-    { property: "og:locale", content: "en_US" },
-    { property: "og:locale:alternate", content: "pl_PL" },
+    { property: "og:locale", content: locale },
+    { property: "og:locale:alternate", content: localeAlternate },
     { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:title", content: title },
     { name: "twitter:description", content: description },

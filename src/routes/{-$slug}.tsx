@@ -5,7 +5,7 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { Array, Option } from "effect";
 import { useAtomValue } from "@effect/atom-react";
 import { loaderIndex } from "@/loaders/index";
-import { experienceHead, homeListHead } from "@/features/meta/domain";
+import { experienceHead, headLanguage, homeListHead } from "@/features/meta/domain";
 import { experienceAtom } from "@/features/modals/state";
 
 // components
@@ -16,12 +16,15 @@ import { ExperienceModal } from "@/features/modals/ui/experience";
 
 export const Route = createFileRoute("/{-$slug}")({
   loader: ({ params }) => loaderIndex(Option.fromNullishOr(params.slug)),
-  head: ({ loaderData, params }) => {
-    if (loaderData?.type === "item" && loaderData.experience && params.slug) return experienceHead(params.slug, loaderData.experience);
-    return homeListHead(
-      loaderData?.type === "list" ? loaderData.randomPageTitles : null,
-      loaderData?.type === "list" ? loaderData.experienceList : null
-    );
+  head: ({ loaderData, params, matches }) => {
+    const preferredLanguage = headLanguage(matches);
+    if (loaderData?.type === "item" && loaderData.experience && params.slug)
+      return experienceHead({ slug: params.slug, experience: loaderData.experience, preferredLanguage });
+    return homeListHead({
+      pageTitles: loaderData?.type === "list" ? loaderData.randomPageTitles : null,
+      experienceList: loaderData?.type === "list" ? loaderData.experienceList : null,
+      preferredLanguage,
+    });
   },
   component: HomePage,
 });

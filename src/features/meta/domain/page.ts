@@ -1,15 +1,15 @@
 // services, features, and other libraries
 import { Array, Option, pipe } from "effect";
+import { pageField } from "@/domain";
 import { excerpt } from "@/features/experience/domain";
 import { canonicalLink, experienceImageUrl, hreflangLinks, markdownAlternateLink, yearToIso } from "./helpers";
 import { socialMeta } from "./social";
-import { contactFaqJsonLd, educationListJsonLd, experienceBreadcrumbJsonLd, experienceJsonLd, homeItemListJsonLd } from "./json-ld";
+import { contactFaqJsonLd, educationListJsonLd, experienceJsonLd, homeItemListJsonLd } from "./json-ld";
 
 // types
-import type { EducationList } from "@/features/education/domain";
-import type { PagePath, PageTitles } from "@/domain";
-import type { Experience, ExperienceList } from "@/features/experience/domain";
 import type { DocumentHead, SocialImage } from "./models";
+import type { EducationHeadInput, ExperienceHeadInput, HomeHeadInput, PageHeadInput } from "./models";
+import type { PagePath } from "@/domain";
 
 // constants
 import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain";
@@ -18,26 +18,23 @@ import {
   CONTACT_MD_HREF,
   DESCRIPTION,
   EDUCATION_MD_HREF,
+  EXPERIENCE_MD_HREF,
+  GLOBAL_SOCIAL_IMAGE,
   HOME_MD_HREF,
   META_DESCRIPTION_LENGTH,
   SITE_NAME,
   TITLE,
-  EXPERIENCE_MD_HREF,
-  GLOBAL_SOCIAL_IMAGE,
 } from "./constants";
-
-// Localized page title/intro with a static fallback when loader data is missing or partial
-const pageField = (pageTitles: PageTitles | null, pagePath: PagePath, key: "heading" | "intro", fallback: string) =>
-  pipe(
-    Option.fromNullishOr(pageTitles),
-    Option.flatMap((titles) => Option.fromNullishOr(titles[pagePath])),
-    Option.map((page) => page[key]),
-    Option.getOrElse(() => fallback)
-  );
 
 // Localized document head shared by the static pages; shared tags (author, robots) are
 // inherited from the root head, so only page-specific values belong here.
-const localizedPageHead = (pageTitles: PageTitles | null, pagePath: PagePath, mdHref: string, keywords: ReadonlyArray<string> = BASE_KEYWORDS) => {
+const localizedPageHead = (
+  pageTitles: PageHeadInput["pageTitles"],
+  pagePath: PagePath,
+  mdHref: string,
+  keywords: ReadonlyArray<string>,
+  preferredLanguage: PageHeadInput["preferredLanguage"]
+) => {
   const title = pageField(pageTitles, pagePath, "heading", TITLE);
   const description = excerpt(pageField(pageTitles, pagePath, "intro", DESCRIPTION), META_DESCRIPTION_LENGTH);
 
@@ -46,14 +43,14 @@ const localizedPageHead = (pageTitles: PageTitles | null, pagePath: PagePath, md
       { title: `${SITE_NAME} ● ${title}` },
       { name: "description", content: description },
       { name: "keywords", content: keywords.join(", ") },
-      ...socialMeta({ title, description, path: pagePath, image: GLOBAL_SOCIAL_IMAGE, ogType: "website" }),
+      ...socialMeta({ title, description, path: pagePath, image: GLOBAL_SOCIAL_IMAGE, ogType: "website", preferredLanguage }),
     ],
     links: [canonicalLink(pagePath), ...hreflangLinks(pagePath), markdownAlternateLink(mdHref)],
   } as const satisfies DocumentHead;
 };
 
 // Emits the structured-data script only when the list decoded and is non-empty
-const listScript = <T>(list: ReadonlyArray<T> | null, build: (items: ReadonlyArray<T>) => { type: string; children: string }) =>
+const listJsonLdScript = <T>(list: ReadonlyArray<T> | null, build: (items: ReadonlyArray<T>) => { type: string; children: string }) =>
   pipe(
     Option.fromNullishOr(list),
     Option.filter((items) => items.length > 0),
@@ -64,27 +61,24 @@ const listScript = <T>(list: ReadonlyArray<T> | null, build: (items: ReadonlyArr
     })
   );
 
-export const homeListHead = (pageTitles: PageTitles | null, experienceList: ExperienceList | null = null) =>
-  ({
-    ...localizedPageHead(pageTitles, "/", HOME_MD_HREF),
-    scripts: listScript(experienceList, homeItemListJsonLd),
-  }) as const satisfies DocumentHead;
+export const homeListHead = ({ pageTitles, experienceList, preferredLanguage }: HomeHeadInput) => {
+  const head = localizedPageHead(pageTitles, "/", HOME_MD_HREF, BASE_KEYWORDS, preferredLanguage);
+  return { ...head, scripts: listJsonLdScript(experienceList, homeItemListJsonLd) } as const satisfies DocumentHead;
+};
 
-export const educationHead = (pageTitles: PageTitles | null, educationList: EducationList | null = null) =>
-  ({
-    ...localizedPageHead(pageTitles, "/education", EDUCATION_MD_HREF, [...BASE_KEYWORDS, "education", "certificates"]),
-    scripts: listScript(educationList, educationListJsonLd),
-  }) as const satisfies DocumentHead;
+export const educationHead = ({ pageTitles, educationList, preferredLanguage }: EducationHeadInput) => {
+  const head = localizedPageHead(pageTitles, "/education", EDUCATION_MD_HREF, [...BASE_KEYWORDS, "education", "certificates"], preferredLanguage);
+  return { ...head, scripts: listJsonLdScript(educationList, educationListJsonLd) } as const satisfies DocumentHead;
+};
 
-export const contactHead = (pageTitles: PageTitles | null) =>
-  ({
-    ...localizedPageHead(pageTitles, "/contact", CONTACT_MD_HREF, [...BASE_KEYWORDS, "contact", "Rzeszów"]),
-    scripts: [contactFaqJsonLd()] as const,
-  }) as const satisfies DocumentHead;
+export const contactHead = ({ pageTitles, preferredLanguage }: PageHeadInput) => {
+  const head = localizedPageHead(pageTitles, "/contact", CONTACT_MD_HREF, [...BASE_KEYWORDS, "contact", "Rzeszów"], preferredLanguage);
+  return { ...head, scripts: [contactFaqJsonLd()] as const } as const satisfies DocumentHead;
+};
 
 // Detail head always canonicalizes to the clean /{slug} URL, so stray query
 // parameters never become duplicates
-export const experienceHead = (slug: string, experience: Experience) => {
+export const experienceHead = ({ slug, experience, preferredLanguage }: ExperienceHeadInput) => {
   const { role, company, txt, imageName, skillsUsed, year } = experience;
 
   const path = `/${slug}`;
@@ -113,9 +107,9 @@ export const experienceHead = (slug: string, experience: Experience) => {
       { property: "article:author", content: SITE_NAME },
       ...publishedTime,
       { property: "article:tag", content: skillsUsed.join(", ") },
-      ...socialMeta({ title, description, path, image, ogType: "article", twitterImage: GLOBAL_SOCIAL_IMAGE }),
+      ...socialMeta({ title, description, path, image, ogType: "article", twitterImage: GLOBAL_SOCIAL_IMAGE, preferredLanguage }),
     ],
     links: [canonicalLink(path), ...hreflangLinks(path), markdownAlternateLink(EXPERIENCE_MD_HREF(slug))],
-    scripts: [experienceJsonLd(slug, experience), experienceBreadcrumbJsonLd(slug, experience)],
+    scripts: [experienceJsonLd({ slug, experience, preferredLanguage })],
   } as const satisfies DocumentHead;
 };

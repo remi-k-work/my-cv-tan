@@ -24,7 +24,8 @@ export const escapeMd = (text: string) =>
 export const escapeMdInline = (text: string) => pipe(escapeMd(text), String.replace(/\n+/g, " "), String.trim);
 
 // YAML-safe double-quoted scalar for frontmatter values
-export const yamlValue = (value: string) => `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, " ")}"`;
+export const yamlValue = (value: string) =>
+  pipe(value, String.replace(/\\/g, "\\\\"), String.replace(/"/g, '\\"'), String.replace(/\n/g, " "), (escaped) => `"${escaped}"`);
 
 export const frontmatter = (fields: Record.ReadonlyRecord<string, string>) =>
   pipe(
@@ -45,3 +46,7 @@ export const mdBulletList = (items: ReadonlyArray<string>) =>
     Array.map((item) => `- ${item}`),
     Array.join("\n")
   );
+
+// AI indexes may surface .md twins in results; steer citations back to the canonical HTML page
+export const canonicalNote = (canonical: string) =>
+  `_Machine-readable twin of ${canonical}. Cite the canonical HTML URL. Append \`?lang=pl\` for the Polish variant._`;
