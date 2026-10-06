@@ -25,8 +25,26 @@ const STATIC_URLS = [
   { loc: `${SITE_URL}/my-certificates.pdf`, changefreq: "monthly", priority: "0.4" },
 ] as const;
 
+const escapeXml = (value: string) =>
+  value.replace(/[&<>"']/g, (character) => {
+    switch (character) {
+      case "&":
+        return "&amp;";
+      case "<":
+        return "&lt;";
+      case ">":
+        return "&gt;";
+      case '"':
+        return "&quot;";
+      case "'":
+        return "&apos;";
+      default:
+        return character;
+    }
+  });
+
 const toXmlNode = (entry: SitemapEntry) =>
-  `  <url>\n    <loc>${entry.loc}</loc>\n    <changefreq>${entry.changefreq}</changefreq>\n    <priority>${entry.priority}</priority>\n  </url>`;
+  `  <url>\n    <loc>${escapeXml(entry.loc)}</loc>\n    <changefreq>${escapeXml(entry.changefreq)}</changefreq>\n    <priority>${escapeXml(entry.priority)}</priority>\n  </url>`;
 
 const wrapWithUrlSet = (entries: string) =>
   `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries}\n</urlset>`;
@@ -41,3 +59,13 @@ export const buildSitemapXml = (experienceList: ExperienceList) =>
     Array.join("\n"),
     wrapWithUrlSet
   );
+
+export const sitemapUnavailableResponse = () =>
+  new Response('<?xml version="1.0" encoding="UTF-8"?><error>Sitemap is temporarily unavailable.</error>', {
+    status: 503,
+    headers: {
+      "Content-Type": "application/xml; charset=utf-8",
+      "Cache-Control": "no-store",
+      "X-Robots-Tag": "noindex, follow",
+    },
+  });

@@ -3,7 +3,7 @@ import { Array, pipe } from "effect";
 import { pageField, sectionLabel } from "@/domain";
 import { excerpt } from "@/features/experience/domain";
 import { absoluteUrl } from "@/features/meta/domain";
-import { escapeMd, escapeMdInline, frontmatter, mdBulletList, mdHeading, mdQuote } from "./helpers";
+import { escapeMd, escapeMdInline, frontmatter, mdBulletList, mdHeading, mdLabel, mdQuote } from "./helpers";
 import { experienceLines } from "./listing";
 
 // types
@@ -37,17 +37,17 @@ export const buildHomeMd = ({ pageTitles, localizedContent, experienceList, pref
     ``,
     mdHeading(2, sectionLabel(localizedContent, "pageHome", "experience", "Experience")),
     ``,
-    experienceLines(experienceList, "e"),
+    experienceLines(experienceList, "e", preferredLanguage),
     ``,
     mdHeading(2, sectionLabel(localizedContent, "pageHome", "portfolioProjects", "Portfolio Projects")),
     ``,
-    experienceLines(experienceList, "p"),
+    experienceLines(experienceList, "p", preferredLanguage),
     ``,
-    mdHeading(2, "Pages"),
+    mdHeading(2, mdLabel(preferredLanguage, "Pages", "Strony")),
     ``,
     mdBulletList([
-      `[Education & Certificates](${absoluteUrl(EDUCATION_MD_HREF)})`,
-      `[Contact](${absoluteUrl(CONTACT_MD_HREF)})`,
+      `[${mdLabel(preferredLanguage, "Education & Certificates", "Edukacja i certyfikaty")}](${absoluteUrl(EDUCATION_MD_HREF)})`,
+      `[${mdLabel(preferredLanguage, "Contact", "Kontakt")}](${absoluteUrl(CONTACT_MD_HREF)})`,
       `[llms.txt](${absoluteUrl("/llms.txt")})`,
     ]),
     ``,
@@ -63,7 +63,16 @@ export const buildEducationMd = ({ pageTitles, educationList, preferredLanguage 
   const schools = pipe(
     educationList,
     Array.map(({ name, year, location, info }) =>
-      [mdHeading(2, name), ``, mdBulletList([`Years: ${escapeMdInline(year)}`, `Location: ${escapeMdInline(location)}`]), ``, escapeMd(info)].join("\n")
+      [
+        mdHeading(2, name),
+        ``,
+        mdBulletList([
+          `${mdLabel(preferredLanguage, "Years", "Lata")}: ${escapeMdInline(year)}`,
+          `${mdLabel(preferredLanguage, "Location", "Lokalizacja")}: ${escapeMdInline(location)}`,
+        ]),
+        ``,
+        escapeMd(info),
+      ].join("\n")
     ),
     Array.join("\n\n")
   );
@@ -72,14 +81,14 @@ export const buildEducationMd = ({ pageTitles, educationList, preferredLanguage 
     ...pageOpening(title, excerpt(intro, META_DESCRIPTION_LENGTH), canonical, preferredLanguage),
     escapeMd(intro),
     ``,
-    schools === "" ? `_No entries._` : schools,
+    schools === "" ? `_${mdLabel(preferredLanguage, "No entries.", "Brak wpisów.")}_` : schools,
     ``,
-    mdHeading(2, "Documents"),
+    mdHeading(2, mdLabel(preferredLanguage, "Documents", "Dokumenty")),
     ``,
     mdBulletList([
-      `[Certificates](${absoluteUrl(CERTIFICATES_HREF)})`,
-      `[CV (English)](${absoluteUrl(CV_EN_HREF)})`,
-      `[CV (Polish)](${absoluteUrl(CV_PL_HREF)})`,
+      `[${mdLabel(preferredLanguage, "Certificates", "Certyfikaty")}](${absoluteUrl(CERTIFICATES_HREF)})`,
+      `[${mdLabel(preferredLanguage, "CV (English)", "CV (angielski)")}](${absoluteUrl(CV_EN_HREF)})`,
+      `[${mdLabel(preferredLanguage, "CV (Polish)", "CV (polski)")}](${absoluteUrl(CV_PL_HREF)})`,
     ]),
     ``,
   ].join("\n");
@@ -94,9 +103,14 @@ export const buildContactMd = ({ pageTitles, preferredLanguage }: ContactMdInput
     ...pageOpening(title, excerpt(intro, META_DESCRIPTION_LENGTH), canonical, preferredLanguage),
     escapeMd(intro),
     ``,
-    mdHeading(2, "Channels"),
+    mdHeading(2, mdLabel(preferredLanguage, "Channels", "Kanały")),
     ``,
-    mdBulletList([`Contact form: ${canonical} (same page in HTML)`, `Base: Rzeszów, Poland`, `GitHub: ${gitHubLink}`, `LinkedIn: ${linkedInLink}`]),
+    mdBulletList([
+      `${mdLabel(preferredLanguage, "Contact form", "Formularz kontaktowy")}: ${canonical} (${mdLabel(preferredLanguage, "same page in HTML", "ta sama strona w HTML")})`,
+      `${mdLabel(preferredLanguage, "Base", "Lokalizacja")}: ${mdLabel(preferredLanguage, "Rzeszów, Poland", "Rzeszów, Polska")}`,
+      `GitHub: ${gitHubLink}`,
+      `LinkedIn: ${linkedInLink}`,
+    ]),
     ``,
   ].join("\n");
 };

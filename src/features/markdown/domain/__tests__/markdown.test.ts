@@ -10,13 +10,20 @@ import {
   buildHomeMd,
   buildLlmsTxt,
   buildNotFoundMd,
+  experienceFromList,
   escapeMd,
   frontmatter,
   mdNotFoundResponse,
   mdResponse,
+  markdownDataResponse,
+  mdUnavailableResponse,
   parseLangParam,
+  requireData,
   slugFromMdPathname,
   txtResponse,
+  textDataResponse,
+  txtUnavailableResponse,
+  unavailableMarkdownBody,
 } from "../index";
 import { MARKDOWN_CONTENT_TYPE } from "../constants";
 
@@ -39,6 +46,10 @@ const stablePageTitles = {
   "/": { eyebrow: "Home", heading: "Stable home title", intro: "Stable home summary." },
   "/education": { eyebrow: "Education", heading: "Stable education title", intro: "Stable education summary." },
   "/contact": { eyebrow: "Contact", heading: "Stable contact title", intro: "Stable contact summary." },
+};
+
+const localizedContent = {
+  pageHome: { experience: "Doświadczenie", portfolioProjects: "Projekty" },
 };
 
 it("frontmatter emits a delimited block with quoted values", () => {
@@ -74,8 +85,17 @@ it("buildExperienceMd omits the Links section when the experience has no links",
   assert.notInclude(md, `## Links`);
 });
 
+it("buildExperienceMd localizes fixed Polish section and fact labels", () => {
+  const md = buildExperienceMd(sampleExperience, "pl");
+  assert.include(md, "## Opis");
+  assert.include(md, "## Szczegóły");
+  assert.include(md, "Rola: Full-Stack Developer");
+  assert.include(md, "## Użyte umiejętności");
+  assert.include(md, "## Linki");
+});
+
 it("buildHomeMd groups work and projects and links to .md twins", () => {
-  const md = buildHomeMd({ pageTitles: stablePageTitles, localizedContent: null, experienceList: [sampleExperience], preferredLanguage: "en" });
+  const md = buildHomeMd({ pageTitles: stablePageTitles, localizedContent, experienceList: [sampleExperience], preferredLanguage: "en" });
   assert.include(md, `canonical: "https://www.remiforge.dev/"`);
   assert.include(md, `title: "Remi Forge ● Stable home title"`);
   assert.include(md, `description: "Stable home summary."`);
@@ -84,17 +104,39 @@ it("buildHomeMd groups work and projects and links to .md twins", () => {
   assert.include(md, `https://www.remiforge.dev/education.md`);
 });
 
+it("buildHomeMd localizes Markdown structure in Polish", () => {
+  const md = buildHomeMd({ pageTitles: stablePageTitles, localizedContent, experienceList: [], preferredLanguage: "pl" });
+  assert.include(md, "## Doświadczenie");
+  assert.include(md, "## Projekty");
+  assert.include(md, "## Strony");
+  assert.include(md, "[Edukacja i certyfikaty]");
+  assert.include(md, "_Brak wpisów._");
+});
+
 it("buildEducationMd stays localized and a missing document has no canonical", () => {
   const edu = buildEducationMd({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "pl" });
   assert.include(edu, `lang: "pl"`);
   assert.include(edu, `title: "Remi Forge ● Stable education title"`);
   assert.include(edu, `description: "Stable education summary."`);
-  assert.include(edu, `_No entries._`);
+  assert.include(edu, "## Dokumenty");
+  assert.include(edu, "_Brak wpisów._");
+
+  const populated = buildEducationMd({
+    pageTitles: stablePageTitles,
+    educationList: [{ name: "Example School", year: "2020", location: "Poland", info: "Studied interaction design." }],
+    preferredLanguage: "pl",
+  });
+  assert.include(populated, "Lata: 2020");
+  assert.include(populated, "Lokalizacja: Poland");
 
   const missing = buildNotFoundMd("bogus", "en");
   assert.include(missing, `# Not Found`);
   assert.include(missing, `https://www.remiforge.dev/index.md`);
   assert.notInclude(missing, "canonical:");
+
+  const missingPl = buildNotFoundMd("brak", "pl");
+  assert.include(missingPl, "# Nie znaleziono");
+  assert.include(missingPl, "Dokument Markdown dla adresu /brak nie istnieje.");
 });
 
 it("buildContactMd advertises the same social profiles as the HTML page", () => {
@@ -103,6 +145,11 @@ it("buildContactMd advertises the same social profiles as the HTML page", () => 
   assert.notInclude(md, "Notes for AI systems");
   assert.include(md, `GitHub: https://github.com/remi-k-work`);
   assert.include(md, `LinkedIn: https://linkedin.com/in/remi-k-work`);
+
+  const polish = buildContactMd({ pageTitles: stablePageTitles, preferredLanguage: "pl" });
+  assert.include(polish, "## Kanały");
+  assert.include(polish, "Formularz kontaktowy:");
+  assert.include(polish, "Lokalizacja: Rzeszów, Polska");
 });
 
 it("buildLlmsTxt indexes pages, grouped experience and AI guidance", () => {
@@ -117,7 +164,7 @@ it("buildLlmsTxt indexes pages, grouped experience and AI guidance", () => {
   assert.include(txt, `Always cite the clean canonical HTML URL from each document's frontmatter`);
 });
 
-it("mdResponse uses text/markdown while the 404 variant keeps the same content type", () => {
+it("response helpers set content types, indexing and cache headers for success and errors", () => {
   const ok = mdResponse("# Hi", "en");
   assert.strictEqual(ok.status, 200);
   assert.strictEqual(ok.headers.get("Content-Type"), MARKDOWN_CONTENT_TYPE);
@@ -128,10 +175,64 @@ it("mdResponse uses text/markdown while the 404 variant keeps the same content t
   assert.strictEqual(missing.headers.get("Content-Type"), MARKDOWN_CONTENT_TYPE);
   assert.strictEqual(missing.headers.get("X-Robots-Tag"), "noindex, follow");
 
+  const unavailable = mdUnavailableResponse("# Temporarily unavailable", "pl");
+  assert.strictEqual(unavailable.status, 503);
+  assert.strictEqual(unavailable.headers.get("Content-Type"), MARKDOWN_CONTENT_TYPE);
+  assert.strictEqual(unavailable.headers.get("Content-Language"), "pl");
+  assert.strictEqual(unavailable.headers.get("Cache-Control"), "no-store");
+  assert.strictEqual(unavailable.headers.get("X-Robots-Tag"), "noindex, follow");
+
   const txt = txtResponse("# Plain");
   assert.strictEqual(txt.status, 200);
   assert.strictEqual(txt.headers.get("Content-Type"), "text/plain; charset=utf-8");
+
+  const unavailableTxt = txtUnavailableResponse("Unavailable");
+  assert.strictEqual(unavailableTxt.status, 503);
+  assert.strictEqual(unavailableTxt.headers.get("Content-Type"), "text/plain; charset=utf-8");
+  assert.strictEqual(unavailableTxt.headers.get("Cache-Control"), "no-store");
+  assert.strictEqual(unavailableTxt.headers.get("X-Robots-Tag"), "noindex, follow");
 });
+
+it.effect("a failed experience-list decode is an error, while a valid missing slug is a 404 candidate", () =>
+  Effect.gen(function* () {
+    const decodeError = yield* Effect.flip(experienceFromList(Option.none(), "missing"));
+    assert.strictEqual(decodeError._tag, "RequiredDataError");
+
+    assert.deepStrictEqual(yield* experienceFromList(Option.some([]), "missing"), Option.none());
+    assert.deepStrictEqual(yield* experienceFromList(Option.some([sampleExperience]), "missing"), Option.none());
+    assert.deepStrictEqual(yield* experienceFromList(Option.some([sampleExperience]), sampleExperience.slug), Option.some(sampleExperience));
+  })
+);
+
+it.effect("required-content failures map to non-cacheable 503s and valid missing slugs map to 404s", () =>
+  Effect.gen(function* () {
+    const unavailableMarkdown = yield* markdownDataResponse(
+      "pl",
+      Effect.gen(function* () {
+        yield* requireData(Option.none(), "experience list");
+        return mdResponse("# Complete", "pl");
+      })
+    );
+    assert.strictEqual(unavailableMarkdown.status, 503);
+    assert.strictEqual(unavailableMarkdown.headers.get("Cache-Control"), "no-store");
+    assert.strictEqual(unavailableMarkdown.headers.get("X-Robots-Tag"), "noindex, follow");
+    assert.include(unavailableMarkdownBody("pl"), "portfolio");
+
+    const unavailableIndex = yield* textDataResponse(
+      Effect.gen(function* () {
+        yield* requireData(Option.none(), "experience list");
+        return txtResponse("# Complete");
+      })
+    );
+    assert.strictEqual(unavailableIndex.status, 503);
+    assert.strictEqual(unavailableIndex.headers.get("Content-Type"), "text/plain; charset=utf-8");
+
+    const noMatch = yield* experienceFromList(Option.some([]), "missing");
+    const notFound = Option.isNone(noMatch) ? mdNotFoundResponse(buildNotFoundMd("missing", "en"), "en") : mdResponse("# Found", "en");
+    assert.strictEqual(notFound.status, 404);
+    assert.strictEqual(notFound.headers.get("X-Robots-Tag"), "noindex, follow");
+  })
+);
 
 it.effect("parseLangParam honors ?lang= and rejects unknown values", () =>
   Effect.gen(function* () {

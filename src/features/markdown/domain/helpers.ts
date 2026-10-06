@@ -1,5 +1,9 @@
 // services, features, and other libraries
 import { Array, pipe, Record, String } from "effect";
+import type { PreferredLanguage } from "@/domain";
+
+// Fixed Markdown labels use the negotiated document language; llms.txt remains English.
+export const mdLabel = (preferredLanguage: PreferredLanguage, english: string, polish: string) => (preferredLanguage === "pl" ? polish : english);
 
 // constants
 import { FRONTMATTER_DELIMITER } from "./constants";

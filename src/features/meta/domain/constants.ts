@@ -34,7 +34,3 @@ export const EXPERIENCE_MD_HREF = (slug: string) => `/${slug}.md`;
 
 // Base keyword set for the site; experience pages extend it with their own skillsUsed
 export const BASE_KEYWORDS = ["web developer", "TypeScript", "React", "portfolio", "Remi Forge"] as const;
-
-export const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] as const;
-export const YEAR_ONLY = /^\d{4}$/;
-export const MONTH_YEAR = /^([A-Z][a-z]{2}) (\d{4})$/;

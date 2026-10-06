@@ -3,7 +3,7 @@ import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
 
 // domain
-import { buildSitemapXml, canonicalLink, contactHead, educationListJsonLd, experienceHead, homeListHead, languageFromMatches, yearToIso } from "../index";
+import { buildSitemapXml, canonicalLink, contactHead, educationListJsonLd, experienceHead, homeListHead, languageFromMatches, ROOT_HEAD, sitemapUnavailableResponse } from "../index";
 
 // types
 import type { EducationList } from "@/features/education/domain";
@@ -28,21 +28,25 @@ const stablePageTitles = {
   "/contact": { eyebrow: "Contact", heading: "Stable contact title", intro: "Stable contact description." },
 };
 
-it("yearToIso reduces strict labels to ISO 8601 and rejects prose", () => {
-  assert.deepStrictEqual(yearToIso("2008"), Option.some("2008"));
-  assert.deepStrictEqual(yearToIso("Mar 2026"), Option.some("2026-03"));
-  assert.deepStrictEqual(yearToIso("Too Long"), Option.none());
-  assert.deepStrictEqual(yearToIso("2008, 2009"), Option.none());
-});
-
-it("experienceHead emits article:published_time only when the year is ISO-reducible", () => {
+it("experienceHead never treats project or employment years as publication dates", () => {
   const dated = JSON.stringify(experienceHead({ slug: "sample-role", experience: sampleExperience, preferredLanguage: "en" }));
-  assert.include(dated, "article:published_time");
-  assert.include(dated, "2026-03");
+  assert.notInclude(dated, "article:published_time");
+  assert.notInclude(dated, "datePublished");
   assert.include(dated, "article:tag");
 
   const undated = JSON.stringify(experienceHead({ slug: "sample-role", experience: { ...sampleExperience, year: "Too Long" }, preferredLanguage: "en" }));
   assert.notInclude(undated, "article:published_time");
+  assert.notInclude(undated, "datePublished");
+});
+
+it("root metadata defaults to noindex and valid page heads explicitly allow indexing", () => {
+  assert.include(JSON.stringify(ROOT_HEAD.meta), '"content":"noindex, follow"');
+
+  const indexable = homeListHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" });
+  assert.include(JSON.stringify(indexable.meta), "index, follow, max-image-preview:large");
+
+  const incomplete = homeListHead({ pageTitles: stablePageTitles, experienceList: null, preferredLanguage: "en" });
+  assert.include(JSON.stringify(incomplete.meta), "noindex, follow");
 });
 
 it("experienceHead renders og:locale from the resolved language and merges Article + BreadcrumbList into one graph", () => {
@@ -95,6 +99,20 @@ it("sitemap omits fabricated last-modified dates", () => {
   const xml = buildSitemapXml([sampleExperience]);
   assert.include(xml, "https://www.remiforge.dev/sample-role");
   assert.notInclude(xml, "<lastmod>");
+});
+
+it("sitemap escapes XML special characters in generated URLs", () => {
+  const xml = buildSitemapXml([{ ...sampleExperience, slug: `danger<&>"'` }]);
+  assert.include(xml, "https://www.remiforge.dev/danger&lt;&amp;&gt;&quot;&apos;");
+  assert.notInclude(xml, "<loc>https://www.remiforge.dev/danger<&>");
+});
+
+it("sitemap data failures return non-cacheable noindex XML with status 503", () => {
+  const response = sitemapUnavailableResponse();
+  assert.strictEqual(response.status, 503);
+  assert.strictEqual(response.headers.get("Content-Type"), "application/xml; charset=utf-8");
+  assert.strictEqual(response.headers.get("Cache-Control"), "no-store");
+  assert.strictEqual(response.headers.get("X-Robots-Tag"), "noindex, follow");
 });
 
 it("educationListJsonLd describes attended schools, not credentials", () => {

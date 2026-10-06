@@ -2,7 +2,7 @@
 import { Array, Option, pipe } from "effect";
 import { excerpt } from "@/features/experience/domain";
 import { absoluteUrl } from "@/features/meta/domain";
-import { escapeMd, escapeMdInline, frontmatter, mdBulletList, mdHeading, mdQuote } from "./helpers";
+import { escapeMd, escapeMdInline, frontmatter, mdBulletList, mdHeading, mdLabel, mdQuote } from "./helpers";
 
 // types
 import type { PreferredLanguage } from "@/domain";
@@ -19,13 +19,13 @@ export const buildExperienceMd = (experience: Experience, preferredLanguage: Pre
   const links = pipe(
     [
       Option.fromNullishOr(experience.gitHubLink).pipe(Option.map((href) => `- GitHub: ${href}`)),
-      Option.fromNullishOr(experience.liveLink).pipe(Option.map((href) => `- Live: ${href}`)),
-      Option.fromNullishOr(experience.videoLink).pipe(Option.map((href) => `- Video: ${href}`)),
+      Option.fromNullishOr(experience.liveLink).pipe(Option.map((href) => `- ${mdLabel(preferredLanguage, "Live", "Demo")}: ${href}`)),
+      Option.fromNullishOr(experience.videoLink).pipe(Option.map((href) => `- ${mdLabel(preferredLanguage, "Video", "Wideo")}: ${href}`)),
     ],
     Array.getSomes,
     Array.join("\n")
   );
-  const linkSection = links === "" ? [] : [mdHeading(2, "Links"), ``, links, ``];
+  const linkSection = links === "" ? [] : [mdHeading(2, mdLabel(preferredLanguage, "Links", "Linki")), ``, links, ``];
 
   return [
     frontmatter({
@@ -42,15 +42,19 @@ export const buildExperienceMd = (experience: Experience, preferredLanguage: Pre
     ``,
     mdQuote(description),
     ``,
-    mdHeading(2, "Overview"),
+    mdHeading(2, mdLabel(preferredLanguage, "Overview", "Opis")),
     ``,
     escapeMd(txt),
     ``,
-    mdHeading(2, "Details"),
+    mdHeading(2, mdLabel(preferredLanguage, "Details", "Szczegóły")),
     ``,
-    mdBulletList([`Role: ${escapeMdInline(role)}`, `Company: ${escapeMdInline(company)}`, `Year: ${escapeMdInline(year)}`]),
+    mdBulletList([
+      `${mdLabel(preferredLanguage, "Role", "Rola")}: ${escapeMdInline(role)}`,
+      `${mdLabel(preferredLanguage, "Company", "Firma")}: ${escapeMdInline(company)}`,
+      `${mdLabel(preferredLanguage, "Year", "Rok")}: ${escapeMdInline(year)}`,
+    ]),
     ``,
-    mdHeading(2, "Skills used"),
+    mdHeading(2, mdLabel(preferredLanguage, "Skills used", "Użyte umiejętności")),
     ``,
     mdBulletList(skillsUsed.map(escapeMdInline)),
     ``,
@@ -61,13 +65,19 @@ export const buildExperienceMd = (experience: Experience, preferredLanguage: Pre
 // Explicit, parseable not-found document rather than an HTML error page: AI fetchers
 // get an honest answer and stay on the llms.txt graph of valid documents.
 export const buildNotFoundMd = (slug: string, preferredLanguage: PreferredLanguage) => {
+  const title = mdLabel(preferredLanguage, "Not Found", "Nie znaleziono");
+  const description =
+    preferredLanguage === "pl" ? `Nie znaleziono strony dla identyfikatora "${slug}".` : `No page for slug "${slug}".`;
+
   return [
-    frontmatter({ title: "Not Found", description: `No page for slug "${slug}".`, lang: preferredLanguage }),
-    mdHeading(1, "Not Found"),
+    frontmatter({ title, description, lang: preferredLanguage }),
+    mdHeading(1, title),
     ``,
-    `No Markdown document exists for \`/${escapeMdInline(slug)}\`.`,
+    preferredLanguage === "pl"
+      ? `Dokument Markdown dla adresu /${escapeMdInline(slug)} nie istnieje.`
+      : `No Markdown document exists for /${escapeMdInline(slug)}.`,
     ``,
-    `See [Home](${absoluteUrl(HOME_MD_HREF)}) or [llms.txt](${absoluteUrl("/llms.txt")}).`,
+    `${mdLabel(preferredLanguage, "See", "Zobacz")} [${mdLabel(preferredLanguage, "Home", "Strona główna")}](${absoluteUrl(HOME_MD_HREF)}) ${mdLabel(preferredLanguage, "or", "lub")} [llms.txt](${absoluteUrl("/llms.txt")}).`,
     ``,
   ].join("\n");
 };

@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { Array, Option, pipe } from "effect";
 import { excerpt } from "@/features/experience/domain";
-import { absoluteUrl, experienceImageUrl, jsonLdScript, yearToIso } from "./helpers";
+import { absoluteUrl, experienceImageUrl, jsonLdScript } from "./helpers";
 
 // types
 import type { PreferredLanguage } from "@/domain";
@@ -67,20 +67,10 @@ export const websitePersonJsonLd = () =>
     ],
   });
 
-// datePublished only when the year label reduces to valid ISO 8601
-const datePublished = (year: string) =>
-  pipe(
-    yearToIso(year),
-    Option.match({
-      onNone: () => ({}) as Record<string, never>,
-      onSome: (iso) => ({ datePublished: iso }) as const,
-    })
-  );
-
 // Structured data for a single experience / project page: one graph per page so the
 // Article, its breadcrumbs and its references stay cross-linkable in a single parse
 export const experienceJsonLd = ({ slug, experience, preferredLanguage }: ExperienceHeadInput) => {
-  const { role, company, txt, imageName, skillsUsed, year } = experience;
+  const { role, company, txt, imageName, skillsUsed } = experience;
   const url = absoluteUrl(`/${slug}`);
 
   return jsonLdScript({
@@ -90,7 +80,6 @@ export const experienceJsonLd = ({ slug, experience, preferredLanguage }: Experi
         "@type": "Article",
         headline: `${role} at ${company}`,
         description: excerpt(txt, META_DESCRIPTION_LENGTH),
-        ...datePublished(year),
         image: pipe(
           experienceImageUrl(imageName),
           Option.getOrElse(() => GLOBAL_IMAGE)

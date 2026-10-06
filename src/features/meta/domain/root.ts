@@ -4,9 +4,6 @@ import { llmsAlternateLink } from "./helpers";
 import { socialMeta } from "./social";
 import { websitePersonJsonLd } from "./json-ld";
 
-// types
-import type { DocumentHead } from "./models";
-
 // constants
 import { DESCRIPTION, GLOBAL_SOCIAL_IMAGE, META_DESCRIPTION_LENGTH, SITE_NAME, TITLE } from "./constants";
 
@@ -27,7 +24,7 @@ export const buildRootHead = () => {
       { name: "description", content: description },
 
       { name: "author", content: SITE_NAME },
-      { name: "robots", content: "index, follow, max-image-preview:large" },
+      { name: "robots", content: "noindex, follow" },
       { name: "category", content: "technology" },
       { name: "google", content: "notranslate" },
       // Static en_US fallback for pages without their own head (404, errors);
@@ -41,7 +38,7 @@ export const buildRootHead = () => {
       llmsAlternateLink(),
     ],
     scripts: [websitePersonJsonLd()],
-  } as const satisfies DocumentHead;
+  };
 };
 
 export const ROOT_HEAD = buildRootHead();
