@@ -2,7 +2,7 @@
 import { Array, Option, pipe } from "effect";
 import { excerpt } from "@/features/experience/domain";
 import { absoluteUrl } from "@/features/meta/domain";
-import { canonicalNote, escapeMd, escapeMdInline, frontmatter, mdBulletList, mdHeading, mdQuote } from "./helpers";
+import { escapeMd, escapeMdInline, frontmatter, mdBulletList, mdHeading, mdQuote } from "./helpers";
 
 // types
 import type { PreferredLanguage } from "@/domain";
@@ -21,11 +21,11 @@ export const buildExperienceMd = (experience: Experience, preferredLanguage: Pre
       Option.fromNullishOr(experience.gitHubLink).pipe(Option.map((href) => `- GitHub: ${href}`)),
       Option.fromNullishOr(experience.liveLink).pipe(Option.map((href) => `- Live: ${href}`)),
       Option.fromNullishOr(experience.videoLink).pipe(Option.map((href) => `- Video: ${href}`)),
-      Option.some(`- Canonical page: ${canonical}`),
     ],
     Array.getSomes,
     Array.join("\n")
   );
+  const linkSection = links === "" ? [] : [mdHeading(2, "Links"), ``, links, ``];
 
   return [
     frontmatter({
@@ -54,21 +54,15 @@ export const buildExperienceMd = (experience: Experience, preferredLanguage: Pre
     ``,
     mdBulletList(skillsUsed.map(escapeMdInline)),
     ``,
-    mdHeading(2, "Links"),
-    ``,
-    links,
-    ``,
-    canonicalNote(canonical),
-    ``,
+    ...linkSection,
   ].join("\n");
 };
 
 // Explicit, parseable not-found document rather than an HTML error page: AI fetchers
 // get an honest answer and stay on the llms.txt graph of valid documents.
 export const buildNotFoundMd = (slug: string, preferredLanguage: PreferredLanguage) => {
-  const canonical = absoluteUrl("/");
   return [
-    frontmatter({ title: "Not Found", description: `No page for slug "${slug}".`, canonical, lang: preferredLanguage }),
+    frontmatter({ title: "Not Found", description: `No page for slug "${slug}".`, lang: preferredLanguage }),
     mdHeading(1, "Not Found"),
     ``,
     `No Markdown document exists for \`/${escapeMdInline(slug)}\`.`,

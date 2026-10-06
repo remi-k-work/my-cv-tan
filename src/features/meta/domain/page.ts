@@ -2,9 +2,9 @@
 import { Array, Option, pipe } from "effect";
 import { pageField } from "@/domain";
 import { excerpt } from "@/features/experience/domain";
-import { canonicalLink, experienceImageUrl, hreflangLinks, markdownAlternateLink, yearToIso } from "./helpers";
+import { canonicalLink, experienceImageUrl, markdownAlternateLink, yearToIso } from "./helpers";
 import { socialMeta } from "./social";
-import { contactFaqJsonLd, educationListJsonLd, experienceJsonLd, homeItemListJsonLd } from "./json-ld";
+import { contactPageJsonLd, educationListJsonLd, experienceJsonLd, homeItemListJsonLd } from "./json-ld";
 
 // types
 import type { DocumentHead, SocialImage } from "./models";
@@ -45,7 +45,7 @@ const localizedPageHead = (
       { name: "keywords", content: keywords.join(", ") },
       ...socialMeta({ title, description, path: pagePath, image: GLOBAL_SOCIAL_IMAGE, ogType: "website", preferredLanguage }),
     ],
-    links: [canonicalLink(pagePath), ...hreflangLinks(pagePath), markdownAlternateLink(mdHref)],
+    links: [canonicalLink(pagePath), markdownAlternateLink(mdHref)],
   } as const satisfies DocumentHead;
 };
 
@@ -73,7 +73,9 @@ export const educationHead = ({ pageTitles, educationList, preferredLanguage }: 
 
 export const contactHead = ({ pageTitles, preferredLanguage }: PageHeadInput) => {
   const head = localizedPageHead(pageTitles, "/contact", CONTACT_MD_HREF, [...BASE_KEYWORDS, "contact", "Rzeszów"], preferredLanguage);
-  return { ...head, scripts: [contactFaqJsonLd()] as const } as const satisfies DocumentHead;
+  const title = pageField(pageTitles, "/contact", "heading", TITLE);
+  const description = excerpt(pageField(pageTitles, "/contact", "intro", DESCRIPTION), META_DESCRIPTION_LENGTH);
+  return { ...head, scripts: [contactPageJsonLd({ title, description, preferredLanguage })] as const } as const satisfies DocumentHead;
 };
 
 // Detail head always canonicalizes to the clean /{slug} URL, so stray query
@@ -109,7 +111,7 @@ export const experienceHead = ({ slug, experience, preferredLanguage }: Experien
       { property: "article:tag", content: skillsUsed.join(", ") },
       ...socialMeta({ title, description, path, image, ogType: "article", twitterImage: GLOBAL_SOCIAL_IMAGE, preferredLanguage }),
     ],
-    links: [canonicalLink(path), ...hreflangLinks(path), markdownAlternateLink(EXPERIENCE_MD_HREF(slug))],
+    links: [canonicalLink(path), markdownAlternateLink(EXPERIENCE_MD_HREF(slug))],
     scripts: [experienceJsonLd({ slug, experience, preferredLanguage })],
   } as const satisfies DocumentHead;
 };

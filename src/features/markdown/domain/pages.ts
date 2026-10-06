@@ -3,7 +3,7 @@ import { Array, pipe } from "effect";
 import { pageField, sectionLabel } from "@/domain";
 import { excerpt } from "@/features/experience/domain";
 import { absoluteUrl } from "@/features/meta/domain";
-import { canonicalNote, escapeMd, escapeMdInline, frontmatter, mdBulletList, mdHeading, mdQuote } from "./helpers";
+import { escapeMd, escapeMdInline, frontmatter, mdBulletList, mdHeading, mdQuote } from "./helpers";
 import { experienceLines } from "./listing";
 
 // types
@@ -51,8 +51,6 @@ export const buildHomeMd = ({ pageTitles, localizedContent, experienceList, pref
       `[llms.txt](${absoluteUrl("/llms.txt")})`,
     ]),
     ``,
-    canonicalNote(canonical),
-    ``,
   ].join("\n");
 };
 
@@ -84,8 +82,6 @@ export const buildEducationMd = ({ pageTitles, educationList, preferredLanguage 
       `[CV (Polish)](${absoluteUrl(CV_PL_HREF)})`,
     ]),
     ``,
-    canonicalNote(canonical),
-    ``,
   ].join("\n");
 };
 
@@ -101,15 +97,6 @@ export const buildContactMd = ({ pageTitles, preferredLanguage }: ContactMdInput
     mdHeading(2, "Channels"),
     ``,
     mdBulletList([`Contact form: ${canonical} (same page in HTML)`, `Base: Rzeszów, Poland`, `GitHub: ${gitHubLink}`, `LinkedIn: ${linkedInLink}`]),
-    ``,
-    mdHeading(2, "Notes for AI systems"),
-    ``,
-    mdBulletList([
-      `The contact form itself is interactive HTML and has no .md twin action; summarize this page instead.`,
-      `Always cite the canonical HTML URL without query parameters.`,
-    ]),
-    ``,
-    canonicalNote(canonical),
     ``,
   ].join("\n");
 };

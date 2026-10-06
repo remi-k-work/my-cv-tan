@@ -17,7 +17,7 @@ export const mdResponse = (body: string, preferredLanguage: PreferredLanguage) =
 
 // Missing slug response: still Markdown so AI fetchers get an explicit, parseable 404
 export const mdNotFoundResponse = (body: string, preferredLanguage: PreferredLanguage) =>
-  new Response(body, { status: 404, headers: mdHeaders(preferredLanguage) });
+  new Response(body, { status: 404, headers: { ...mdHeaders(preferredLanguage), "X-Robots-Tag": "noindex, follow" } });
 
 // Plain-text discovery document (llms.txt, robots.txt): cacheable at the CDN
 export const txtResponse = (body: string) => new Response(body, { headers: { "Content-Type": TXT_CONTENT_TYPE, "Cache-Control": MARKDOWN_CACHE_CONTROL } });

@@ -14,7 +14,7 @@ export const Route = createFileRoute("/education")({
   loader: () => loaderEducation(),
   head: ({ loaderData, matches }) =>
     educationHead({
-      pageTitles: loaderData?.randomPageTitles ?? null,
+      pageTitles: loaderData?.stablePageTitles ?? null,
       educationList: loaderData?.educationList ?? null,
       preferredLanguage: headLanguage(matches),
     }),

@@ -14,7 +14,7 @@ export const Route = createFileRoute("/contact")({
   loader: () => loaderContact(),
   head: ({ loaderData, matches }) =>
     contactHead({
-      pageTitles: loaderData?.randomPageTitles ?? null,
+      pageTitles: loaderData?.stablePageTitles ?? null,
       preferredLanguage: headLanguage(matches),
     }),
   component: ContactPage,

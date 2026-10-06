@@ -21,7 +21,7 @@ export const Route = createFileRoute("/{-$slug}")({
     if (loaderData?.type === "item" && loaderData.experience && params.slug)
       return experienceHead({ slug: params.slug, experience: loaderData.experience, preferredLanguage });
     return homeListHead({
-      pageTitles: loaderData?.type === "list" ? loaderData.randomPageTitles : null,
+      pageTitles: loaderData?.type === "list" ? loaderData.stablePageTitles : null,
       experienceList: loaderData?.type === "list" ? loaderData.experienceList : null,
       preferredLanguage,
     });

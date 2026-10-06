@@ -4,6 +4,7 @@ import { excerpt } from "@/features/experience/domain";
 import { absoluteUrl, experienceImageUrl, jsonLdScript, yearToIso } from "./helpers";
 
 // types
+import type { PreferredLanguage } from "@/domain";
 import type { EducationList } from "@/features/education/domain";
 import type { ExperienceList } from "@/features/experience/domain";
 import type { ExperienceHeadInput } from "./models";
@@ -161,26 +162,24 @@ export const educationListJsonLd = (educationList: EducationList) =>
     ),
   });
 
-// Static FAQ for /contact: AI systems extract Q&A pairs verbatim, so keep answers factual and short
-export const contactFaqJsonLd = () =>
+// Structured data mirrors the visible contact page and links to the site-wide entities.
+export const contactPageJsonLd = ({
+  title,
+  description,
+  preferredLanguage,
+}: {
+  readonly title: string;
+  readonly description: string;
+  readonly preferredLanguage: PreferredLanguage;
+}) =>
   jsonLdScript({
     "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: [
-      {
-        "@type": "Question",
-        name: "Where is Remi Forge based?",
-        acceptedAnswer: { "@type": "Answer", text: `${HOME_LOCALITY}, Poland. The same contact page serves English and Polish visitors.` },
-      },
-      {
-        "@type": "Question",
-        name: "How can I get in touch about a project or internship?",
-        acceptedAnswer: { "@type": "Answer", text: "Use the contact form on this page. Every message is answered personally." },
-      },
-      {
-        "@type": "Question",
-        name: "Where else can I find Remi Forge online?",
-        acceptedAnswer: { "@type": "Answer", text: [...SOCIAL_LINKS].join(" and ") },
-      },
-    ],
+    "@type": "ContactPage",
+    "@id": absoluteUrl("/contact"),
+    name: title,
+    description,
+    url: absoluteUrl("/contact"),
+    inLanguage: preferredLanguage,
+    isPartOf: { "@id": WEBSITE_ID },
+    mainEntity: { "@id": PERSON_ID },
   });

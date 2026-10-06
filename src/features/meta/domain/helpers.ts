@@ -7,13 +7,6 @@ import { LLMS_TXT_HREF, MONTH_YEAR, MONTHS, SITE_URL, YEAR_ONLY } from "./consta
 // Canonical absolute URL for a site path
 export const absoluteUrl = (path: string) => `${SITE_URL}${path}`;
 
-// Self-referencing hreflang entries; one URL serves both languages (cookie-based), so every locale variant points back at the same canonical URL
-export const hreflangLinks = (path: string) =>
-  pipe(
-    ["en", "pl", "x-default"] as const,
-    Array.map((locale) => ({ rel: "alternate", hrefLang: locale, href: absoluteUrl(path) }) as const)
-  );
-
 export const canonicalLink = (path: string) => ({ rel: "canonical", href: absoluteUrl(path) }) as const;
 
 // Serialized JSON lives inside a <script> tag; escaping "<" as "\u003C" stops

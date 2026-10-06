@@ -35,9 +35,9 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
 
     const home = Effect.fn("home")(function* (request: Request) {
       const preferredLanguage = yield* language(request.url);
-      const { randomPageTitles, localizedContent, experienceList } = yield* Effect.all(
+      const { stablePageTitles, localizedContent, experienceList } = yield* Effect.all(
         {
-          randomPageTitles: data.randomPageTitles(Option.some(preferredLanguage), Option.none()),
+          stablePageTitles: data.stablePageTitles(Option.some(preferredLanguage), Option.none()),
           localizedContent: data.localizedContent(Option.some(preferredLanguage), Option.none()),
           experienceList: data.experienceList(Option.some(preferredLanguage), Option.none()),
         },
@@ -47,7 +47,7 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
 
       return mdResponse(
         buildHomeMd({
-          pageTitles: Option.getOrNull(randomPageTitles),
+          pageTitles: Option.getOrNull(stablePageTitles),
           localizedContent: Option.getOrNull(localizedContent),
           experienceList: Option.getOrElse(experienceList, () => []),
           preferredLanguage,
@@ -58,9 +58,9 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
 
     const education = Effect.fn("education")(function* (request: Request) {
       const preferredLanguage = yield* language(request.url);
-      const { randomPageTitles, educationList } = yield* Effect.all(
+      const { stablePageTitles, educationList } = yield* Effect.all(
         {
-          randomPageTitles: data.randomPageTitles(Option.some(preferredLanguage), Option.none()),
+          stablePageTitles: data.stablePageTitles(Option.some(preferredLanguage), Option.none()),
           educationList: data.educationList(Option.some(preferredLanguage), Option.none()),
         },
         { concurrency: "unbounded" }
@@ -69,7 +69,7 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
 
       return mdResponse(
         buildEducationMd({
-          pageTitles: Option.getOrNull(randomPageTitles),
+          pageTitles: Option.getOrNull(stablePageTitles),
           educationList: Option.getOrElse(educationList, () => []),
           preferredLanguage,
         }),
@@ -79,8 +79,8 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
 
     const contact = Effect.fn("contact")(function* (request: Request) {
       const preferredLanguage = yield* language(request.url);
-      const randomPageTitles = yield* data.randomPageTitles(Option.some(preferredLanguage), Option.none());
-      return mdResponse(buildContactMd({ pageTitles: Option.getOrNull(randomPageTitles), preferredLanguage }), preferredLanguage);
+      const stablePageTitles = yield* data.stablePageTitles(Option.some(preferredLanguage), Option.none());
+      return mdResponse(buildContactMd({ pageTitles: Option.getOrNull(stablePageTitles), preferredLanguage }), preferredLanguage);
     });
 
     const experience = Effect.fn("experience")(function* (request: Request) {

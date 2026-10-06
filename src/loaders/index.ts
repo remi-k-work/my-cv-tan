@@ -32,9 +32,10 @@ export const loaderIndex = (slug: Option.Option<string>) =>
             } as const;
           }
 
-          const { randomPageTitles, localizedContent, experienceList } = yield* Effect.all(
+          const { randomPageTitles, stablePageTitles, localizedContent, experienceList } = yield* Effect.all(
             {
               randomPageTitles: data.randomPageTitles(Option.some(preferredLanguage), Option.none()),
+              stablePageTitles: data.stablePageTitles(Option.some(preferredLanguage), Option.none()),
               localizedContent: data.localizedContent(Option.some(preferredLanguage), Option.none()),
               experienceList: data.experienceList(Option.some(preferredLanguage), Option.none()),
             },
@@ -44,6 +45,7 @@ export const loaderIndex = (slug: Option.Option<string>) =>
           return {
             type: "list" as const,
             randomPageTitles: randomPageTitles.pipe(Option.getOrNull),
+            stablePageTitles: stablePageTitles.pipe(Option.getOrNull),
             localizedContent: localizedContent.pipe(Option.getOrNull),
             experienceList: experienceList.pipe(Option.getOrNull),
           } as const;
@@ -73,9 +75,10 @@ export const loaderIndex = (slug: Option.Option<string>) =>
             } as const;
           }
 
-          const { randomPageTitles, localizedContent, experienceList } = yield* Effect.all(
+          const { randomPageTitles, stablePageTitles, localizedContent, experienceList } = yield* Effect.all(
             {
               randomPageTitles: client.randomPageTitles(),
+              stablePageTitles: client.stablePageTitles(),
               localizedContent: client.localizedContent(),
               experienceList: client.experienceList(),
             },
@@ -85,6 +88,7 @@ export const loaderIndex = (slug: Option.Option<string>) =>
           return {
             type: "list" as const,
             randomPageTitles: randomPageTitles.pipe(Option.getOrNull),
+            stablePageTitles: stablePageTitles.pipe(Option.getOrNull),
             localizedContent: localizedContent.pipe(Option.getOrNull),
             experienceList: experienceList.pipe(Option.getOrNull),
           } as const;

@@ -15,6 +15,10 @@ export class RpcData extends RpcGroup.make(
     success: Schema.Option(PageTitles),
   }),
 
+  Rpc.make("stablePageTitles", {
+    success: Schema.Option(PageTitles),
+  }),
+
   Rpc.make("localizedContent", {
     success: Schema.Option(LocalizedContent),
   }),

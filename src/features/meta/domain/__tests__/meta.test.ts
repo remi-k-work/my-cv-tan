@@ -3,7 +3,7 @@ import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
 
 // domain
-import { canonicalLink, educationListJsonLd, experienceHead, hreflangLinks, languageFromMatches, yearToIso } from "../index";
+import { buildSitemapXml, canonicalLink, contactHead, educationListJsonLd, experienceHead, homeListHead, languageFromMatches, yearToIso } from "../index";
 
 // types
 import type { EducationList } from "@/features/education/domain";
@@ -21,6 +21,12 @@ const sampleExperience: Experience = {
 };
 
 const sampleEducation: EducationList = [{ name: "Pratt Institute", year: "• 2002 — 2004 •", location: "New York, US", info: "Interactive Media." }];
+
+const stablePageTitles = {
+  "/": { eyebrow: "Home", heading: "Stable home title", intro: "Stable home description." },
+  "/education": { eyebrow: "Education", heading: "Stable education title", intro: "Stable education description." },
+  "/contact": { eyebrow: "Contact", heading: "Stable contact title", intro: "Stable contact description." },
+};
 
 it("yearToIso reduces strict labels to ISO 8601 and rejects prose", () => {
   assert.deepStrictEqual(yearToIso("2008"), Option.some("2008"));
@@ -53,12 +59,42 @@ it("experienceHead renders og:locale from the resolved language and merges Artic
   assert.include(graph?.children, `"keywords":"TypeScript, React"`);
 });
 
-it("canonical and hreflang links always point at the absolute URL", () => {
+it("localized metadata uses stable copy and emits canonical plus Markdown links without same-URL hreflang", () => {
   assert.deepStrictEqual(canonicalLink("/education"), { rel: "canonical", href: "https://www.remiforge.dev/education" });
-  assert.deepStrictEqual(
-    hreflangLinks("/").map((link) => link.hrefLang),
-    ["en", "pl", "x-default"]
-  );
+
+  const head = homeListHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "pl" });
+  const html = JSON.stringify(head);
+  assert.include(html, "Stable home title");
+  assert.include(html, "Stable home description.");
+  assert.include(html, '"content":"pl_PL"');
+  assert.include(html, "https://www.remiforge.dev/index.md");
+  assert.notInclude(html, "hrefLang");
+  assert.deepStrictEqual(head.links?.map(({ rel }) => rel), ["canonical", "alternate"]);
+  assert.strictEqual(head.links?.[0]?.href, "https://www.remiforge.dev/");
+});
+
+it("contact structured data describes the visible ContactPage and links site entities", () => {
+  const hostileDescription = "Stable </script> contact description.";
+  const head = contactHead({
+    pageTitles: { ...stablePageTitles, "/contact": { ...stablePageTitles["/contact"], intro: hostileDescription } },
+    preferredLanguage: "pl",
+  });
+  const script = head.scripts?.[0]?.children ?? "{}";
+  assert.notInclude(script, "</script>");
+  assert.include(script, "\\u003C");
+  const graph = JSON.parse(script) as Record<string, unknown>;
+  assert.strictEqual(graph["@type"], "ContactPage");
+  assert.strictEqual(graph.name, "Stable contact title");
+  assert.strictEqual(graph.description, hostileDescription);
+  assert.deepStrictEqual(graph.isPartOf, { "@id": "https://www.remiforge.dev/#website" });
+  assert.deepStrictEqual(graph.mainEntity, { "@id": "https://www.remiforge.dev/#person" });
+  assert.notInclude(JSON.stringify(graph), "FAQPage");
+});
+
+it("sitemap omits fabricated last-modified dates", () => {
+  const xml = buildSitemapXml([sampleExperience]);
+  assert.include(xml, "https://www.remiforge.dev/sample-role");
+  assert.notInclude(xml, "<lastmod>");
 });
 
 it("educationListJsonLd describes attended schools, not credentials", () => {

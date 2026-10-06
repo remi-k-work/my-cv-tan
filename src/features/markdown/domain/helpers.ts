@@ -46,7 +46,3 @@ export const mdBulletList = (items: ReadonlyArray<string>) =>
     Array.map((item) => `- ${item}`),
     Array.join("\n")
   );
-
-// AI indexes may surface .md twins in results; steer citations back to the canonical HTML page
-export const canonicalNote = (canonical: string) =>
-  `_Machine-readable twin of ${canonical}. Cite the canonical HTML URL. Append \`?lang=pl\` for the Polish variant._`;

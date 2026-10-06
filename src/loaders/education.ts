@@ -10,9 +10,10 @@ export const loaderEducation = createIsomorphicFn()
   .server(() =>
     serverLoader((data, preferredLanguage) =>
       Effect.gen(function* () {
-        const { randomPageTitles, localizedContent, educationList } = yield* Effect.all(
+        const { randomPageTitles, stablePageTitles, localizedContent, educationList } = yield* Effect.all(
           {
             randomPageTitles: data.randomPageTitles(Option.some(preferredLanguage), Option.none()),
+            stablePageTitles: data.stablePageTitles(Option.some(preferredLanguage), Option.none()),
             localizedContent: data.localizedContent(Option.some(preferredLanguage), Option.none()),
             educationList: data.educationList(Option.some(preferredLanguage), Option.none()),
           },
@@ -21,6 +22,7 @@ export const loaderEducation = createIsomorphicFn()
 
         return {
           randomPageTitles: randomPageTitles.pipe(Option.getOrNull),
+          stablePageTitles: stablePageTitles.pipe(Option.getOrNull),
           localizedContent: localizedContent.pipe(Option.getOrNull),
           educationList: educationList.pipe(Option.getOrNull),
         } as const;
@@ -30,9 +32,10 @@ export const loaderEducation = createIsomorphicFn()
   .client(() =>
     clientLoader((client) =>
       Effect.gen(function* () {
-        const { randomPageTitles, localizedContent, educationList } = yield* Effect.all(
+        const { randomPageTitles, stablePageTitles, localizedContent, educationList } = yield* Effect.all(
           {
             randomPageTitles: client.randomPageTitles(),
+            stablePageTitles: client.stablePageTitles(),
             localizedContent: client.localizedContent(),
             educationList: client.educationList(),
           },
@@ -41,6 +44,7 @@ export const loaderEducation = createIsomorphicFn()
 
         return {
           randomPageTitles: randomPageTitles.pipe(Option.getOrNull),
+          stablePageTitles: stablePageTitles.pipe(Option.getOrNull),
           localizedContent: localizedContent.pipe(Option.getOrNull),
           educationList: educationList.pipe(Option.getOrNull),
         } as const;

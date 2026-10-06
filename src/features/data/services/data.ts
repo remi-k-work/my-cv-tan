@@ -42,6 +42,14 @@ export class Data extends Context.Service<Data>()("Data", {
       );
     });
 
+    const stablePageTitles = Effect.fn("stablePageTitles")(function* (
+      preferredLanguage: Option.Option<PreferredLanguage>,
+      headers: Option.Option<Headers.Headers>
+    ) {
+      const resolvedLanguage = yield* resolveLanguage(preferredLanguage, headers);
+      return Schema.decodeOption(PageTitlesList)(matchPreferredLanguage(resolvedLanguage, pageTitlesEn, pageTitlesPl)).pipe(Option.flatMap(Array.head));
+    });
+
     const localizedContent = Effect.fn("localizedContent")(function* (
       preferredLanguage: Option.Option<PreferredLanguage>,
       headers: Option.Option<Headers.Headers>
@@ -74,7 +82,7 @@ export class Data extends Context.Service<Data>()("Data", {
       );
     });
 
-    return { randomPageTitles, localizedContent, experienceList, educationList, experience } as const;
+    return { randomPageTitles, stablePageTitles, localizedContent, experienceList, educationList, experience } as const;
   }),
 }) {
   static readonly layer = Layer.effect(this, this.make).pipe(Layer.provide(Lang.layer));

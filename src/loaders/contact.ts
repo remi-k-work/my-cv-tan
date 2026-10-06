@@ -10,9 +10,10 @@ export const loaderContact = createIsomorphicFn()
   .server(() =>
     serverLoader((data, preferredLanguage) =>
       Effect.gen(function* () {
-        const { randomPageTitles, localizedContent } = yield* Effect.all(
+        const { randomPageTitles, stablePageTitles, localizedContent } = yield* Effect.all(
           {
             randomPageTitles: data.randomPageTitles(Option.some(preferredLanguage), Option.none()),
+            stablePageTitles: data.stablePageTitles(Option.some(preferredLanguage), Option.none()),
             localizedContent: data.localizedContent(Option.some(preferredLanguage), Option.none()),
           },
           { concurrency: "unbounded" }
@@ -21,6 +22,7 @@ export const loaderContact = createIsomorphicFn()
         return {
           preferredLanguage,
           randomPageTitles: randomPageTitles.pipe(Option.getOrNull),
+          stablePageTitles: stablePageTitles.pipe(Option.getOrNull),
           localizedContent: localizedContent.pipe(Option.getOrNull),
         } as const;
       })
@@ -29,10 +31,11 @@ export const loaderContact = createIsomorphicFn()
   .client(() =>
     clientLoader((client) =>
       Effect.gen(function* () {
-        const { preferredLanguage, randomPageTitles, localizedContent } = yield* Effect.all(
+        const { preferredLanguage, randomPageTitles, stablePageTitles, localizedContent } = yield* Effect.all(
           {
             preferredLanguage: client.preferredLanguage(),
             randomPageTitles: client.randomPageTitles(),
+            stablePageTitles: client.stablePageTitles(),
             localizedContent: client.localizedContent(),
           },
           { concurrency: "unbounded" }
@@ -41,6 +44,7 @@ export const loaderContact = createIsomorphicFn()
         return {
           preferredLanguage,
           randomPageTitles: randomPageTitles.pipe(Option.getOrNull),
+          stablePageTitles: stablePageTitles.pipe(Option.getOrNull),
           localizedContent: localizedContent.pipe(Option.getOrNull),
         } as const;
       })
