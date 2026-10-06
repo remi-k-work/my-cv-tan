@@ -160,15 +160,17 @@ export const contactPageJsonLd = ({
   readonly title: string;
   readonly description: string;
   readonly preferredLanguage: PreferredLanguage;
-}) =>
-  jsonLdScript({
+}) => {
+  const url = absoluteUrl("/contact");
+  return jsonLdScript({
     "@context": "https://schema.org",
     "@type": "ContactPage",
-    "@id": absoluteUrl("/contact"),
+    "@id": url,
     name: title,
     description,
-    url: absoluteUrl("/contact"),
+    url,
     inLanguage: preferredLanguage,
     isPartOf: { "@id": WEBSITE_ID },
     mainEntity: { "@id": PERSON_ID },
   });
+};

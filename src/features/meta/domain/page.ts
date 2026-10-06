@@ -39,14 +39,18 @@ const localizedPageHead = (
   const description = excerpt(pageField(pageTitles, pagePath, "intro", DESCRIPTION), META_DESCRIPTION_LENGTH);
 
   return {
-    meta: [
-      { title: `${SITE_NAME} ● ${title}` },
-      { name: "description", content: description },
-      { name: "keywords", content: keywords.join(", ") },
-      { name: "robots", content: isIndexable ? "index, follow, max-image-preview:large" : "noindex, follow" },
-      ...socialMeta({ title, description, path: pagePath, image: GLOBAL_SOCIAL_IMAGE, ogType: "website", preferredLanguage }),
-    ],
-    links: [canonicalLink(pagePath), markdownAlternateLink(mdHref)],
+    title,
+    description,
+    head: {
+      meta: [
+        { title: `${SITE_NAME} ● ${title}` },
+        { name: "description", content: description },
+        { name: "keywords", content: keywords.join(", ") },
+        { name: "robots", content: isIndexable ? "index, follow, max-image-preview:large" : "noindex, follow" },
+        ...socialMeta({ title, description, path: pagePath, image: GLOBAL_SOCIAL_IMAGE, ogType: "website", preferredLanguage }),
+      ],
+      links: [canonicalLink(pagePath), markdownAlternateLink(mdHref)],
+    },
   };
 };
 
@@ -63,12 +67,12 @@ const listJsonLdScript = <T>(list: ReadonlyArray<T> | null, build: (items: Reado
   );
 
 export const homeListHead = ({ pageTitles, experienceList, preferredLanguage }: HomeHeadInput) => {
-  const head = localizedPageHead(pageTitles, "/", HOME_MD_HREF, BASE_KEYWORDS, preferredLanguage, pageTitles !== null && experienceList !== null);
+  const { head } = localizedPageHead(pageTitles, "/", HOME_MD_HREF, BASE_KEYWORDS, preferredLanguage, pageTitles !== null && experienceList !== null);
   return { ...head, scripts: listJsonLdScript(experienceList, homeItemListJsonLd) };
 };
 
 export const educationHead = ({ pageTitles, educationList, preferredLanguage }: EducationHeadInput) => {
-  const head = localizedPageHead(
+  const { head } = localizedPageHead(
     pageTitles,
     "/education",
     EDUCATION_MD_HREF,
@@ -80,9 +84,14 @@ export const educationHead = ({ pageTitles, educationList, preferredLanguage }: 
 };
 
 export const contactHead = ({ pageTitles, preferredLanguage }: PageHeadInput) => {
-  const head = localizedPageHead(pageTitles, "/contact", CONTACT_MD_HREF, [...BASE_KEYWORDS, "contact", "Rzeszów"], preferredLanguage, pageTitles !== null);
-  const title = pageField(pageTitles, "/contact", "heading", TITLE);
-  const description = excerpt(pageField(pageTitles, "/contact", "intro", DESCRIPTION), META_DESCRIPTION_LENGTH);
+  const { head, title, description } = localizedPageHead(
+    pageTitles,
+    "/contact",
+    CONTACT_MD_HREF,
+    [...BASE_KEYWORDS, "contact", "Rzeszów"],
+    preferredLanguage,
+    pageTitles !== null
+  );
   return { ...head, scripts: [contactPageJsonLd({ title, description, preferredLanguage })] };
 };
 
