@@ -14,11 +14,7 @@ export const Route = createFileRoute("/education")({
   loader: () => loaderEducation(),
   head: ({ loaderData, matches }) => {
     if (!loaderData) return {};
-    return educationHead({
-      pageTitles: loaderData.stablePageTitles,
-      educationList: loaderData.educationList,
-      preferredLanguage: headLanguage(matches),
-    });
+    return educationHead({ pageTitles: loaderData.stablePageTitles, educationList: loaderData.educationList, preferredLanguage: headLanguage(matches) });
   },
   component: EducationPage,
 });

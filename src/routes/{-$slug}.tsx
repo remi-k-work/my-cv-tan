@@ -20,8 +20,7 @@ export const Route = createFileRoute("/{-$slug}")({
     if (!loaderData) return {};
 
     const preferredLanguage = headLanguage(matches);
-    if (loaderData.type === "item" && params.slug)
-      return experienceHead({ slug: params.slug, experience: loaderData.experience, preferredLanguage });
+    if (loaderData.type === "item" && params.slug) return experienceHead({ slug: params.slug, experience: loaderData.experience, preferredLanguage });
     if (loaderData.type === "list")
       return homeListHead({ pageTitles: loaderData.stablePageTitles, experienceList: loaderData.experienceList, preferredLanguage });
     return {};
