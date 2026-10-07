@@ -17,28 +17,21 @@ const mdHeaders = (preferredLanguage: PreferredLanguage) => ({
   "X-Robots-Tag": "index, follow",
 });
 
-// Successful Markdown document response (200)
-export const mdResponse = (body: string, preferredLanguage: PreferredLanguage) => new Response(body, { headers: mdHeaders(preferredLanguage) });
+// Successful Markdown twin (200). The HTTP-level canonical mirrors the frontmatter
+// one, so crawlers that never parse YAML still consolidate signals on the HTML page.
+export const mdResponse = (body: string, preferredLanguage: PreferredLanguage, canonical: string) =>
+  new Response(body, { headers: { ...mdHeaders(preferredLanguage), Link: `<${canonical}>; rel="canonical"` } });
 
 // Missing slug response: still Markdown so AI fetchers get an explicit, parseable 404
 export const mdNotFoundResponse = (body: string, preferredLanguage: PreferredLanguage) =>
   new Response(body, { status: 404, headers: { ...mdHeaders(preferredLanguage), "X-Robots-Tag": "noindex, follow" } });
 
-// Unavailable content must not be cached as if it were a complete document.
+// Unavailable content must not be cached as if it were a complete document
 export const mdUnavailableResponse = (body: string, preferredLanguage: PreferredLanguage) =>
-  new Response(body, {
-    status: 503,
-    headers: {
-      ...mdHeaders(preferredLanguage),
-      "Cache-Control": "no-store",
-      "X-Robots-Tag": "noindex, follow",
-    },
-  });
+  new Response(body, { status: 503, headers: { ...mdHeaders(preferredLanguage), "Cache-Control": "no-store", "X-Robots-Tag": "noindex, follow" } });
 
-export const markdownDataResponse = (
-  preferredLanguage: PreferredLanguage,
-  document: Effect.Effect<Response, RequiredDataError>
-) =>
+// Maps a document pipeline's data failures to the non-cacheable 503 above
+export const markdownDataResponse = (preferredLanguage: PreferredLanguage, document: Effect.Effect<Response, RequiredDataError>) =>
   document.pipe(
     Effect.catchTag("RequiredDataError", (error) =>
       Effect.gen(function* () {
@@ -52,21 +45,17 @@ export const markdownDataResponse = (
 export const txtResponse = (body: string) => new Response(body, { headers: { "Content-Type": TXT_CONTENT_TYPE, "Cache-Control": MARKDOWN_CACHE_CONTROL } });
 
 export const txtUnavailableResponse = (body: string) =>
-  new Response(body, {
-    status: 503,
-    headers: {
-      "Content-Type": TXT_CONTENT_TYPE,
-      "Cache-Control": "no-store",
-      "X-Robots-Tag": "noindex, follow",
-    },
-  });
+  new Response(body, { status: 503, headers: { "Content-Type": TXT_CONTENT_TYPE, "Cache-Control": "no-store", "X-Robots-Tag": "noindex, follow" } });
 
+// Same recovery as markdownDataResponse, for plain-text documents
 export const textDataResponse = (document: Effect.Effect<Response, RequiredDataError>) =>
   document.pipe(
     Effect.catchTag("RequiredDataError", (error) =>
       Effect.gen(function* () {
         yield* Effect.logError(`[LLMS.TXT]: ${error.message}`);
-        return txtUnavailableResponse("llms.txt is temporarily unavailable because required portfolio content could not be loaded. Please try again shortly.\n");
+        return txtUnavailableResponse(
+          "llms.txt is temporarily unavailable because required portfolio content could not be loaded. Please try again shortly.\n"
+        );
       })
     )
   );

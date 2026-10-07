@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Option, pipe } from "effect";
+import { Option, String, pipe } from "effect";
 
 // constants
 import { LLMS_TXT_HREF, SITE_URL } from "./constants";
@@ -23,6 +23,6 @@ export const llmsAlternateLink = () => ({ rel: "alternate", type: "text/plain", 
 export const experienceImageUrl = (imageName: string) =>
   pipe(
     Option.fromNullishOr(imageName),
-    Option.filter((name) => name.trim().length > 0),
+    Option.filter((name) => String.isNonEmpty(String.trim(name))),
     Option.map((name) => absoluteUrl(`/images/${name}-a.webp`))
   );

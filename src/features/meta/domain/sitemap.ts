@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Array, pipe } from "effect";
+import { Array, Option, pipe, Record } from "effect";
 import { absoluteUrl } from "./helpers";
 
 // types
@@ -25,23 +25,12 @@ const STATIC_URLS = [
   { loc: `${SITE_URL}/my-certificates.pdf`, changefreq: "monthly", priority: "0.4" },
 ] as const;
 
+// Entity names for the five characters that must be escaped inside XML element text
+const XML_ENTITY_NAMES: Record.ReadonlyRecord<string, string> = { "&": "amp", "<": "lt", ">": "gt", '"': "quot", "'": "apos" };
+
+// Wraps each special character in an entity reference built from its name
 const escapeXml = (value: string) =>
-  value.replace(/[&<>"']/g, (character) => {
-    switch (character) {
-      case "&":
-        return "&amp;";
-      case "<":
-        return "&lt;";
-      case ">":
-        return "&gt;";
-      case '"':
-        return "&quot;";
-      case "'":
-        return "&apos;";
-      default:
-        return character;
-    }
-  });
+  value.replace(/[&<>"']/g, (character) => `&${Option.getOrElse(Record.get(XML_ENTITY_NAMES, character), () => character)};`);
 
 const toXmlNode = (entry: SitemapEntry) =>
   `  <url>\n    <loc>${escapeXml(entry.loc)}</loc>\n    <changefreq>${escapeXml(entry.changefreq)}</changefreq>\n    <priority>${escapeXml(entry.priority)}</priority>\n  </url>`;

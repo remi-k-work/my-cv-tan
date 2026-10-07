@@ -24,6 +24,7 @@ export const HOME_COUNTRY = "PL";
 export const WEBSITE_ID = `${SITE_URL}/#website`;
 export const PERSON_ID = `${SITE_URL}/#person`;
 export const PUBLISHER_ID = `${SITE_URL}/#publisher`;
+export const PROFILE_ID = `${SITE_URL}/#profile`;
 
 // Machine-readable discovery documents (GEO): advertised via <link rel="alternate"> in every head
 export const LLMS_TXT_HREF = "/llms.txt";

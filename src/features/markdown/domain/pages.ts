@@ -1,9 +1,9 @@
 // services, features, and other libraries
 import { Array, pipe } from "effect";
-import { pageField, sectionLabel } from "@/domain";
+import { matchPreferredLanguage, pageField, sectionLabel } from "@/domain";
 import { excerpt } from "@/features/experience/domain";
 import { absoluteUrl } from "@/features/meta/domain";
-import { escapeMd, escapeMdInline, frontmatter, mdBulletList, mdHeading, mdLabel, mdQuote } from "./helpers";
+import { escapeMd, escapeMdInline, frontmatter, mdBulletList, mdHeading, mdQuote } from "./helpers";
 import { experienceLines } from "./listing";
 
 // types
@@ -43,11 +43,11 @@ export const buildHomeMd = ({ pageTitles, localizedContent, experienceList, pref
     ``,
     experienceLines(experienceList, "p", preferredLanguage),
     ``,
-    mdHeading(2, mdLabel(preferredLanguage, "Pages", "Strony")),
+    mdHeading(2, matchPreferredLanguage(preferredLanguage, "Pages", "Strony")),
     ``,
     mdBulletList([
-      `[${mdLabel(preferredLanguage, "Education & Certificates", "Edukacja i certyfikaty")}](${absoluteUrl(EDUCATION_MD_HREF)})`,
-      `[${mdLabel(preferredLanguage, "Contact", "Kontakt")}](${absoluteUrl(CONTACT_MD_HREF)})`,
+      `[${matchPreferredLanguage(preferredLanguage, "Education & Certificates", "Edukacja i certyfikaty")}](${absoluteUrl(EDUCATION_MD_HREF)})`,
+      `[${matchPreferredLanguage(preferredLanguage, "Contact", "Kontakt")}](${absoluteUrl(CONTACT_MD_HREF)})`,
       `[llms.txt](${absoluteUrl("/llms.txt")})`,
     ]),
     ``,
@@ -67,8 +67,8 @@ export const buildEducationMd = ({ pageTitles, educationList, preferredLanguage 
         mdHeading(2, name),
         ``,
         mdBulletList([
-          `${mdLabel(preferredLanguage, "Years", "Lata")}: ${escapeMdInline(year)}`,
-          `${mdLabel(preferredLanguage, "Location", "Lokalizacja")}: ${escapeMdInline(location)}`,
+          `${matchPreferredLanguage(preferredLanguage, "Years", "Lata")}: ${escapeMdInline(year)}`,
+          `${matchPreferredLanguage(preferredLanguage, "Location", "Lokalizacja")}: ${escapeMdInline(location)}`,
         ]),
         ``,
         escapeMd(info),
@@ -81,14 +81,14 @@ export const buildEducationMd = ({ pageTitles, educationList, preferredLanguage 
     ...pageOpening(title, excerpt(intro, META_DESCRIPTION_LENGTH), canonical, preferredLanguage),
     escapeMd(intro),
     ``,
-    schools === "" ? `_${mdLabel(preferredLanguage, "No entries.", "Brak wpisów.")}_` : schools,
+    schools === "" ? `_${matchPreferredLanguage(preferredLanguage, "No entries.", "Brak wpisów.")}_` : schools,
     ``,
-    mdHeading(2, mdLabel(preferredLanguage, "Documents", "Dokumenty")),
+    mdHeading(2, matchPreferredLanguage(preferredLanguage, "Documents", "Dokumenty")),
     ``,
     mdBulletList([
-      `[${mdLabel(preferredLanguage, "Certificates", "Certyfikaty")}](${absoluteUrl(CERTIFICATES_HREF)})`,
-      `[${mdLabel(preferredLanguage, "CV (English)", "CV (angielski)")}](${absoluteUrl(CV_EN_HREF)})`,
-      `[${mdLabel(preferredLanguage, "CV (Polish)", "CV (polski)")}](${absoluteUrl(CV_PL_HREF)})`,
+      `[${matchPreferredLanguage(preferredLanguage, "Certificates", "Certyfikaty")}](${absoluteUrl(CERTIFICATES_HREF)})`,
+      `[${matchPreferredLanguage(preferredLanguage, "CV (English)", "CV (angielski)")}](${absoluteUrl(CV_EN_HREF)})`,
+      `[${matchPreferredLanguage(preferredLanguage, "CV (Polish)", "CV (polski)")}](${absoluteUrl(CV_PL_HREF)})`,
     ]),
     ``,
   ].join("\n");
@@ -103,11 +103,11 @@ export const buildContactMd = ({ pageTitles, preferredLanguage }: ContactMdInput
     ...pageOpening(title, excerpt(intro, META_DESCRIPTION_LENGTH), canonical, preferredLanguage),
     escapeMd(intro),
     ``,
-    mdHeading(2, mdLabel(preferredLanguage, "Channels", "Kanały")),
+    mdHeading(2, matchPreferredLanguage(preferredLanguage, "Channels", "Kanały")),
     ``,
     mdBulletList([
-      `${mdLabel(preferredLanguage, "Contact form", "Formularz kontaktowy")}: ${canonical} (${mdLabel(preferredLanguage, "same page in HTML", "ta sama strona w HTML")})`,
-      `${mdLabel(preferredLanguage, "Base", "Lokalizacja")}: ${mdLabel(preferredLanguage, "Rzeszów, Poland", "Rzeszów, Polska")}`,
+      `${matchPreferredLanguage(preferredLanguage, "Contact form", "Formularz kontaktowy")}: ${canonical} (${matchPreferredLanguage(preferredLanguage, "same page in HTML", "ta sama strona w HTML")})`,
+      `${matchPreferredLanguage(preferredLanguage, "Base", "Lokalizacja")}: ${matchPreferredLanguage(preferredLanguage, "Rzeszów, Poland", "Rzeszów, Polska")}`,
       `GitHub: ${gitHubLink}`,
       `LinkedIn: ${linkedInLink}`,
     ]),

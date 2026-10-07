@@ -2,7 +2,8 @@
 import { Array, Option, pipe } from "effect";
 import { excerpt } from "@/features/experience/domain";
 import { absoluteUrl } from "@/features/meta/domain";
-import { escapeMd, escapeMdInline, frontmatter, mdBulletList, mdHeading, mdLabel, mdQuote } from "./helpers";
+import { matchPreferredLanguage } from "@/domain";
+import { escapeMd, escapeMdInline, frontmatter, mdBulletList, mdHeading, mdQuote } from "./helpers";
 
 // types
 import type { PreferredLanguage } from "@/domain";
@@ -16,16 +17,17 @@ export const buildExperienceMd = (experience: Experience, preferredLanguage: Pre
   const canonical = absoluteUrl(`/${slug}`);
   const description = excerpt(txt, META_DESCRIPTION_LENGTH);
 
+  // Optional outbound links: each line appears only when the experience authors one
   const links = pipe(
     [
       Option.fromNullishOr(experience.gitHubLink).pipe(Option.map((href) => `- GitHub: ${href}`)),
-      Option.fromNullishOr(experience.liveLink).pipe(Option.map((href) => `- ${mdLabel(preferredLanguage, "Live", "Demo")}: ${href}`)),
-      Option.fromNullishOr(experience.videoLink).pipe(Option.map((href) => `- ${mdLabel(preferredLanguage, "Video", "Wideo")}: ${href}`)),
+      Option.fromNullishOr(experience.liveLink).pipe(Option.map((href) => `- ${matchPreferredLanguage(preferredLanguage, "Live", "Demo")}: ${href}`)),
+      Option.fromNullishOr(experience.videoLink).pipe(Option.map((href) => `- ${matchPreferredLanguage(preferredLanguage, "Video", "Wideo")}: ${href}`)),
     ],
     Array.getSomes,
     Array.join("\n")
   );
-  const linkSection = links === "" ? [] : [mdHeading(2, mdLabel(preferredLanguage, "Links", "Linki")), ``, links, ``];
+  const linkSection = links === "" ? [] : [mdHeading(2, matchPreferredLanguage(preferredLanguage, "Links", "Linki")), ``, links, ``];
 
   return [
     frontmatter({
@@ -33,7 +35,7 @@ export const buildExperienceMd = (experience: Experience, preferredLanguage: Pre
       description,
       canonical,
       lang: preferredLanguage,
-      // Frontmatter mirrors <head> meta for AI indexers: machine-classifiable entry type
+      // Machine-classifiable entry type (frontmatter mirrors <head> meta for AI indexers)
       type: experience.type === "e" ? "work-experience" : "project",
       year,
       skills: skillsUsed.join(", "),
@@ -42,19 +44,19 @@ export const buildExperienceMd = (experience: Experience, preferredLanguage: Pre
     ``,
     mdQuote(description),
     ``,
-    mdHeading(2, mdLabel(preferredLanguage, "Overview", "Opis")),
+    mdHeading(2, matchPreferredLanguage(preferredLanguage, "Overview", "Opis")),
     ``,
     escapeMd(txt),
     ``,
-    mdHeading(2, mdLabel(preferredLanguage, "Details", "Szczegóły")),
+    mdHeading(2, matchPreferredLanguage(preferredLanguage, "Details", "Szczegóły")),
     ``,
     mdBulletList([
-      `${mdLabel(preferredLanguage, "Role", "Rola")}: ${escapeMdInline(role)}`,
-      `${mdLabel(preferredLanguage, "Company", "Firma")}: ${escapeMdInline(company)}`,
-      `${mdLabel(preferredLanguage, "Year", "Rok")}: ${escapeMdInline(year)}`,
+      `${matchPreferredLanguage(preferredLanguage, "Role", "Rola")}: ${escapeMdInline(role)}`,
+      `${matchPreferredLanguage(preferredLanguage, "Company", "Firma")}: ${escapeMdInline(company)}`,
+      `${matchPreferredLanguage(preferredLanguage, "Year", "Rok")}: ${escapeMdInline(year)}`,
     ]),
     ``,
-    mdHeading(2, mdLabel(preferredLanguage, "Skills used", "Użyte umiejętności")),
+    mdHeading(2, matchPreferredLanguage(preferredLanguage, "Skills used", "Użyte umiejętności")),
     ``,
     mdBulletList(skillsUsed.map(escapeMdInline)),
     ``,
@@ -65,9 +67,8 @@ export const buildExperienceMd = (experience: Experience, preferredLanguage: Pre
 // Explicit, parseable not-found document rather than an HTML error page: AI fetchers
 // get an honest answer and stay on the llms.txt graph of valid documents.
 export const buildNotFoundMd = (slug: string, preferredLanguage: PreferredLanguage) => {
-  const title = mdLabel(preferredLanguage, "Not Found", "Nie znaleziono");
-  const description =
-    preferredLanguage === "pl" ? `Nie znaleziono strony dla identyfikatora "${slug}".` : `No page for slug "${slug}".`;
+  const title = matchPreferredLanguage(preferredLanguage, "Not Found", "Nie znaleziono");
+  const description = preferredLanguage === "pl" ? `Nie znaleziono strony dla identyfikatora "${slug}".` : `No page for slug "${slug}".`;
 
   return [
     frontmatter({ title, description, lang: preferredLanguage }),
@@ -77,7 +78,7 @@ export const buildNotFoundMd = (slug: string, preferredLanguage: PreferredLangua
       ? `Dokument Markdown dla adresu /${escapeMdInline(slug)} nie istnieje.`
       : `No Markdown document exists for /${escapeMdInline(slug)}.`,
     ``,
-    `${mdLabel(preferredLanguage, "See", "Zobacz")} [${mdLabel(preferredLanguage, "Home", "Strona główna")}](${absoluteUrl(HOME_MD_HREF)}) ${mdLabel(preferredLanguage, "or", "lub")} [llms.txt](${absoluteUrl("/llms.txt")}).`,
+    `${matchPreferredLanguage(preferredLanguage, "See", "Zobacz")} [${matchPreferredLanguage(preferredLanguage, "Home", "Strona główna")}](${absoluteUrl(HOME_MD_HREF)}) ${matchPreferredLanguage(preferredLanguage, "or", "lub")} [llms.txt](${absoluteUrl("/llms.txt")}).`,
     ``,
   ].join("\n");
 };

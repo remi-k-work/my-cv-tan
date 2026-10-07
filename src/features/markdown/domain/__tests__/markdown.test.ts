@@ -1,8 +1,7 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { Effect, Option } from "effect";
-
-// domain
+import { requireData } from "@/features/data/domain";
 import {
   buildContactMd,
   buildEducationMd,
@@ -18,7 +17,6 @@ import {
   markdownDataResponse,
   mdUnavailableResponse,
   parseLangParam,
-  requireData,
   slugFromMdPathname,
   txtResponse,
   textDataResponse,
@@ -170,10 +168,12 @@ it("buildLlmsTxt indexes pages, grouped experience and AI guidance", () => {
 });
 
 it("response helpers set content types, indexing and cache headers for success and errors", () => {
-  const ok = mdResponse("# Hi", "en");
+  const ok = mdResponse("# Hi", "en", "https://www.remiforge.dev/");
   assert.strictEqual(ok.status, 200);
   assert.strictEqual(ok.headers.get("Content-Type"), MARKDOWN_CONTENT_TYPE);
   assert.strictEqual(ok.headers.get("Content-Language"), "en");
+  // HTTP-level canonical mirrors the frontmatter one for crawlers that never parse YAML
+  assert.strictEqual(ok.headers.get("Link"), '<https://www.remiforge.dev/>; rel="canonical"');
 
   const missing = mdNotFoundResponse("# Gone", "pl");
   assert.strictEqual(missing.status, 404);
@@ -200,34 +200,33 @@ it("response helpers set content types, indexing and cache headers for success a
 
 it.effect("a failed experience-list decode is an error, while a valid missing slug is a 404 candidate", () =>
   Effect.gen(function* () {
-    const decodeError = yield* Effect.flip(experienceFromList(Option.none(), "missing"));
+    // The failed decode stays an error in the fetch + require pipeline
+    const decodeError = yield* Effect.flip(requireData(Option.none(), "experience list"));
     assert.strictEqual(decodeError._tag, "RequiredDataError");
 
-    assert.deepStrictEqual(yield* experienceFromList(Option.some([]), "missing"), Option.none());
-    assert.deepStrictEqual(yield* experienceFromList(Option.some([sampleExperience]), "missing"), Option.none());
-    assert.deepStrictEqual(yield* experienceFromList(Option.some([sampleExperience]), sampleExperience.slug), Option.some(sampleExperience));
+    // A decoded list without the slug is a pure lookup returning None
+    assert.deepStrictEqual(experienceFromList([], "missing"), Option.none());
+    assert.deepStrictEqual(experienceFromList([sampleExperience], "missing"), Option.none());
+    assert.deepStrictEqual(experienceFromList([sampleExperience], sampleExperience.slug), Option.some(sampleExperience));
   })
 );
 
 it.effect("required-content failures map to non-cacheable 503s and valid missing slugs map to 404s", () =>
   Effect.gen(function* () {
-    const unavailableMarkdown = yield* markdownDataResponse(
-      "pl",
-      requireData(Option.none(), "experience list")
-    );
+    const unavailableMarkdown = yield* markdownDataResponse("pl", requireData(Option.none(), "experience list"));
     assert.strictEqual(unavailableMarkdown.status, 503);
     assert.strictEqual(unavailableMarkdown.headers.get("Cache-Control"), "no-store");
     assert.strictEqual(unavailableMarkdown.headers.get("X-Robots-Tag"), "noindex, follow");
     assert.include(unavailableMarkdownBody("pl"), "portfolio");
 
-    const unavailableIndex = yield* textDataResponse(
-      requireData(Option.none(), "experience list")
-    );
+    const unavailableIndex = yield* textDataResponse(requireData(Option.none(), "experience list"));
     assert.strictEqual(unavailableIndex.status, 503);
     assert.strictEqual(unavailableIndex.headers.get("Content-Type"), "text/plain; charset=utf-8");
 
-    const noMatch = yield* experienceFromList(Option.some([]), "missing");
-    const notFound = Option.isNone(noMatch) ? mdNotFoundResponse(buildNotFoundMd("missing", "en"), "en") : mdResponse("# Found", "en");
+    const noMatch = experienceFromList([], "missing");
+    const notFound = Option.isNone(noMatch)
+      ? mdNotFoundResponse(buildNotFoundMd("missing", "en"), "en")
+      : mdResponse("# Found", "en", "https://www.remiforge.dev/");
     assert.strictEqual(notFound.status, 404);
     assert.strictEqual(notFound.headers.get("X-Robots-Tag"), "noindex, follow");
   })

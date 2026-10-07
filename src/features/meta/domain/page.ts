@@ -4,7 +4,7 @@ import { pageField } from "@/domain";
 import { excerpt } from "@/features/experience/domain";
 import { canonicalLink, experienceImageUrl, markdownAlternateLink } from "./helpers";
 import { socialMeta } from "./social";
-import { contactPageJsonLd, educationListJsonLd, experienceJsonLd, homeItemListJsonLd } from "./json-ld";
+import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd } from "./json-ld";
 
 // types
 import type { SocialImage } from "./models";
@@ -26,7 +26,7 @@ import {
   TITLE,
 } from "./constants";
 
-// Complete page data opts into indexing; incomplete responses inherit the root noindex policy.
+// Shared head for content pages: complete data opts into indexing; incomplete responses inherit the root noindex policy instead
 const localizedPageHead = (
   pageTitles: PageHeadInput["pageTitles"],
   pagePath: PagePath,
@@ -53,39 +53,22 @@ const localizedPageHead = (
   };
 };
 
-// Emits the structured-data script only when the list decoded and is non-empty
-const listJsonLdScript = <T>(list: ReadonlyArray<T>, build: (items: ReadonlyArray<T>) => { type: string; children: string }) =>
-  list.length === 0 ? [] : [build(list)];
-
 export const homeListHead = ({ pageTitles, experienceList, preferredLanguage }: HomeHeadInput) => {
-  const { head } = localizedPageHead(pageTitles, "/", HOME_MD_HREF, BASE_KEYWORDS, preferredLanguage);
-  return { ...head, scripts: listJsonLdScript(experienceList, homeItemListJsonLd) };
+  const { title, description, head } = localizedPageHead(pageTitles, "/", HOME_MD_HREF, BASE_KEYWORDS, preferredLanguage);
+  return { ...head, scripts: [homeJsonLd({ title, description, experienceList, preferredLanguage })] };
 };
 
 export const educationHead = ({ pageTitles, educationList, preferredLanguage }: EducationHeadInput) => {
-  const { head } = localizedPageHead(
-    pageTitles,
-    "/education",
-    EDUCATION_MD_HREF,
-    [...BASE_KEYWORDS, "education", "certificates"],
-    preferredLanguage
-  );
-  return { ...head, scripts: listJsonLdScript(educationList, educationListJsonLd) };
+  const { title, head } = localizedPageHead(pageTitles, "/education", EDUCATION_MD_HREF, [...BASE_KEYWORDS, "education", "certificates"], preferredLanguage);
+  return { ...head, scripts: [educationJsonLd({ title, educationList, preferredLanguage })] };
 };
 
 export const contactHead = ({ pageTitles, preferredLanguage }: PageHeadInput) => {
-  const { head, title, description } = localizedPageHead(
-    pageTitles,
-    "/contact",
-    CONTACT_MD_HREF,
-    [...BASE_KEYWORDS, "contact", "Rzeszów"],
-    preferredLanguage
-  );
-  return { ...head, scripts: [contactPageJsonLd({ title, description, preferredLanguage })] };
+  const { title, description, head } = localizedPageHead(pageTitles, "/contact", CONTACT_MD_HREF, [...BASE_KEYWORDS, "contact", "Rzeszów"], preferredLanguage);
+  return { ...head, scripts: [contactJsonLd({ title, description, preferredLanguage })] };
 };
 
-// Detail head always canonicalizes to the clean /{slug} URL, so stray query
-// parameters never become duplicates
+// Detail head always canonicalizes to the clean /{slug} URL, so stray query parameters never become duplicates
 export const experienceHead = ({ slug, experience, preferredLanguage }: ExperienceHeadInput) => {
   const { role, company, txt, imageName, skillsUsed } = experience;
 

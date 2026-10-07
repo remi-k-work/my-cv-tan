@@ -2,7 +2,8 @@
 import { Array, pipe } from "effect";
 import { excerpt } from "@/features/experience/domain";
 import { absoluteUrl } from "@/features/meta/domain";
-import { escapeMdInline, mdLabel } from "./helpers";
+import { matchPreferredLanguage } from "@/domain";
+import { escapeMdInline } from "./helpers";
 
 // types
 import type { PreferredLanguage } from "@/domain";
@@ -19,5 +20,5 @@ export const experienceLines = (experienceList: ExperienceList, type: Experience
     Array.filter((experience) => experience.type === type),
     Array.map(experienceLine),
     Array.join("\n"),
-    (lines) => (lines === "" ? `_${mdLabel(preferredLanguage, "No entries.", "Brak wpisów.")}_` : lines)
+    (lines) => (lines === "" ? `_${matchPreferredLanguage(preferredLanguage, "No entries.", "Brak wpisów.")}_` : lines)
   );
