@@ -7,6 +7,11 @@ import { LLMS_TXT_HREF, SITE_URL } from "./constants";
 // Canonical absolute URL for a site path
 export const absoluteUrl = (path: string) => `${SITE_URL}${path}`;
 
+// Experience slugs are data, so encode them as one URL path segment everywhere they appear
+export const experiencePath = (slug: string) => `/${encodeURIComponent(slug)}`;
+export const experienceMarkdownPath = (slug: string) => `${experiencePath(slug)}.md`;
+export const experienceMarkdownHref = (slug: string) => absoluteUrl(experienceMarkdownPath(slug));
+
 export const canonicalLink = (path: string) => ({ rel: "canonical", href: absoluteUrl(path) }) as const;
 
 // Serialized JSON lives inside a <script> tag; escaping "<" as "\u003C" stops

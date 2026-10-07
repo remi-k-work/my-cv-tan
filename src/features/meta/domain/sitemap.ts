@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { Array, Option, pipe, Record } from "effect";
-import { absoluteUrl } from "./helpers";
+import { absoluteUrl, experiencePath } from "./helpers";
 
 // types
 import type { ExperienceList } from "@/features/experience/domain";
@@ -42,7 +42,7 @@ const wrapWithUrlSet = (entries: string) =>
 export const buildSitemapXml = (experienceList: ExperienceList) =>
   pipe(
     experienceList,
-    Array.map(({ slug }) => ({ loc: absoluteUrl(`/${slug}`), changefreq: "monthly", priority: "0.6" })),
+    Array.map(({ slug }) => ({ loc: absoluteUrl(experiencePath(slug)), changefreq: "monthly", priority: "0.6" })),
     Array.prependAll(STATIC_URLS),
     Array.map(toXmlNode),
     Array.join("\n"),

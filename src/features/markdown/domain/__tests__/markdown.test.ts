@@ -75,6 +75,18 @@ it("buildExperienceMd renders frontmatter, H1, skills and links without repeated
   // Body prose must be escaped (frontmatter is YAML-quoted, so raw chars are fine there)
   assert.include(md, "\\*\\*care\\*\\*");
   assert.include(md, "\\#hashtags");
+  assert.strictEqual((md.match(/^# /gm) ?? []).length, 1);
+  assert.isTrue((md.match(/^## /gm) ?? []).length >= 3);
+  assert.strictEqual((md.match(/^### /gm) ?? []).length, 0);
+  assert.notInclude(md.toLowerCase(), "<html");
+  assert.notInclude(md.toLowerCase(), "<nav");
+  assert.notInclude(md.toLowerCase(), "<footer");
+});
+
+it("experience Markdown canonical encodes a slug as one path segment", () => {
+  const experience = { ...sampleExperience, slug: "résumé & more" };
+  const md = buildExperienceMd(experience, "en");
+  assert.include(md, `canonical: "https://www.remiforge.dev/r%C3%A9sum%C3%A9%20%26%20more"`);
 });
 
 it("buildExperienceMd omits the Links section when the experience has no links", () => {
@@ -104,6 +116,12 @@ it("buildHomeMd groups work and projects and links to .md twins", () => {
   assert.strictEqual((md.match(/^## /gm) ?? []).length, 3);
   assert.notInclude(md, "Navigation");
   assert.notInclude(md, "Footer");
+});
+
+it("home Markdown links encode experience slugs consistently", () => {
+  const experience = { ...sampleExperience, slug: "my project" };
+  const md = buildHomeMd({ pageTitles: stablePageTitles, localizedContent, experienceList: [experience], preferredLanguage: "en" });
+  assert.include(md, "https://www.remiforge.dev/my%20project.md");
 });
 
 it("buildHomeMd localizes Markdown structure in Polish", () => {
@@ -154,16 +172,17 @@ it("buildContactMd advertises the same social profiles as the HTML page", () => 
   assert.include(polish, "Lokalizacja: Rzeszów, Polska");
 });
 
-it("buildLlmsTxt indexes pages, grouped experience and AI guidance", () => {
-  const txt = buildLlmsTxt([sampleExperience]);
+it("buildLlmsTxt indexes pages, grouped experience and negotiated language guidance", () => {
+  const txt = buildLlmsTxt([{ ...sampleExperience, slug: "my project" }]);
   assert.include(txt, `# Remi Forge`);
   assert.include(txt, `## Pages`);
   assert.include(txt, `https://www.remiforge.dev/index.md`);
   assert.include(txt, `## Work Experience`);
-  assert.include(txt, `- [Full-Stack Developer at Sample Co](https://www.remiforge.dev/sample-role.md)`);
+  assert.include(txt, `- [Full-Stack Developer at Sample Co](https://www.remiforge.dev/my%20project.md)`);
   assert.include(txt, `## Notes for AI systems`);
-  assert.include(txt, `Append \`?lang=pl\` to any \`.md\` URL to request the Polish variant explicitly`);
-  assert.include(txt, "English is the default.");
+  assert.include(txt, `Append \`?lang=pl\` to any \`.md\` URL to request Polish explicitly`);
+  assert.include(txt, "Markdown responses follow the request's language preferences.");
+  assert.include(txt, "English is the fallback when no supported preference is present.");
   assert.include(txt, `Always cite the clean canonical HTML URL from each document's frontmatter`);
 });
 
@@ -172,6 +191,8 @@ it("response helpers set content types, indexing and cache headers for success a
   assert.strictEqual(ok.status, 200);
   assert.strictEqual(ok.headers.get("Content-Type"), MARKDOWN_CONTENT_TYPE);
   assert.strictEqual(ok.headers.get("Content-Language"), "en");
+  assert.strictEqual(ok.headers.get("Vary"), "Cookie, Accept-Language");
+  assert.strictEqual(ok.headers.get("X-Robots-Tag"), "index, follow");
   // HTTP-level canonical mirrors the frontmatter one for crawlers that never parse YAML
   assert.strictEqual(ok.headers.get("Link"), '<https://www.remiforge.dev/>; rel="canonical"');
 
@@ -179,6 +200,7 @@ it("response helpers set content types, indexing and cache headers for success a
   assert.strictEqual(missing.status, 404);
   assert.strictEqual(missing.headers.get("Content-Type"), MARKDOWN_CONTENT_TYPE);
   assert.strictEqual(missing.headers.get("X-Robots-Tag"), "noindex, follow");
+  assert.isNull(missing.headers.get("Link"));
 
   const unavailable = mdUnavailableResponse("# Temporarily unavailable", "pl");
   assert.strictEqual(unavailable.status, 503);
@@ -186,6 +208,7 @@ it("response helpers set content types, indexing and cache headers for success a
   assert.strictEqual(unavailable.headers.get("Content-Language"), "pl");
   assert.strictEqual(unavailable.headers.get("Cache-Control"), "no-store");
   assert.strictEqual(unavailable.headers.get("X-Robots-Tag"), "noindex, follow");
+  assert.isNull(unavailable.headers.get("Link"));
 
   const txt = txtResponse("# Plain");
   assert.strictEqual(txt.status, 200);
@@ -235,6 +258,7 @@ it.effect("required-content failures map to non-cacheable 503s and valid missing
 it.effect("parseLangParam honors ?lang= and rejects unknown values", () =>
   Effect.gen(function* () {
     assert.deepStrictEqual(yield* parseLangParam("https://x.test/index.md?lang=pl"), Option.some("pl"));
+    assert.deepStrictEqual(yield* parseLangParam("https://x.test/index.md?lang=EN"), Option.some("en"));
     assert.deepStrictEqual(yield* parseLangParam("https://x.test/index.md"), Option.none());
     assert.deepStrictEqual(yield* parseLangParam("https://x.test/index.md?lang=de"), Option.none());
   })

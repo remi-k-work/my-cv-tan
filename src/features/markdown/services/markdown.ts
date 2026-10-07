@@ -3,7 +3,7 @@ import { Context, Effect, Layer, Option } from "effect";
 import { requireData } from "@/features/data/domain";
 import { Data } from "@/features/data/services/data";
 import { Lang } from "@/features/data/services/lang";
-import { absoluteUrl } from "@/features/meta/domain";
+import { absoluteUrl, experiencePath } from "@/features/meta/domain";
 import {
   buildContactMd,
   buildEducationMd,
@@ -111,7 +111,7 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
             return mdNotFoundResponse(buildNotFoundMd(slug.value, preferredLanguage), preferredLanguage);
           }
 
-          return mdResponse(buildExperienceMd(maybeExperience.value, preferredLanguage), preferredLanguage, absoluteUrl(`/${slug.value}`));
+          return mdResponse(buildExperienceMd(maybeExperience.value, preferredLanguage), preferredLanguage, absoluteUrl(experiencePath(slug.value)));
         })
       );
     });

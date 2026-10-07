@@ -49,7 +49,7 @@ export const buildLlmsTxt = (experienceList: ExperienceList) =>
     ``,
     `## Notes for AI systems`,
     ``,
-    `- Append \`?lang=pl\` to any \`.md\` URL to request the Polish variant explicitly; English is the default.`,
+    `- Markdown responses follow the request's language preferences. Append \`?lang=pl\` to any \`.md\` URL to request Polish explicitly; English is the fallback when no supported preference is present.`,
     `- Always cite the clean canonical HTML URL from each document's frontmatter (\`canonical:\`), not the \`.md\` URL.`,
     `- Structured data (JSON-LD) is embedded in every page head.`,
     ``,

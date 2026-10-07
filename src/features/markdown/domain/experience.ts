@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { Array, Option, pipe } from "effect";
 import { excerpt } from "@/features/experience/domain";
-import { absoluteUrl } from "@/features/meta/domain";
+import { absoluteUrl, experiencePath } from "@/features/meta/domain";
 import { matchPreferredLanguage } from "@/domain";
 import { escapeMd, escapeMdInline, frontmatter, mdBulletList, mdHeading, mdQuote } from "./helpers";
 
@@ -14,7 +14,7 @@ import { HOME_MD_HREF, META_DESCRIPTION_LENGTH, SITE_NAME } from "@/features/met
 
 export const buildExperienceMd = (experience: Experience, preferredLanguage: PreferredLanguage) => {
   const { role, company, txt, skillsUsed, year, slug } = experience;
-  const canonical = absoluteUrl(`/${slug}`);
+  const canonical = absoluteUrl(experiencePath(slug));
   const description = excerpt(txt, META_DESCRIPTION_LENGTH);
 
   // Optional outbound links: each line appears only when the experience authors one
@@ -75,8 +75,8 @@ export const buildNotFoundMd = (slug: string, preferredLanguage: PreferredLangua
     mdHeading(1, title),
     ``,
     preferredLanguage === "pl"
-      ? `Dokument Markdown dla adresu /${escapeMdInline(slug)} nie istnieje.`
-      : `No Markdown document exists for /${escapeMdInline(slug)}.`,
+      ? `Dokument Markdown dla adresu ${experiencePath(slug)} nie istnieje.`
+      : `No Markdown document exists for ${experiencePath(slug)}.`,
     ``,
     `${matchPreferredLanguage(preferredLanguage, "See", "Zobacz")} [${matchPreferredLanguage(preferredLanguage, "Home", "Strona główna")}](${absoluteUrl(HOME_MD_HREF)}) ${matchPreferredLanguage(preferredLanguage, "or", "lub")} [llms.txt](${absoluteUrl("/llms.txt")}).`,
     ``,

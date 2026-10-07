@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { Array, Option, pipe } from "effect";
 import { excerpt } from "@/features/experience/domain";
-import { absoluteUrl, experienceImageUrl, jsonLdScript } from "./helpers";
+import { absoluteUrl, experienceImageUrl, experiencePath, jsonLdScript } from "./helpers";
 
 // types
 import type { PreferredLanguage } from "@/domain";
@@ -114,7 +114,7 @@ export const homeJsonLd = ({
           "@type": "ListItem",
           position: index + 1,
           name: `${role} at ${company}`,
-          url: absoluteUrl(`/${slug}`),
+          url: absoluteUrl(experiencePath(slug)),
         }))
       ),
     })),
@@ -178,30 +178,65 @@ export const contactJsonLd = ({
   ]);
 };
 
-// Experience / project detail: the Article and its breadcrumb stay in one graph
+// Experience / project details use a graph that reflects the kind of item being described
 export const experienceJsonLd = ({ slug, experience, preferredLanguage }: ExperienceHeadInput) => {
-  const { role, company, txt, imageName, skillsUsed } = experience;
-  const path = `/${slug}`;
+  const { type, role, company, txt, imageName, skillsUsed } = experience;
+  const path = experiencePath(slug);
   const url = absoluteUrl(path);
   const headline = `${role} at ${company}`;
+  const itemId = `${url}#${type === "e" ? "organization-role" : "project"}`;
+  const description = excerpt(txt, META_DESCRIPTION_LENGTH);
+  const image = pipe(
+    experienceImageUrl(imageName),
+    Option.getOrElse(() => GLOBAL_IMAGE)
+  );
+  const page = {
+    "@type": "WebPage",
+    "@id": url,
+    url,
+    name: headline,
+    description,
+    inLanguage: preferredLanguage,
+    isPartOf: { "@id": WEBSITE_ID },
+    mainEntity: { "@id": itemId },
+  };
+  const item =
+    type === "e"
+      ? {
+          "@type": "OrganizationRole",
+          "@id": itemId,
+          roleName: role,
+          description,
+          member: { "@id": PERSON_ID },
+          mainEntityOfPage: { "@id": url },
+        }
+      : {
+          "@type": "CreativeWork",
+          "@id": itemId,
+          name: role,
+          description,
+          image,
+          url,
+          mainEntityOfPage: { "@id": url },
+          inLanguage: preferredLanguage,
+          creator: { "@id": PERSON_ID },
+          publisher: { "@id": PUBLISHER_ID },
+          keywords: skillsUsed.join(", "),
+        };
 
   return jsonLdGraph([
-    {
-      "@type": "Article",
-      headline,
-      description: excerpt(txt, META_DESCRIPTION_LENGTH),
-      image: pipe(
-        experienceImageUrl(imageName),
-        Option.getOrElse(() => GLOBAL_IMAGE)
-      ),
-      url,
-      mainEntityOfPage: { "@type": "WebPage", "@id": url },
-      inLanguage: preferredLanguage,
-      author: { "@id": PERSON_ID },
-      publisher: { "@id": PUBLISHER_ID },
-      // keywords (Text) is the schema-valid slot for skills; Article.about expects Thing
-      keywords: skillsUsed.join(", "),
-    },
+    page,
+    ...(type === "e"
+      ? [
+          {
+            "@type": "Organization",
+            "@id": `${url}#organization`,
+            name: company,
+            member: { "@id": itemId },
+          },
+        ]
+      : []),
+    item,
     breadcrumb(path, headline),
   ]);
 };

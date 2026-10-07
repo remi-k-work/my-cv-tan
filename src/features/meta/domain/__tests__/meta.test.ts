@@ -43,11 +43,12 @@ const stablePageTitles = {
   "/contact": { eyebrow: "Contact", heading: "Stable contact title", intro: "Stable contact description." },
 };
 
-it("experienceHead never treats project or employment years as publication dates", () => {
+it("experienceHead omits unsupported publication dates and keyword meta", () => {
   const dated = JSON.stringify(experienceHead({ slug: "sample-role", experience: sampleExperience, preferredLanguage: "en" }));
   assert.notInclude(dated, "article:published_time");
   assert.notInclude(dated, "datePublished");
-  assert.include(dated, "article:tag");
+  assert.notInclude(dated, '"name":"keywords"');
+  assert.notInclude(dated, "article:tag");
 
   const undated = JSON.stringify(experienceHead({ slug: "sample-role", experience: { ...sampleExperience, year: "Too Long" }, preferredLanguage: "en" }));
   assert.notInclude(undated, "article:published_time");
@@ -60,6 +61,7 @@ it("root metadata defaults to noindex and complete page heads explicitly allow i
   const indexable = homeListHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" });
   assert.include(JSON.stringify(indexable.meta), "index, follow, max-image-preview:large");
   assert.notInclude(JSON.stringify(indexable.meta), "noindex");
+  assert.notInclude(JSON.stringify(indexable.meta), '"name":"keywords"');
 
   const emptyEducation = educationHead({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "pl" });
   assert.include(JSON.stringify(emptyEducation.meta), "index, follow, max-image-preview:large");
@@ -68,18 +70,58 @@ it("root metadata defaults to noindex and complete page heads explicitly allow i
   assert.include(JSON.stringify(contact.meta), "index, follow, max-image-preview:large");
 });
 
-it("experienceHead renders og:locale from the resolved language and merges Article + BreadcrumbList into one graph", () => {
+it("project details use CreativeWork linked to the canonical WebPage, person and breadcrumb", () => {
   const pl = experienceHead({ slug: "sample-role", experience: sampleExperience, preferredLanguage: "pl" });
   const html = JSON.stringify(pl);
   assert.include(html, '"content":"pl_PL"');
   assert.include(html, '"content":"en_US"'); // alternate
+  assert.include(html, '"property":"og:type","content":"website"');
 
-  // JSON-LD lives in a single script whose children is the serialized @graph
   const [graph] = pl.scripts ?? [];
-  assert.include(graph?.children, `"@type":"Article"`);
-  assert.include(graph?.children, `"@type":"BreadcrumbList"`);
-  assert.include(graph?.children, `"inLanguage":"pl"`);
-  assert.include(graph?.children, `"keywords":"TypeScript, React"`);
+  const parsed = graphOf(graph?.children);
+  const page = nodeOf(parsed, "WebPage");
+  const project = nodeOf(parsed, "CreativeWork");
+  assert.isDefined(page);
+  assert.isDefined(project);
+  assert.isFalse(parsed.some((node) => node["@type"] === "Article"));
+  assert.deepStrictEqual(page?.mainEntity, { "@id": "https://www.remiforge.dev/sample-role#project" });
+  assert.deepStrictEqual(project?.mainEntityOfPage, { "@id": "https://www.remiforge.dev/sample-role" });
+  assert.deepStrictEqual(project?.creator, { "@id": "https://www.remiforge.dev/#person" });
+  assert.strictEqual(project?.inLanguage, "pl");
+  assert.strictEqual(project?.keywords, "TypeScript, React");
+  assert.isDefined(nodeOf(parsed, "BreadcrumbList"));
+});
+
+it("employment details use OrganizationRole linked to the person and canonical WebPage without fabricated dates", () => {
+  const experience = { ...sampleExperience, type: "e" as const, slug: "sample-job" };
+  const head = experienceHead({ slug: experience.slug, experience, preferredLanguage: "en" });
+  const parsed = graphOf(head.scripts?.[0]?.children);
+  const page = nodeOf(parsed, "WebPage");
+  const role = nodeOf(parsed, "OrganizationRole");
+  const organization = nodeOf(parsed, "Organization");
+
+  assert.isDefined(role);
+  assert.deepStrictEqual(page?.mainEntity, { "@id": "https://www.remiforge.dev/sample-job#organization-role" });
+  assert.deepStrictEqual(role?.member, { "@id": "https://www.remiforge.dev/#person" });
+  assert.deepStrictEqual(role?.mainEntityOfPage, { "@id": "https://www.remiforge.dev/sample-job" });
+  assert.strictEqual(organization?.name, "Sample Co");
+  assert.deepStrictEqual(organization?.member, { "@id": "https://www.remiforge.dev/sample-job#organization-role" });
+  assert.notInclude(JSON.stringify(role), "startDate");
+  assert.notInclude(JSON.stringify(role), "endDate");
+});
+
+it("experience URL construction percent-encodes one slug consistently in canonical, social, alternate and JSON-LD URLs", () => {
+  const slug = "résumé & more";
+  const encodedPath = "/r%C3%A9sum%C3%A9%20%26%20more";
+  const head = experienceHead({ slug, experience: { ...sampleExperience, slug }, preferredLanguage: "en" });
+  const html = JSON.stringify(head);
+  const graph = graphOf(head.scripts?.[0]?.children);
+  const page = nodeOf(graph, "WebPage");
+
+  assert.strictEqual(head.links?.[0]?.href, `https://www.remiforge.dev${encodedPath}`);
+  assert.strictEqual(head.links?.[1]?.href, `https://www.remiforge.dev${encodedPath}.md`);
+  assert.include(html, `"property":"og:url","content":"https://www.remiforge.dev${encodedPath}"`);
+  assert.strictEqual(page?.["@id"], `https://www.remiforge.dev${encodedPath}`);
 });
 
 it("localized metadata uses stable copy and emits canonical plus Markdown links without same-URL hreflang", () => {
@@ -145,9 +187,9 @@ it("sitemap omits fabricated last-modified dates", () => {
   assert.notInclude(xml, "<lastmod>");
 });
 
-it("sitemap escapes XML special characters in generated URLs", () => {
+it("sitemap percent-encodes unsafe slug characters in generated URLs", () => {
   const xml = buildSitemapXml([{ ...sampleExperience, slug: `danger<&>"'` }]);
-  assert.include(xml, "https://www.remiforge.dev/danger&lt;&amp;&gt;&quot;&apos;");
+  assert.include(xml, "https://www.remiforge.dev/danger%3C%26%3E%22&apos;");
   assert.notInclude(xml, "<loc>https://www.remiforge.dev/danger<&>");
 });
 
