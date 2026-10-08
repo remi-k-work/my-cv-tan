@@ -38,7 +38,7 @@ export function Header({ preferredLanguage, localizedContent }: HeaderProps) {
         )}
       >
         {NAV_ITEMS(localizedContent).map((navItem, index) => (
-          <NavItem key={index} {...navItem} animDelay={index ** 2} />
+          <NavItem key={navItem.href} {...navItem} animDelay={index ** 2} />
         ))}
         <LangChanger preferredLanguage={preferredLanguage} />
       </nav>

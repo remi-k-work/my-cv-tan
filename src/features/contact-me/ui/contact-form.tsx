@@ -21,14 +21,17 @@ interface ContactFormProps {
 
 export function ContactForm({ preferredLanguage, localizedContent }: ContactFormProps) {
   // Get the form context
-  const contactFormL = useMemo(() => contactForm(preferredLanguage), [preferredLanguage]);
-  const submit = useAtomSet(contactFormL.submit);
+  const form = useMemo(() => contactForm(preferredLanguage), [preferredLanguage]);
+  const submit = useAtomSet(form.submit);
 
   // Provide feedback to the user regarding this form actions
-  useSubmitToast(contactFormL, localizedContent);
+  useSubmitToast(form, localizedContent);
+
+  // Labels and placeholders of the form's fields
+  const labels = localizedContent["contactForm"];
 
   return (
-    <contactFormL.Initialize defaultValues={{ name: "", email: "", subject: "", message: "", captchaInput: "" }}>
+    <form.Initialize defaultValues={{ name: "", email: "", subject: "", message: "", captchaInput: "" }}>
       <form
         className="mx-auto w-full max-w-4xl rounded-xl bg-surface-1 p-3"
         onSubmit={(ev) => {
@@ -37,54 +40,33 @@ export function ContactForm({ preferredLanguage, localizedContent }: ContactForm
           submit();
         }}
       >
-        <contactFormL.name
-          label={localizedContent["contactForm"]["labelName"]}
-          size={20}
-          maxLength={26}
-          spellCheck={false}
-          autoComplete="name"
-          placeholder={localizedContent["contactForm"]["placeholderName"]}
-        />
-        <contactFormL.email
-          label={localizedContent["contactForm"]["labelEmail"]}
-          size={20}
-          maxLength={50}
-          spellCheck={false}
-          autoComplete="email"
-          placeholder={localizedContent["contactForm"]["placeholderEmail"]}
-        />
-        <contactFormL.subject
-          label={localizedContent["contactForm"]["labelSubject"]}
-          size={20}
-          maxLength={41}
-          spellCheck
-          autoComplete="off"
-          placeholder={localizedContent["contactForm"]["placeholderSubject"]}
-        />
-        <contactFormL.message
-          label={localizedContent["contactForm"]["labelMessage"]}
+        <form.name label={labels["labelName"]} size={20} maxLength={26} spellCheck={false} autoComplete="name" placeholder={labels["placeholderName"]} />
+        <form.email label={labels["labelEmail"]} size={20} maxLength={50} spellCheck={false} autoComplete="email" placeholder={labels["placeholderEmail"]} />
+        <form.subject label={labels["labelSubject"]} size={20} maxLength={41} spellCheck autoComplete="off" placeholder={labels["placeholderSubject"]} />
+        <form.message
+          label={labels["labelMessage"]}
           cols={30}
           rows={8}
           maxLength={2049}
           spellCheck
           autoComplete="off"
-          placeholder={localizedContent["contactForm"]["placeholderMessage"]}
+          placeholder={labels["placeholderMessage"]}
         />
         <br />
         <Captcha />
         <br />
-        <contactFormL.captchaInput
-          label={localizedContent["contactForm"]["labelCaptcha"]}
+        <form.captchaInput
+          label={labels["labelCaptcha"]}
           size={20}
           maxLength={7}
           spellCheck={false}
           autoComplete="off"
-          placeholder={localizedContent["contactForm"]["placeholderCaptcha"]}
+          placeholder={labels["placeholderCaptcha"]}
         />
         <br />
-        <SubmitStatus contactForm={contactFormL} localizedContent={localizedContent} />
-        <FormSubmit contactForm={contactFormL} localizedContent={localizedContent} />
+        <SubmitStatus contactForm={form} localizedContent={localizedContent} />
+        <FormSubmit contactForm={form} localizedContent={localizedContent} />
       </form>
-    </contactFormL.Initialize>
+    </form.Initialize>
   );
 }

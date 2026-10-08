@@ -42,7 +42,7 @@ export function LangChanger({ preferredLanguage }: LangChangerProps) {
 
   return (
     <Button className="button" disabled={isPending} title={preferredLanguage === "en" ? "English" : "Polish"} onClick={handleLangToggled}>
-      {preferredLanguage && (preferredLanguage === "en" ? <UsFlagIcon className="size-11" /> : <PlFlagIcon className="size-11" />)}
+      {preferredLanguage === "en" ? <UsFlagIcon className="size-11" /> : <PlFlagIcon className="size-11" />}
     </Button>
   );
 }
