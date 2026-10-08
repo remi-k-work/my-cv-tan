@@ -12,8 +12,8 @@ import pageTitlesPl from "@/assets/data/pl/page-titles.json";
 it.effect("stablePageTitles always selects the first authored entry for each locale", () =>
   Effect.gen(function* () {
     const data = yield* Data;
-    const english = yield* data.stablePageTitles(Option.some("en"), Option.none());
-    const polish = yield* data.stablePageTitles(Option.some("pl"), Option.none());
+    const english = yield* data.stablePageTitles(Option.some("en"));
+    const polish = yield* data.stablePageTitles(Option.some("pl"));
 
     assert.deepStrictEqual(english, Option.some(pageTitlesEn[0]));
     assert.deepStrictEqual(polish, Option.some(pageTitlesPl[0]));

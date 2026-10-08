@@ -3,53 +3,46 @@ import { Effect, Layer, Option } from "effect";
 import { RpcSerialization, RpcServer } from "effect/rpc";
 import { HttpServer, HttpRouter } from "effect/http";
 import { RpcData } from "./requests";
-import { Lang } from "@/features/data/services/lang";
 import { Data } from "@/features/data/services/data";
 import { RpcLoggerLive } from "@/services/rpc-logger";
 
 const RpcDataLayer = RpcData.toLayer({
-  preferredLanguage: (_, { headers }) =>
-    Effect.gen(function* () {
-      const { resolve } = yield* Lang;
-      return yield* resolve(Option.some(headers));
-    }),
-
-  randomPageTitles: (_, { headers }) =>
+  randomPageTitles: () =>
     Effect.gen(function* () {
       const { randomPageTitles } = yield* Data;
-      return yield* randomPageTitles(Option.none(), Option.some(headers));
+      return yield* randomPageTitles(Option.none());
     }),
 
-  stablePageTitles: (_, { headers }) =>
+  stablePageTitles: () =>
     Effect.gen(function* () {
       const { stablePageTitles } = yield* Data;
-      return yield* stablePageTitles(Option.none(), Option.some(headers));
+      return yield* stablePageTitles(Option.none());
     }),
 
-  localizedContent: (_, { headers }) =>
+  localizedContent: () =>
     Effect.gen(function* () {
       const { localizedContent } = yield* Data;
-      return yield* localizedContent(Option.none(), Option.some(headers));
+      return yield* localizedContent(Option.none());
     }),
 
-  experienceList: (_, { headers }) =>
+  experienceList: () =>
     Effect.gen(function* () {
       const { experienceList } = yield* Data;
-      return yield* experienceList(Option.none(), Option.some(headers));
+      return yield* experienceList(Option.none());
     }),
 
-  educationList: (_, { headers }) =>
+  educationList: () =>
     Effect.gen(function* () {
       const { educationList } = yield* Data;
-      return yield* educationList(Option.none(), Option.some(headers));
+      return yield* educationList(Option.none());
     }),
 
-  experience: ({ slug }, { headers }) =>
+  experience: ({ slug }) =>
     Effect.gen(function* () {
       const { experience } = yield* Data;
-      return yield* experience(slug, Option.none(), Option.some(headers));
+      return yield* experience(slug, Option.none());
     }),
-}).pipe(Layer.provide([Lang.layer, Data.layer]));
+}).pipe(Layer.provide(Data.layer));
 
 const RpcLayer = RpcServer.layerHttp({
   group: RpcData,

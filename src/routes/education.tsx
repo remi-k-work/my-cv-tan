@@ -20,17 +20,17 @@ export const Route = createFileRoute("/education")({
 });
 
 function EducationPage() {
-  const { randomPageTitles, localizedContent, educationList } = Route.useLoaderData();
+  const { randomPageTitles, educationList } = Route.useLoaderData();
 
   return (
     <>
       <PageTitle pagePath="/education" pageTitles={randomPageTitles} />
       <article className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <section className="rounded-xl bg-surface-2 p-4">
-          <Certificates localizedContent={localizedContent} />
+          <Certificates />
         </section>
         <section className="rounded-xl bg-surface-2 p-4">
-          <Education localizedContent={localizedContent} educationList={educationList} />
+          <Education educationList={educationList} />
         </section>
       </article>
     </>

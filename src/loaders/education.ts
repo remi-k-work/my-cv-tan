@@ -11,12 +11,11 @@ export const loaderEducation = createIsomorphicFn()
   .server(() =>
     serverLoader((data, preferredLanguage) =>
       Effect.gen(function* () {
-        const { randomPageTitles, stablePageTitles, localizedContent, educationList } = yield* Effect.all(
+        const { randomPageTitles, stablePageTitles, educationList } = yield* Effect.all(
           {
-            randomPageTitles: data.randomPageTitles(Option.some(preferredLanguage), Option.none()),
-            stablePageTitles: data.stablePageTitles(Option.some(preferredLanguage), Option.none()),
-            localizedContent: data.localizedContent(Option.some(preferredLanguage), Option.none()),
-            educationList: data.educationList(Option.some(preferredLanguage), Option.none()),
+            randomPageTitles: data.randomPageTitles(Option.some(preferredLanguage)),
+            stablePageTitles: data.stablePageTitles(Option.some(preferredLanguage)),
+            educationList: data.educationList(Option.some(preferredLanguage)),
           },
           { concurrency: "unbounded" }
         );
@@ -24,7 +23,6 @@ export const loaderEducation = createIsomorphicFn()
         return {
           randomPageTitles: yield* requireData(randomPageTitles, "random page titles"),
           stablePageTitles: yield* requireData(stablePageTitles, "stable page titles"),
-          localizedContent: yield* requireData(localizedContent, "localized content"),
           educationList: yield* requireData(educationList, "education list"),
         } as const;
       })
@@ -33,11 +31,10 @@ export const loaderEducation = createIsomorphicFn()
   .client(() =>
     clientLoader((client) =>
       Effect.gen(function* () {
-        const { randomPageTitles, stablePageTitles, localizedContent, educationList } = yield* Effect.all(
+        const { randomPageTitles, stablePageTitles, educationList } = yield* Effect.all(
           {
             randomPageTitles: client.randomPageTitles(),
             stablePageTitles: client.stablePageTitles(),
-            localizedContent: client.localizedContent(),
             educationList: client.educationList(),
           },
           { concurrency: "unbounded" }
@@ -46,7 +43,6 @@ export const loaderEducation = createIsomorphicFn()
         return {
           randomPageTitles: yield* requireData(randomPageTitles, "random page titles"),
           stablePageTitles: yield* requireData(stablePageTitles, "stable page titles"),
-          localizedContent: yield* requireData(localizedContent, "localized content"),
           educationList: yield* requireData(educationList, "education list"),
         } as const;
       })

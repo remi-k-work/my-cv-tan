@@ -1,5 +1,6 @@
 // tanstack
 import { createStart, createCsrfMiddleware, createMiddleware } from "@tanstack/react-start";
+import { gtMiddleware } from "gt-tanstack-start";
 import { applyHtmlDataUnavailableResponse } from "@/features/data/http/html-response";
 
 const csrfMiddleware = createCsrfMiddleware({
@@ -17,5 +18,5 @@ const htmlDataResponseMiddleware = createMiddleware().server(async ({ handlerTyp
 });
 
 export const startInstance = createStart(() => ({
-  requestMiddleware: [csrfMiddleware, htmlDataResponseMiddleware],
+  requestMiddleware: [gtMiddleware, csrfMiddleware, htmlDataResponseMiddleware],
 }));

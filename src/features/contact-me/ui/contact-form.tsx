@@ -1,37 +1,31 @@
-// react
-import { useMemo } from "react";
-
 // services, features, and other libraries
 import { useAtomSet } from "@effect/atom-react";
 import { contactForm } from "@/features/contact-me/domain";
 import { useSubmitToast } from "@/features/contact-me/hooks";
+import { useGT } from "gt-tanstack-start";
 
 // components
 import { Captcha } from "@/features/captcha/ui/captcha";
 import { SubmitStatus } from "./submit-status";
 import { FormSubmit } from "./form-submit";
 
-// types
-import type { LocalizedContent, PreferredLanguage } from "@/domain";
+// constants
+import { UI_COPY } from "@/features/data/domain/ui-copy";
 
-interface ContactFormProps {
-  preferredLanguage: PreferredLanguage;
-  localizedContent: LocalizedContent;
-}
+export function ContactForm() {
+  const gt = useGT();
 
-export function ContactForm({ preferredLanguage, localizedContent }: ContactFormProps) {
   // Get the form context
-  const form = useMemo(() => contactForm(preferredLanguage), [preferredLanguage]);
-  const submit = useAtomSet(form.submit);
+  const submit = useAtomSet(contactForm.submit);
 
   // Provide feedback to the user regarding this form actions
-  useSubmitToast(form, localizedContent);
+  useSubmitToast(contactForm);
 
   // Labels and placeholders of the form's fields
-  const labels = localizedContent["contactForm"];
+  const labels = UI_COPY.contactForm;
 
   return (
-    <form.Initialize defaultValues={{ name: "", email: "", subject: "", message: "", captchaInput: "" }}>
+    <contactForm.Initialize defaultValues={{ name: "", email: "", subject: "", message: "", captchaInput: "" }}>
       <form
         className="mx-auto w-full max-w-4xl rounded-xl bg-surface-1 p-3"
         onSubmit={(ev) => {
@@ -40,33 +34,54 @@ export function ContactForm({ preferredLanguage, localizedContent }: ContactForm
           submit();
         }}
       >
-        <form.name label={labels["labelName"]} size={20} maxLength={26} spellCheck={false} autoComplete="name" placeholder={labels["placeholderName"]} />
-        <form.email label={labels["labelEmail"]} size={20} maxLength={50} spellCheck={false} autoComplete="email" placeholder={labels["placeholderEmail"]} />
-        <form.subject label={labels["labelSubject"]} size={20} maxLength={41} spellCheck autoComplete="off" placeholder={labels["placeholderSubject"]} />
-        <form.message
-          label={labels["labelMessage"]}
+        <contactForm.name
+          label={gt(labels["labelName"])}
+          size={20}
+          maxLength={26}
+          spellCheck={false}
+          autoComplete="name"
+          placeholder={gt(labels["placeholderName"])}
+        />
+        <contactForm.email
+          label={gt(labels["labelEmail"])}
+          size={20}
+          maxLength={50}
+          spellCheck={false}
+          autoComplete="email"
+          placeholder={gt(labels["placeholderEmail"])}
+        />
+        <contactForm.subject
+          label={gt(labels["labelSubject"])}
+          size={20}
+          maxLength={41}
+          spellCheck
+          autoComplete="off"
+          placeholder={gt(labels["placeholderSubject"])}
+        />
+        <contactForm.message
+          label={gt(labels["labelMessage"])}
           cols={30}
           rows={8}
           maxLength={2049}
           spellCheck
           autoComplete="off"
-          placeholder={labels["placeholderMessage"]}
+          placeholder={gt(labels["placeholderMessage"])}
         />
         <br />
         <Captcha />
         <br />
-        <form.captchaInput
-          label={labels["labelCaptcha"]}
+        <contactForm.captchaInput
+          label={gt(labels["labelCaptcha"])}
           size={20}
           maxLength={7}
           spellCheck={false}
           autoComplete="off"
-          placeholder={labels["placeholderCaptcha"]}
+          placeholder={gt(labels["placeholderCaptcha"])}
         />
         <br />
-        <SubmitStatus contactForm={form} localizedContent={localizedContent} />
-        <FormSubmit contactForm={form} localizedContent={localizedContent} />
+        <SubmitStatus contactForm={contactForm} />
+        <FormSubmit contactForm={contactForm} />
       </form>
-    </form.Initialize>
+    </contactForm.Initialize>
   );
 }

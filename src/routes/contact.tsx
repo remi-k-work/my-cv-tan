@@ -20,17 +20,17 @@ export const Route = createFileRoute("/contact")({
 });
 
 function ContactPage() {
-  const { preferredLanguage, randomPageTitles, localizedContent } = Route.useLoaderData();
+  const { randomPageTitles } = Route.useLoaderData();
 
   return (
     <>
       <PageTitle pagePath="/contact" pageTitles={randomPageTitles} />
       <article className="grid auto-rows-fr grid-cols-1 gap-4 xl:grid-cols-2">
         <section className="rounded-xl bg-surface-2 p-4">
-          <ContactForm preferredLanguage={preferredLanguage} localizedContent={localizedContent} />
+          <ContactForm />
         </section>
         <section className="rounded-xl bg-surface-2 p-4">
-          <ContactMap localizedContent={localizedContent} />
+          <ContactMap />
         </section>
       </article>
     </>

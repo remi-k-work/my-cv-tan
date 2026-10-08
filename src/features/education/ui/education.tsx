@@ -1,22 +1,28 @@
 // react
 import { Fragment } from "react";
 
+// services, features, and other libraries
+import { useGT } from "gt-tanstack-start";
+
 // components
 import { PanelCaption } from "@/ui/panel-caption";
 
 // types
-import type { LocalizedContent } from "@/domain";
 import type { EducationList } from "@/features/education/domain";
 
 interface EducationProps {
-  localizedContent: LocalizedContent;
   educationList: EducationList;
 }
 
-export function Education({ localizedContent, educationList }: EducationProps) {
+// constants
+import { UI_COPY } from "@/features/data/domain/ui-copy";
+
+export function Education({ educationList }: EducationProps) {
+  const gt = useGT();
+
   return (
     <figure className="mx-auto w-full max-w-4xl">
-      <PanelCaption>{localizedContent["myEducation"]["myEducation"]}</PanelCaption>
+      <PanelCaption>{gt(UI_COPY.myEducation.myEducation)}</PanelCaption>
       <dl>
         {educationList.map(({ name, year, location, info }, index) => (
           <Fragment key={index}>

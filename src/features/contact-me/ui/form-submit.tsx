@@ -4,6 +4,7 @@ import { useRouter } from "@tanstack/react-router";
 // services, features, and other libraries
 import { Option } from "effect";
 import { useAtomSet, useAtomValue } from "@effect/atom-react";
+import { useGT } from "gt-tanstack-start";
 
 // components
 import { Button } from "@base-ui/react";
@@ -14,14 +15,16 @@ import { Loader2 } from "lucide-react";
 
 // types
 import type { ContactForm } from "@/features/contact-me/domain";
-import type { LocalizedContent } from "@/domain";
 
 interface FormSubmitProps {
   contactForm: ContactForm;
-  localizedContent: LocalizedContent;
 }
 
-export function FormSubmit({ contactForm, localizedContent }: FormSubmitProps) {
+// constants
+import { UI_COPY } from "@/features/data/domain/ui-copy";
+
+export function FormSubmit({ contactForm }: FormSubmitProps) {
+  const gt = useGT();
   // Get the form context
   const isDirty = useAtomValue(contactForm.isDirty);
   const { waiting } = useAtomValue(contactForm.submit);
@@ -33,7 +36,7 @@ export function FormSubmit({ contactForm, localizedContent }: FormSubmitProps) {
   const router = useRouter();
 
   // Labels of the submit, reset and cancel buttons
-  const labels = localizedContent["formSubmit"];
+  const labels = UI_COPY.formSubmit;
 
   // Determine allowance to submit the form
   const hasSubmittedSuccessfully = Option.isSome(lastSubmittedValues);
@@ -43,15 +46,15 @@ export function FormSubmit({ contactForm, localizedContent }: FormSubmitProps) {
     <section className="flex flex-wrap gap-3 *:flex-1 md:gap-6">
       <Button className="button" type="submit" disabled={!canSubmit}>
         {waiting ? <Loader2 className="size-9 animate-spin" /> : <PaperAirplaneIcon className="size-9" />}
-        {waiting ? labels["sending"] : labels["send"]}
+        {waiting ? gt(labels["sending"]) : gt(labels["send"])}
       </Button>
       <Button className="button bg-destructive" onClick={() => reset()}>
         <XCircleIcon className="size-9" />
-        {labels["reset"]}
+        {gt(labels["reset"])}
       </Button>
       <Button className="button bg-secondary" onClick={() => router.history.back()}>
         <ArrowLeftCircleIcon className="size-9" />
-        {labels["cancel"]}
+        {gt(labels["cancel"])}
       </Button>
     </section>
   );

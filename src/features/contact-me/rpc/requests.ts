@@ -9,8 +9,8 @@ export class RpcContactMe extends RpcGroup.make(
     payload: {
       name: NameField().schema,
       email: EmailField().schema,
-      subject: SubjectField().schema,
-      message: MessageField().schema,
+      subject: SubjectField.schema,
+      message: MessageField.schema,
     },
     error: SendError,
   })

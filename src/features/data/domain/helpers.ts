@@ -1,40 +1,4 @@
-// services, features, and other libraries
-import { Effect, Option, Record, Schema, String } from "effect";
-import { Cookies, Headers } from "effect/http";
-import { PreferredLanguage } from "@/domain";
-import { getCookieEffect, getRequestHeaderEffect } from "@/domain/helpers.server";
-import { resolveAcceptLanguage } from "resolve-accept-language";
+// types
+import type { PreferredLanguage } from "@/domain";
 
-// constants
-import { LANG_COOKIE_NAME } from "@/features/data/domain";
-
-export const getPreferredLanguageFromCookie = Effect.fn("getPreferredLanguageFromCookie")(
-  function* (headers: Option.Option<Headers.Headers>) {
-    return yield* Option.match(headers, {
-      onNone: () => getCookieEffect(LANG_COOKIE_NAME),
-      onSome: (headers) => Effect.succeed(Headers.get(headers, "cookie").pipe(Option.map(Cookies.parseHeader), Option.flatMap(Record.get(LANG_COOKIE_NAME)))),
-    });
-  },
-  // Malformed or empty cookie? return None
-  Effect.map(Option.flatMap(Schema.decodeUnknownOption(PreferredLanguage)))
-);
-
-export const getAcceptLanguageHeader = Effect.fn("getAcceptLanguage")(function* (headers: Option.Option<Headers.Headers>) {
-  return yield* Option.match(headers, {
-    onNone: () => getRequestHeaderEffect("accept-language"),
-    onSome: (headers) => Effect.succeed(Headers.get(headers, "accept-language")),
-  });
-});
-
-export const resolveAcceptLanguageEffect = Effect.fn("resolveAcceptLanguageEffect")(function* (acceptLanguageHeader: Option.Option<string>) {
-  // Accept-Language header not set? fall back to "en-US"
-  const resolved = yield* Option.match(acceptLanguageHeader, {
-    onNone: () => Effect.succeed("en-US"),
-    onSome: (acceptLanguageHeader) =>
-      Effect.sync(() => resolveAcceptLanguage(acceptLanguageHeader, ["en-US", "en-GB", "pl-PL"], "en-US")).pipe(
-        // Malformed header makes the library throw? recover to the "en-US" default instead of crashing the request
-        Effect.catchDefect(() => Effect.succeed("en-US"))
-      ),
-  });
-  return String.includes("pl")(resolved) ? "pl" : "en";
-});
+export const preferredLanguageFromLocale = (locale: string): PreferredLanguage => (locale === "pl" ? "pl" : "en");

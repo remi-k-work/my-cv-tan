@@ -1,3 +1,6 @@
+// services, features, and other libraries
+import { useGT } from "gt-tanstack-start";
+
 // components
 import { PanelCaption } from "@/ui/panel-caption";
 
@@ -7,17 +10,15 @@ import alcc from "@/assets/my-certificates-alcc.webp";
 import prattOrig from "@/assets/my-certificates-pratt-orig.webp";
 import prattTrans from "@/assets/my-certificates-pratt-trans.webp";
 
-// types
-import type { LocalizedContent } from "@/domain";
+// constants
+import { UI_COPY } from "@/features/data/domain/ui-copy";
 
-interface CertificatesProps {
-  localizedContent: LocalizedContent;
-}
+export function Certificates() {
+  const gt = useGT();
 
-export function Certificates({ localizedContent }: CertificatesProps) {
   return (
     <figure className="mx-auto w-full max-w-4xl">
-      <PanelCaption>{localizedContent["myCertificates"]["myCertificates"]}</PanelCaption>
+      <PanelCaption>{gt(UI_COPY.myCertificates.myCertificates)}</PanelCaption>
       <a href="/my-certificates.pdf" target="_blank" rel="noopener noreferrer" className="space-y-4">
         <img src={artcom} width={1222} height={870} alt="ARTCOM" loading="lazy" className="h-auto w-full" />
         <img src={alcc} width={1222} height={870} alt="ALCC" loading="lazy" className="h-auto w-full" />

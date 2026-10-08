@@ -4,6 +4,7 @@ import { Link } from "@tanstack/react-router";
 // services, features, and other libraries
 import { Option } from "effect";
 import { useAtomSet } from "@effect/atom-react";
+import { useGT } from "gt-tanstack-start";
 import { experienceAtom } from "@/features/modals/state";
 
 // components
@@ -14,15 +15,17 @@ import { InformationCircleIcon } from "@heroicons/react/24/solid";
 
 // types
 import type { MouseEvent } from "react";
-import type { LocalizedContent } from "@/domain";
 import type { Experience } from "@/features/experience/domain";
 
 interface SlideHeaderProps {
-  localizedContent: LocalizedContent;
   experience: Experience;
 }
 
-export function SlideHeader({ localizedContent, experience }: SlideHeaderProps) {
+// constants
+import { UI_COPY } from "@/features/data/domain/ui-copy";
+
+export function SlideHeader({ experience }: SlideHeaderProps) {
+  const gt = useGT();
   const { slug, year, role, company } = experience;
   const setExperience = useAtomSet(experienceAtom);
 
@@ -45,11 +48,11 @@ export function SlideHeader({ localizedContent, experience }: SlideHeaderProps) 
             to="/{-$slug}"
             params={{ slug }}
             onClick={handleMoreInfoClicked}
-            title={localizedContent["experienceSlide"]["moreInfo"]}
+            title={gt(UI_COPY.experienceSlide.moreInfo)}
           >
             <InformationCircleIcon className="size-9" />
           </Link>
-          <ExperienceLinks experience={experience} labels={localizedContent["experienceSlide"]} iconClassName="size-9" />
+          <ExperienceLinks experience={experience} labels={UI_COPY.experienceSlide} iconClassName="size-9" />
         </div>
       </section>
     </header>

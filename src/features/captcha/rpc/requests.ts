@@ -7,7 +7,7 @@ import { RpcLogger } from "@/services/rpc-logger";
 
 export class RpcCaptcha extends RpcGroup.make(
   Rpc.make("isCaptchaValid", {
-    payload: { captchaInput: CaptchaInputField().schema },
+    payload: { captchaInput: CaptchaInputField.schema },
     success: Schema.Boolean,
     error: CaptchaError,
   })

@@ -10,43 +10,39 @@ import { CaptchaInputField, EmailField, MessageField, NameField, SubjectField } 
 import { TextAreaInput, TextInput } from "@/ui/form";
 
 // types
-import type { PreferredLanguage } from "@/domain";
-export type ContactForm = ReturnType<typeof contactForm>;
+export type ContactForm = typeof contactForm;
 
-const contactFormBuilder = (preferredLanguage: PreferredLanguage) =>
-  FormBuilder.empty
-    .addField(NameField(preferredLanguage))
-    .addField(EmailField(preferredLanguage))
-    .addField(SubjectField(preferredLanguage))
-    .addField(MessageField(preferredLanguage))
-    .addField(CaptchaInputField(preferredLanguage))
-    .refineEffect(({ captchaInput }) =>
-      Effect.gen(function* () {
-        // Check the captcha to ensure it matches
-        const { isCaptchaValid } = yield* RpcCaptchaClient;
-        if (!(yield* isCaptchaValid({ captchaInput })))
-          return { path: ["captchaInput"], issue: preferredLanguage === "en" ? "Entered captcha is invalid" : "Wpisana captcha jest nieprawidłowa" };
-      }).pipe(
-        Effect.orElseSucceed(() => ({
-          path: ["captchaInput"],
-          issue: preferredLanguage === "en" ? "Something went wrong, please try again later" : "Wystąpił błąd, spróbuj ponownie później",
-        }))
-      )
-    );
+const contactFormBuilder = FormBuilder.empty
+  .addField(NameField())
+  .addField(EmailField())
+  .addField(SubjectField)
+  .addField(MessageField)
+  .addField(CaptchaInputField)
+  .refineEffect(({ captchaInput }) =>
+    Effect.gen(function* () {
+      // Check the captcha to ensure it matches
+      const { isCaptchaValid } = yield* RpcCaptchaClient;
+      if (!(yield* isCaptchaValid({ captchaInput }))) return { path: ["captchaInput"], issue: "Entered captcha is invalid" };
+    }).pipe(
+      Effect.orElseSucceed(() => ({
+        path: ["captchaInput"],
+        issue: "Something went wrong, please try again later",
+      }))
+    )
+  );
 
-export const contactForm = (preferredLanguage: PreferredLanguage) =>
-  FormReact.make(contactFormBuilder(preferredLanguage), {
-    runtime: RuntimeAtom,
-    fields: {
-      name: TextInput,
-      email: TextInput,
-      subject: TextInput,
-      message: TextAreaInput,
-      captchaInput: TextInput,
-    },
-    onSubmit: (_, { decoded: { name, email, subject, message } }) =>
-      Effect.gen(function* () {
-        const { contactForm } = yield* RpcContactMeClient;
-        yield* contactForm({ name, email, subject, message });
-      }),
-  });
+export const contactForm = FormReact.make(contactFormBuilder, {
+  runtime: RuntimeAtom,
+  fields: {
+    name: TextInput,
+    email: TextInput,
+    subject: TextInput,
+    message: TextAreaInput,
+    captchaInput: TextInput,
+  },
+  onSubmit: (_, { decoded: { name, email, subject, message } }) =>
+    Effect.gen(function* () {
+      const { contactForm } = yield* RpcContactMeClient;
+      yield* contactForm({ name, email, subject, message });
+    }),
+});

@@ -1,10 +1,10 @@
 // services, features, and other libraries
 import { Array, Context, Effect, Layer, Option, Random, Schema } from "effect";
-import { Headers } from "effect/http";
+import { getLocale } from "gt-tanstack-start";
 import { ExperienceList } from "@/features/experience/domain";
 import { EducationList } from "@/features/education/domain";
 import { LocalizedContent, matchPreferredLanguage, PageTitlesList } from "@/domain";
-import { Lang } from "./lang";
+import { preferredLanguageFromLocale } from "@/features/data/domain";
 
 // assets
 import pageTitlesEn from "@/assets/data/en/page-titles.json";
@@ -21,69 +21,53 @@ import type { PreferredLanguage } from "@/domain";
 import type { Experience } from "@/features/experience/domain";
 
 export class Data extends Context.Service<Data>()("Data", {
-  make: Effect.gen(function* () {
-    const { resolve } = yield* Lang;
+  make: Effect.sync(() => {
+    // Explicit language overrides are useful for Markdown ?lang= requests; all
+    // other server data follows the locale resolved by GT for this request.
+    const resolveLanguage = (preferredLanguage: Option.Option<PreferredLanguage>) =>
+      Option.getOrElse(preferredLanguage, () => preferredLanguageFromLocale(getLocale()));
 
-    // Resolves the effective language; an explicit preference wins, otherwise it falls back to cookie/Accept-Language resolution
-    const resolveLanguage = Effect.fnUntraced(function* (preferredLanguage: Option.Option<PreferredLanguage>, headers: Option.Option<Headers.Headers>) {
-      return yield* Option.match(preferredLanguage, {
-        onNone: () => resolve(headers),
-        onSome: Effect.succeed,
-      });
-    });
-
-    const randomPageTitles = Effect.fn("randomPageTitles")(function* (
-      preferredLanguage: Option.Option<PreferredLanguage>,
-      headers: Option.Option<Headers.Headers>
-    ) {
-      const resolvedLanguage = yield* resolveLanguage(preferredLanguage, headers);
+    const randomPageTitles = Effect.fn("randomPageTitles")(function* (preferredLanguage: Option.Option<PreferredLanguage>) {
+      const resolvedLanguage = resolveLanguage(preferredLanguage);
       return Schema.decodeOption(PageTitlesList)(matchPreferredLanguage(resolvedLanguage, pageTitlesEn, pageTitlesPl)).pipe(
         Option.flatMap(Array.get(yield* Random.nextIntBetween(0, pageTitlesEn.length - 1)))
       );
     });
 
-    const stablePageTitles = Effect.fn("stablePageTitles")(function* (
-      preferredLanguage: Option.Option<PreferredLanguage>,
-      headers: Option.Option<Headers.Headers>
-    ) {
-      const resolvedLanguage = yield* resolveLanguage(preferredLanguage, headers);
-      return Schema.decodeOption(PageTitlesList)(matchPreferredLanguage(resolvedLanguage, pageTitlesEn, pageTitlesPl)).pipe(Option.flatMap(Array.head));
-    });
+    const stablePageTitles = (preferredLanguage: Option.Option<PreferredLanguage>) =>
+      Effect.sync(() => {
+        const resolvedLanguage = resolveLanguage(preferredLanguage);
+        return Schema.decodeOption(PageTitlesList)(matchPreferredLanguage(resolvedLanguage, pageTitlesEn, pageTitlesPl)).pipe(Option.flatMap(Array.head));
+      });
 
-    const localizedContent = Effect.fn("localizedContent")(function* (
-      preferredLanguage: Option.Option<PreferredLanguage>,
-      headers: Option.Option<Headers.Headers>
-    ) {
-      const resolvedLanguage = yield* resolveLanguage(preferredLanguage, headers);
-      return Schema.decodeOption(LocalizedContent)(matchPreferredLanguage(resolvedLanguage, localizedContentEn, localizedContentPl));
-    });
+    const localizedContent = (preferredLanguage: Option.Option<PreferredLanguage>) =>
+      Effect.sync(() => {
+        const resolvedLanguage = resolveLanguage(preferredLanguage);
+        return Schema.decodeOption(LocalizedContent)(matchPreferredLanguage(resolvedLanguage, localizedContentEn, localizedContentPl));
+      });
 
-    const experienceList = Effect.fn("experienceList")(function* (
-      preferredLanguage: Option.Option<PreferredLanguage>,
-      headers: Option.Option<Headers.Headers>
-    ) {
-      const resolvedLanguage = yield* resolveLanguage(preferredLanguage, headers);
-      return Schema.decodeUnknownOption(ExperienceList)(matchPreferredLanguage(resolvedLanguage, experienceEn, experiencePl));
-    });
+    const experienceList = (preferredLanguage: Option.Option<PreferredLanguage>) =>
+      Effect.sync(() => {
+        const resolvedLanguage = resolveLanguage(preferredLanguage);
+        return Schema.decodeUnknownOption(ExperienceList)(matchPreferredLanguage(resolvedLanguage, experienceEn, experiencePl));
+      });
 
-    const educationList = Effect.fn("educationList")(function* (preferredLanguage: Option.Option<PreferredLanguage>, headers: Option.Option<Headers.Headers>) {
-      const resolvedLanguage = yield* resolveLanguage(preferredLanguage, headers);
-      return Schema.decodeOption(EducationList)(matchPreferredLanguage(resolvedLanguage, educationEn, educationPl));
-    });
+    const educationList = (preferredLanguage: Option.Option<PreferredLanguage>) =>
+      Effect.sync(() => {
+        const resolvedLanguage = resolveLanguage(preferredLanguage);
+        return Schema.decodeOption(EducationList)(matchPreferredLanguage(resolvedLanguage, educationEn, educationPl));
+      });
 
-    const experience = Effect.fn("experience")(function* (
-      slug: Experience["slug"],
-      preferredLanguage: Option.Option<PreferredLanguage>,
-      headers: Option.Option<Headers.Headers>
-    ) {
-      const resolvedLanguage = yield* resolveLanguage(preferredLanguage, headers);
-      return Schema.decodeUnknownOption(ExperienceList)(matchPreferredLanguage(resolvedLanguage, experienceEn, experiencePl)).pipe(
-        Option.flatMap(Array.findFirst((exp) => exp.slug === slug))
-      );
-    });
+    const experience = (slug: Experience["slug"], preferredLanguage: Option.Option<PreferredLanguage>) =>
+      Effect.sync(() => {
+        const resolvedLanguage = resolveLanguage(preferredLanguage);
+        return Schema.decodeUnknownOption(ExperienceList)(matchPreferredLanguage(resolvedLanguage, experienceEn, experiencePl)).pipe(
+          Option.flatMap(Array.findFirst((exp) => exp.slug === slug))
+        );
+      });
 
     return { randomPageTitles, stablePageTitles, localizedContent, experienceList, educationList, experience } as const;
   }),
 }) {
-  static readonly layer = Layer.effect(this, this.make).pipe(Layer.provide(Lang.layer));
+  static readonly layer = Layer.effect(this, this.make);
 }

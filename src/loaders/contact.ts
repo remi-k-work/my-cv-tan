@@ -11,20 +11,17 @@ export const loaderContact = createIsomorphicFn()
   .server(() =>
     serverLoader((data, preferredLanguage) =>
       Effect.gen(function* () {
-        const { randomPageTitles, stablePageTitles, localizedContent } = yield* Effect.all(
+        const { randomPageTitles, stablePageTitles } = yield* Effect.all(
           {
-            randomPageTitles: data.randomPageTitles(Option.some(preferredLanguage), Option.none()),
-            stablePageTitles: data.stablePageTitles(Option.some(preferredLanguage), Option.none()),
-            localizedContent: data.localizedContent(Option.some(preferredLanguage), Option.none()),
+            randomPageTitles: data.randomPageTitles(Option.some(preferredLanguage)),
+            stablePageTitles: data.stablePageTitles(Option.some(preferredLanguage)),
           },
           { concurrency: "unbounded" }
         );
 
         return {
-          preferredLanguage,
           randomPageTitles: yield* requireData(randomPageTitles, "random page titles"),
           stablePageTitles: yield* requireData(stablePageTitles, "stable page titles"),
-          localizedContent: yield* requireData(localizedContent, "localized content"),
         } as const;
       })
     )
@@ -32,21 +29,17 @@ export const loaderContact = createIsomorphicFn()
   .client(() =>
     clientLoader((client) =>
       Effect.gen(function* () {
-        const { preferredLanguage, randomPageTitles, stablePageTitles, localizedContent } = yield* Effect.all(
+        const { randomPageTitles, stablePageTitles } = yield* Effect.all(
           {
-            preferredLanguage: client.preferredLanguage(),
             randomPageTitles: client.randomPageTitles(),
             stablePageTitles: client.stablePageTitles(),
-            localizedContent: client.localizedContent(),
           },
           { concurrency: "unbounded" }
         );
 
         return {
-          preferredLanguage,
           randomPageTitles: yield* requireData(randomPageTitles, "random page titles"),
           stablePageTitles: yield* requireData(stablePageTitles, "stable page titles"),
-          localizedContent: yield* requireData(localizedContent, "localized content"),
         } as const;
       })
     )

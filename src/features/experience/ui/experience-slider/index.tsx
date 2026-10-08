@@ -11,15 +11,13 @@ import { Dot, Next, Prev } from "./buttons";
 
 // types
 import type { EmblaCarouselType } from "embla-carousel";
-import type { LocalizedContent } from "@/domain";
 import type { ExperienceList } from "@/features/experience/domain";
 
 interface ExperienceSliderProps {
-  localizedContent: LocalizedContent;
   experienceList: ExperienceList;
 }
 
-export function ExperienceSlider({ localizedContent, experienceList }: ExperienceSliderProps) {
+export function ExperienceSlider({ experienceList }: ExperienceSliderProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel();
 
   return (
@@ -28,7 +26,7 @@ export function ExperienceSlider({ localizedContent, experienceList }: Experienc
         <div className="-ms-4 flex touch-pan-y touch-pinch-zoom">
           {experienceList.map((experience) => (
             <div key={experience.slug} className="min-w-0 shrink-0 grow-0 basis-full ps-4">
-              <Slide localizedContent={localizedContent} experience={experience} />
+              <Slide experience={experience} />
             </div>
           ))}
         </div>

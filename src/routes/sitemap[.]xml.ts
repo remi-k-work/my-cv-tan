@@ -11,7 +11,7 @@ import { buildSitemapXml, sitemapUnavailableResponse } from "@/features/meta/dom
 const main = Effect.gen(function* () {
   const data = yield* Data;
 
-  const maybeList = yield* data.experienceList(Option.some("en"), Option.none());
+  const maybeList = yield* data.experienceList(Option.some("en"));
   const experienceList = yield* requireData(maybeList, "experience list");
   const xml = buildSitemapXml(experienceList);
 

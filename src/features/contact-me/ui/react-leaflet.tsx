@@ -3,23 +3,22 @@ import "leaflet/dist/leaflet.css";
 
 // services, features, and other libraries
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { useGT } from "gt-tanstack-start";
 
-// types
-import type { LocalizedContent } from "@/domain";
+// constants
+import { UI_COPY } from "@/features/data/domain/ui-copy";
 
-interface ReactLeafletProps {
-  localizedContent: LocalizedContent;
-}
+export default function ReactLeaflet() {
+  const gt = useGT();
 
-export default function ReactLeaflet({ localizedContent }: ReactLeafletProps) {
   return (
     <MapContainer center={[50.05142444038861, 21.98322537033913]} zoom={17} className="z-0 size-full">
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
       <Marker position={[50.05142444038861, 21.98322537033913]}>
         <Popup>
-          {localizedContent["contactMap"]["letUsTalk"]}
+          {gt(UI_COPY.contactMap.letUsTalk)}
           <br />
-          {localizedContent["contactMap"]["overCup"]}
+          {gt(UI_COPY.contactMap.overCup)}
         </Popup>
       </Marker>
     </MapContainer>

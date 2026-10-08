@@ -1,22 +1,24 @@
 // services, features, and other libraries
 import { cn } from "@/lib/utils";
+import { useGT } from "gt-tanstack-start";
 
 // components
 import { NavItem } from "./nav-item";
 import { LangChanger } from "@/features/data/ui/lang-changer";
 
 // types
-import type { LocalizedContent, PreferredLanguage } from "@/domain";
+import type { LocalizedContent } from "@/domain";
 
 interface HeaderProps {
-  preferredLanguage: PreferredLanguage;
   localizedContent: LocalizedContent;
 }
 
 // constants
 import { NAV_ITEMS } from "./constants";
 
-export function Header({ preferredLanguage, localizedContent }: HeaderProps) {
+export function Header({ localizedContent }: HeaderProps) {
+  const gt = useGT();
+
   return (
     <header
       className={cn(
@@ -37,10 +39,10 @@ export function Header({ preferredLanguage, localizedContent }: HeaderProps) {
           "*:border *:bg-surface-1 *:p-3 *:text-text-2 *:hover:text-accent"
         )}
       >
-        {NAV_ITEMS(localizedContent).map((navItem, index) => (
+        {NAV_ITEMS(localizedContent, gt).map((navItem, index) => (
           <NavItem key={navItem.href} {...navItem} animDelay={index ** 2} />
         ))}
-        <LangChanger preferredLanguage={preferredLanguage} />
+        <LangChanger />
       </nav>
     </header>
   );

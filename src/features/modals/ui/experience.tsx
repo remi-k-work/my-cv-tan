@@ -1,5 +1,6 @@
 // services, features, and other libraries
 import { cn } from "@/lib/utils";
+import { useGT } from "gt-tanstack-start";
 
 // components
 import { Button, Dialog } from "@base-ui/react";
@@ -18,8 +19,13 @@ interface ExperienceModalProps {
   children: ReactNode;
 }
 
+// constants
+import { UI_COPY } from "@/features/data/domain/ui-copy";
+
 // Pure presentation shell of the overlay: the parent decides when it is open and what closing means
 export function ExperienceModal({ isOpen, onClosed, title, children }: ExperienceModalProps) {
+  const gt = useGT();
+
   return (
     <Dialog.Root open={isOpen} onOpenChange={(next) => !next && onClosed()}>
       <Dialog.Portal>
@@ -46,7 +52,7 @@ export function ExperienceModal({ isOpen, onClosed, title, children }: Experienc
                   <RevealText>{title}</RevealText>
                 </h3>
               </section>
-              <Button className="button" onClick={onClosed}>
+              <Button className="button" title={gt(UI_COPY.experienceModal.close)} aria-label={gt(UI_COPY.experienceModal.close)} onClick={onClosed}>
                 <XCircleIcon className="size-9" />
               </Button>
             </header>

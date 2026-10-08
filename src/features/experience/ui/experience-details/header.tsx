@@ -2,15 +2,16 @@
 import { ExperienceLinks } from "@/features/experience/ui/experience-links";
 
 // types
-import type { LocalizedContent } from "@/domain";
 import type { Experience } from "@/features/experience/domain";
 
 interface DetailsHeaderProps {
-  localizedContent: LocalizedContent;
   experience: Experience;
 }
 
-export function DetailsHeader({ localizedContent, experience }: DetailsHeaderProps) {
+// constants
+import { UI_COPY } from "@/features/data/domain/ui-copy";
+
+export function DetailsHeader({ experience }: DetailsHeaderProps) {
   const { year, role, company } = experience;
 
   return (
@@ -22,7 +23,7 @@ export function DetailsHeader({ localizedContent, experience }: DetailsHeaderPro
       </section>
       <section className="flex-3">
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <ExperienceLinks experience={experience} labels={localizedContent["experienceDetails"]} iconClassName="size-11" />
+          <ExperienceLinks experience={experience} labels={UI_COPY.experienceDetails} iconClassName="size-11" />
         </div>
       </section>
     </header>
