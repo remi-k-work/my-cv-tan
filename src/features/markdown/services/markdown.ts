@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { Context, Effect, Layer, Option } from "effect";
-import { requireData } from "@/features/data/domain";
+import { requireData, RequiredDataError } from "@/features/data/domain";
 import { Data } from "@/features/data/services/data";
 import { Lang } from "@/features/data/services/lang";
 import { absoluteUrl, experiencePath } from "@/features/meta/domain";
@@ -39,18 +39,15 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
     });
 
     // Fetch + require pairs: every twin renders from the stable (non-random) content bundle in the requested language
-    const stablePageTitles = Effect.fnUntraced(function* (preferredLanguage: PreferredLanguage) {
-      return yield* requireData(yield* data.stablePageTitles(Option.some(preferredLanguage), Option.none()), "page titles");
-    });
-    const localizedContent = Effect.fnUntraced(function* (preferredLanguage: PreferredLanguage) {
-      return yield* requireData(yield* data.localizedContent(Option.some(preferredLanguage), Option.none()), "localized content");
-    });
-    const experienceList = Effect.fnUntraced(function* (preferredLanguage: PreferredLanguage) {
-      return yield* requireData(yield* data.experienceList(Option.some(preferredLanguage), Option.none()), "experience list");
-    });
-    const educationList = Effect.fnUntraced(function* (preferredLanguage: PreferredLanguage) {
-      return yield* requireData(yield* data.educationList(Option.some(preferredLanguage), Option.none()), "education list");
-    });
+    const required = <A>(fetch: (lang: PreferredLanguage) => Effect.Effect<Option.Option<A>>, dataset: string) =>
+      Effect.fnUntraced(function* (lang: PreferredLanguage): Effect.fn.Return<A, RequiredDataError> {
+        return yield* requireData(yield* fetch(lang), dataset);
+      });
+
+    const stablePageTitles = required((lang) => data.stablePageTitles(Option.some(lang), Option.none()), "page titles");
+    const localizedContent = required((lang) => data.localizedContent(Option.some(lang), Option.none()), "localized content");
+    const experienceList = required((lang) => data.experienceList(Option.some(lang), Option.none()), "experience list");
+    const educationList = required((lang) => data.educationList(Option.some(lang), Option.none()), "education list");
 
     const home = Effect.fn("home")(function* (request: Request) {
       const preferredLanguage = yield* language(request.url);

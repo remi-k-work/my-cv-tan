@@ -25,34 +25,34 @@ const localizedPageHead = (
   const title = pageField(pageTitles, pagePath, "heading", TITLE);
   const description = excerpt(pageField(pageTitles, pagePath, "intro", DESCRIPTION), META_DESCRIPTION_LENGTH);
 
+  // title/description are internal values callers feed into their JSON-LD builders;
+  // meta/links are the TanStack head contract (flat shape, no nested `head` key)
   return {
     title,
     description,
-    head: {
-      meta: [
-        { title: `${SITE_NAME} ● ${title}` },
-        { name: "description", content: description },
-        { name: "robots", content: "index, follow, max-image-preview:large" },
-        ...socialMeta({ title, description, path: pagePath, image: GLOBAL_SOCIAL_IMAGE, ogType: "website", preferredLanguage }),
-      ],
-      links: [canonicalLink(pagePath), markdownAlternateLink(mdHref)],
-    },
+    meta: [
+      { title: `${SITE_NAME} ● ${title}` },
+      { name: "description", content: description },
+      { name: "robots", content: "index, follow, max-image-preview:large" },
+      ...socialMeta({ title, description, path: pagePath, image: GLOBAL_SOCIAL_IMAGE, ogType: "website", preferredLanguage }),
+    ],
+    links: [canonicalLink(pagePath), markdownAlternateLink(mdHref)],
   };
 };
 
 export const homeListHead = ({ pageTitles, experienceList, preferredLanguage }: HomeHeadInput) => {
-  const { title, description, head } = localizedPageHead(pageTitles, "/", HOME_MD_HREF, preferredLanguage);
-  return { ...head, scripts: [homeJsonLd({ title, description, experienceList, preferredLanguage })] };
+  const { title, description, meta, links } = localizedPageHead(pageTitles, "/", HOME_MD_HREF, preferredLanguage);
+  return { meta, links, scripts: [homeJsonLd({ title, description, experienceList, preferredLanguage })] };
 };
 
 export const educationHead = ({ pageTitles, educationList, preferredLanguage }: EducationHeadInput) => {
-  const { title, head } = localizedPageHead(pageTitles, "/education", EDUCATION_MD_HREF, preferredLanguage);
-  return { ...head, scripts: [educationJsonLd({ title, educationList, preferredLanguage })] };
+  const { title, meta, links } = localizedPageHead(pageTitles, "/education", EDUCATION_MD_HREF, preferredLanguage);
+  return { meta, links, scripts: [educationJsonLd({ title, educationList, preferredLanguage })] };
 };
 
 export const contactHead = ({ pageTitles, preferredLanguage }: PageHeadInput) => {
-  const { title, description, head } = localizedPageHead(pageTitles, "/contact", CONTACT_MD_HREF, preferredLanguage);
-  return { ...head, scripts: [contactJsonLd({ title, description, preferredLanguage })] };
+  const { title, description, meta, links } = localizedPageHead(pageTitles, "/contact", CONTACT_MD_HREF, preferredLanguage);
+  return { meta, links, scripts: [contactJsonLd({ title, description, preferredLanguage })] };
 };
 
 // Detail head always canonicalizes to the clean /{slug} URL, so stray query parameters never become duplicates

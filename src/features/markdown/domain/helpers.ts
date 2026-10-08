@@ -11,10 +11,8 @@ export const escapeMd = (text: string) =>
     String.replace(/\r\n/g, "\n"),
     // Escape backslashes first so later escapes stay literal
     String.replace(/\\/g, "\\\\"),
-    // Neutralize Markdown control characters that could re-shape the document
-    // (brackets escaped in a second pass: `[` needs no escape inside a character class)
-    String.replace(/([#*_`<>])/g, "\\$1"),
-    String.replace(/(\[|\])/g, "\\$1"),
+    // Neutralize the Markdown control characters that could re-shape the document
+    String.replace(/([#*_`<>[\]])/g, "\\$1"),
     // Collapse 3+ blank lines (data intros are long prose)
     String.replace(/\n{3,}/g, "\n\n"),
     String.trim

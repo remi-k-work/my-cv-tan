@@ -2,7 +2,7 @@
 import type { PreferredLanguage } from "@/domain";
 
 // services, features, and other libraries
-import { Effect } from "effect";
+import { Effect, Record } from "effect";
 import { RequiredDataError } from "@/features/data/domain";
 import { unavailableMarkdownBody } from "./required-data";
 
@@ -26,36 +26,35 @@ export const mdResponse = (body: string, preferredLanguage: PreferredLanguage, c
 export const mdNotFoundResponse = (body: string, preferredLanguage: PreferredLanguage) =>
   new Response(body, { status: 404, headers: { ...mdHeaders(preferredLanguage), "X-Robots-Tag": "noindex, follow" } });
 
-// Unavailable content must not be cached as if it were a complete document
-export const mdUnavailableResponse = (body: string, preferredLanguage: PreferredLanguage) =>
-  new Response(body, { status: 503, headers: { ...mdHeaders(preferredLanguage), "Cache-Control": "no-store", "X-Robots-Tag": "noindex, follow" } });
+// 503 for incomplete documents: they must never be cached as if they were complete
+const unavailableResponse = (body: string, headers: Record.ReadonlyRecord<string, string>) =>
+  new Response(body, { status: 503, headers: { ...headers, "Cache-Control": "no-store", "X-Robots-Tag": "noindex, follow" } });
 
-// Maps a document pipeline's data failures to the non-cacheable 503 above
-export const markdownDataResponse = (preferredLanguage: PreferredLanguage, document: Effect.Effect<Response, RequiredDataError>) =>
+export const mdUnavailableResponse = (body: string, preferredLanguage: PreferredLanguage) => unavailableResponse(body, mdHeaders(preferredLanguage));
+
+export const txtUnavailableResponse = (body: string) => unavailableResponse(body, { "Content-Type": TXT_CONTENT_TYPE });
+
+// Shared recovery for document pipelines: a data failure logs, then renders the non-cacheable 503 above
+const dataResponse = (logPrefix: string, fallback: () => Response, document: Effect.Effect<Response, RequiredDataError>) =>
   document.pipe(
     Effect.catchTag("RequiredDataError", (error) =>
       Effect.gen(function* () {
-        yield* Effect.logError(`[MARKDOWN]: ${error.message}`);
-        return mdUnavailableResponse(unavailableMarkdownBody(preferredLanguage), preferredLanguage);
+        yield* Effect.logError(`${logPrefix}: ${error.message}`);
+        return fallback();
       })
     )
+  );
+
+export const markdownDataResponse = (preferredLanguage: PreferredLanguage, document: Effect.Effect<Response, RequiredDataError>) =>
+  dataResponse("[MARKDOWN]", () => mdUnavailableResponse(unavailableMarkdownBody(preferredLanguage), preferredLanguage), document);
+
+// Plain-text discovery documents (llms.txt): same recovery, plain-text 503
+export const textDataResponse = (document: Effect.Effect<Response, RequiredDataError>) =>
+  dataResponse(
+    "[LLMS.TXT]",
+    () => txtUnavailableResponse("llms.txt is temporarily unavailable because required portfolio content could not be loaded. Please try again shortly.\n"),
+    document
   );
 
 // Plain-text discovery document (llms.txt, robots.txt): cacheable at the CDN
 export const txtResponse = (body: string) => new Response(body, { headers: { "Content-Type": TXT_CONTENT_TYPE, "Cache-Control": MARKDOWN_CACHE_CONTROL } });
-
-export const txtUnavailableResponse = (body: string) =>
-  new Response(body, { status: 503, headers: { "Content-Type": TXT_CONTENT_TYPE, "Cache-Control": "no-store", "X-Robots-Tag": "noindex, follow" } });
-
-// Same recovery as markdownDataResponse, for plain-text documents
-export const textDataResponse = (document: Effect.Effect<Response, RequiredDataError>) =>
-  document.pipe(
-    Effect.catchTag("RequiredDataError", (error) =>
-      Effect.gen(function* () {
-        yield* Effect.logError(`[LLMS.TXT]: ${error.message}`);
-        return txtUnavailableResponse(
-          "llms.txt is temporarily unavailable because required portfolio content could not be loaded. Please try again shortly.\n"
-        );
-      })
-    )
-  );

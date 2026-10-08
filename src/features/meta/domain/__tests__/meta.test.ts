@@ -59,6 +59,9 @@ it("root metadata defaults to noindex and complete page heads explicitly allow i
   assert.include(JSON.stringify(ROOT_HEAD.meta), '"content":"noindex, follow"');
 
   const indexable = homeListHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" });
+  // TanStack reads only top-level meta/links off head results (load-server.js): the shape must stay flat
+  assert.isDefined(indexable.meta);
+  assert.isDefined(indexable.links);
   assert.include(JSON.stringify(indexable.meta), "index, follow, max-image-preview:large");
   assert.notInclude(JSON.stringify(indexable.meta), "noindex");
   assert.notInclude(JSON.stringify(indexable.meta), '"name":"keywords"');
