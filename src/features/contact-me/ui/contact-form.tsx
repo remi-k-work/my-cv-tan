@@ -16,16 +16,17 @@ export function ContactForm() {
   const gt = useGT();
 
   // Get the form context
-  const submit = useAtomSet(contactForm.submit);
+  const form = contactForm();
+  const submit = useAtomSet(form.submit);
 
   // Provide feedback to the user regarding this form actions
-  useSubmitToast(contactForm);
+  useSubmitToast(form);
 
   // Labels and placeholders of the form's fields
   const labels = UI_COPY.contactForm;
 
   return (
-    <contactForm.Initialize defaultValues={{ name: "", email: "", subject: "", message: "", captchaInput: "" }}>
+    <form.Initialize defaultValues={{ name: "", email: "", subject: "", message: "", captchaInput: "" }}>
       <form
         className="mx-auto w-full max-w-4xl rounded-xl bg-surface-1 p-3"
         onSubmit={(ev) => {
@@ -34,7 +35,7 @@ export function ContactForm() {
           submit();
         }}
       >
-        <contactForm.name
+        <form.name
           label={gt(labels["labelName"])}
           size={20}
           maxLength={26}
@@ -42,7 +43,7 @@ export function ContactForm() {
           autoComplete="name"
           placeholder={gt(labels["placeholderName"])}
         />
-        <contactForm.email
+        <form.email
           label={gt(labels["labelEmail"])}
           size={20}
           maxLength={50}
@@ -50,7 +51,7 @@ export function ContactForm() {
           autoComplete="email"
           placeholder={gt(labels["placeholderEmail"])}
         />
-        <contactForm.subject
+        <form.subject
           label={gt(labels["labelSubject"])}
           size={20}
           maxLength={41}
@@ -58,7 +59,7 @@ export function ContactForm() {
           autoComplete="off"
           placeholder={gt(labels["placeholderSubject"])}
         />
-        <contactForm.message
+        <form.message
           label={gt(labels["labelMessage"])}
           cols={30}
           rows={8}
@@ -70,7 +71,7 @@ export function ContactForm() {
         <br />
         <Captcha />
         <br />
-        <contactForm.captchaInput
+        <form.captchaInput
           label={gt(labels["labelCaptcha"])}
           size={20}
           maxLength={7}
@@ -79,9 +80,9 @@ export function ContactForm() {
           placeholder={gt(labels["placeholderCaptcha"])}
         />
         <br />
-        <SubmitStatus contactForm={contactForm} />
-        <FormSubmit contactForm={contactForm} />
+        <SubmitStatus contactForm={form} />
+        <FormSubmit contactForm={form} />
       </form>
-    </contactForm.Initialize>
+    </form.Initialize>
   );
 }

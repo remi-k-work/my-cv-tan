@@ -10,7 +10,7 @@ import { CaptchaInputField, EmailField, MessageField, NameField, SubjectField } 
 import { TextAreaInput, TextInput } from "@/ui/form";
 
 // types
-export type ContactForm = typeof contactForm;
+export type ContactForm = ReturnType<typeof contactForm>;
 
 const contactFormBuilder = FormBuilder.empty
   .addField(NameField())
@@ -31,18 +31,19 @@ const contactFormBuilder = FormBuilder.empty
     )
   );
 
-export const contactForm = FormReact.make(contactFormBuilder, {
-  runtime: RuntimeAtom,
-  fields: {
-    name: TextInput,
-    email: TextInput,
-    subject: TextInput,
-    message: TextAreaInput,
-    captchaInput: TextInput,
-  },
-  onSubmit: (_, { decoded: { name, email, subject, message } }) =>
-    Effect.gen(function* () {
-      const { contactForm } = yield* RpcContactMeClient;
-      yield* contactForm({ name, email, subject, message });
-    }),
-});
+export const contactForm = () =>
+  FormReact.make(contactFormBuilder, {
+    runtime: RuntimeAtom,
+    fields: {
+      name: TextInput,
+      email: TextInput,
+      subject: TextInput,
+      message: TextAreaInput,
+      captchaInput: TextInput,
+    },
+    onSubmit: (_, { decoded: { name, email, subject, message } }) =>
+      Effect.gen(function* () {
+        const { contactForm } = yield* RpcContactMeClient;
+        yield* contactForm({ name, email, subject, message });
+      }),
+  });
