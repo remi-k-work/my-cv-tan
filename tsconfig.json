@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/@effect/tsgo/schema.json",
   "compilerOptions": {
+    "forceConsistentCasingInFileNames": true,
     "target": "es2023",
     "lib": [
       "dom",
