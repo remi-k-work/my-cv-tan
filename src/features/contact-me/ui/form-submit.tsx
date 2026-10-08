@@ -32,6 +32,9 @@ export function FormSubmit({ contactForm, localizedContent }: FormSubmitProps) {
   // To be able to send the user back after canceling
   const router = useRouter();
 
+  // Labels of the submit, reset and cancel buttons
+  const labels = localizedContent["formSubmit"];
+
   // Determine allowance to submit the form
   const hasSubmittedSuccessfully = Option.isSome(lastSubmittedValues);
   const canSubmit = isDirty && !waiting && (hasChangedSinceSubmit || !hasSubmittedSuccessfully);
@@ -40,15 +43,15 @@ export function FormSubmit({ contactForm, localizedContent }: FormSubmitProps) {
     <section className="flex flex-wrap gap-3 *:flex-1 md:gap-6">
       <Button className="button" type="submit" disabled={!canSubmit}>
         {waiting ? <Loader2 className="size-9 animate-spin" /> : <PaperAirplaneIcon className="size-9" />}
-        {waiting ? localizedContent["formSubmit"]["sending"] : localizedContent["formSubmit"]["send"]}
+        {waiting ? labels["sending"] : labels["send"]}
       </Button>
       <Button className="button bg-destructive" onClick={() => reset()}>
         <XCircleIcon className="size-9" />
-        {localizedContent["formSubmit"]["reset"]}
+        {labels["reset"]}
       </Button>
       <Button className="button bg-secondary" onClick={() => router.history.back()}>
         <ArrowLeftCircleIcon className="size-9" />
-        {localizedContent["formSubmit"]["cancel"]}
+        {labels["cancel"]}
       </Button>
     </section>
   );

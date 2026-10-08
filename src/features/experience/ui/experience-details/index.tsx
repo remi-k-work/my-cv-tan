@@ -2,7 +2,7 @@
 import { chunkTextByWords } from "@/features/typewriter/domain";
 
 // components
-import { Header } from "./header";
+import { DetailsHeader } from "./header";
 import { ScreenShots } from "@/features/experience/ui/screen-shots";
 import { SkillsUsed } from "./skills-used";
 import { Typewriter } from "@/features/typewriter/ui/typewriter";
@@ -25,7 +25,7 @@ export function ExperienceDetails({ localizedContent, experience, experience: { 
 
   return (
     <article className="mx-auto w-full max-w-4xl rounded-xl bg-surface-2 p-3">
-      <Header localizedContent={localizedContent} experience={experience} />
+      <DetailsHeader localizedContent={localizedContent} experience={experience} />
       <ScreenShots experience={experience} />
       <SkillsUsed localizedContent={localizedContent} experience={experience} />
       {paras.map((para, index) => (

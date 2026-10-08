@@ -1,8 +1,5 @@
 // services, features, and other libraries
 import { cn } from "@/lib/utils";
-import { Option } from "effect";
-import { useAtom } from "@effect/atom-react";
-import { experienceAtom } from "@/features/modals/state";
 
 // components
 import { Button, Dialog } from "@base-ui/react";
@@ -13,18 +10,18 @@ import { InformationCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
 
 // types
 import type { ReactNode } from "react";
-import type { LocalizedContent } from "@/domain";
 
 interface ExperienceModalProps {
-  localizedContent: LocalizedContent;
+  isOpen: boolean;
+  onClosed: () => void;
+  title: string;
   children: ReactNode;
 }
 
-export function ExperienceModal({ localizedContent, children }: ExperienceModalProps) {
-  const [experience, setExperience] = useAtom(experienceAtom);
-
+// Pure presentation shell of the overlay: the parent decides when it is open and what closing means
+export function ExperienceModal({ isOpen, onClosed, title, children }: ExperienceModalProps) {
   return (
-    <Dialog.Root open={Option.isSome(experience)} onOpenChange={(open) => !open && setExperience(Option.none())}>
+    <Dialog.Root open={isOpen} onOpenChange={(next) => !next && onClosed()}>
       <Dialog.Portal>
         <Dialog.Backdrop
           className={cn(
@@ -46,10 +43,10 @@ export function ExperienceModal({ localizedContent, children }: ExperienceModalP
               <section className="flex items-center gap-2 text-text-2">
                 <InformationCircleIcon className="size-11 flex-none" />
                 <h3 className="inline-grid flex-1 overflow-clip text-xl tracking-widest uppercase">
-                  <RevealText>{localizedContent["experienceModal"]["projectInfo"]}</RevealText>
+                  <RevealText>{title}</RevealText>
                 </h3>
               </section>
-              <Button className="button" onClick={() => setExperience(Option.none())}>
+              <Button className="button" onClick={onClosed}>
                 <XCircleIcon className="size-9" />
               </Button>
             </header>

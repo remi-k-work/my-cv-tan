@@ -16,22 +16,13 @@ interface SubmitStatusProps {
 
 export function SubmitStatus({ contactForm, localizedContent }: SubmitStatusProps) {
   const submitResult = useAtomValue(contactForm.submit);
+  const feedback = localizedContent["contactFormFeedback"];
 
   // Show the permanent feedback message as well
   return AsyncResult.builder(submitResult)
     .onInitialOrWaiting(() => null)
-    .onSuccess(() => <InfoLine message={`${localizedContent["contactFormFeedback"]["success"]} → ${localizedContent["contactFormFeedback"]["messageSent"]}`} />)
-    .onErrorTag("SchemaError", () => (
-      <InfoLine message={`${localizedContent["contactFormFeedback"]["missingFields"]} → ${localizedContent["contactFormFeedback"]["pleaseCorrect"]}`} />
-    ))
-    .onError(() => (
-      <InfoLine message={`${localizedContent["contactFormFeedback"]["serverError"]} → ${localizedContent["contactFormFeedback"]["messageNotSent"]}`} />
-    ))
-    .onDefect(() => (
-      <InfoLine message={`${localizedContent["contactFormFeedback"]["serverError"]} → ${localizedContent["contactFormFeedback"]["messageNotSent"]}`} />
-    ))
-    .onInterrupt(() => (
-      <InfoLine message={`${localizedContent["contactFormFeedback"]["serverError"]} → ${localizedContent["contactFormFeedback"]["messageNotSent"]}`} />
-    ))
+    .onSuccess(() => <InfoLine message={`${feedback["success"]} → ${feedback["messageSent"]}`} />)
+    .onErrorTag("SchemaError", () => <InfoLine message={`${feedback["missingFields"]} → ${feedback["pleaseCorrect"]}`} />)
+    .onFailure(() => <InfoLine message={`${feedback["serverError"]} → ${feedback["messageNotSent"]}`} />)
     .render();
 }

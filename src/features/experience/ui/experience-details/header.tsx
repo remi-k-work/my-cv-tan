@@ -1,20 +1,18 @@
 // components
-import { LinkChip } from "@/features/experience/ui/link-chip";
-
-// assets
-import { GlobeAltIcon, VideoCameraIcon } from "@heroicons/react/24/solid";
-import { GitHubIcon } from "@/assets/icons";
+import { ExperienceLinks } from "@/features/experience/ui/experience-links";
 
 // types
 import type { LocalizedContent } from "@/domain";
 import type { Experience } from "@/features/experience/domain";
 
-interface HeaderProps {
+interface DetailsHeaderProps {
   localizedContent: LocalizedContent;
   experience: Experience;
 }
 
-export function Header({ localizedContent, experience: { year, role, company, gitHubLink, liveLink, videoLink } }: HeaderProps) {
+export function DetailsHeader({ localizedContent, experience }: DetailsHeaderProps) {
+  const { year, role, company } = experience;
+
   return (
     <header className="mb-4 flex min-h-28 gap-4 @md:min-h-auto">
       <section className="flex-4">
@@ -24,21 +22,7 @@ export function Header({ localizedContent, experience: { year, role, company, gi
       </section>
       <section className="flex-3">
         <div className="flex flex-wrap items-center justify-end gap-2">
-          {liveLink && (
-            <LinkChip href={liveLink} title={localizedContent["experienceDetails"]["liveLink"]}>
-              <GlobeAltIcon className="size-11" />
-            </LinkChip>
-          )}
-          {gitHubLink && (
-            <LinkChip href={gitHubLink} title={localizedContent["experienceDetails"]["goAndSee"]}>
-              <GitHubIcon className="size-11" />
-            </LinkChip>
-          )}
-          {videoLink && (
-            <LinkChip href={videoLink} title={localizedContent["experienceDetails"]["watchVideo"]}>
-              <VideoCameraIcon className="size-11" />
-            </LinkChip>
-          )}
+          <ExperienceLinks experience={experience} labels={localizedContent["experienceDetails"]} iconClassName="size-11" />
         </div>
       </section>
     </header>

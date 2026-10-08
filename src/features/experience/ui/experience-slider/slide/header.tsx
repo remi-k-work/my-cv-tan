@@ -7,24 +7,23 @@ import { useAtomSet } from "@effect/atom-react";
 import { experienceAtom } from "@/features/modals/state";
 
 // components
-import { LinkChip } from "@/features/experience/ui/link-chip";
+import { ExperienceLinks } from "@/features/experience/ui/experience-links";
 
 // assets
-import { GlobeAltIcon, InformationCircleIcon, VideoCameraIcon } from "@heroicons/react/24/solid";
-import { GitHubIcon } from "@/assets/icons";
+import { InformationCircleIcon } from "@heroicons/react/24/solid";
 
 // types
 import type { MouseEvent } from "react";
 import type { LocalizedContent } from "@/domain";
 import type { Experience } from "@/features/experience/domain";
 
-interface HeaderProps {
+interface SlideHeaderProps {
   localizedContent: LocalizedContent;
   experience: Experience;
 }
 
-export function Header({ localizedContent, experience }: HeaderProps) {
-  const { slug, year, role, company, gitHubLink, liveLink, videoLink } = experience;
+export function SlideHeader({ localizedContent, experience }: SlideHeaderProps) {
+  const { slug, year, role, company } = experience;
   const setExperience = useAtomSet(experienceAtom);
 
   function handleMoreInfoClicked(ev: MouseEvent) {
@@ -50,21 +49,7 @@ export function Header({ localizedContent, experience }: HeaderProps) {
           >
             <InformationCircleIcon className="size-9" />
           </Link>
-          {liveLink && (
-            <LinkChip href={liveLink} title={localizedContent["experienceSlide"]["liveLink"]}>
-              <GlobeAltIcon className="size-9" />
-            </LinkChip>
-          )}
-          {gitHubLink && (
-            <LinkChip href={gitHubLink} title={localizedContent["experienceSlide"]["goAndSee"]}>
-              <GitHubIcon className="size-9" />
-            </LinkChip>
-          )}
-          {videoLink && (
-            <LinkChip href={videoLink} title={localizedContent["experienceSlide"]["watchVideo"]}>
-              <VideoCameraIcon className="size-9" />
-            </LinkChip>
-          )}
+          <ExperienceLinks experience={experience} labels={localizedContent["experienceSlide"]} iconClassName="size-9" />
         </div>
       </section>
     </header>
