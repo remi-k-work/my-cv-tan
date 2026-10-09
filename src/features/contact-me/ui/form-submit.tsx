@@ -20,9 +20,6 @@ interface FormSubmitProps {
   contactForm: ContactForm;
 }
 
-// constants
-import { UI_COPY } from "@/features/data/domain/ui-copy";
-
 export function FormSubmit({ contactForm }: FormSubmitProps) {
   const gt = useGT();
   // Get the form context
@@ -35,9 +32,6 @@ export function FormSubmit({ contactForm }: FormSubmitProps) {
   // To be able to send the user back after canceling
   const router = useRouter();
 
-  // Labels of the submit, reset and cancel buttons
-  const labels = UI_COPY.formSubmit;
-
   // Determine allowance to submit the form
   const hasSubmittedSuccessfully = Option.isSome(lastSubmittedValues);
   const canSubmit = isDirty && !waiting && (hasChangedSinceSubmit || !hasSubmittedSuccessfully);
@@ -46,15 +40,15 @@ export function FormSubmit({ contactForm }: FormSubmitProps) {
     <section className="flex flex-wrap gap-3 *:flex-1 md:gap-6">
       <Button className="button" type="submit" disabled={!canSubmit}>
         {waiting ? <Loader2 className="size-9 animate-spin" /> : <PaperAirplaneIcon className="size-9" />}
-        {waiting ? gt(labels["sending"]) : gt(labels["send"])}
+        {waiting ? gt("Sending...") : gt("Send")}
       </Button>
       <Button className="button bg-destructive" onClick={() => reset()}>
         <XCircleIcon className="size-9" />
-        {gt(labels["reset"])}
+        {gt("Reset")}
       </Button>
       <Button className="button bg-secondary" onClick={() => router.history.back()}>
         <ArrowLeftCircleIcon className="size-9" />
-        {gt(labels["cancel"])}
+        {gt("Cancel")}
       </Button>
     </section>
   );

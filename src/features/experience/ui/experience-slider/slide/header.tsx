@@ -21,9 +21,6 @@ interface SlideHeaderProps {
   experience: Experience;
 }
 
-// constants
-import { UI_COPY } from "@/features/data/domain/ui-copy";
-
 export function SlideHeader({ experience }: SlideHeaderProps) {
   const gt = useGT();
   const { slug, year, role, company } = experience;
@@ -48,11 +45,11 @@ export function SlideHeader({ experience }: SlideHeaderProps) {
             to="/{-$slug}"
             params={{ slug }}
             onClick={handleMoreInfoClicked}
-            title={gt(UI_COPY.experienceSlide.moreInfo)}
+            title={gt("More Info")}
           >
             <InformationCircleIcon className="size-9" />
           </Link>
-          <ExperienceLinks experience={experience} labels={UI_COPY.experienceSlide} iconClassName="size-9" />
+          <ExperienceLinks experience={experience} iconClassName="size-9" />
         </div>
       </section>
     </header>

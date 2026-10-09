@@ -15,9 +15,6 @@ import { SliderPanel } from "@/features/experience/ui/slider-panel";
 import { ExperienceDetails } from "@/features/experience/ui/experience-details";
 import { ExperienceModal } from "@/features/modals/ui/experience";
 
-// constants
-import { UI_COPY } from "@/features/data/domain/ui-copy";
-
 export const Route = createFileRoute("/{-$slug}")({
   loader: ({ params }) => loaderIndex(Option.fromNullishOr(params.slug)),
   head: ({ loaderData, params, matches }) => {
@@ -43,8 +40,8 @@ function HomePage() {
       <>
         <PageTitle pagePath="/" pageTitles={randomPageTitles} />
         <article className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-          <SliderPanel title={gt(UI_COPY.pageHome.experience)} experienceList={Array.filter(experienceList, ({ type }) => type === "e")} />
-          <SliderPanel title={gt(UI_COPY.pageHome.portfolioProjects)} experienceList={Array.filter(experienceList, ({ type }) => type === "p")} />
+          <SliderPanel title={gt("Experience")} experienceList={Array.filter(experienceList, ({ type }) => type === "e")} />
+          <SliderPanel title={gt("Portfolio Projects")} experienceList={Array.filter(experienceList, ({ type }) => type === "p")} />
         </article>
         {/* Overlay opened by intercepting the "more info" link: no navigation, so the sliders above stay mounted and keep their position */}
         <ExperienceDetailsModal />
@@ -69,7 +66,7 @@ function ExperienceDetailsModal() {
   const clearExperience = useAtomSet(experienceAtom);
 
   return (
-    <ExperienceModal isOpen={Option.isSome(currExperience)} onClosed={() => clearExperience(Option.none())} title={gt(UI_COPY.experienceModal.projectInfo)}>
+    <ExperienceModal isOpen={Option.isSome(currExperience)} onClosed={() => clearExperience(Option.none())} title={gt("Project Info & Description")}>
       {Option.isSome(currExperience) && <ExperienceDetails experience={currExperience.value} />}
     </ExperienceModal>
   );

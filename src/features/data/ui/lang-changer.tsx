@@ -15,9 +15,6 @@ import { Button } from "@base-ui/react";
 // assets
 import { PlFlagIcon, UsFlagIcon } from "@/assets/icons";
 
-// constants
-import { LANGUAGE_NAMES } from "@/features/data/domain/ui-copy";
-
 export function LangChanger() {
   const locale = useLocale();
   const setLocale = useSetLocale();
@@ -37,7 +34,7 @@ export function LangChanger() {
   }
 
   return (
-    <Button className="button" disabled={isPending} title={gt(locale === "en" ? LANGUAGE_NAMES.english : LANGUAGE_NAMES.polish)} onClick={handleLangToggled}>
+    <Button className="button" disabled={isPending} title={gt(locale === "en" ? "English" : "Polish")} onClick={handleLangToggled}>
       {locale === "en" ? <UsFlagIcon className="size-11" /> : <PlFlagIcon className="size-11" />}
     </Button>
   );

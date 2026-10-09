@@ -19,9 +19,6 @@ interface ExperienceModalProps {
   children: ReactNode;
 }
 
-// constants
-import { UI_COPY } from "@/features/data/domain/ui-copy";
-
 // Pure presentation shell of the overlay: the parent decides when it is open and what closing means
 export function ExperienceModal({ isOpen, onClosed, title, children }: ExperienceModalProps) {
   const gt = useGT();
@@ -52,7 +49,7 @@ export function ExperienceModal({ isOpen, onClosed, title, children }: Experienc
                   <RevealText>{title}</RevealText>
                 </h3>
               </section>
-              <Button className="button" title={gt(UI_COPY.experienceModal.close)} aria-label={gt(UI_COPY.experienceModal.close)} onClick={onClosed}>
+              <Button className="button" title={gt("Close")} aria-label={gt("Close")} onClick={onClosed}>
                 <XCircleIcon className="size-9" />
               </Button>
             </header>

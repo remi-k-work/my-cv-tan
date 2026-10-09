@@ -1,6 +1,7 @@
 // services, features, and other libraries
 import { Effect } from "effect";
 import { FormBuilder, FormReact } from "@lucas-barake/effect-form-react";
+import { msg } from "gt-tanstack-start";
 import { RpcCaptchaClient } from "@/features/captcha/rpc/client";
 import { RpcContactMeClient } from "@/features/contact-me/rpc/client";
 import { RuntimeAtom } from "@/lib/runtime-client";
@@ -22,11 +23,11 @@ const contactFormBuilder = FormBuilder.empty
     Effect.gen(function* () {
       // Check the captcha to ensure it matches
       const { isCaptchaValid } = yield* RpcCaptchaClient;
-      if (!(yield* isCaptchaValid({ captchaInput }))) return { path: ["captchaInput"], issue: "Entered captcha is invalid" };
+      if (!(yield* isCaptchaValid({ captchaInput }))) return { path: ["captchaInput"], issue: msg("Entered captcha is invalid") };
     }).pipe(
       Effect.orElseSucceed(() => ({
         path: ["captchaInput"],
-        issue: "Something went wrong, please try again later",
+        issue: msg("Something went wrong, please try again later"),
       }))
     )
   );

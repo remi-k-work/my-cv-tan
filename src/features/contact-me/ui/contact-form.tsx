@@ -9,9 +9,6 @@ import { Captcha } from "@/features/captcha/ui/captcha";
 import { SubmitStatus } from "./submit-status";
 import { FormSubmit } from "./form-submit";
 
-// constants
-import { UI_COPY } from "@/features/data/domain/ui-copy";
-
 export function ContactForm() {
   const gt = useGT();
 
@@ -21,9 +18,6 @@ export function ContactForm() {
 
   // Provide feedback to the user regarding this form actions
   useSubmitToast(form);
-
-  // Labels and placeholders of the form's fields
-  const labels = UI_COPY.contactForm;
 
   return (
     <form.Initialize defaultValues={{ name: "", email: "", subject: "", message: "", captchaInput: "" }}>
@@ -36,48 +30,48 @@ export function ContactForm() {
         }}
       >
         <form.name
-          label={gt(labels["labelName"])}
+          label={gt("Name")}
           size={20}
           maxLength={26}
           spellCheck={false}
           autoComplete="name"
-          placeholder={gt(labels["placeholderName"])}
+          placeholder={gt("Let me know who you are!")}
         />
         <form.email
-          label={gt(labels["labelEmail"])}
+          label={gt("Email")}
           size={20}
           maxLength={50}
           spellCheck={false}
           autoComplete="email"
-          placeholder={gt(labels["placeholderEmail"])}
+          placeholder={gt("I will reply to you here")}
         />
         <form.subject
-          label={gt(labels["labelSubject"])}
+          label={gt("Subject")}
           size={20}
           maxLength={41}
           spellCheck
           autoComplete="off"
-          placeholder={gt(labels["placeholderSubject"])}
+          placeholder={gt("Project Inquiry? Feedback? Let me know!")}
         />
         <form.message
-          label={gt(labels["labelMessage"])}
+          label={gt("Message")}
           cols={30}
           rows={8}
           maxLength={2049}
           spellCheck
           autoComplete="off"
-          placeholder={gt(labels["placeholderMessage"])}
+          placeholder={gt("How can I help you today?")}
         />
         <br />
         <Captcha />
         <br />
         <form.captchaInput
-          label={gt(labels["labelCaptcha"])}
+          label={gt("Captcha")}
           size={20}
           maxLength={7}
           spellCheck={false}
           autoComplete="off"
-          placeholder={gt(labels["placeholderCaptcha"])}
+          placeholder={gt("Enter the generated captcha")}
         />
         <br />
         <SubmitStatus contactForm={form} />

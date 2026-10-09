@@ -8,9 +8,6 @@ interface DetailsHeaderProps {
   experience: Experience;
 }
 
-// constants
-import { UI_COPY } from "@/features/data/domain/ui-copy";
-
 export function DetailsHeader({ experience }: DetailsHeaderProps) {
   const { year, role, company } = experience;
 
@@ -23,7 +20,7 @@ export function DetailsHeader({ experience }: DetailsHeaderProps) {
       </section>
       <section className="flex-3">
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <ExperienceLinks experience={experience} labels={UI_COPY.experienceDetails} iconClassName="size-11" />
+          <ExperienceLinks experience={experience} iconClassName="size-11" />
         </div>
       </section>
     </header>

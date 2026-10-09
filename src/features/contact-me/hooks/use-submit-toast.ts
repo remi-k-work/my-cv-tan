@@ -8,13 +8,9 @@ import { toastManager } from "@/ui/toastify";
 // types
 import type { ContactForm } from "@/features/contact-me/domain";
 
-// constants
-import { UI_COPY } from "@/features/data/domain/ui-copy";
-
 // Provide feedback to the user regarding this form actions
 export function useSubmitToast(contactForm: ContactForm) {
   const gt = useGT();
-  const feedback = UI_COPY.contactFormFeedback;
 
   useAtomSubscribe(
     contactForm.submit,
@@ -22,22 +18,22 @@ export function useSubmitToast(contactForm: ContactForm) {
       AsyncResult.matchWithWaiting(submitResult, {
         onWaiting: () => {},
         onSuccess: () => {
-          toastManager.add({ title: gt(feedback.success), description: gt(feedback.messageSent) });
+          toastManager.add({ title: gt("Success!"), description: gt("Your message has been sent.") });
         },
         onError: (error) => {
           Match.value(error).pipe(
             Match.tag("SchemaError", () => {
               toastManager.add({
                 type: "error",
-                title: gt(feedback.missingFields),
-                description: gt(feedback.pleaseCorrect),
+                title: gt("Missing fields!"),
+                description: gt("Please correct the contact form fields and try again."),
               });
             }),
             Match.orElse(() => {
               toastManager.add({
                 type: "error",
-                title: gt(feedback.serverError),
-                description: gt(feedback.messageNotSent),
+                title: gt("Server error!"),
+                description: gt("The message was not sent successfully; please try again later."),
               });
             })
           );
@@ -45,8 +41,8 @@ export function useSubmitToast(contactForm: ContactForm) {
         onDefect: () => {
           toastManager.add({
             type: "error",
-            title: gt(feedback.serverError),
-            description: gt(feedback.messageNotSent),
+            title: gt("Server error!"),
+            description: gt("The message was not sent successfully; please try again later."),
           });
         },
       }),

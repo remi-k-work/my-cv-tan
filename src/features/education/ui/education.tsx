@@ -14,15 +14,12 @@ interface EducationProps {
   educationList: EducationList;
 }
 
-// constants
-import { UI_COPY } from "@/features/data/domain/ui-copy";
-
 export function Education({ educationList }: EducationProps) {
   const gt = useGT();
 
   return (
     <figure className="mx-auto w-full max-w-4xl">
-      <PanelCaption>{gt(UI_COPY.myEducation.myEducation)}</PanelCaption>
+      <PanelCaption>{gt("My Education")}</PanelCaption>
       <dl>
         {educationList.map(({ name, year, location, info }, index) => (
           <Fragment key={index}>

@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
+    "gt:generate": "npx gt generate --ignore-errors",
     "preview": "vite preview",
     "start": "vite preview",
     "lint": "oxlint",

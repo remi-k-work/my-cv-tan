@@ -5,8 +5,7 @@ import { Outlet, createRootRoute, HeadContent, Scripts } from "@tanstack/react-r
 
 // services, features, and other libraries
 import { cn } from "@/lib/utils";
-import { getLocale, getTranslationsSnapshot, initializeGT } from "gt-tanstack-start";
-import { loadTranslations } from "@/lib/gt-translations";
+import { getLocale, getTranslationsSnapshot } from "gt-tanstack-start";
 import { ROOT_HEAD } from "@/features/meta/domain";
 import { loaderRoot } from "@/loaders/root";
 
@@ -28,11 +27,6 @@ interface RootDocumentProps {
   translations: Awaited<ReturnType<typeof getTranslationsSnapshot>>;
   children: ReactNode;
 }
-
-// constants
-import gtConfig from "../../gt.config.json";
-
-initializeGT({ ...gtConfig, loadTranslations, _reload: () => {} });
 
 export const Route = createRootRoute({
   head: () => ROOT_HEAD,

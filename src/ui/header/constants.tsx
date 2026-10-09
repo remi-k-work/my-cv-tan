@@ -5,34 +5,31 @@ import { GitHubIcon, LinkedInIcon } from "@/assets/icons";
 // types
 import type { LocalizedContent } from "@/domain";
 
-// constants
-import { UI_COPY } from "@/features/data/domain/ui-copy";
-
 export const NAV_ITEMS = (localizedContent: LocalizedContent, translate: (message: string) => string) => [
   {
     href: "/",
-    title: translate(UI_COPY.header.home),
+    title: translate("Home"),
     icon: <HomeIcon />,
   },
   {
     href: "/education",
-    title: translate(UI_COPY.header.education),
+    title: translate("Education"),
     icon: <AcademicCapIcon />,
   },
   {
     href: "/contact",
-    title: translate(UI_COPY.header.contact),
+    title: translate("Contact"),
     icon: <PhoneIcon />,
   },
   {
     href: localizedContent["header"]["hrefPdf"],
-    title: translate(UI_COPY.header.pdf),
+    title: translate("PDF Version"),
     icon: <DocumentTextIcon />,
     isExternal: true,
   },
   {
     href: "https://fyxk1xpcf8.ufs.sh/f/l5x42vpjizuQBzebVYT4mCZanFKgWlzyG7xJr0c1IRhfEH6T",
-    title: translate(UI_COPY.header.video),
+    title: translate("Video Version"),
     icon: <VideoCameraIcon />,
     isExternal: true,
   },

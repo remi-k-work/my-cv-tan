@@ -11,9 +11,6 @@ const ReactLeaflet = lazy(() => import("./react-leaflet"));
 // assets
 import avatar from "@/assets/avatar.jpg";
 
-// constants
-import { UI_COPY } from "@/features/data/domain/ui-copy";
-
 export function ContactMap() {
   const gt = useGT();
   // Leaflet touches window at import time, so it must never be evaluated on the server:
@@ -32,7 +29,7 @@ export function ContactMap() {
         <p className="mt-4">Remi</p>
         <p className="text-text-2">Broniewskiego 24</p>
         <p className="text-text-2">35-206 Rzeszów</p>
-        <p className="mb-4 text-text-2">{gt(UI_COPY.contactMap.poland)}</p>
+        <p className="mb-4 text-text-2">{gt("Poland")}</p>
         <a href="mailto:remi.k.work@proton.me" className="underline">
           remi.k.work@proton.me
         </a>

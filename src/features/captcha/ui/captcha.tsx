@@ -13,7 +13,6 @@ import { ArrowPathIcon } from "@heroicons/react/24/solid";
 
 // constants
 import { CAPTCHA_HEIGHT, CAPTCHA_WIDTH } from "@/features/captcha/domain";
-import { LANGUAGE_NAMES, UI_COPY } from "@/features/data/domain/ui-copy";
 
 export function Captcha() {
   const gt = useGT();
@@ -21,10 +20,10 @@ export function Captcha() {
 
   return (
     <article className="flex items-center justify-center gap-3">
-      <img className="rounded" src={captchaSrc} width={CAPTCHA_WIDTH} height={CAPTCHA_HEIGHT} alt={gt(UI_COPY.contactForm.labelCaptcha)} />
+      <img className="rounded" src={captchaSrc} width={CAPTCHA_WIDTH} height={CAPTCHA_HEIGHT} alt={gt("Captcha")} />
       <Button
         className="button"
-        aria-label={gt(LANGUAGE_NAMES.refreshCaptcha)}
+        aria-label={gt("Refresh CAPTCHA")}
         onClick={() => setCaptchaSrc(`/api/captcha?t=${DateTime.nowUnsafe().epochMilliseconds}`)}
       >
         <ArrowPathIcon className="size-9" />

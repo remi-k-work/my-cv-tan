@@ -3,7 +3,12 @@
   "locales": ["pl"],
   "files": {
     "gt": {
-      "output": "src/_gt/[locale].json"
+      "output": "src/_gt/[locale].json",
+      "parsingFlags": {
+        "autoderive": {
+          "strings": true
+        }
+      }
     }
   }
 }
