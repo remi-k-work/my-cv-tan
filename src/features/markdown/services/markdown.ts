@@ -24,6 +24,7 @@ import {
 
 // types
 import type { PreferredLanguage } from "@/domain";
+import type { Translate } from "@/features/markdown/domain";
 
 // One home for every AI-facing document pipeline (GEO): language resolution, data
 // fetch, Markdown rendering and Response construction. Routes only wire requests.
@@ -49,76 +50,63 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
     const experienceList = required((lang) => data.experienceList(Option.some(lang)), "experience list");
     const educationList = required((lang) => data.educationList(Option.some(lang)), "education list");
 
-    const home = Effect.fn("home")(function* (request: Request) {
-      const preferredLanguage = yield* language(request.url);
-      const translate = yield* translations(preferredLanguage);
-      return yield* markdownDataResponse(
-        preferredLanguage,
-        translate,
-        Effect.gen(function* () {
-          const [pageTitles, experiences] = yield* Effect.all([stablePageTitles(preferredLanguage), experienceList(preferredLanguage)], {
-            concurrency: "unbounded",
-          });
-          return mdResponse(buildHomeMd({ pageTitles, experienceList: experiences, preferredLanguage, translate }), preferredLanguage, absoluteUrl("/"));
-        })
-      );
-    });
+    // Keep language negotiation and unavailable-data responses identical for every page twin
+    const document = (
+      name: string,
+      render: (request: Request, lang: PreferredLanguage, translate: Translate) => Effect.Effect<Response, RequiredDataError>
+    ) =>
+      Effect.fn(name)(function* (request: Request) {
+        const preferredLanguage = yield* language(request.url);
+        const translate = yield* translations(preferredLanguage);
+        return yield* markdownDataResponse(preferredLanguage, translate, render(request, preferredLanguage, translate));
+      });
 
-    const education = Effect.fn("education")(function* (request: Request) {
-      const preferredLanguage = yield* language(request.url);
-      const translate = yield* translations(preferredLanguage);
-      return yield* markdownDataResponse(
-        preferredLanguage,
-        translate,
-        Effect.gen(function* () {
-          const [pageTitles, schools] = yield* Effect.all([stablePageTitles(preferredLanguage), educationList(preferredLanguage)], {
-            concurrency: "unbounded",
-          });
-          return mdResponse(
-            buildEducationMd({ pageTitles, educationList: schools, preferredLanguage, translate }),
-            preferredLanguage,
-            absoluteUrl("/education")
-          );
-        })
-      );
-    });
+    const home = document("home", (_request, preferredLanguage, translate) =>
+      Effect.gen(function* () {
+        const [pageTitles, experiences] = yield* Effect.all([stablePageTitles(preferredLanguage), experienceList(preferredLanguage)], {
+          concurrency: "unbounded",
+        });
+        return mdResponse(buildHomeMd({ pageTitles, experienceList: experiences, preferredLanguage, translate }), preferredLanguage, absoluteUrl("/"));
+      })
+    );
 
-    const contact = Effect.fn("contact")(function* (request: Request) {
-      const preferredLanguage = yield* language(request.url);
-      const translate = yield* translations(preferredLanguage);
-      return yield* markdownDataResponse(
-        preferredLanguage,
-        translate,
-        Effect.gen(function* () {
-          const pageTitles = yield* stablePageTitles(preferredLanguage);
-          return mdResponse(buildContactMd({ pageTitles, preferredLanguage, translate }), preferredLanguage, absoluteUrl("/contact"));
-        })
-      );
-    });
+    const education = document("education", (_request, preferredLanguage, translate) =>
+      Effect.gen(function* () {
+        const [pageTitles, schools] = yield* Effect.all([stablePageTitles(preferredLanguage), educationList(preferredLanguage)], {
+          concurrency: "unbounded",
+        });
+        return mdResponse(
+          buildEducationMd({ pageTitles, educationList: schools, preferredLanguage, translate }),
+          preferredLanguage,
+          absoluteUrl("/education")
+        );
+      })
+    );
 
-    const experience = Effect.fn("experience")(function* (request: Request) {
-      const preferredLanguage = yield* language(request.url);
-      const translate = yield* translations(preferredLanguage);
-      const slug = yield* slugFromMdPathname(request.url);
+    const contact = document("contact", (_request, preferredLanguage, translate) =>
+      Effect.gen(function* () {
+        const pageTitles = yield* stablePageTitles(preferredLanguage);
+        return mdResponse(buildContactMd({ pageTitles, preferredLanguage, translate }), preferredLanguage, absoluteUrl("/contact"));
+      })
+    );
 
-      // Unparseable slug: a clean Markdown 404 instead of a 500 HTML error page
-      if (Option.isNone(slug)) return mdNotFoundResponse(buildNotFoundMd("unknown", preferredLanguage, translate), preferredLanguage);
+    const experience = document("experience", (request, preferredLanguage, translate) =>
+      Effect.gen(function* () {
+        const slug = yield* slugFromMdPathname(request.url);
 
-      return yield* markdownDataResponse(
-        preferredLanguage,
-        translate,
-        Effect.gen(function* () {
-          const maybeExperience = experienceFromList(yield* experienceList(preferredLanguage), slug.value);
+        // Unparseable slug: a clean Markdown 404 instead of an HTML error page.
+        if (Option.isNone(slug)) return mdNotFoundResponse(buildNotFoundMd("unknown", preferredLanguage, translate), preferredLanguage);
 
-          if (Option.isNone(maybeExperience)) {
-            yield* Effect.logError(`[SLUG.MD]: no experience for slug "${slug.value}", emitting markdown 404`);
-            return mdNotFoundResponse(buildNotFoundMd(slug.value, preferredLanguage, translate), preferredLanguage);
-          }
+        const maybeExperience = experienceFromList(yield* experienceList(preferredLanguage), slug.value);
 
-          return mdResponse(buildExperienceMd(maybeExperience.value, preferredLanguage, translate), preferredLanguage, absoluteUrl(experiencePath(slug.value)));
-        })
-      );
-    });
+        if (Option.isNone(maybeExperience)) {
+          yield* Effect.logError(`[SLUG.MD]: no experience for slug "${slug.value}", emitting markdown 404`);
+          return mdNotFoundResponse(buildNotFoundMd(slug.value, preferredLanguage, translate), preferredLanguage);
+        }
+
+        return mdResponse(buildExperienceMd(maybeExperience.value, preferredLanguage, translate), preferredLanguage, absoluteUrl(experiencePath(slug.value)));
+      })
+    );
 
     // Site index for AI systems (GEO); English only, so no language negotiation
     const siteIndex = Effect.fn("siteIndex")(function* () {

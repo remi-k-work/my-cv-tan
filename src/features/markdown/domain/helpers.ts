@@ -1,18 +1,20 @@
 // services, features, and other libraries
-import { Array, pipe, Record, String } from "effect";
+import { Array, Option, pipe, Record, Schema, String } from "effect";
 
 // constants
 import { FRONTMATTER_DELIMITER } from "./constants";
 
-// Normalizes prose from the JSON content bundles into safe Markdown body text; no layout chrome, no raw HTML, heading-safe, blank-line collapsed
+// Normalize authored prose while preventing it from creating headings, lists, quotes, tables, or raw HTML
 export const escapeMd = (text: string) =>
   pipe(
     text,
-    String.replace(/\r\n/g, "\n"),
+    String.replace(/\r\n?/g, "\n"),
     // Escape backslashes first so later escapes stay literal
     String.replace(/\\/g, "\\\\"),
-    // Neutralize the Markdown control characters that could re-shape the document
-    String.replace(/([#*_`<>[\]])/g, "\\$1"),
+    String.replace(/([#*_`<>[\]!~|])/g, "\\$1"),
+    // Block markers are meaningful only at the start of a line
+    String.replace(/^(\s*)([-+]|\d+[.)])(?=\s)/gm, "$1\\$2"),
+    String.replace(/^(\s{0,3})([-*_])(?=(?:\s*\2){2,}\s*$)/gm, "$1\\$2"),
     // Collapse 3+ blank lines (data intros are long prose)
     String.replace(/\n{3,}/g, "\n\n"),
     String.trim
@@ -21,9 +23,16 @@ export const escapeMd = (text: string) =>
 // Single-line escaping for list items, link labels and table-ish content
 export const escapeMdInline = (text: string) => pipe(escapeMd(text), String.replace(/\n+/g, " "), String.trim);
 
-// YAML-safe double-quoted scalar for frontmatter values
-export const yamlValue = (value: string) =>
-  pipe(value, String.replace(/\\/g, "\\\\"), String.replace(/"/g, '\\"'), String.replace(/\n/g, " "), (escaped) => `"${escaped}"`);
+// JSON string quoting is also valid for YAML double-quoted scalars and handles control characters
+export const yamlValue = (value: string) => JSON.stringify(value);
+
+// Content bundles may contain stale or malformed URLs; only publish links with web protocols
+export const mdExternalLink = (label: string, href: string) =>
+  pipe(
+    Schema.decodeOption(Schema.URLFromString)(href),
+    Option.filter((url) => url.protocol === "http:" || url.protocol === "https:"),
+    Option.map((url) => `[${escapeMdInline(label)}](<${url.href}>)`)
+  );
 
 // Frontmatter mirrors <head> meta for AI indexers (title, description, canonical, language)
 export const frontmatter = (fields: Record.ReadonlyRecord<string, string>) =>

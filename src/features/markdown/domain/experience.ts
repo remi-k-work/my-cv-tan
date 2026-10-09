@@ -3,7 +3,7 @@ import { Array, Option, pipe } from "effect";
 import { msg } from "gt-tanstack-start";
 import { excerpt } from "@/features/experience/domain";
 import { absoluteUrl, experiencePath } from "@/features/meta/domain";
-import { escapeMd, escapeMdInline, frontmatter, mdBulletList, mdHeading, mdQuote } from "./helpers";
+import { escapeMd, escapeMdInline, frontmatter, mdBulletList, mdExternalLink, mdHeading, mdQuote } from "./helpers";
 
 // types
 import type { PreferredLanguage } from "@/domain";
@@ -18,14 +18,15 @@ export const buildExperienceMd = (experience: Experience, preferredLanguage: Pre
   const canonical = absoluteUrl(experiencePath(slug));
   const description = excerpt(txt, META_DESCRIPTION_LENGTH);
 
-  // Optional outbound links: each line appears only when the experience authors one
+  // Ignore non-web URLs so untrusted content never becomes an active Markdown link
   const links = pipe(
     [
-      Option.fromNullishOr(experience.gitHubLink).pipe(Option.map((href) => `- GitHub: ${href}`)),
-      Option.fromNullishOr(experience.liveLink).pipe(Option.map((href) => `- ${translate(msg("Live"))}: ${href}`)),
-      Option.fromNullishOr(experience.videoLink).pipe(Option.map((href) => `- ${translate(msg("Video"))}: ${href}`)),
+      Option.fromNullishOr(experience.gitHubLink).pipe(Option.flatMap((href) => mdExternalLink("GitHub", href))),
+      Option.fromNullishOr(experience.liveLink).pipe(Option.flatMap((href) => mdExternalLink(translate(msg("Live")), href))),
+      Option.fromNullishOr(experience.videoLink).pipe(Option.flatMap((href) => mdExternalLink(translate(msg("Video")), href))),
     ],
     Array.getSomes,
+    Array.map((link) => `- ${link}`),
     Array.join("\n")
   );
   const linkSection = links === "" ? [] : [mdHeading(2, translate(msg("Links"))), ``, links, ``];
@@ -66,7 +67,7 @@ export const buildExperienceMd = (experience: Experience, preferredLanguage: Pre
 };
 
 // Explicit, parseable not-found document rather than an HTML error page: AI fetchers
-// get an honest answer and stay on the llms.txt graph of valid documents.
+// get an honest answer and stay on the llms.txt graph of valid documents
 export const buildNotFoundMd = (slug: string, preferredLanguage: PreferredLanguage, translate: Translate) => {
   const title = translate(msg("Not Found"));
   const description = preferredLanguage === "pl" ? `Nie znaleziono strony dla identyfikatora "${slug}".` : `No page for slug "${slug}".`;
