@@ -8,8 +8,19 @@ import { experienceLines } from "./listing";
 import type { ExperienceList } from "@/features/experience/domain";
 
 // constants
-import { CONTACT_MD_HREF, DESCRIPTION, EDUCATION_MD_HREF, HOME_MD_HREF, META_DESCRIPTION_LENGTH, SITE_NAME, SOCIAL_LINKS, TITLE } from "@/features/meta/domain";
-import { CERTIFICATES_HREF, CV_EN_HREF, CV_PL_HREF } from "./constants";
+import {
+  CERTIFICATES_HREF,
+  CONTACT_MD_HREF,
+  CV_EN_HREF,
+  CV_PL_HREF,
+  DESCRIPTION,
+  EDUCATION_MD_HREF,
+  HOME_MD_HREF,
+  META_DESCRIPTION_LENGTH,
+  SITE_NAME,
+  SOCIAL_LINKS,
+  TITLE,
+} from "@/features/meta/domain";
 
 // Machine-readable site index for AI systems (GEO). Every entry points at a `.md`
 // twin (never raw HTML) so crawlers fetch exactly one Markdown page at a time.

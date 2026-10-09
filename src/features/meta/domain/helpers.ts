@@ -1,11 +1,18 @@
 // services, features, and other libraries
 import { Option, String, pipe } from "effect";
+import { matchPreferredLanguage } from "@/domain";
+
+// types
+import type { PreferredLanguage } from "@/domain";
 
 // constants
-import { LLMS_TXT_HREF, SITE_URL } from "./constants";
+import { CV_EN_HREF, CV_PL_HREF, LLMS_TXT_HREF, SITE_URL } from "./constants";
 
 // Canonical absolute URL for a site path
 export const absoluteUrl = (path: string) => `${SITE_URL}${path}`;
+
+// CV download for the visitor's language; the English CV is the source-language document
+export const cvPdfHref = (preferredLanguage: PreferredLanguage) => matchPreferredLanguage(preferredLanguage, CV_EN_HREF, CV_PL_HREF);
 
 // Experience slugs are data, so encode them as one URL path segment everywhere they appear
 export const experiencePath = (slug: string) => `/${encodeURIComponent(slug)}`;

@@ -2,14 +2,12 @@
 import { Array, Context, Effect, Layer, Option, Random, Schema } from "effect";
 import { ExperienceList } from "@/features/experience/domain";
 import { EducationList } from "@/features/education/domain";
-import { LocalizedContent, matchPreferredLanguage, PageTitlesList } from "@/domain";
+import { matchPreferredLanguage, PageTitlesList } from "@/domain";
 import { requestPreferredLanguage } from "@/features/data/domain";
 
 // assets
 import pageTitlesEn from "@/assets/data/en/page-titles.json";
 import pageTitlesPl from "@/assets/data/pl/page-titles.json";
-import localizedContentEn from "@/assets/data/en/localized-content.json";
-import localizedContentPl from "@/assets/data/pl/localized-content.json";
 import experienceEn from "@/assets/data/en/experience.json";
 import experiencePl from "@/assets/data/pl/experience.json";
 import educationEn from "@/assets/data/en/education.json";
@@ -34,12 +32,6 @@ export class Data extends Context.Service<Data>()("Data", {
         return Schema.decodeOption(PageTitlesList)(matchPreferredLanguage(resolvedLanguage, pageTitlesEn, pageTitlesPl)).pipe(Option.flatMap(Array.head));
       });
 
-    const localizedContent = (preferredLanguage: Option.Option<PreferredLanguage>) =>
-      Effect.sync(() => {
-        const resolvedLanguage = requestPreferredLanguage(preferredLanguage);
-        return Schema.decodeOption(LocalizedContent)(matchPreferredLanguage(resolvedLanguage, localizedContentEn, localizedContentPl));
-      });
-
     const experienceList = (preferredLanguage: Option.Option<PreferredLanguage>) =>
       Effect.sync(() => {
         const resolvedLanguage = requestPreferredLanguage(preferredLanguage);
@@ -60,7 +52,7 @@ export class Data extends Context.Service<Data>()("Data", {
         );
       });
 
-    return { randomPageTitles, stablePageTitles, localizedContent, experienceList, educationList, experience } as const;
+    return { randomPageTitles, stablePageTitles, experienceList, educationList, experience } as const;
   }),
 }) {
   static readonly layer = Layer.effect(this, this.make);

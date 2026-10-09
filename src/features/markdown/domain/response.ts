@@ -6,6 +6,9 @@ import { Effect, Record } from "effect";
 import { RequiredDataError } from "@/features/data/domain";
 import { unavailableMarkdownBody } from "./required-data";
 
+// types
+import type { Translate } from "./models";
+
 // constants
 import { MARKDOWN_CACHE_CONTROL, MARKDOWN_CONTENT_TYPE, MARKDOWN_VARY, TXT_CONTENT_TYPE } from "./constants";
 
@@ -45,8 +48,8 @@ const dataResponse = (logPrefix: string, fallback: () => Response, document: Eff
     )
   );
 
-export const markdownDataResponse = (preferredLanguage: PreferredLanguage, document: Effect.Effect<Response, RequiredDataError>) =>
-  dataResponse("[MARKDOWN]", () => mdUnavailableResponse(unavailableMarkdownBody(preferredLanguage), preferredLanguage), document);
+export const markdownDataResponse = (preferredLanguage: PreferredLanguage, translate: Translate, document: Effect.Effect<Response, RequiredDataError>) =>
+  dataResponse("[MARKDOWN]", () => mdUnavailableResponse(unavailableMarkdownBody(translate), preferredLanguage), document);
 
 // Plain-text discovery documents (llms.txt): same recovery, plain-text 503
 export const textDataResponse = (document: Effect.Effect<Response, RequiredDataError>) =>

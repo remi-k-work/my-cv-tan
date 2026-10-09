@@ -31,3 +31,8 @@ export const LLMS_TXT_HREF = "/llms.txt";
 export const HOME_MD_HREF = "/index.md";
 export const EDUCATION_MD_HREF = "/education.md";
 export const CONTACT_MD_HREF = "/contact.md";
+
+// Downloadable documents advertised to AI systems in education twins and llms.txt
+export const CV_EN_HREF = "/my-cv.pdf";
+export const CV_PL_HREF = "/my-cv-pl.pdf";
+export const CERTIFICATES_HREF = "/my-certificates.pdf";

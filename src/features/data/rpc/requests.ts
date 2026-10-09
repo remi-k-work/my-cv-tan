@@ -3,7 +3,7 @@ import { Schema } from "effect";
 import { Rpc, RpcGroup } from "effect/rpc";
 import { Experience, ExperienceList } from "@/features/experience/domain";
 import { EducationList } from "@/features/education/domain";
-import { LocalizedContent, PageTitles } from "@/domain";
+import { PageTitles } from "@/domain";
 import { RpcLogger } from "@/services/rpc-logger";
 
 export class RpcData extends RpcGroup.make(
@@ -13,10 +13,6 @@ export class RpcData extends RpcGroup.make(
 
   Rpc.make("stablePageTitles", {
     success: Schema.Option(PageTitles),
-  }),
-
-  Rpc.make("localizedContent", {
-    success: Schema.Option(LocalizedContent),
   }),
 
   Rpc.make("experienceList", {

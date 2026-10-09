@@ -5,7 +5,7 @@ import { FetchHttpClient } from "effect/http";
 
 // types
 import type { Rpc } from "effect/rpc";
-import type { LocalizedContent, PagePath, PageTitles, PreferredLanguage } from "./models";
+import type { PagePath, PageTitles, PreferredLanguage } from "./models";
 
 // Builds a class-style RPC client service backed by an HTTP protocol layer for a given RPC group
 export const makeRpcClient = <Rpcs extends Rpc.Any>(serviceName: string, group: RpcGroup.RpcGroup<Rpcs>, path: string) => {
@@ -26,14 +26,5 @@ export const pageField = (pageTitles: PageTitles | null, pagePath: PagePath, key
     Option.fromNullishOr(pageTitles),
     Option.flatMap((titles) => Option.fromNullishOr(titles[pagePath])),
     Option.map((page) => page[key]),
-    Option.getOrElse(() => fallback)
-  );
-
-// Localized section label from the content bundle, e.g. ("pageHome", "experience")
-export const sectionLabel = (localizedContent: LocalizedContent | null, section: string, key: string, fallback: string) =>
-  pipe(
-    Option.fromNullishOr(localizedContent),
-    Option.flatMap((content) => Option.fromNullishOr(content[section])),
-    Option.flatMap((entries) => Option.fromNullishOr(entries[key])),
     Option.getOrElse(() => fallback)
   );

@@ -19,12 +19,6 @@ const RpcDataLayer = RpcData.toLayer({
       return yield* stablePageTitles(Option.none());
     }),
 
-  localizedContent: () =>
-    Effect.gen(function* () {
-      const { localizedContent } = yield* Data;
-      return yield* localizedContent(Option.none());
-    }),
-
   experienceList: () =>
     Effect.gen(function* () {
       const { experienceList } = yield* Data;

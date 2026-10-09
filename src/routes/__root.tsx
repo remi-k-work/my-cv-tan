@@ -7,7 +7,7 @@ import { Outlet, createRootRoute, HeadContent, Scripts } from "@tanstack/react-r
 import { cn } from "@/lib/utils";
 import { getLocale, getTranslationsSnapshot } from "gt-tanstack-start";
 import { ROOT_HEAD } from "@/features/meta/domain";
-import { loaderRoot } from "@/loaders/root";
+import { preferredLanguageFromLocale } from "@/features/data/domain";
 
 // components
 import { GTProvider } from "gt-tanstack-start";
@@ -26,16 +26,13 @@ export const Route = createRootRoute({
   head: () => ROOT_HEAD,
   loader: async () => {
     const locale = getLocale();
-    const [rootData, translations] = await Promise.all([loaderRoot(), getTranslationsSnapshot(locale)]);
-    return { ...rootData, locale, translations } as const;
+    return { locale, preferredLanguage: preferredLanguageFromLocale(locale), translations: await getTranslationsSnapshot(locale) } as const;
   },
   component: RootComponent,
   shellComponent: RootDocument,
 });
 
 function RootComponent() {
-  const { localizedContent } = Route.useLoaderData();
-
   return (
     <div
       className={cn(
@@ -43,7 +40,7 @@ function RootComponent() {
         "lg:grid-cols-[11rem_1rem_1fr_1rem] lg:grid-rows-[7rem_1fr] lg:[grid-template-areas:'skills_header_header_header''skills_._main_.']"
       )}
     >
-      <Header localizedContent={localizedContent} />
+      <Header />
       <Skills />
       <main className="[grid-area:main]">
         <Outlet />

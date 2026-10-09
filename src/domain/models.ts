@@ -6,7 +6,6 @@ export type PreferredLanguage = typeof PreferredLanguage.Type;
 export type PagePath = typeof PagePath.Type;
 export type PageTitles = typeof PageTitles.Type;
 export type PageTitlesList = typeof PageTitlesList.Type;
-export type LocalizedContent = typeof LocalizedContent.Type;
 
 export const PreferredLanguage = Schema.Literals(["en", "pl"]);
 
@@ -18,8 +17,3 @@ const PageTitle = Schema.Struct({
 });
 export const PageTitles = Schema.Record(PagePath, PageTitle);
 export const PageTitlesList = Schema.Array(PageTitles);
-
-const LocalizedSection = Schema.Trim.check(Schema.isNonEmpty());
-const LocalizedKey = Schema.Trim.check(Schema.isNonEmpty());
-const LocalizedValue = Schema.Trim.check(Schema.isNonEmpty());
-export const LocalizedContent = Schema.Record(LocalizedSection, Schema.Record(LocalizedKey, LocalizedValue));

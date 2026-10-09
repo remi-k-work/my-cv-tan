@@ -1,23 +1,19 @@
 // services, features, and other libraries
 import { cn } from "@/lib/utils";
-import { useGT } from "gt-tanstack-start";
+import { useGT, useLocale } from "gt-tanstack-start";
+import { cvPdfHref } from "@/features/meta/domain";
+import { preferredLanguageFromLocale } from "@/features/data/domain";
 
 // components
 import { NavItem } from "./nav-item";
 import { LangChanger } from "@/features/data/ui/lang-changer";
 
-// types
-import type { LocalizedContent } from "@/domain";
-
-interface HeaderProps {
-  localizedContent: LocalizedContent;
-}
-
 // constants
 import { NAV_ITEMS } from "./constants";
 
-export function Header({ localizedContent }: HeaderProps) {
+export function Header() {
   const gt = useGT();
+  const locale = useLocale();
 
   return (
     <header
@@ -39,7 +35,7 @@ export function Header({ localizedContent }: HeaderProps) {
           "*:border *:bg-surface-1 *:p-3 *:text-text-2 *:hover:text-accent"
         )}
       >
-        {NAV_ITEMS(localizedContent, gt).map((navItem, index) => (
+        {NAV_ITEMS(cvPdfHref(preferredLanguageFromLocale(locale)), gt).map((navItem, index) => (
           <NavItem key={navItem.href} {...navItem} animDelay={index ** 2} />
         ))}
         <LangChanger />

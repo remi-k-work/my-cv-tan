@@ -3,9 +3,7 @@ import { AcademicCapIcon, DocumentTextIcon, HomeIcon, PhoneIcon, VideoCameraIcon
 import { GitHubIcon, LinkedInIcon } from "@/assets/icons";
 
 // types
-import type { LocalizedContent } from "@/domain";
-
-export const NAV_ITEMS = (localizedContent: LocalizedContent, translate: (message: string) => string) => [
+export const NAV_ITEMS = (pdfHref: string, translate: (message: string) => string) => [
   {
     href: "/",
     title: translate("Home"),
@@ -22,7 +20,7 @@ export const NAV_ITEMS = (localizedContent: LocalizedContent, translate: (messag
     icon: <PhoneIcon />,
   },
   {
-    href: localizedContent["header"]["hrefPdf"],
+    href: pdfHref,
     title: translate("PDF Version"),
     icon: <DocumentTextIcon />,
     isExternal: true,

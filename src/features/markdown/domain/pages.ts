@@ -1,6 +1,7 @@
 // services, features, and other libraries
 import { Array, pipe } from "effect";
-import { matchPreferredLanguage, pageField, sectionLabel } from "@/domain";
+import { msg } from "gt-tanstack-start";
+import { pageField } from "@/domain";
 import { excerpt } from "@/features/experience/domain";
 import { absoluteUrl } from "@/features/meta/domain";
 import { escapeMd, escapeMdInline, frontmatter, mdBulletList, mdHeading, mdQuote } from "./helpers";
@@ -11,8 +12,18 @@ import type { ContactMdInput, EducationMdInput, HomeMdInput } from "./models";
 import type { PreferredLanguage } from "@/domain";
 
 // constants
-import { CONTACT_MD_HREF, DESCRIPTION, EDUCATION_MD_HREF, META_DESCRIPTION_LENGTH, SITE_NAME, SOCIAL_LINKS, TITLE } from "@/features/meta/domain";
-import { CERTIFICATES_HREF, CV_EN_HREF, CV_PL_HREF } from "./constants";
+import {
+  CERTIFICATES_HREF,
+  CONTACT_MD_HREF,
+  CV_EN_HREF,
+  CV_PL_HREF,
+  DESCRIPTION,
+  EDUCATION_MD_HREF,
+  META_DESCRIPTION_LENGTH,
+  SITE_NAME,
+  SOCIAL_LINKS,
+  TITLE,
+} from "@/features/meta/domain";
 
 // Profile URLs stay single-sourced: the same constants feed the HTML page and JSON-LD
 const [gitHubLink, linkedInLink] = SOCIAL_LINKS;
@@ -26,7 +37,7 @@ const pageOpening = (title: string, description: string, canonical: string, pref
   ``,
 ];
 
-export const buildHomeMd = ({ pageTitles, localizedContent, experienceList, preferredLanguage }: HomeMdInput) => {
+export const buildHomeMd = ({ pageTitles, experienceList, preferredLanguage, translate }: HomeMdInput) => {
   const title = pageField(pageTitles, "/", "heading", TITLE);
   const intro = pageField(pageTitles, "/", "intro", DESCRIPTION);
   const canonical = absoluteUrl("/");
@@ -35,26 +46,26 @@ export const buildHomeMd = ({ pageTitles, localizedContent, experienceList, pref
     ...pageOpening(title, excerpt(intro, META_DESCRIPTION_LENGTH), canonical, preferredLanguage),
     escapeMd(intro),
     ``,
-    mdHeading(2, sectionLabel(localizedContent, "pageHome", "experience", "Experience")),
+    mdHeading(2, translate(msg("Experience"))),
     ``,
-    experienceLines(experienceList, "e", preferredLanguage),
+    experienceLines(experienceList, "e", translate),
     ``,
-    mdHeading(2, sectionLabel(localizedContent, "pageHome", "portfolioProjects", "Portfolio Projects")),
+    mdHeading(2, translate(msg("Portfolio Projects"))),
     ``,
-    experienceLines(experienceList, "p", preferredLanguage),
+    experienceLines(experienceList, "p", translate),
     ``,
-    mdHeading(2, matchPreferredLanguage(preferredLanguage, "Pages", "Strony")),
+    mdHeading(2, translate(msg("Pages"))),
     ``,
     mdBulletList([
-      `[${matchPreferredLanguage(preferredLanguage, "Education & Certificates", "Edukacja i certyfikaty")}](${absoluteUrl(EDUCATION_MD_HREF)})`,
-      `[${matchPreferredLanguage(preferredLanguage, "Contact", "Kontakt")}](${absoluteUrl(CONTACT_MD_HREF)})`,
+      `[${translate(msg("Education & Certificates"))}](${absoluteUrl(EDUCATION_MD_HREF)})`,
+      `[${translate(msg("Contact"))}](${absoluteUrl(CONTACT_MD_HREF)})`,
       `[llms.txt](${absoluteUrl("/llms.txt")})`,
     ]),
     ``,
   ].join("\n");
 };
 
-export const buildEducationMd = ({ pageTitles, educationList, preferredLanguage }: EducationMdInput) => {
+export const buildEducationMd = ({ pageTitles, educationList, preferredLanguage, translate }: EducationMdInput) => {
   const title = pageField(pageTitles, "/education", "heading", "Education");
   const intro = pageField(pageTitles, "/education", "intro", "Education & certificates.");
   const canonical = absoluteUrl("/education");
@@ -66,10 +77,7 @@ export const buildEducationMd = ({ pageTitles, educationList, preferredLanguage 
       [
         mdHeading(2, name),
         ``,
-        mdBulletList([
-          `${matchPreferredLanguage(preferredLanguage, "Years", "Lata")}: ${escapeMdInline(year)}`,
-          `${matchPreferredLanguage(preferredLanguage, "Location", "Lokalizacja")}: ${escapeMdInline(location)}`,
-        ]),
+        mdBulletList([`${translate(msg("Years"))}: ${escapeMdInline(year)}`, `${translate(msg("Location"))}: ${escapeMdInline(location)}`]),
         ``,
         escapeMd(info),
       ].join("\n")
@@ -81,20 +89,20 @@ export const buildEducationMd = ({ pageTitles, educationList, preferredLanguage 
     ...pageOpening(title, excerpt(intro, META_DESCRIPTION_LENGTH), canonical, preferredLanguage),
     escapeMd(intro),
     ``,
-    schools === "" ? `_${matchPreferredLanguage(preferredLanguage, "No entries.", "Brak wpisów.")}_` : schools,
+    schools === "" ? `_${translate(msg("No entries."))}_` : schools,
     ``,
-    mdHeading(2, matchPreferredLanguage(preferredLanguage, "Documents", "Dokumenty")),
+    mdHeading(2, translate(msg("Documents"))),
     ``,
     mdBulletList([
-      `[${matchPreferredLanguage(preferredLanguage, "Certificates", "Certyfikaty")}](${absoluteUrl(CERTIFICATES_HREF)})`,
-      `[${matchPreferredLanguage(preferredLanguage, "CV (English)", "CV (angielski)")}](${absoluteUrl(CV_EN_HREF)})`,
-      `[${matchPreferredLanguage(preferredLanguage, "CV (Polish)", "CV (polski)")}](${absoluteUrl(CV_PL_HREF)})`,
+      `[${translate(msg("Certificates"))}](${absoluteUrl(CERTIFICATES_HREF)})`,
+      `[${translate(msg("CV (English)"))}](${absoluteUrl(CV_EN_HREF)})`,
+      `[${translate(msg("CV (Polish)"))}](${absoluteUrl(CV_PL_HREF)})`,
     ]),
     ``,
   ].join("\n");
 };
 
-export const buildContactMd = ({ pageTitles, preferredLanguage }: ContactMdInput) => {
+export const buildContactMd = ({ pageTitles, preferredLanguage, translate }: ContactMdInput) => {
   const title = pageField(pageTitles, "/contact", "heading", "Contact");
   const intro = pageField(pageTitles, "/contact", "intro", "Get in touch via the contact form.");
   const canonical = absoluteUrl("/contact");
@@ -103,11 +111,11 @@ export const buildContactMd = ({ pageTitles, preferredLanguage }: ContactMdInput
     ...pageOpening(title, excerpt(intro, META_DESCRIPTION_LENGTH), canonical, preferredLanguage),
     escapeMd(intro),
     ``,
-    mdHeading(2, matchPreferredLanguage(preferredLanguage, "Channels", "Kanały")),
+    mdHeading(2, translate(msg("Channels"))),
     ``,
     mdBulletList([
-      `${matchPreferredLanguage(preferredLanguage, "Contact form", "Formularz kontaktowy")}: ${canonical} (${matchPreferredLanguage(preferredLanguage, "same page in HTML", "ta sama strona w HTML")})`,
-      `${matchPreferredLanguage(preferredLanguage, "Base", "Lokalizacja")}: ${matchPreferredLanguage(preferredLanguage, "Rzeszów, Poland", "Rzeszów, Polska")}`,
+      `${translate(msg("Contact form"))}: ${canonical} (${translate(msg("same page in HTML"))})`,
+      `${translate(msg("Base"))}: ${translate(msg("Rzeszów, Poland"))}`,
       `GitHub: ${gitHubLink}`,
       `LinkedIn: ${linkedInLink}`,
     ]),

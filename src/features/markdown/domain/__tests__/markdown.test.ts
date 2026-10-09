@@ -46,9 +46,34 @@ const stablePageTitles = {
   "/contact": { eyebrow: "Contact", heading: "Stable contact title", intro: "Stable contact summary." },
 };
 
-const localizedContent = {
-  pageHome: { experience: "Doświadczenie", portfolioProjects: "Projekty" },
+// Mirrors the GT dictionary values the service injects at runtime; untranslated keys fall back to the source
+const translateEn = (source: string): string => source;
+
+const polishTranslations: Record<string, string> = {
+  Experience: "Doświadczenie",
+  "Portfolio Projects": "Projekty do Portfolio",
+  Pages: "Strony",
+  "Education & Certificates": "Edukacja i certyfikaty",
+  "No entries.": "Brak wpisów.",
+  Overview: "Opis",
+  Details: "Szczegóły",
+  Role: "Rola",
+  "Skills Used": "Wykorzystane Umiejętności",
+  Links: "Linki",
+  Documents: "Dokumenty",
+  Years: "Lata",
+  Location: "Lokalizacja",
+  Channels: "Kanały",
+  "Contact form": "Formularz kontaktowy",
+  Base: "Lokalizacja",
+  "Rzeszów, Poland": "Rzeszów, Polska",
+  "Not Found": "Nie znaleziono",
+  "Content temporarily unavailable": "Treść jest tymczasowo niedostępna",
+  "The required portfolio content could not be loaded. Please try again shortly.":
+    "Nie udało się wczytać wymaganej treści portfolio. Spróbuj ponownie za chwilę.",
 };
+
+const translatePl = (source: string): string => polishTranslations[source] ?? source;
 
 it("frontmatter emits a delimited block with quoted values", () => {
   const block = frontmatter({ title: "Hello", canonical: "https://www.remiforge.dev/sample-role" });
@@ -62,7 +87,7 @@ it("escapeMd neutralizes heading characters and collapses blank lines", () => {
 });
 
 it("buildExperienceMd renders frontmatter, H1, skills and links without repeated crawler instructions", () => {
-  const md = buildExperienceMd(sampleExperience, "en");
+  const md = buildExperienceMd(sampleExperience, "en", translateEn);
   assert.include(md, `canonical: "https://www.remiforge.dev/sample-role"`);
   assert.include(md, `# Full-Stack Developer at Sample Co`);
   assert.include(md, `- TypeScript`);
@@ -85,27 +110,27 @@ it("buildExperienceMd renders frontmatter, H1, skills and links without repeated
 
 it("experience Markdown canonical encodes a slug as one path segment", () => {
   const experience = { ...sampleExperience, slug: "résumé & more" };
-  const md = buildExperienceMd(experience, "en");
+  const md = buildExperienceMd(experience, "en", translateEn);
   assert.include(md, `canonical: "https://www.remiforge.dev/r%C3%A9sum%C3%A9%20%26%20more"`);
 });
 
 it("buildExperienceMd omits the Links section when the experience has no links", () => {
-  const md = buildExperienceMd({ ...sampleExperience, gitHubLink: undefined }, "en");
-  assert.include(md, `## Skills used`);
+  const md = buildExperienceMd({ ...sampleExperience, gitHubLink: undefined }, "en", translateEn);
+  assert.include(md, `## Skills Used`);
   assert.notInclude(md, `## Links`);
 });
 
 it("buildExperienceMd localizes fixed Polish section and fact labels", () => {
-  const md = buildExperienceMd(sampleExperience, "pl");
+  const md = buildExperienceMd(sampleExperience, "pl", translatePl);
   assert.include(md, "## Opis");
   assert.include(md, "## Szczegóły");
   assert.include(md, "Rola: Full-Stack Developer");
-  assert.include(md, "## Użyte umiejętności");
+  assert.include(md, "## Wykorzystane Umiejętności");
   assert.include(md, "## Linki");
 });
 
 it("buildHomeMd groups work and projects and links to .md twins", () => {
-  const md = buildHomeMd({ pageTitles: stablePageTitles, localizedContent, experienceList: [sampleExperience], preferredLanguage: "en" });
+  const md = buildHomeMd({ pageTitles: stablePageTitles, experienceList: [sampleExperience], preferredLanguage: "en", translate: translateEn });
   assert.include(md, `canonical: "https://www.remiforge.dev/"`);
   assert.include(md, `title: "Remi Forge ● Stable home title"`);
   assert.include(md, `description: "Stable home summary."`);
@@ -120,21 +145,21 @@ it("buildHomeMd groups work and projects and links to .md twins", () => {
 
 it("home Markdown links encode experience slugs consistently", () => {
   const experience = { ...sampleExperience, slug: "my project" };
-  const md = buildHomeMd({ pageTitles: stablePageTitles, localizedContent, experienceList: [experience], preferredLanguage: "en" });
+  const md = buildHomeMd({ pageTitles: stablePageTitles, experienceList: [experience], preferredLanguage: "en", translate: translateEn });
   assert.include(md, "https://www.remiforge.dev/my%20project.md");
 });
 
 it("buildHomeMd localizes Markdown structure in Polish", () => {
-  const md = buildHomeMd({ pageTitles: stablePageTitles, localizedContent, experienceList: [], preferredLanguage: "pl" });
+  const md = buildHomeMd({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "pl", translate: translatePl });
   assert.include(md, "## Doświadczenie");
-  assert.include(md, "## Projekty");
+  assert.include(md, "## Projekty do Portfolio");
   assert.include(md, "## Strony");
   assert.include(md, "[Edukacja i certyfikaty]");
   assert.include(md, "_Brak wpisów._");
 });
 
 it("buildEducationMd stays localized and a missing document has no canonical", () => {
-  const edu = buildEducationMd({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "pl" });
+  const edu = buildEducationMd({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "pl", translate: translatePl });
   assert.include(edu, `lang: "pl"`);
   assert.include(edu, `title: "Remi Forge ● Stable education title"`);
   assert.include(edu, `description: "Stable education summary."`);
@@ -145,28 +170,29 @@ it("buildEducationMd stays localized and a missing document has no canonical", (
     pageTitles: stablePageTitles,
     educationList: [{ name: "Example School", year: "2020", location: "Poland", info: "Studied interaction design." }],
     preferredLanguage: "pl",
+    translate: translatePl,
   });
   assert.include(populated, "Lata: 2020");
   assert.include(populated, "Lokalizacja: Poland");
 
-  const missing = buildNotFoundMd("bogus", "en");
+  const missing = buildNotFoundMd("bogus", "en", translateEn);
   assert.include(missing, `# Not Found`);
   assert.include(missing, `https://www.remiforge.dev/index.md`);
   assert.notInclude(missing, "canonical:");
 
-  const missingPl = buildNotFoundMd("brak", "pl");
+  const missingPl = buildNotFoundMd("brak", "pl", translatePl);
   assert.include(missingPl, "# Nie znaleziono");
   assert.include(missingPl, "Dokument Markdown dla adresu /brak nie istnieje.");
 });
 
 it("buildContactMd advertises the same social profiles as the HTML page", () => {
-  const md = buildContactMd({ pageTitles: stablePageTitles, preferredLanguage: "en" });
+  const md = buildContactMd({ pageTitles: stablePageTitles, preferredLanguage: "en", translate: translateEn });
   assert.include(md, `title: "Remi Forge ● Stable contact title"`);
   assert.notInclude(md, "Notes for AI systems");
   assert.include(md, `GitHub: https://github.com/remi-k-work`);
   assert.include(md, `LinkedIn: https://linkedin.com/in/remi-k-work`);
 
-  const polish = buildContactMd({ pageTitles: stablePageTitles, preferredLanguage: "pl" });
+  const polish = buildContactMd({ pageTitles: stablePageTitles, preferredLanguage: "pl", translate: translatePl });
   assert.include(polish, "## Kanały");
   assert.include(polish, "Formularz kontaktowy:");
   assert.include(polish, "Lokalizacja: Rzeszów, Polska");
@@ -236,11 +262,11 @@ it.effect("a failed experience-list decode is an error, while a valid missing sl
 
 it.effect("required-content failures map to non-cacheable 503s and valid missing slugs map to 404s", () =>
   Effect.gen(function* () {
-    const unavailableMarkdown = yield* markdownDataResponse("pl", requireData(Option.none(), "experience list"));
+    const unavailableMarkdown = yield* markdownDataResponse("pl", translatePl, requireData(Option.none(), "experience list"));
     assert.strictEqual(unavailableMarkdown.status, 503);
     assert.strictEqual(unavailableMarkdown.headers.get("Cache-Control"), "no-store");
     assert.strictEqual(unavailableMarkdown.headers.get("X-Robots-Tag"), "noindex, follow");
-    assert.include(unavailableMarkdownBody("pl"), "portfolio");
+    assert.include(unavailableMarkdownBody(translatePl), "portfolio");
 
     const unavailableIndex = yield* textDataResponse(requireData(Option.none(), "experience list"));
     assert.strictEqual(unavailableIndex.status, 503);
@@ -248,7 +274,7 @@ it.effect("required-content failures map to non-cacheable 503s and valid missing
 
     const noMatch = experienceFromList([], "missing");
     const notFound = Option.isNone(noMatch)
-      ? mdNotFoundResponse(buildNotFoundMd("missing", "en"), "en")
+      ? mdNotFoundResponse(buildNotFoundMd("missing", "en", translateEn), "en")
       : mdResponse("# Found", "en", "https://www.remiforge.dev/");
     assert.strictEqual(notFound.status, 404);
     assert.strictEqual(notFound.headers.get("X-Robots-Tag"), "noindex, follow");
