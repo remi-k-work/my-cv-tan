@@ -1,12 +1,10 @@
-// types
-import type { PreferredLanguage } from "@/domain";
-
 // services, features, and other libraries
 import { Effect, Record } from "effect";
+import { msg } from "gt-tanstack-start";
 import { RequiredDataError } from "@/features/data/domain";
-import { unavailableMarkdownBody } from "./required-data";
 
 // types
+import type { PreferredLanguage } from "@/domain";
 import type { Translate } from "./models";
 
 // constants
@@ -32,6 +30,15 @@ export const mdNotFoundResponse = (body: string, preferredLanguage: PreferredLan
 // 503 for incomplete documents: they must never be cached as if they were complete
 const unavailableResponse = (body: string, headers: Record.ReadonlyRecord<string, string>) =>
   new Response(body, { status: 503, headers: { ...headers, "Cache-Control": "no-store", "X-Robots-Tag": "noindex, follow" } });
+
+// Honest, parseable unavailable document rather than an HTML error page
+export const unavailableMarkdownBody = (translate: Translate) =>
+  [
+    `# ${translate(msg("Content temporarily unavailable"))}`,
+    ``,
+    translate(msg("The required portfolio content could not be loaded. Please try again shortly.")),
+    ``,
+  ].join("\n");
 
 export const mdUnavailableResponse = (body: string, preferredLanguage: PreferredLanguage) => unavailableResponse(body, mdHeaders(preferredLanguage));
 

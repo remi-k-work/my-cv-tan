@@ -7,11 +7,15 @@ import { escapeMd, escapeMdInline, frontmatter, mdBulletList, mdExternalLink, md
 
 // types
 import type { PreferredLanguage } from "@/domain";
-import type { Experience } from "@/features/experience/domain";
+import type { Experience, ExperienceList } from "@/features/experience/domain";
 import type { Translate } from "./models";
 
 // constants
 import { HOME_MD_HREF, META_DESCRIPTION_LENGTH, SITE_NAME } from "@/features/meta/domain";
+
+// Locate one experience by slug inside a decoded list (None = clean 404 candidate);
+// a failed decode stays an error in the caller via requireData
+export const experienceFromList = (experienceList: ExperienceList, slug: string) => Array.findFirst(experienceList, (experience) => experience.slug === slug);
 
 export const buildExperienceMd = (experience: Experience, preferredLanguage: PreferredLanguage, translate: Translate) => {
   const { role, company, txt, skillsUsed, year, slug } = experience;

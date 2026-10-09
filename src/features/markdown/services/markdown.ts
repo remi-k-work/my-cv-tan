@@ -1,9 +1,8 @@
 // services, features, and other libraries
 import { Context, Effect, Layer, Option } from "effect";
 import { translateForLanguage } from "@/lib/gt-translations";
-import { requireData, RequiredDataError } from "@/features/data/domain";
+import { requireData, RequiredDataError, requestPreferredLanguage } from "@/features/data/domain";
 import { Data } from "@/features/data/services/data";
-import { requestPreferredLanguage } from "@/features/data/domain";
 import { absoluteUrl, experiencePath } from "@/features/meta/domain";
 import {
   buildContactMd,
@@ -32,88 +31,71 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
   make: Effect.gen(function* () {
     const data = yield* Data;
 
-    // ?lang= override wins over the GT locale resolved for this request
-    const language = Effect.fnUntraced(function* (requestUrl: string) {
-      return requestPreferredLanguage(yield* parseLangParam(requestUrl));
-    });
+    // Fetch + require in one step: every twin renders from the stable content bundle in the requested language
+    const required = <A>(maybe: Effect.Effect<Option.Option<A>>, dataset: string): Effect.Effect<A, RequiredDataError> =>
+      Effect.flatMap(maybe, (option) => requireData(option, dataset));
 
-    // Translations for the resolved language, read from the local GT dictionary
-    const translations = (preferredLanguage: PreferredLanguage) => Effect.promise(() => translateForLanguage(preferredLanguage));
-
-    // Fetch + require pairs: every twin renders from the stable (non-random) content bundle in the requested language
-    const required = <A>(fetch: (lang: PreferredLanguage) => Effect.Effect<Option.Option<A>>, dataset: string) =>
-      Effect.fnUntraced(function* (lang: PreferredLanguage): Effect.fn.Return<A, RequiredDataError> {
-        return yield* requireData(yield* fetch(lang), dataset);
-      });
-
-    const stablePageTitles = required((lang) => data.stablePageTitles(Option.some(lang)), "page titles");
-    const experienceList = required((lang) => data.experienceList(Option.some(lang)), "experience list");
-    const educationList = required((lang) => data.educationList(Option.some(lang)), "education list");
-
-    // Keep language negotiation and unavailable-data responses identical for every page twin
-    const document = (
-      name: string,
-      render: (request: Request, lang: PreferredLanguage, translate: Translate) => Effect.Effect<Response, RequiredDataError>
-    ) =>
+    // Shared document pipeline: language negotiation, translation lookup and unavailable-data
+    // recovery live here so each twin below stays a thin fetch-and-render step
+    const document =
+      (name: string, render: (request: Request, lang: PreferredLanguage, translate: Translate) => Effect.Effect<Response, RequiredDataError>) =>
       Effect.fn(name)(function* (request: Request) {
-        const preferredLanguage = yield* language(request.url);
-        const translate = yield* translations(preferredLanguage);
-        return yield* markdownDataResponse(preferredLanguage, translate, render(request, preferredLanguage, translate));
+        // ?lang= override wins over the GT locale resolved for this request
+        const lang = requestPreferredLanguage(yield* parseLangParam(request.url));
+        const translate = yield* Effect.promise(() => translateForLanguage(lang));
+        return yield* markdownDataResponse(lang, translate, render(request, lang, translate));
       });
 
-    const home = document("home", (_request, preferredLanguage, translate) =>
+    const home = document("home", (_request, lang, translate) =>
       Effect.gen(function* () {
-        const [pageTitles, experiences] = yield* Effect.all([stablePageTitles(preferredLanguage), experienceList(preferredLanguage)], {
-          concurrency: "unbounded",
-        });
-        return mdResponse(buildHomeMd({ pageTitles, experienceList: experiences, preferredLanguage, translate }), preferredLanguage, absoluteUrl("/"));
-      })
-    );
-
-    const education = document("education", (_request, preferredLanguage, translate) =>
-      Effect.gen(function* () {
-        const [pageTitles, schools] = yield* Effect.all([stablePageTitles(preferredLanguage), educationList(preferredLanguage)], {
-          concurrency: "unbounded",
-        });
-        return mdResponse(
-          buildEducationMd({ pageTitles, educationList: schools, preferredLanguage, translate }),
-          preferredLanguage,
-          absoluteUrl("/education")
+        const [pageTitles, experiences] = yield* Effect.all(
+          [required(data.stablePageTitles(Option.some(lang)), "page titles"), required(data.experienceList(Option.some(lang)), "experience list")],
+          { concurrency: "unbounded" }
         );
+        return mdResponse(buildHomeMd({ pageTitles, experienceList: experiences, preferredLanguage: lang, translate }), lang, absoluteUrl("/"));
       })
     );
 
-    const contact = document("contact", (_request, preferredLanguage, translate) =>
+    const education = document("education", (_request, lang, translate) =>
       Effect.gen(function* () {
-        const pageTitles = yield* stablePageTitles(preferredLanguage);
-        return mdResponse(buildContactMd({ pageTitles, preferredLanguage, translate }), preferredLanguage, absoluteUrl("/contact"));
+        const [pageTitles, schools] = yield* Effect.all(
+          [required(data.stablePageTitles(Option.some(lang)), "page titles"), required(data.educationList(Option.some(lang)), "education list")],
+          { concurrency: "unbounded" }
+        );
+        return mdResponse(buildEducationMd({ pageTitles, educationList: schools, preferredLanguage: lang, translate }), lang, absoluteUrl("/education"));
       })
     );
 
-    const experience = document("experience", (request, preferredLanguage, translate) =>
+    const contact = document("contact", (_request, lang, translate) =>
+      Effect.gen(function* () {
+        const pageTitles = yield* required(data.stablePageTitles(Option.some(lang)), "page titles");
+        return mdResponse(buildContactMd({ pageTitles, preferredLanguage: lang, translate }), lang, absoluteUrl("/contact"));
+      })
+    );
+
+    const experience = document("experience", (request, lang, translate) =>
       Effect.gen(function* () {
         const slug = yield* slugFromMdPathname(request.url);
 
-        // Unparseable slug: a clean Markdown 404 instead of an HTML error page.
-        if (Option.isNone(slug)) return mdNotFoundResponse(buildNotFoundMd("unknown", preferredLanguage, translate), preferredLanguage);
+        // Unparseable slug: a clean Markdown 404 instead of an HTML error page
+        if (Option.isNone(slug)) return mdNotFoundResponse(buildNotFoundMd("unknown", lang, translate), lang);
 
-        const maybeExperience = experienceFromList(yield* experienceList(preferredLanguage), slug.value);
+        const found = experienceFromList(yield* required(data.experienceList(Option.some(lang)), "experience list"), slug.value);
 
-        if (Option.isNone(maybeExperience)) {
+        if (Option.isNone(found)) {
           yield* Effect.logError(`[SLUG.MD]: no experience for slug "${slug.value}", emitting markdown 404`);
-          return mdNotFoundResponse(buildNotFoundMd(slug.value, preferredLanguage, translate), preferredLanguage);
+          return mdNotFoundResponse(buildNotFoundMd(slug.value, lang, translate), lang);
         }
 
-        return mdResponse(buildExperienceMd(maybeExperience.value, preferredLanguage, translate), preferredLanguage, absoluteUrl(experiencePath(slug.value)));
+        return mdResponse(buildExperienceMd(found.value, lang, translate), lang, absoluteUrl(experiencePath(slug.value)));
       })
     );
 
     // Site index for AI systems (GEO); English only, so no language negotiation
     const siteIndex = Effect.fn("siteIndex")(function* () {
+      // The fetch must stay inside the recovered effect so a data failure becomes the 503 twin
       return yield* textDataResponse(
-        Effect.gen(function* () {
-          return txtResponse(buildLlmsTxt(yield* experienceList("en")));
-        })
+        Effect.map(required(data.experienceList(Option.some("en")), "experience list"), (experienceList) => txtResponse(buildLlmsTxt(experienceList)))
       );
     });
 

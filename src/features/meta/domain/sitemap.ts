@@ -25,15 +25,16 @@ const STATIC_URLS = [
   { loc: `${SITE_URL}/my-certificates.pdf`, changefreq: "monthly", priority: "0.4" },
 ] as const;
 
-// Entity names for the five characters that must be escaped inside XML element text
+// Entity reference for the five characters that are special inside XML element text
 const XML_ENTITY_NAMES: Record.ReadonlyRecord<string, string> = { "&": "amp", "<": "lt", ">": "gt", '"': "quot", "'": "apos" };
 
 // Wraps each special character in an entity reference built from its name
 const escapeXml = (value: string) =>
   value.replace(/[&<>"']/g, (character) => `&${Option.getOrElse(Record.get(XML_ENTITY_NAMES, character), () => character)};`);
 
+// Only <loc> carries data; changefreq and priority are compile-time constants that never need escaping
 const toXmlNode = (entry: SitemapEntry) =>
-  `  <url>\n    <loc>${escapeXml(entry.loc)}</loc>\n    <changefreq>${escapeXml(entry.changefreq)}</changefreq>\n    <priority>${escapeXml(entry.priority)}</priority>\n  </url>`;
+  `  <url>\n    <loc>${escapeXml(entry.loc)}</loc>\n    <changefreq>${entry.changefreq}</changefreq>\n    <priority>${entry.priority}</priority>\n  </url>`;
 
 const wrapWithUrlSet = (entries: string) =>
   `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries}\n</urlset>`;
@@ -48,6 +49,10 @@ export const buildSitemapXml = (experienceList: ExperienceList) =>
     Array.join("\n"),
     wrapWithUrlSet
   );
+
+// Cacheable success response: entries only change when the portfolio data changes
+export const sitemapResponse = (xml: string) =>
+  new Response(xml, { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
 
 export const sitemapUnavailableResponse = () =>
   new Response('<?xml version="1.0" encoding="UTF-8"?><error>Sitemap is temporarily unavailable.</error>', {

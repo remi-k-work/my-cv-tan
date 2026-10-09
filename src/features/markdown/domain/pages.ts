@@ -4,7 +4,7 @@ import { msg } from "gt-tanstack-start";
 import { pageField } from "@/domain";
 import { excerpt } from "@/features/experience/domain";
 import { absoluteUrl } from "@/features/meta/domain";
-import { escapeMd, escapeMdInline, frontmatter, mdBulletList, mdHeading, mdQuote } from "./helpers";
+import { escapeMd, escapeMdInline, frontmatter, mdBulletList, mdEmptyMarker, mdHeading, mdQuote } from "./helpers";
 import { experienceLines } from "./listing";
 
 // types
@@ -89,7 +89,7 @@ export const buildEducationMd = ({ pageTitles, educationList, preferredLanguage,
     ...pageOpening(title, excerpt(intro, META_DESCRIPTION_LENGTH), canonical, preferredLanguage),
     escapeMd(intro),
     ``,
-    schools === "" ? `_${translate(msg("No entries."))}_` : schools,
+    schools === "" ? mdEmptyMarker(translate) : schools,
     ``,
     mdHeading(2, translate(msg("Documents"))),
     ``,

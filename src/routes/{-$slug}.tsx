@@ -6,7 +6,7 @@ import { Array, Option } from "effect";
 import { useAtomSet, useAtomValue } from "@effect/atom-react";
 import { useGT } from "gt-tanstack-start";
 import { loaderIndex } from "@/loaders/index";
-import { experienceHead, headLanguage, homeListHead } from "@/features/meta/domain";
+import { experienceHead, headLanguage, homeHead } from "@/features/meta/domain";
 import { experienceAtom } from "@/features/modals/state";
 
 // components
@@ -23,7 +23,7 @@ export const Route = createFileRoute("/{-$slug}")({
     const preferredLanguage = headLanguage(matches);
     if (loaderData.type === "item" && params.slug) return experienceHead({ slug: params.slug, experience: loaderData.experience, preferredLanguage });
     if (loaderData.type === "list")
-      return homeListHead({ pageTitles: loaderData.stablePageTitles, experienceList: loaderData.experienceList, preferredLanguage });
+      return homeHead({ pageTitles: loaderData.stablePageTitles, experienceList: loaderData.experienceList, preferredLanguage });
     return {};
   },
   component: HomePage,

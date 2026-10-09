@@ -15,6 +15,8 @@ import {
   GLOBAL_IMAGE,
   HOME_COUNTRY,
   HOME_LOCALITY,
+  JOB_TITLE,
+  KNOWS_ABOUT,
   META_DESCRIPTION_LENGTH,
   PERSON_ID,
   PROFILE_ID,
@@ -59,8 +61,8 @@ export const websitePersonJsonLd = () =>
       name: SITE_NAME,
       url: SITE_URL,
       image: AVATAR_IMAGE,
-      jobTitle: "Web Developer",
-      knowsAbout: ["Web Development", "TypeScript", "React", "Next.js", "Effect", "Front-End Development", "Full-Stack Development"],
+      jobTitle: JOB_TITLE,
+      knowsAbout: [...KNOWS_ABOUT],
       homeLocation: {
         "@type": "Place",
         address: {

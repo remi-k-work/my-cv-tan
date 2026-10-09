@@ -2,7 +2,7 @@
 import { Option, pipe } from "effect";
 import { pageField } from "@/domain";
 import { excerpt } from "@/features/experience/domain";
-import { canonicalLink, experienceImageUrl, experiencePath, markdownAlternateLink } from "./helpers";
+import { canonicalLink, experienceImageUrl, experienceMarkdownPath, experiencePath, markdownAlternateLink } from "./helpers";
 import { socialMeta } from "./social";
 import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd } from "./json-ld";
 
@@ -40,7 +40,7 @@ const localizedPageHead = (
   };
 };
 
-export const homeListHead = ({ pageTitles, experienceList, preferredLanguage }: HomeHeadInput) => {
+export const homeHead = ({ pageTitles, experienceList, preferredLanguage }: HomeHeadInput) => {
   const { title, description, meta, links } = localizedPageHead(pageTitles, "/", HOME_MD_HREF, preferredLanguage);
   return { meta, links, scripts: [homeJsonLd({ title, description, experienceList, preferredLanguage })] };
 };
@@ -74,7 +74,7 @@ export const experienceHead = ({ slug, experience, preferredLanguage }: Experien
       { name: "robots", content: "index, follow, max-image-preview:large" },
       ...socialMeta({ title, description, path, image, ogType: "website", twitterImage: GLOBAL_SOCIAL_IMAGE, preferredLanguage }),
     ],
-    links: [canonicalLink(path), markdownAlternateLink(`${path}.md`)],
+    links: [canonicalLink(path), markdownAlternateLink(experienceMarkdownPath(slug))],
     scripts: [experienceJsonLd({ slug, experience, preferredLanguage })],
   };
 };

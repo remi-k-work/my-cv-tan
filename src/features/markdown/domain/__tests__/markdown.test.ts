@@ -198,11 +198,15 @@ it("buildContactMd advertises the same social profiles as the HTML page", () => 
   assert.include(polish, "Lokalizacja: Rzeszów, Polska");
 });
 
-it("buildLlmsTxt indexes pages, grouped experience and negotiated language guidance", () => {
+it("buildLlmsTxt indexes pages, key facts, grouped experience and negotiated language guidance", () => {
   const txt = buildLlmsTxt([{ ...sampleExperience, slug: "my project" }]);
   assert.include(txt, `# Remi Forge`);
   assert.include(txt, `## Pages`);
   assert.include(txt, `https://www.remiforge.dev/index.md`);
+  // Key facts are dense, extractable claims for AI citation
+  assert.include(txt, `## Key Facts`);
+  assert.include(txt, `- Role: Web Developer (self-taught)`);
+  assert.include(txt, `- Based in: Rzeszów, Poland (PL)`);
   assert.include(txt, `## Work Experience`);
   assert.include(txt, `- [Full-Stack Developer at Sample Co](https://www.remiforge.dev/my%20project.md)`);
   assert.include(txt, `## Notes for AI systems`);

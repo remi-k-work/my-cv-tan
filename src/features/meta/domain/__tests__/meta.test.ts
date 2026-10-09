@@ -9,9 +9,10 @@ import {
   contactHead,
   educationHead,
   experienceHead,
-  homeListHead,
+  homeHead,
   languageFromMatches,
   ROOT_HEAD,
+  sitemapResponse,
   sitemapUnavailableResponse,
 } from "../index";
 
@@ -58,7 +59,7 @@ it("experienceHead omits unsupported publication dates and keyword meta", () => 
 it("root metadata defaults to noindex and complete page heads explicitly allow indexing", () => {
   assert.include(JSON.stringify(ROOT_HEAD.meta), '"content":"noindex, follow"');
 
-  const indexable = homeListHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" });
+  const indexable = homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" });
   // TanStack reads only top-level meta/links off head results (load-server.js): the shape must stay flat
   assert.isDefined(indexable.meta);
   assert.isDefined(indexable.links);
@@ -130,7 +131,7 @@ it("experience URL construction percent-encodes one slug consistently in canonic
 it("localized metadata uses stable copy and emits canonical plus Markdown links without same-URL hreflang", () => {
   assert.deepStrictEqual(canonicalLink("/education"), { rel: "canonical", href: "https://www.remiforge.dev/education" });
 
-  const head = homeListHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "pl" });
+  const head = homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "pl" });
   const html = JSON.stringify(head);
   assert.include(html, "Stable home title");
   assert.include(html, "Stable home description.");
@@ -145,7 +146,7 @@ it("localized metadata uses stable copy and emits canonical plus Markdown links 
 });
 
 it("home structured data is a first-party ProfilePage linking site entities plus the work ItemList", () => {
-  const head = homeListHead({ pageTitles: stablePageTitles, experienceList: [sampleExperience], preferredLanguage: "en" });
+  const head = homeHead({ pageTitles: stablePageTitles, experienceList: [sampleExperience], preferredLanguage: "en" });
   const graph = graphOf(head.scripts?.[0]?.children);
   const profile = nodeOf(graph, "ProfilePage");
   assert.deepStrictEqual(profile?.mainEntity, { "@id": "https://www.remiforge.dev/#person" });
@@ -153,7 +154,7 @@ it("home structured data is a first-party ProfilePage linking site entities plus
   assert.strictEqual(listItems(nodeOf(graph, "ItemList"))?.[0]?.url, "https://www.remiforge.dev/sample-role");
 
   // An empty portfolio still emits the ProfilePage graph, never a misleading empty ItemList
-  const emptyGraph = graphOf(homeListHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" }).scripts?.[0]?.children);
+  const emptyGraph = graphOf(homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" }).scripts?.[0]?.children);
   assert.isTrue(emptyGraph.some((node) => node["@type"] === "ProfilePage"));
   assert.isFalse(emptyGraph.some((node) => node["@type"] === "ItemList"));
 });
@@ -188,6 +189,13 @@ it("sitemap omits fabricated last-modified dates", () => {
   const xml = buildSitemapXml([sampleExperience]);
   assert.include(xml, "https://www.remiforge.dev/sample-role");
   assert.notInclude(xml, "<lastmod>");
+});
+
+it("sitemap success responses carry the XML content type and hour-long public caching", () => {
+  const ok = sitemapResponse(buildSitemapXml([sampleExperience]));
+  assert.strictEqual(ok.status, 200);
+  assert.strictEqual(ok.headers.get("Content-Type"), "application/xml; charset=utf-8");
+  assert.strictEqual(ok.headers.get("Cache-Control"), "public, max-age=3600");
 });
 
 it("sitemap percent-encodes unsafe slug characters in generated URLs", () => {

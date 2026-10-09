@@ -1,5 +1,9 @@
 // services, features, and other libraries
 import { Array, Option, pipe, Record, Schema, String } from "effect";
+import { msg } from "gt-tanstack-start";
+
+// types
+import type { Translate } from "@/domain";
 
 // constants
 import { FRONTMATTER_DELIMITER } from "./constants";
@@ -54,3 +58,6 @@ export const mdBulletList = (items: ReadonlyArray<string>) =>
     Array.map((item) => `- ${item}`),
     Array.join("\n")
   );
+
+// Explicit "no entries" marker: a bare section heading would read as truncated content to AI parsers
+export const mdEmptyMarker = (translate: Translate) => `_${translate(msg("No entries."))}_`;
