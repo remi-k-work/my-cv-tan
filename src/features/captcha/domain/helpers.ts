@@ -6,8 +6,8 @@ import { CAPTCHA_HEIGHT, CAPTCHA_WIDTH, LETTER_FONTS } from "./constants";
 
 const randomElement = <A>(items: ReadonlyArray<A>) => Random.nextIntBetween(0, items.length - 1).pipe(Effect.map((index) => items[index]));
 
-const makeRect = Effect.fn("makeRect")((shades: ReadonlyArray<string>) =>
-  Effect.all(
+const makeRect = Effect.fnUntraced(function* (shades: ReadonlyArray<string>) {
+  const { x, y, w, h, rot, fill } = yield* Effect.all(
     {
       x: Random.nextIntBetween(0, CAPTCHA_WIDTH),
       y: Random.nextIntBetween(0, CAPTCHA_HEIGHT),
@@ -17,12 +17,9 @@ const makeRect = Effect.fn("makeRect")((shades: ReadonlyArray<string>) =>
       fill: randomElement(shades),
     },
     { concurrency: "unbounded" }
-  ).pipe(
-    Effect.map(
-      ({ x, y, w, h, rot, fill }) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${fill}" transform="rotate(${rot} ${x + w / 2} ${y + h / 2})"/>`
-    )
-  )
-);
+  );
+  return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${fill}" transform="rotate(${rot} ${x + w / 2} ${y + h / 2})"/>`;
+});
 
 const randomBackground = Effect.gen(function* () {
   const [r, g, b] = yield* Effect.all([Random.nextIntBetween(125, 175), Random.nextIntBetween(125, 175), Random.nextIntBetween(125, 175)], {
@@ -33,8 +30,8 @@ const randomBackground = Effect.gen(function* () {
   return `<rect width="${CAPTCHA_WIDTH}" height="${CAPTCHA_HEIGHT}" fill="rgb(${r},${g},${b})"/>${rects}`;
 });
 
-const renderLetter = Effect.fn("renderLetter")((captchaChar: string, index: number) =>
-  Effect.all(
+const renderLetter = Effect.fnUntraced(function* (captchaChar: string, index: number) {
+  const { font, dx, dy, rot, isWhite } = yield* Effect.all(
     {
       font: randomElement(LETTER_FONTS),
       dx: Random.nextIntBetween(-4, 4),
@@ -43,15 +40,12 @@ const renderLetter = Effect.fn("renderLetter")((captchaChar: string, index: numb
       isWhite: Random.nextBoolean,
     },
     { concurrency: "unbounded" }
-  ).pipe(
-    Effect.map(({ font, dx, dy, rot, isWhite }) => {
-      const x = 16 + index * 30 + dx;
-      const y = 33 + dy;
-      const fill = isWhite ? "rgb(255,255,255)" : "rgb(0,0,0)";
-      return `<text x="${x}" y="${y}" font-family="${font},sans-serif" font-size="25" font-weight="bold" text-anchor="middle" fill="${fill}" transform="rotate(${rot} ${x} ${y})">${captchaChar}</text>`;
-    })
-  )
-);
+  );
+  const x = 16 + index * 30 + dx;
+  const y = 33 + dy;
+  const fill = isWhite ? "rgb(255,255,255)" : "rgb(0,0,0)";
+  return `<text x="${x}" y="${y}" font-family="${font},sans-serif" font-size="25" font-weight="bold" text-anchor="middle" fill="${fill}" transform="rotate(${rot} ${x} ${y})">${captchaChar}</text>`;
+});
 
 export const createCaptchaSvg = Effect.fn("createCaptchaSvg")((captchaString: string) =>
   Effect.all(

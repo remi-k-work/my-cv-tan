@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Array, Option, pipe, Record } from "effect";
+import { Array, pipe, Record } from "effect";
 import { absoluteUrl, experiencePath } from "./helpers";
 
 // types
@@ -15,7 +15,7 @@ interface SitemapEntry {
 import { SITE_URL } from "./constants";
 
 // HTML canonical URLs only: Markdown twins (*.md) are deliberately excluded to avoid
-// duplicate-content dilution; AI crawlers discover them via llms.txt and <link rel="alternate">.
+// duplicate-content dilution; AI crawlers discover them via llms.txt and <link rel="alternate">
 const STATIC_URLS = [
   // Must byte-for-byte equal the homepage canonical (SITE_URL + "/"), or sitemap and canonical signals disagree
   { loc: `${SITE_URL}/`, changefreq: "monthly", priority: "1.0" },
@@ -26,12 +26,11 @@ const STATIC_URLS = [
   { loc: `${SITE_URL}/my-certificates.pdf`, changefreq: "monthly", priority: "0.4" },
 ] as const;
 
-// Entity reference for the five characters that are special inside XML element text
-const XML_ENTITY_NAMES: Record.ReadonlyRecord<string, string> = { "&": "amp", "<": "lt", ">": "gt", '"': "quot", "'": "apos" };
+// Entity references for the five characters that are special inside XML element text
+const XML_ENTITIES: Record.ReadonlyRecord<string, string> = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" };
 
-// Wraps each special character in an entity reference built from its name
-const escapeXml = (value: string) =>
-  value.replace(/[&<>"']/g, (character) => `&${Option.getOrElse(Record.get(XML_ENTITY_NAMES, character), () => character)};`);
+// The match set is exactly the keys above, so every special character is replaced
+const escapeXml = (value: string) => value.replace(/[&<>"']/g, (character) => XML_ENTITIES[character]);
 
 // Only <loc> carries data; changefreq and priority are compile-time constants that never need escaping
 const toXmlNode = (entry: SitemapEntry) =>

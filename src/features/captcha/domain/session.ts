@@ -1,10 +1,9 @@
 // services, features, and other libraries
-import { Config, Crypto, Effect, Match, Option, Redacted, Schema } from "effect";
+import { Config, Crypto, Effect, Option, Redacted, Schema } from "effect";
 import { Base64Url } from "effect/encoding";
 
 // constants
 const textEncoder = new TextEncoder();
-const decodePart = Schema.decodeOption(Schema.Uint8ArrayFromBase64Url);
 
 const concatBytes = (parts: ReadonlyArray<Uint8Array>) => {
   const out = new Uint8Array(parts.reduce((length, part) => length + part.length, 0));
@@ -23,19 +22,12 @@ export const commitToCaptcha = Effect.fn("commitToCaptcha")(function* (salt: Uin
   return yield* crypto.digest("SHA-256", concatBytes([secret, salt, answer]));
 });
 
-export const verifyCaptchaString = Effect.fn("verifyCaptchaString")((sealed: string, captchaInput: string) =>
-  Match.value(sealed.split(".")).pipe(
-    Match.when(
-      (parts): parts is [string, string] => parts.length === 2,
-      ([saltPart, expectedPart]) =>
-        Effect.gen(function* () {
-          const parts = Option.all([decodePart(saltPart), decodePart(expectedPart)]);
-          if (Option.isNone(parts)) return false;
-          const [salt, expected] = parts.value;
-          const actual = yield* commitToCaptcha(salt, captchaInput);
-          return Base64Url.encode(actual) === Base64Url.encode(expected);
-        })
-    ),
-    Match.orElse(() => Effect.succeed(false))
-  )
-);
+export const verifyCaptchaString = Effect.fn("verifyCaptchaString")(function* (sealed: string, captchaInput: string) {
+  // The sealed value is exactly two base64url segments (salt.digest); anything else is a mismatch, not an error
+  const parts = Schema.decodeUnknownOption(Schema.Tuple([Schema.Uint8ArrayFromBase64Url, Schema.Uint8ArrayFromBase64Url]))(sealed.split("."));
+  if (Option.isNone(parts)) return false;
+
+  const [salt, expected] = parts.value;
+  const actual = yield* commitToCaptcha(salt, captchaInput);
+  return Base64Url.encode(actual) === Base64Url.encode(expected);
+});

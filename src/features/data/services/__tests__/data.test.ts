@@ -20,6 +20,27 @@ it.effect("stablePageTitles always selects the first authored entry for each loc
   }).pipe(Effect.provide(Data.layer))
 );
 
+it.effect("randomPageTitles selects from the requested locale", () =>
+  Effect.gen(function* () {
+    const data = yield* Data;
+    const english = yield* data.randomPageTitles(Option.some("en"));
+    const polish = yield* data.randomPageTitles(Option.some("pl"));
+
+    assert.isTrue(
+      Option.match(english, {
+        onNone: () => false,
+        onSome: (entry) => pageTitlesEn.some((page) => page["/"].eyebrow === entry["/"].eyebrow),
+      })
+    );
+    assert.isTrue(
+      Option.match(polish, {
+        onNone: () => false,
+        onSome: (entry) => pageTitlesPl.some((page) => page["/"].eyebrow === entry["/"].eyebrow),
+      })
+    );
+  }).pipe(Effect.provide(Data.layer))
+);
+
 it("required HTML data failures preserve the rendered error page and return a non-cacheable 503", async () => {
   const request = new Request("https://www.remiforge.dev/education");
   const errorResponse = new Response("<!doctype html><title>Error</title>", {

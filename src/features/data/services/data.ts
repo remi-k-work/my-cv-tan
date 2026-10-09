@@ -17,39 +17,44 @@ import educationPl from "@/assets/data/pl/education.json";
 import type { PreferredLanguage } from "@/domain";
 import type { Experience } from "@/features/experience/domain";
 
+const pageTitlesEnData = Schema.decodeOption(PageTitlesList)(pageTitlesEn);
+const pageTitlesPlData = Schema.decodeOption(PageTitlesList)(pageTitlesPl);
+const experienceEnData = Schema.decodeUnknownOption(ExperienceList)(experienceEn);
+const experiencePlData = Schema.decodeUnknownOption(ExperienceList)(experiencePl);
+const educationEnData = Schema.decodeOption(EducationList)(educationEn);
+const educationPlData = Schema.decodeOption(EducationList)(educationPl);
+
 export class Data extends Context.Service<Data>()("Data", {
   make: Effect.sync(() => {
     const randomPageTitles = Effect.fn("randomPageTitles")(function* (preferredLanguage: Option.Option<PreferredLanguage>) {
       const resolvedLanguage = requestPreferredLanguage(preferredLanguage);
-      return Schema.decodeOption(PageTitlesList)(matchPreferredLanguage(resolvedLanguage, pageTitlesEn, pageTitlesPl)).pipe(
-        Option.flatMap(Array.get(yield* Random.nextIntBetween(0, pageTitlesEn.length - 1)))
-      );
+      const pageTitles = matchPreferredLanguage(resolvedLanguage, pageTitlesEnData, pageTitlesPlData);
+      if (Option.isNone(pageTitles)) return Option.none();
+      return yield* Effect.option(Random.choice(pageTitles.value));
     });
 
     const stablePageTitles = (preferredLanguage: Option.Option<PreferredLanguage>) =>
       Effect.sync(() => {
         const resolvedLanguage = requestPreferredLanguage(preferredLanguage);
-        return Schema.decodeOption(PageTitlesList)(matchPreferredLanguage(resolvedLanguage, pageTitlesEn, pageTitlesPl)).pipe(Option.flatMap(Array.head));
+        return Option.flatMap(matchPreferredLanguage(resolvedLanguage, pageTitlesEnData, pageTitlesPlData), Array.head);
       });
 
     const experienceList = (preferredLanguage: Option.Option<PreferredLanguage>) =>
       Effect.sync(() => {
         const resolvedLanguage = requestPreferredLanguage(preferredLanguage);
-        return Schema.decodeUnknownOption(ExperienceList)(matchPreferredLanguage(resolvedLanguage, experienceEn, experiencePl));
+        return matchPreferredLanguage(resolvedLanguage, experienceEnData, experiencePlData);
       });
 
     const educationList = (preferredLanguage: Option.Option<PreferredLanguage>) =>
       Effect.sync(() => {
         const resolvedLanguage = requestPreferredLanguage(preferredLanguage);
-        return Schema.decodeOption(EducationList)(matchPreferredLanguage(resolvedLanguage, educationEn, educationPl));
+        return matchPreferredLanguage(resolvedLanguage, educationEnData, educationPlData);
       });
 
     const experience = (slug: Experience["slug"], preferredLanguage: Option.Option<PreferredLanguage>) =>
       Effect.sync(() => {
         const resolvedLanguage = requestPreferredLanguage(preferredLanguage);
-        return Schema.decodeUnknownOption(ExperienceList)(matchPreferredLanguage(resolvedLanguage, experienceEn, experiencePl)).pipe(
-          Option.flatMap(Array.findFirst((exp) => exp.slug === slug))
-        );
+        return Option.flatMap(matchPreferredLanguage(resolvedLanguage, experienceEnData, experiencePlData), Array.findFirst((exp) => exp.slug === slug));
       });
 
     return { randomPageTitles, stablePageTitles, experienceList, educationList, experience } as const;
