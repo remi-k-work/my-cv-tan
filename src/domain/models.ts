@@ -6,6 +6,7 @@ export type PreferredLanguage = typeof PreferredLanguage.Type;
 export type PagePath = typeof PagePath.Type;
 export type PageTitles = typeof PageTitles.Type;
 export type PageTitlesList = typeof PageTitlesList.Type;
+export type Translate = (source: string) => string;
 
 export const PreferredLanguage = Schema.Literals(["en", "pl"]);
 

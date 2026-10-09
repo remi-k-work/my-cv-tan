@@ -1,11 +1,11 @@
 // types
-import type { PageTitles, PreferredLanguage } from "@/domain";
+import type { PageTitles, PreferredLanguage, Translate } from "@/domain";
 import type { ExperienceList } from "@/features/experience/domain";
 import type { EducationList } from "@/features/education/domain";
 
 // Resolves a msg()-registered source string into the requested language; injected so the
 // pure builders stay testable while the service decides where translations come from
-export type Translate = (source: string) => string;
+export type { Translate } from "@/domain";
 
 export interface HomeMdInput {
   readonly pageTitles: PageTitles;
