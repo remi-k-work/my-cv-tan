@@ -29,22 +29,8 @@ export function ContactForm() {
           submit();
         }}
       >
-        <form.name
-          label={gt("Name")}
-          size={20}
-          maxLength={26}
-          spellCheck={false}
-          autoComplete="name"
-          placeholder={gt("Let me know who you are!")}
-        />
-        <form.email
-          label={gt("Email")}
-          size={20}
-          maxLength={50}
-          spellCheck={false}
-          autoComplete="email"
-          placeholder={gt("I will reply to you here")}
-        />
+        <form.name label={gt("Name")} size={20} maxLength={26} spellCheck={false} autoComplete="name" placeholder={gt("Let me know who you are!")} />
+        <form.email label={gt("Email")} size={20} maxLength={50} spellCheck={false} autoComplete="email" placeholder={gt("I will reply to you here")} />
         <form.subject
           label={gt("Subject")}
           size={20}
@@ -53,15 +39,7 @@ export function ContactForm() {
           autoComplete="off"
           placeholder={gt("Project Inquiry? Feedback? Let me know!")}
         />
-        <form.message
-          label={gt("Message")}
-          cols={30}
-          rows={8}
-          maxLength={2049}
-          spellCheck
-          autoComplete="off"
-          placeholder={gt("How can I help you today?")}
-        />
+        <form.message label={gt("Message")} cols={30} rows={8} maxLength={2049} spellCheck autoComplete="off" placeholder={gt("How can I help you today?")} />
         <br />
         <Captcha />
         <br />
