@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { Array, Option, pipe } from "effect";
 import { msg } from "gt-tanstack-start";
-import { excerpt } from "@/features/experience/domain";
+import { experienceHeadline, excerpt } from "@/features/experience/domain";
 import { absoluteUrl, experiencePath } from "@/features/meta/domain";
 import { escapeMd, escapeMdInline, frontmatter, mdBulletList, mdExternalLink, mdHeading, mdQuote } from "./helpers";
 
@@ -20,6 +20,7 @@ export const experienceFromList = (experienceList: ExperienceList, slug: string)
 export const buildExperienceMd = (experience: Experience, preferredLanguage: PreferredLanguage, translate: Translate) => {
   const { role, company, txt, skillsUsed, year, slug } = experience;
   const canonical = absoluteUrl(experiencePath(slug));
+  const headline = experienceHeadline(experience, preferredLanguage);
   const description = excerpt(txt, META_DESCRIPTION_LENGTH);
 
   // Ignore non-web URLs so untrusted content never becomes an active Markdown link
@@ -37,7 +38,7 @@ export const buildExperienceMd = (experience: Experience, preferredLanguage: Pre
 
   return [
     frontmatter({
-      title: `${SITE_NAME} ● ${role} at ${company}`,
+      title: `${SITE_NAME} ● ${headline}`,
       description,
       canonical,
       lang: preferredLanguage,
@@ -46,7 +47,7 @@ export const buildExperienceMd = (experience: Experience, preferredLanguage: Pre
       year,
       skills: skillsUsed.join(", "),
     }),
-    mdHeading(1, `${role} at ${company}`),
+    mdHeading(1, headline),
     ``,
     mdQuote(description),
     ``,
@@ -74,15 +75,17 @@ export const buildExperienceMd = (experience: Experience, preferredLanguage: Pre
 // get an honest answer and stay on the llms.txt graph of valid documents
 export const buildNotFoundMd = (slug: string, preferredLanguage: PreferredLanguage, translate: Translate) => {
   const title = translate(msg("Not Found"));
-  const description = preferredLanguage === "pl" ? `Nie znaleziono strony dla identyfikatora "${slug}".` : `No page for slug "${slug}".`;
+  const safeSlug = escapeMdInline(slug);
+  const safePath = escapeMdInline(experiencePath(slug));
+  const description = preferredLanguage === "pl" ? `Nie znaleziono strony dla identyfikatora "${safeSlug}".` : `No page for slug "${safeSlug}".`;
 
   return [
     frontmatter({ title, description, lang: preferredLanguage }),
     mdHeading(1, title),
     ``,
     preferredLanguage === "pl"
-      ? `Dokument Markdown dla adresu ${experiencePath(slug)} nie istnieje.`
-      : `No Markdown document exists for ${experiencePath(slug)}.`,
+      ? `Dokument Markdown dla adresu ${safePath} nie istnieje.`
+      : `No Markdown document exists for ${safePath}.`,
     ``,
     `${translate(msg("See"))} [${translate(msg("Home page"))}](${absoluteUrl(HOME_MD_HREF)}) ${translate(msg("or"))} [llms.txt](${absoluteUrl("/llms.txt")}).`,
     ``,

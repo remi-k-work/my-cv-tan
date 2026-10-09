@@ -14,8 +14,8 @@ export const absoluteUrl = (path: string) => `${SITE_URL}${path}`;
 // CV download for the visitor's language; the English CV is the source-language document
 export const cvPdfHref = (preferredLanguage: PreferredLanguage) => matchPreferredLanguage(preferredLanguage, CV_EN_HREF, CV_PL_HREF);
 
-// Experience slugs are data, so encode them as one URL path segment everywhere they appear
-export const experiencePath = (slug: string) => `/${encodeURIComponent(slug)}`;
+// Parentheses are encoded too, since generated Markdown links use bare destinations
+export const experiencePath = (slug: string) => `/${encodeURIComponent(slug).replace(/[()]/g, (character) => encodeURIComponent(character))}`;
 export const experienceMarkdownPath = (slug: string) => `${experiencePath(slug)}.md`;
 export const experienceMarkdownHref = (slug: string) => absoluteUrl(experienceMarkdownPath(slug));
 
@@ -36,5 +36,6 @@ export const experienceImageUrl = (imageName: string) =>
   pipe(
     Option.fromNullishOr(imageName),
     Option.filter((name) => String.isNonEmpty(String.trim(name))),
-    Option.map((name) => absoluteUrl(`/images/${name}-a.webp`))
+    // Keep content-provided image keys inside the intended URL path segment
+    Option.map((name) => absoluteUrl(`/images/${encodeURIComponent(name.trim())}-a.webp`))
   );

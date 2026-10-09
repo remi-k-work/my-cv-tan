@@ -25,7 +25,10 @@ export const mdResponse = (body: string, preferredLanguage: PreferredLanguage, c
 
 // Missing slug response: still Markdown so AI fetchers get an explicit, parseable 404
 export const mdNotFoundResponse = (body: string, preferredLanguage: PreferredLanguage) =>
-  new Response(body, { status: 404, headers: { ...mdHeaders(preferredLanguage), "X-Robots-Tag": "noindex, follow" } });
+  new Response(body, {
+    status: 404,
+    headers: { ...mdHeaders(preferredLanguage), "Cache-Control": "no-store", "X-Robots-Tag": "noindex, follow" },
+  });
 
 // 503 for incomplete documents: they must never be cached as if they were complete
 const unavailableResponse = (body: string, headers: Record.ReadonlyRecord<string, string>) =>

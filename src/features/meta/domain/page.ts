@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { Option, pipe } from "effect";
 import { pageField } from "@/domain";
-import { excerpt } from "@/features/experience/domain";
+import { experienceHeadline, excerpt } from "@/features/experience/domain";
 import { canonicalLink, experienceImageUrl, experienceMarkdownPath, experiencePath, markdownAlternateLink } from "./helpers";
 import { socialMeta } from "./social";
 import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd } from "./json-ld";
@@ -57,10 +57,10 @@ export const contactHead = ({ pageTitles, preferredLanguage }: PageHeadInput) =>
 
 // Detail head always canonicalizes to the clean /{slug} URL, so stray query parameters never become duplicates
 export const experienceHead = ({ slug, experience, preferredLanguage }: ExperienceHeadInput) => {
-  const { role, company, txt, imageName } = experience;
+  const { txt, imageName } = experience;
 
   const path = experiencePath(slug);
-  const title = `${SITE_NAME} ● ${role} at ${company}`;
+  const title = `${SITE_NAME} ● ${experienceHeadline(experience, preferredLanguage)}`;
   const description = excerpt(txt, META_DESCRIPTION_LENGTH);
   const image: SocialImage = pipe(
     experienceImageUrl(imageName),

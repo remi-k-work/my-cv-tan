@@ -35,7 +35,11 @@ export const mdExternalLink = (label: string, href: string) =>
   pipe(
     Schema.decodeOption(Schema.URLFromString)(href),
     Option.filter((url) => url.protocol === "http:" || url.protocol === "https:"),
-    Option.map((url) => `[${escapeMdInline(label)}](<${url.href}>)`)
+    Option.map((url) => {
+      // Bare Markdown destinations use percent-encoded parentheses to stay unambiguous
+      const destination = url.href.replace(/[()]/g, (character) => encodeURIComponent(character));
+      return `[${escapeMdInline(label)}](${destination})`;
+    })
   );
 
 // Frontmatter mirrors <head> meta for AI indexers (title, description, canonical, language)

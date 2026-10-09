@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { Array, Option, pipe } from "effect";
-import { excerpt } from "@/features/experience/domain";
+import { experienceHeadline, excerpt } from "@/features/experience/domain";
 import { absoluteUrl, experienceImageUrl, experiencePath, jsonLdScript } from "./helpers";
 
 // types
@@ -112,11 +112,11 @@ export const homeJsonLd = ({
       name: `${SITE_NAME} — Experience & Projects`,
       itemListElement: pipe(
         experiences,
-        Array.map(({ slug, role, company }, index) => ({
+        Array.map((experience, index) => ({
           "@type": "ListItem",
           position: index + 1,
-          name: `${role} at ${company}`,
-          url: absoluteUrl(experiencePath(slug)),
+          name: experienceHeadline(experience, preferredLanguage),
+          url: absoluteUrl(experiencePath(experience.slug)),
         }))
       ),
     })),
@@ -185,7 +185,7 @@ export const experienceJsonLd = ({ slug, experience, preferredLanguage }: Experi
   const { type, role, company, txt, imageName, skillsUsed } = experience;
   const path = experiencePath(slug);
   const url = absoluteUrl(path);
-  const headline = `${role} at ${company}`;
+  const headline = experienceHeadline(experience, preferredLanguage);
   const itemId = `${url}#${type === "e" ? "organization-role" : "project"}`;
   const description = excerpt(txt, META_DESCRIPTION_LENGTH);
   const image = pipe(

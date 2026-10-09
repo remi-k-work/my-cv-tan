@@ -17,7 +17,7 @@ export const ROOT_HEAD = {
     { charSet: "utf-8" },
     { name: "viewport", content: "width=device-width, initial-scale=1" },
     { name: "theme-color", content: "#1d2549" },
-    { title: TITLE },
+    { title: `${SITE_NAME} ● ${TITLE}` },
     { name: "description", content: excerpt(DESCRIPTION, META_DESCRIPTION_LENGTH) },
 
     { name: "author", content: SITE_NAME },
