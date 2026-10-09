@@ -17,7 +17,8 @@ import { SITE_URL } from "./constants";
 // HTML canonical URLs only: Markdown twins (*.md) are deliberately excluded to avoid
 // duplicate-content dilution; AI crawlers discover them via llms.txt and <link rel="alternate">.
 const STATIC_URLS = [
-  { loc: SITE_URL, changefreq: "monthly", priority: "1.0" },
+  // Must byte-for-byte equal the homepage canonical (SITE_URL + "/"), or sitemap and canonical signals disagree
+  { loc: `${SITE_URL}/`, changefreq: "monthly", priority: "1.0" },
   { loc: `${SITE_URL}/education`, changefreq: "monthly", priority: "0.8" },
   { loc: `${SITE_URL}/contact`, changefreq: "monthly", priority: "0.5" },
   { loc: `${SITE_URL}/my-cv.pdf`, changefreq: "monthly", priority: "0.4" },

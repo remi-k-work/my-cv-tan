@@ -25,15 +25,18 @@ import {
 import type { PreferredLanguage } from "@/domain";
 import type { Translate } from "@/features/markdown/domain";
 
+// Fetch + require in one step: every twin renders from the stable content bundle in the requested language
+const required = <A>(maybe: Effect.Effect<Option.Option<A>>, dataset: string): Effect.Effect<A, RequiredDataError> =>
+  Effect.flatMap(maybe, (option) => requireData(option, dataset));
+
+// Source-language copy: the same fallback the dictionary itself applies per missing key
+const translateSource: Translate = (source) => source;
+
 // One home for every AI-facing document pipeline (GEO): language resolution, data
-// fetch, Markdown rendering and Response construction. Routes only wire requests.
+// fetch, Markdown rendering and Response construction. Routes only wire named handlers.
 export class Markdown extends Context.Service<Markdown>()("Markdown", {
   make: Effect.gen(function* () {
     const data = yield* Data;
-
-    // Fetch + require in one step: every twin renders from the stable content bundle in the requested language
-    const required = <A>(maybe: Effect.Effect<Option.Option<A>>, dataset: string): Effect.Effect<A, RequiredDataError> =>
-      Effect.flatMap(maybe, (option) => requireData(option, dataset));
 
     // Shared document pipeline: language negotiation, translation lookup and unavailable-data
     // recovery live here so each twin below stays a thin fetch-and-render step
@@ -42,7 +45,10 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
       Effect.fn(name)(function* (request: Request) {
         // ?lang= override wins over the GT locale resolved for this request
         const lang = requestPreferredLanguage(yield* parseLangParam(request.url));
-        const translate = yield* Effect.promise(() => translateForLanguage(lang));
+        // A failed dictionary load must not 500 a machine-readable endpoint; source-language copy still renders
+        const translate = yield* Effect.tryPromise(() => translateForLanguage(lang)).pipe(
+          Effect.catch((error) => Effect.logError(`[MARKDOWN]: translation snapshot unavailable for "${lang}"`, error).pipe(Effect.as(translateSource)))
+        );
         return yield* markdownDataResponse(lang, translate, render(request, lang, translate));
       });
 

@@ -2,6 +2,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 // services, features, and other libraries
-import { markdownHandler } from "@/features/markdown/services/handlers";
+import { homeHandler } from "@/features/markdown/services/handlers";
 
-export const Route = createFileRoute("/index.md")({ server: { handlers: { GET: markdownHandler(({ home }) => home) } } });
+export const Route = createFileRoute("/index.md")({ server: { handlers: { GET: homeHandler } } });

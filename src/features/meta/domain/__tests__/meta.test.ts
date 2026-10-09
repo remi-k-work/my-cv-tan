@@ -191,6 +191,12 @@ it("sitemap omits fabricated last-modified dates", () => {
   assert.notInclude(xml, "<lastmod>");
 });
 
+it("sitemap home URL equals the homepage canonical exactly", () => {
+  const xml = buildSitemapXml([]);
+  assert.include(xml, "<loc>https://www.remiforge.dev/</loc>");
+  assert.notInclude(xml, "<loc>https://www.remiforge.dev</loc>");
+});
+
 it("sitemap success responses carry the XML content type and hour-long public caching", () => {
   const ok = sitemapResponse(buildSitemapXml([sampleExperience]));
   assert.strictEqual(ok.status, 200);
