@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { motion } from "motion/react";
-import { useGT } from "gt-tanstack-start";
+import { useMessages } from "gt-tanstack-start";
 
 // assets
 import { ExclamationTriangleIcon } from "@heroicons/react/24/solid";
@@ -13,8 +13,9 @@ interface ErrorLineProps {
 // constants
 import { SPRINGS } from "@/lib/motion-tokens";
 
+// Schema validation messages arrive as msg()-registered strings; m resolves those at runtime
 export function ErrorLine({ message }: ErrorLineProps) {
-  const gt = useGT();
+  const m = useMessages();
 
   return (
     <motion.p
@@ -27,7 +28,7 @@ export function ErrorLine({ message }: ErrorLineProps) {
       transition={SPRINGS.gentle}
     >
       <ExclamationTriangleIcon className="size-9 flex-none" />
-      {gt(message)}
+      {m(message)}
     </motion.p>
   );
 }

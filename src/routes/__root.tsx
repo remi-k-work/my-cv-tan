@@ -22,12 +22,6 @@ import "@fontsource/outfit";
 // types
 import type { ReactNode } from "react";
 
-interface RootDocumentProps {
-  locale: string;
-  translations: Awaited<ReturnType<typeof getTranslationsSnapshot>>;
-  children: ReactNode;
-}
-
 export const Route = createRootRoute({
   head: () => ROOT_HEAD,
   loader: async () => {
@@ -36,30 +30,32 @@ export const Route = createRootRoute({
     return { ...rootData, locale, translations } as const;
   },
   component: RootComponent,
+  shellComponent: RootDocument,
 });
 
 function RootComponent() {
-  const { locale, localizedContent, translations } = Route.useLoaderData();
+  const { localizedContent } = Route.useLoaderData();
 
   return (
-    <RootDocument locale={locale} translations={translations}>
-      <div
-        className={cn(
-          "isolate grid grid-cols-[1fr] grid-rows-[11rem_1fr_7rem] [grid-template-areas:'header''main''skills']",
-          "lg:grid-cols-[11rem_1rem_1fr_1rem] lg:grid-rows-[7rem_1fr] lg:[grid-template-areas:'skills_header_header_header''skills_._main_.']"
-        )}
-      >
-        <Header localizedContent={localizedContent} />
-        <Skills />
-        <main className="[grid-area:main]">
-          <Outlet />
-        </main>
-      </div>
-    </RootDocument>
+    <div
+      className={cn(
+        "isolate grid grid-cols-[1fr] grid-rows-[11rem_1fr_7rem] [grid-template-areas:'header''main''skills']",
+        "lg:grid-cols-[11rem_1rem_1fr_1rem] lg:grid-rows-[7rem_1fr] lg:[grid-template-areas:'skills_header_header_header''skills_._main_.']"
+      )}
+    >
+      <Header localizedContent={localizedContent} />
+      <Skills />
+      <main className="[grid-area:main]">
+        <Outlet />
+      </main>
+    </div>
   );
 }
 
-function RootDocument({ locale, translations, children }: RootDocumentProps) {
+// The html document shell; the router streams the route components into it
+function RootDocument({ children }: { children: ReactNode }) {
+  const { locale, translations } = Route.useLoaderData();
+
   return (
     <html lang={locale} translate="no">
       <head>

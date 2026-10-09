@@ -9,6 +9,8 @@ import { loadTranslations } from "@/lib/gt-translations";
 // constants
 import gtConfig from "../gt.config.json";
 
+// No-op reload: without it GT falls back to a full window.location.reload() on locale
+// changes; the LangChanger instead invalidates the router to re-run loaders softly.
 initializeGT({ ...gtConfig, loadTranslations, _reload: () => {} });
 
 export const getRouter = () => createRouter({ routeTree, scrollRestoration: true });

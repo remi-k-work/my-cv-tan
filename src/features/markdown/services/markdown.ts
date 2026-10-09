@@ -1,9 +1,8 @@
 // services, features, and other libraries
 import { Context, Effect, Layer, Option } from "effect";
-import { getLocale } from "gt-tanstack-start";
 import { requireData, RequiredDataError } from "@/features/data/domain";
 import { Data } from "@/features/data/services/data";
-import { preferredLanguageFromLocale } from "@/features/data/domain";
+import { requestPreferredLanguage } from "@/features/data/domain";
 import { absoluteUrl, experiencePath } from "@/features/meta/domain";
 import {
   buildContactMd,
@@ -33,8 +32,7 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
 
     // ?lang= override wins over the GT locale resolved for this request
     const language = Effect.fnUntraced(function* (requestUrl: string) {
-      const override = yield* parseLangParam(requestUrl);
-      return Option.getOrElse(override, () => preferredLanguageFromLocale(getLocale()));
+      return requestPreferredLanguage(yield* parseLangParam(requestUrl));
     });
 
     // Fetch + require pairs: every twin renders from the stable (non-random) content bundle in the requested language
