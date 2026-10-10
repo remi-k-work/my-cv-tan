@@ -1,6 +1,3 @@
-// react
-import { useCallback } from "react";
-
 // services, features, and other libraries
 import useEmblaCarousel from "embla-carousel-react";
 import { useEmblaSelect } from "@/features/experience/hooks";
@@ -40,19 +37,15 @@ export function ExperienceSlider({ experienceList }: ExperienceSliderProps) {
 function SliderControls({ emblaApi }: { emblaApi: EmblaCarouselType | undefined }) {
   const { selectedIndex, snapCount, canScrollPrev, canScrollNext } = useEmblaSelect(emblaApi);
 
-  const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
-  const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
-  const scrollTo = useCallback((index: number) => () => emblaApi?.scrollTo(index), [emblaApi]);
-
   return (
     <>
       <header className="flex items-center gap-4 [grid-area:prevnext]">
-        <Prev disabled={!canScrollPrev} onPrev={scrollPrev} />
-        <Next disabled={!canScrollNext} onNext={scrollNext} />
+        <Prev disabled={!canScrollPrev} onPrev={() => emblaApi?.scrollPrev()} />
+        <Next disabled={!canScrollNext} onNext={() => emblaApi?.scrollNext()} />
       </header>
       <footer className="flex flex-wrap items-center justify-end gap-1 [grid-area:dots]">
         {Array.from({ length: snapCount }, (_, index) => (
-          <Dot key={index} selected={index === selectedIndex} onSelect={scrollTo(index)} />
+          <Dot key={index} selected={index === selectedIndex} onSelect={() => emblaApi?.scrollTo(index)} />
         ))}
       </footer>
     </>
