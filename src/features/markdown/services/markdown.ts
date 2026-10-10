@@ -46,7 +46,7 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
     const document = (render: (request: Request, lang: PreferredLanguage, translate: Translate) => Effect.Effect<Response, RequiredDataError>) =>
       Effect.fnUntraced(function* (request: Request) {
         // ?lang= override wins over the GT locale resolved for this request
-        const langOverride = yield* parseLangParam(request.url);
+        const langOverride = parseLangParam(request.url);
         const lang = requestPreferredLanguage(langOverride);
         // A failed dictionary load must not 500 a machine-readable endpoint; source-language copy still renders
         const translate = yield* Effect.tryPromise(() => translateForLanguage(lang)).pipe(
@@ -93,7 +93,7 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
 
     const experience = document((request, lang, translate) =>
       Effect.gen(function* () {
-        const slug = yield* slugFromMdPathname(request.url);
+        const slug = slugFromMdPathname(request.url);
 
         // Unparseable slug: a clean Markdown 404 instead of an HTML error page
         if (Option.isNone(slug)) return mdNotFoundResponse(buildNotFoundMd("unknown", lang, translate), lang);

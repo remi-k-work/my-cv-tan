@@ -288,24 +288,20 @@ it.effect("required-content failures map to non-cacheable 503s and valid missing
   })
 );
 
-it.effect("parseLangParam honors ?lang= and rejects unknown values", () =>
-  Effect.gen(function* () {
-    assert.deepStrictEqual(yield* parseLangParam("https://x.test/index.md?lang=pl"), Option.some("pl"));
-    assert.deepStrictEqual(yield* parseLangParam("https://x.test/index.md?lang=EN"), Option.some("en"));
-    assert.deepStrictEqual(yield* parseLangParam("https://x.test/index.md"), Option.none());
-    assert.deepStrictEqual(yield* parseLangParam("https://x.test/index.md?lang=de"), Option.none());
-  })
-);
+it("parseLangParam honors ?lang= and rejects unknown values", () => {
+  assert.deepStrictEqual(parseLangParam("https://x.test/index.md?lang=pl"), Option.some("pl"));
+  assert.deepStrictEqual(parseLangParam("https://x.test/index.md?lang=EN"), Option.some("en"));
+  assert.deepStrictEqual(parseLangParam("https://x.test/index.md"), Option.none());
+  assert.deepStrictEqual(parseLangParam("https://x.test/index.md?lang=de"), Option.none());
+});
 
-it.effect("slugFromMdPathname extracts slugs and never throws on hostile input", () =>
-  Effect.gen(function* () {
-    assert.deepStrictEqual(yield* slugFromMdPathname("https://x.test/benefit-finance.md"), Option.some("benefit-finance"));
-    assert.deepStrictEqual(yield* slugFromMdPathname("https://x.test/benefit-finance.md?lang=pl"), Option.some("benefit-finance"));
-    assert.deepStrictEqual(yield* slugFromMdPathname("https://x.test/my%20project.md"), Option.some("my project"));
-    // Malformed percent-encoding, missing slug, and extensionless paths all become None (clean 404)
-    assert.deepStrictEqual(yield* slugFromMdPathname("https://x.test/%zz.md"), Option.none());
-    assert.deepStrictEqual(yield* slugFromMdPathname("https://x.test/%E0%A4%A.md"), Option.none());
-    assert.deepStrictEqual(yield* slugFromMdPathname("https://x.test/"), Option.none());
-    assert.deepStrictEqual(yield* slugFromMdPathname("https://x.test/.md"), Option.none());
-  })
-);
+it("slugFromMdPathname extracts slugs and never throws on hostile input", () => {
+  assert.deepStrictEqual(slugFromMdPathname("https://x.test/benefit-finance.md"), Option.some("benefit-finance"));
+  assert.deepStrictEqual(slugFromMdPathname("https://x.test/benefit-finance.md?lang=pl"), Option.some("benefit-finance"));
+  assert.deepStrictEqual(slugFromMdPathname("https://x.test/my%20project.md"), Option.some("my project"));
+  // Malformed percent-encoding, missing slug, and extensionless paths all become None (clean 404)
+  assert.deepStrictEqual(slugFromMdPathname("https://x.test/%zz.md"), Option.none());
+  assert.deepStrictEqual(slugFromMdPathname("https://x.test/%E0%A4%A.md"), Option.none());
+  assert.deepStrictEqual(slugFromMdPathname("https://x.test/"), Option.none());
+  assert.deepStrictEqual(slugFromMdPathname("https://x.test/.md"), Option.none());
+});

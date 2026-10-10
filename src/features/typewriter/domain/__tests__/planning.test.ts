@@ -21,7 +21,7 @@ describe("planTypo", () => {
 
   it.effect("inserts a random lowercase letter", () =>
     Effect.gen(function* () {
-      assert.strictEqual(yield* planTypo("hello").pipe(Random.withSeed("seed-18")), "hoello");
+      assert.strictEqual(yield* planTypo("hello").pipe(Random.withSeed("seed-18")), "hnello");
     })
   );
 

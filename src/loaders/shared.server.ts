@@ -29,6 +29,13 @@ export const serverLoader = <A, E>(use: (source: PageData) => Effect.Effect<A, E
     Effect.gen(function* () {
       const data = yield* Data;
       return yield* use(fromData(data, preferredLanguageFromLocale(getLocale())));
-    }).pipe(Effect.tapError((error) => Effect.logError(error).pipe(Effect.andThen(Effect.sync(() => markHtmlDataUnavailable(request, error))))))
+    }).pipe(
+      Effect.tapError((error) =>
+        Effect.andThen(
+          Effect.logError(error),
+          Effect.sync(() => markHtmlDataUnavailable(request, error))
+        )
+      )
+    )
   );
 };
