@@ -27,6 +27,9 @@ export const HOME_COUNTRY_NAME = "Poland";
 export const JOB_TITLE = "Web Developer";
 export const KNOWS_ABOUT = ["Web Development", "TypeScript", "React", "Next.js", "Effect", "Front-End Development", "Full-Stack Development"] as const;
 
+// Supported content languages: single source for WebSite.inLanguage and Person.knowsLanguage
+export const SITE_LANGUAGES = ["en", "pl"] as const;
+
 // Stable JSON-LD @graph node ids: page-level structured data references these entities
 export const WEBSITE_ID = `${SITE_URL}/#website`;
 export const PERSON_ID = `${SITE_URL}/#person`;

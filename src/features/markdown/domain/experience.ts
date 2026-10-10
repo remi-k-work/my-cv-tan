@@ -6,9 +6,8 @@ import { absoluteUrl, experiencePath } from "@/features/meta/domain";
 import { escapeMd, escapeMdInline, frontmatter, mdBulletList, mdExternalLink, mdHeading, mdQuote } from "./helpers";
 
 // types
-import type { PreferredLanguage } from "@/domain";
-import type { Experience, ExperienceList } from "@/features/experience/domain";
-import type { Translate } from "./models";
+import type { ExperienceList } from "@/features/experience/domain";
+import type { BuildNotFoundMdInput, ExperienceMdInput } from "./models";
 
 // constants
 import { HOME_MD_HREF, META_DESCRIPTION_LENGTH, SITE_NAME } from "@/features/meta/domain";
@@ -17,7 +16,7 @@ import { HOME_MD_HREF, META_DESCRIPTION_LENGTH, SITE_NAME } from "@/features/met
 // a failed decode stays an error in the caller via requireData
 export const experienceFromList = (experienceList: ExperienceList, slug: string) => Array.findFirst(experienceList, (experience) => experience.slug === slug);
 
-export const buildExperienceMd = (experience: Experience, preferredLanguage: PreferredLanguage, translate: Translate) => {
+export const buildExperienceMd = ({ experience, preferredLanguage, translate }: ExperienceMdInput) => {
   const { role, company, txt, skillsUsed, year, slug } = experience;
   const canonical = absoluteUrl(experiencePath(slug));
   const headline = experienceHeadline(experience, preferredLanguage);
@@ -75,7 +74,7 @@ export const buildExperienceMd = (experience: Experience, preferredLanguage: Pre
 
 // Explicit, parseable not-found document rather than an HTML error page: AI fetchers
 // get an honest answer and stay on the llms.txt graph of valid documents
-export const buildNotFoundMd = (slug: string, preferredLanguage: PreferredLanguage, translate: Translate) => {
+export const buildNotFoundMd = ({ slug, preferredLanguage, translate }: BuildNotFoundMdInput) => {
   const title = translate(msg("Not Found"));
   const safeSlug = escapeMdInline(slug);
   const safePath = escapeMdInline(experiencePath(slug));

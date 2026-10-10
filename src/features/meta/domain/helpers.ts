@@ -14,8 +14,10 @@ export const absoluteUrl = (path: string) => `${SITE_URL}${path}`;
 // CV download for the visitor's language; the English CV is the source-language document
 export const cvPdfHref = (preferredLanguage: PreferredLanguage) => matchPreferredLanguage(preferredLanguage, CV_EN_HREF, CV_PL_HREF);
 
-// Parentheses are encoded too, since generated Markdown links use bare destinations
-export const experiencePath = (slug: string) => `/${encodeURIComponent(slug).replace(/[()]/g, (character) => encodeURIComponent(character))}`;
+// Parens are legal in URLs but break bare Markdown destinations; shared with the markdown feature
+export const encodeParens = (value: string) => value.replace(/[()]/g, (character) => encodeURIComponent(character));
+
+export const experiencePath = (slug: string) => `/${encodeParens(encodeURIComponent(slug))}`;
 export const experienceMarkdownPath = (slug: string) => `${experiencePath(slug)}.md`;
 export const experienceMarkdownHref = (slug: string) => absoluteUrl(experienceMarkdownPath(slug));
 

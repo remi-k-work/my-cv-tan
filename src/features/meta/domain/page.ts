@@ -7,13 +7,21 @@ import { socialMeta } from "./social";
 import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd } from "./json-ld";
 
 // types
-import type { SocialImage } from "./models";
-import type { EducationHeadInput, ExperienceHeadInput, HomeHeadInput, PageHeadInput } from "./models";
+import type { EducationHeadInput, ExperienceHeadInput, HomeHeadInput, PageHeadInput, SocialImage, SocialMetaInput } from "./models";
 import type { PagePath } from "@/domain";
 
 // constants
 import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain";
 import { CONTACT_MD_HREF, DESCRIPTION, EDUCATION_MD_HREF, GLOBAL_SOCIAL_IMAGE, HOME_MD_HREF, META_DESCRIPTION_LENGTH, SITE_NAME, TITLE } from "./constants";
+
+// Complete data opts into indexing: one shared block keeps <title>, robots and social tags
+// consistent; the bare heading goes to og:title so every card renders the same way
+const indexableMeta = (input: SocialMetaInput) => [
+  { title: `${SITE_NAME} ● ${input.title}` },
+  { name: "description", content: input.description },
+  { name: "robots", content: "index, follow, max-image-preview:large" },
+  ...socialMeta(input),
+];
 
 // Shared head for content pages: complete data opts into indexing; incomplete responses inherit the root noindex policy instead
 const localizedPageHead = (
@@ -30,12 +38,7 @@ const localizedPageHead = (
   return {
     title,
     description,
-    meta: [
-      { title: `${SITE_NAME} ● ${title}` },
-      { name: "description", content: description },
-      { name: "robots", content: "index, follow, max-image-preview:large" },
-      ...socialMeta({ title, description, path: pagePath, image: GLOBAL_SOCIAL_IMAGE, ogType: "website", preferredLanguage }),
-    ],
+    meta: indexableMeta({ title, description, path: pagePath, image: GLOBAL_SOCIAL_IMAGE, ogType: "website", preferredLanguage }),
     links: [canonicalLink(pagePath), markdownAlternateLink(mdHref)],
   };
 };
@@ -60,7 +63,7 @@ export const experienceHead = ({ slug, experience, preferredLanguage }: Experien
   const { txt, imageName } = experience;
 
   const path = experiencePath(slug);
-  const title = `${SITE_NAME} ● ${experienceHeadline(experience, preferredLanguage)}`;
+  const headline = experienceHeadline(experience, preferredLanguage);
   const description = excerpt(txt, META_DESCRIPTION_LENGTH);
   const image: SocialImage = pipe(
     experienceImageUrl(imageName),
@@ -68,12 +71,7 @@ export const experienceHead = ({ slug, experience, preferredLanguage }: Experien
     Option.getOrElse(() => GLOBAL_SOCIAL_IMAGE)
   );
   return {
-    meta: [
-      { title },
-      { name: "description", content: description },
-      { name: "robots", content: "index, follow, max-image-preview:large" },
-      ...socialMeta({ title, description, path, image, ogType: "website", twitterImage: GLOBAL_SOCIAL_IMAGE, preferredLanguage }),
-    ],
+    meta: indexableMeta({ title: headline, description, path, image, ogType: "website", twitterImage: GLOBAL_SOCIAL_IMAGE, preferredLanguage }),
     links: [canonicalLink(path), markdownAlternateLink(experienceMarkdownPath(slug))],
     scripts: [experienceJsonLd({ slug, experience, preferredLanguage })],
   };

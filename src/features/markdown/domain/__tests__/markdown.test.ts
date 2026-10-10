@@ -84,10 +84,15 @@ it("frontmatter emits a delimited block with quoted values", () => {
 
 it("escapeMd neutralizes heading characters and collapses blank lines", () => {
   assert.strictEqual(escapeMd("# Hello\n\n\nWorld *bold* [link]"), "\\# Hello\n\nWorld \\*bold\\* \\[link\\]");
+  // Bare "=" / "--" runs under a paragraph would otherwise become setext headings
+  assert.strictEqual(escapeMd("Title\n====="), "Title\n\\=====");
+  assert.strictEqual(escapeMd("Sub\n--"), "Sub\n\\--");
+  // Inline "=" characters are meaningless and stay untouched
+  assert.strictEqual(escapeMd("plain = math"), "plain = math");
 });
 
 it("buildExperienceMd renders frontmatter, H1, skills and links without repeated crawler instructions", () => {
-  const md = buildExperienceMd(sampleExperience, "en", translateEn);
+  const md = buildExperienceMd({ experience: sampleExperience, preferredLanguage: "en", translate: translateEn });
   assert.include(md, `canonical: "https://www.remiforge.dev/sample-role"`);
   assert.include(md, `# Full-Stack Developer at Sample Co`);
   assert.include(md, `- TypeScript`);
@@ -113,18 +118,18 @@ it("buildExperienceMd renders frontmatter, H1, skills and links without repeated
 
 it("experience Markdown canonical encodes a slug as one path segment", () => {
   const experience = { ...sampleExperience, slug: "résumé & more" };
-  const md = buildExperienceMd(experience, "en", translateEn);
+  const md = buildExperienceMd({ experience, preferredLanguage: "en", translate: translateEn });
   assert.include(md, `canonical: "https://www.remiforge.dev/r%C3%A9sum%C3%A9%20%26%20more"`);
 });
 
 it("buildExperienceMd omits the Links section when the experience has no links", () => {
-  const md = buildExperienceMd({ ...sampleExperience, gitHubLink: undefined }, "en", translateEn);
+  const md = buildExperienceMd({ experience: { ...sampleExperience, gitHubLink: undefined }, preferredLanguage: "en", translate: translateEn });
   assert.include(md, `## Skills Used`);
   assert.notInclude(md, `## Links`);
 });
 
 it("buildExperienceMd localizes fixed Polish section and fact labels", () => {
-  const md = buildExperienceMd(sampleExperience, "pl", translatePl);
+  const md = buildExperienceMd({ experience: sampleExperience, preferredLanguage: "pl", translate: translatePl });
   assert.include(md, "## Opis");
   assert.include(md, "## Szczegóły");
   assert.include(md, "Rola: Full-Stack Developer");
@@ -178,12 +183,12 @@ it("buildEducationMd stays localized and a missing document has no canonical", (
   assert.include(populated, "Lata: 2020");
   assert.include(populated, "Lokalizacja: Poland");
 
-  const missing = buildNotFoundMd("bogus", "en", translateEn);
+  const missing = buildNotFoundMd({ slug: "bogus", preferredLanguage: "en", translate: translateEn });
   assert.include(missing, `# Not Found`);
   assert.include(missing, `https://www.remiforge.dev/index.md`);
   assert.notInclude(missing, "canonical:");
 
-  const missingPl = buildNotFoundMd("brak", "pl", translatePl);
+  const missingPl = buildNotFoundMd({ slug: "brak", preferredLanguage: "pl", translate: translatePl });
   assert.include(missingPl, "# Nie znaleziono");
   assert.include(missingPl, "Dokument Markdown dla adresu /brak nie istnieje.");
 });
@@ -281,7 +286,7 @@ it.effect("required-content failures map to non-cacheable 503s and valid missing
 
     const noMatch = experienceFromList([], "missing");
     const notFound = Option.isNone(noMatch)
-      ? mdNotFoundResponse(buildNotFoundMd("missing", "en", translateEn), "en")
+      ? mdNotFoundResponse(buildNotFoundMd({ slug: "missing", preferredLanguage: "en", translate: translateEn }), "en")
       : mdResponse("# Found", "en", "https://www.remiforge.dev/");
     assert.strictEqual(notFound.status, 404);
     assert.strictEqual(notFound.headers.get("X-Robots-Tag"), "noindex, follow");

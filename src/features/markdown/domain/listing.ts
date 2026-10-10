@@ -5,9 +5,8 @@ import { experienceMarkdownHref } from "@/features/meta/domain";
 import { escapeMdInline, mdEmptyMarker } from "./helpers";
 
 // types
+import type { PreferredLanguage, Translate } from "@/domain";
 import type { Experience, ExperienceList } from "@/features/experience/domain";
-import type { PreferredLanguage } from "@/domain";
-import type { Translate } from "./models";
 
 // constants
 import { LIST_EXCERPT_LENGTH } from "./constants";

@@ -50,9 +50,9 @@ export const buildSitemapXml = (experienceList: ExperienceList) =>
     wrapWithUrlSet
   );
 
-// Cacheable success response: entries only change when the portfolio data changes
+// Cacheable success response: entries only change when the portfolio data changes; policy matches the .md / llms.txt twins
 export const sitemapResponse = (xml: string) =>
-  new Response(xml, { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
+  new Response(xml, { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400" } });
 
 export const sitemapUnavailableResponse = () =>
   new Response('<?xml version="1.0" encoding="UTF-8"?><error>Sitemap is temporarily unavailable.</error>', {

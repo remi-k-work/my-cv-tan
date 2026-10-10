@@ -4,8 +4,7 @@ import { msg } from "gt-tanstack-start";
 import { RequiredDataError } from "@/features/data/domain";
 
 // types
-import type { PreferredLanguage } from "@/domain";
-import type { Translate } from "./models";
+import type { PreferredLanguage, Translate } from "@/domain";
 
 // constants
 import { MARKDOWN_CACHE_CONTROL, MARKDOWN_CONTENT_TYPE, MARKDOWN_VARY, TXT_CONTENT_TYPE } from "./constants";

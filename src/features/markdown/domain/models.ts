@@ -1,12 +1,9 @@
 // types
 import type { PageTitles, PreferredLanguage, Translate } from "@/domain";
-import type { ExperienceList } from "@/features/experience/domain";
+import type { Experience, ExperienceList } from "@/features/experience/domain";
 import type { EducationList } from "@/features/education/domain";
 
-// Resolves a msg()-registered source string into the requested language; injected so the
-// pure builders stay testable while the service decides where translations come from
-export type { Translate } from "@/domain";
-
+// translate is injected so the pure builders stay testable; the service decides where translations come from
 export interface HomeMdInput {
   readonly pageTitles: PageTitles;
   readonly experienceList: ExperienceList;
@@ -23,6 +20,18 @@ export interface EducationMdInput {
 
 export interface ContactMdInput {
   readonly pageTitles: PageTitles;
+  readonly preferredLanguage: PreferredLanguage;
+  readonly translate: Translate;
+}
+
+export interface ExperienceMdInput {
+  readonly experience: Experience;
+  readonly preferredLanguage: PreferredLanguage;
+  readonly translate: Translate;
+}
+
+export interface BuildNotFoundMdInput {
+  readonly slug: string;
   readonly preferredLanguage: PreferredLanguage;
   readonly translate: Translate;
 }

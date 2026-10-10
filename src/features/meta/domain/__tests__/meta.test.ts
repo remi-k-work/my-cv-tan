@@ -74,12 +74,21 @@ it("root metadata defaults to noindex and complete page heads explicitly allow i
   assert.include(JSON.stringify(contact.meta), "index, follow, max-image-preview:large");
 });
 
+it("root graph declares the bilingual audience on WebSite and Person", () => {
+  const graph = graphOf(ROOT_HEAD.scripts?.[0]?.children);
+  assert.deepStrictEqual(nodeOf(graph, "WebSite")?.inLanguage, ["en", "pl"]);
+  assert.deepStrictEqual(nodeOf(graph, "Person")?.knowsLanguage, ["en", "pl"]);
+});
+
 it("project details use CreativeWork linked to the canonical WebPage, person and breadcrumb", () => {
   const pl = experienceHead({ slug: "sample-role", experience: sampleExperience, preferredLanguage: "pl" });
   const html = JSON.stringify(pl);
   assert.include(html, '"content":"pl_PL"');
   assert.include(html, '"content":"en_US"'); // alternate
   assert.include(html, '"property":"og:type","content":"website"');
+  // og:title carries the bare headline; the document <title> keeps the site prefix
+  assert.include(html, '"title":"Remi Forge ● Projekt osobisty: Full-Stack Developer"');
+  assert.include(html, '"property":"og:title","content":"Projekt osobisty: Full-Stack Developer"');
 
   const [graph] = pl.scripts ?? [];
   const parsed = graphOf(graph?.children);
@@ -152,6 +161,7 @@ it("home structured data is a first-party ProfilePage linking site entities plus
   assert.deepStrictEqual(profile?.mainEntity, { "@id": "https://www.remiforge.dev/#person" });
   assert.deepStrictEqual(profile?.isPartOf, { "@id": "https://www.remiforge.dev/#website" });
   assert.strictEqual(listItems(nodeOf(graph, "ItemList"))?.[0]?.url, "https://www.remiforge.dev/sample-role");
+  assert.strictEqual(nodeOf(graph, "ItemList")?.inLanguage, "en");
 
   // An empty portfolio still emits the ProfilePage graph, never a misleading empty ItemList
   const emptyGraph = graphOf(homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" }).scripts?.[0]?.children);
@@ -177,6 +187,8 @@ it("contact structured data describes the visible ContactPage inside a breadcrum
   assert.notInclude(JSON.stringify(graph), "FAQPage");
   // Two-level breadcrumb mirrors the site structure for SERP display and AI extraction
   const trail = nodeOf(graph, "BreadcrumbList");
+  // The Home crumb must byte-match the homepage canonical
+  assert.deepStrictEqual(listItems(trail)?.[0], { "@type": "ListItem", position: 1, name: "Home", item: "https://www.remiforge.dev/" });
   assert.deepStrictEqual(listItems(trail)?.[1], {
     "@type": "ListItem",
     position: 2,
@@ -201,7 +213,7 @@ it("sitemap success responses carry the XML content type and hour-long public ca
   const ok = sitemapResponse(buildSitemapXml([sampleExperience]));
   assert.strictEqual(ok.status, 200);
   assert.strictEqual(ok.headers.get("Content-Type"), "application/xml; charset=utf-8");
-  assert.strictEqual(ok.headers.get("Cache-Control"), "public, max-age=3600");
+  assert.strictEqual(ok.headers.get("Cache-Control"), "public, max-age=3600, stale-while-revalidate=86400");
 });
 
 it("sitemap percent-encodes unsafe slug characters in generated URLs", () => {

@@ -25,8 +25,7 @@ import {
 } from "@/features/markdown/domain";
 
 // types
-import type { PreferredLanguage } from "@/domain";
-import type { Translate } from "@/features/markdown/domain";
+import type { PreferredLanguage, Translate } from "@/domain";
 
 // Fetch + require in one step: every twin renders from the stable content bundle in the requested language
 const required = <A>(maybe: Effect.Effect<Option.Option<A>>, dataset: string): Effect.Effect<A, RequiredDataError> =>
@@ -96,16 +95,16 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
         const slug = slugFromMdPathname(request.url);
 
         // Unparseable slug: a clean Markdown 404 instead of an HTML error page
-        if (Option.isNone(slug)) return mdNotFoundResponse(buildNotFoundMd("unknown", lang, translate), lang);
+        if (Option.isNone(slug)) return mdNotFoundResponse(buildNotFoundMd({ slug: "unknown", preferredLanguage: lang, translate }), lang);
 
         const found = experienceFromList(yield* required(data.experienceList(Option.some(lang)), "experience list"), slug.value);
 
         if (Option.isNone(found)) {
           yield* Effect.logError(`[SLUG.MD]: no experience for slug "${slug.value}", emitting markdown 404`);
-          return mdNotFoundResponse(buildNotFoundMd(slug.value, lang, translate), lang);
+          return mdNotFoundResponse(buildNotFoundMd({ slug: slug.value, preferredLanguage: lang, translate }), lang);
         }
 
-        return mdResponse(buildExperienceMd(found.value, lang, translate), lang, absoluteUrl(experiencePath(slug.value)));
+        return mdResponse(buildExperienceMd({ experience: found.value, preferredLanguage: lang, translate }), lang, absoluteUrl(experiencePath(slug.value)));
       })
     );
 

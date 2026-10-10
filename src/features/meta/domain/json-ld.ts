@@ -21,6 +21,7 @@ import {
   PERSON_ID,
   PROFILE_ID,
   PUBLISHER_ID,
+  SITE_LANGUAGES,
   SITE_NAME,
   SITE_URL,
   SOCIAL_LINKS,
@@ -38,7 +39,8 @@ const breadcrumb = (path: string, name: string) =>
   ({
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+      // Byte-equal to the homepage canonical so structured data and canonical signals agree
+      { "@type": "ListItem", position: 1, name: "Home", item: absoluteUrl("/") },
       { "@type": "ListItem", position: 2, name, item: absoluteUrl(path) },
     ],
   }) as const;
@@ -51,7 +53,7 @@ export const websitePersonJsonLd = () =>
       "@id": WEBSITE_ID,
       name: SITE_NAME,
       url: SITE_URL,
-      inLanguage: ["en", "pl"],
+      inLanguage: [...SITE_LANGUAGES],
       author: { "@id": PERSON_ID },
       publisher: { "@id": PUBLISHER_ID },
     },
@@ -63,6 +65,8 @@ export const websitePersonJsonLd = () =>
       image: AVATAR_IMAGE,
       jobTitle: JOB_TITLE,
       knowsAbout: [...KNOWS_ABOUT],
+      // The site's bilingual audience is a factual GEO signal for AI extraction
+      knowsLanguage: [...SITE_LANGUAGES],
       homeLocation: {
         "@type": "Place",
         address: {
@@ -110,6 +114,7 @@ export const homeJsonLd = ({
     ...whenNonEmpty(experienceList, (experiences) => ({
       "@type": "ItemList",
       name: `${SITE_NAME} — Experience & Projects`,
+      inLanguage: preferredLanguage,
       itemListElement: pipe(
         experiences,
         Array.map((experience, index) => ({
