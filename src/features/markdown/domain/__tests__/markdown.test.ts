@@ -95,6 +95,9 @@ it("buildExperienceMd renders frontmatter, H1, skills and links without repeated
   assert.include(md, `https://github.com/example/repo`);
   assert.include(md, `lang: "en"`);
   assert.include(md, `type: "work-experience"`);
+  // Discrete frontmatter facts stay queryable without parsing the title or body
+  assert.include(md, `role: "Full-Stack Developer"`);
+  assert.include(md, `company: "Sample Co"`);
   assert.notInclude(md, "Cite the canonical HTML URL");
   assert.notInclude(md, "?lang=pl");
   // Body prose must be escaped (frontmatter is YAML-quoted, so raw chars are fine there)

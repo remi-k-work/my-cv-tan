@@ -1,30 +1,15 @@
 // services, features, and other libraries
-import { Effect, Option } from "effect";
-import { removeResponseHeader } from "@tanstack/react-start/server";
+import { Effect } from "effect";
 import { RuntimeServer } from "@/lib/runtime-server";
 import { Markdown } from "./markdown";
-import { parseLangParam } from "../domain";
 
-// Wires one Markdown service method into a TanStack server handler
+// Wires one Markdown service method into a TanStack server handler. The service owns
+// the whole request pipeline (language negotiation, rendering, response headers),
+// so the handler is a pure bridge between the router and the Effect runtime.
 const markdownHandler =
   (pick: (markdown: Markdown["Service"]) => (request: Request) => Effect.Effect<Response>) =>
   ({ request }: { request: Request }) =>
-    RuntimeServer.runPromise(
-      Effect.gen(function* () {
-        const languageOverride = yield* parseLangParam(request.url);
-        const response = yield* pick(yield* Markdown)(request);
-
-        if (Option.isSome(languageOverride) && new URL(request.url).pathname.endsWith(".md")) {
-          // The explicit URL locale identifies the cache variant and must not overwrite the browser locale
-          yield* Effect.sync(() => {
-            response.headers.delete("Vary");
-            removeResponseHeader("set-cookie");
-          });
-        }
-
-        return response;
-      })
-    );
+    RuntimeServer.runPromise(Effect.flatMap(Markdown, (markdown) => pick(markdown)(request)));
 
 // Named endpoints: routes wire a plain identifier and the full AI-facing surface is listed in one place
 export const homeHandler = markdownHandler(({ home }) => home);

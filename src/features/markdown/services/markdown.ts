@@ -1,3 +1,6 @@
+// tanstack
+import { removeResponseHeader } from "@tanstack/react-start/server";
+
 // services, features, and other libraries
 import { Context, Effect, Layer, Option } from "effect";
 import { translateForLanguage } from "@/lib/gt-translations";
@@ -33,23 +36,32 @@ const required = <A>(maybe: Effect.Effect<Option.Option<A>>, dataset: string): E
 const translateSource: Translate = (source) => source;
 
 // One home for every AI-facing document pipeline (GEO): language resolution, data
-// fetch, Markdown rendering and Response construction. Routes only wire named handlers.
+// fetch, Markdown rendering and Response construction. Routes only wire named handlers
 export class Markdown extends Context.Service<Markdown>()("Markdown", {
   make: Effect.gen(function* () {
     const data = yield* Data;
 
-    // Shared document pipeline: language negotiation, translation lookup and unavailable-data
-    // recovery live here so each twin below stays a thin fetch-and-render step
-    const document =
-      (name: string, render: (request: Request, lang: PreferredLanguage, translate: Translate) => Effect.Effect<Response, RequiredDataError>) =>
+    // Shared document pipeline: language negotiation, translation lookup, unavailable-data recovery and
+    // explicit-variant cache policy live here so each twin below stays a thin fetch-and-render step
+    const document = (name: string, render: (request: Request, lang: PreferredLanguage, translate: Translate) => Effect.Effect<Response, RequiredDataError>) =>
       Effect.fn(name)(function* (request: Request) {
         // ?lang= override wins over the GT locale resolved for this request
-        const lang = requestPreferredLanguage(yield* parseLangParam(request.url));
+        const langOverride = yield* parseLangParam(request.url);
+        const lang = requestPreferredLanguage(langOverride);
         // A failed dictionary load must not 500 a machine-readable endpoint; source-language copy still renders
         const translate = yield* Effect.tryPromise(() => translateForLanguage(lang)).pipe(
           Effect.catch((error) => Effect.logError(`[MARKDOWN]: translation snapshot unavailable for "${lang}"`, error).pipe(Effect.as(translateSource)))
         );
-        return yield* markdownDataResponse(lang, translate, render(request, lang, translate));
+        const response = yield* markdownDataResponse(lang, translate, render(request, lang, translate));
+
+        // An explicit ?lang= pins the cache variant: the response no longer depends on
+        // the locale cookie, so drop Vary and the GT set-cookie to keep it shared-cacheable
+        if (Option.isSome(langOverride)) {
+          response.headers.delete("Vary");
+          removeResponseHeader("set-cookie");
+        }
+
+        return response;
       });
 
     const home = document("home", (_request, lang, translate) =>

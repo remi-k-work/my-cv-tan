@@ -44,6 +44,8 @@ export const buildExperienceMd = (experience: Experience, preferredLanguage: Pre
       lang: preferredLanguage,
       // Machine-classifiable entry type (frontmatter mirrors <head> meta for AI indexers)
       type: experience.type === "e" ? "work-experience" : "project",
+      role,
+      company,
       year,
       skills: skillsUsed.join(", "),
     }),
@@ -83,9 +85,7 @@ export const buildNotFoundMd = (slug: string, preferredLanguage: PreferredLangua
     frontmatter({ title, description, lang: preferredLanguage }),
     mdHeading(1, title),
     ``,
-    preferredLanguage === "pl"
-      ? `Dokument Markdown dla adresu ${safePath} nie istnieje.`
-      : `No Markdown document exists for ${safePath}.`,
+    preferredLanguage === "pl" ? `Dokument Markdown dla adresu ${safePath} nie istnieje.` : `No Markdown document exists for ${safePath}.`,
     ``,
     `${translate(msg("See"))} [${translate(msg("Home page"))}](${absoluteUrl(HOME_MD_HREF)}) ${translate(msg("or"))} [llms.txt](${absoluteUrl("/llms.txt")}).`,
     ``,
