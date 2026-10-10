@@ -12,7 +12,7 @@ import { CAPTCHA_COOKIE_NAME, CAPTCHA_COOKIE_OPTIONS } from "@/features/captcha/
 const CaptchaApiHandlers = HttpApiBuilder.group(
   CaptchaApi,
   "Captcha",
-  Effect.fn(function* (handlers) {
+  Effect.fn("CaptchaApiHandlers")(function* (handlers) {
     const { generate, seal } = yield* Captcha;
 
     return handlers.handle("captcha", () =>

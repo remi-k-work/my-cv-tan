@@ -28,7 +28,7 @@ export const escapeMd = (text: string) =>
 export const escapeMdInline = (text: string) => pipe(escapeMd(text), String.replace(/\n+/g, " "), String.trim);
 
 // JSON string quoting is also valid for YAML double-quoted scalars and handles control characters
-export const yamlValue = (value: string) => JSON.stringify(value);
+const yamlValue = (value: string) => JSON.stringify(value);
 
 // Content bundles may contain stale or malformed URLs; only publish links with web protocols
 export const mdExternalLink = (label: string, href: string) =>

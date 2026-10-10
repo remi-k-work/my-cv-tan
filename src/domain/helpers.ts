@@ -1,7 +1,8 @@
 // services, features, and other libraries
 import { Context, Layer, Option, pipe } from "effect";
-import { RpcClient, RpcGroup, RpcSerialization } from "effect/rpc";
-import { FetchHttpClient } from "effect/http";
+import { RpcClient, RpcGroup, RpcSerialization, RpcServer } from "effect/rpc";
+import { FetchHttpClient, HttpRouter, HttpServer } from "effect/http";
+import { RpcLoggerLive } from "@/services/rpc-logger";
 
 // types
 import type { Rpc } from "effect/rpc";
@@ -16,6 +17,26 @@ export const makeRpcClient = <Rpcs extends Rpc.Any>(serviceName: string, group: 
   }) {
     static readonly layer = Layer.effect(this, this.make).pipe(Layer.provide(ProtocolLive));
   };
+};
+
+// Builds the web handler for an RPC group's HTTP route. disableFatalDefects serializes defects
+// as an Exit instead of closing the connection; disableTracing is deliberate (no tracer configured).
+// The handlers layer claims Rpc.ServicesServer too: the schema services those requirements resolve
+// to for a concrete group are already covered, and the claim is checked at each call site.
+export const makeRpcHandler = <Rpcs extends Rpc.Any, LE>(
+  group: RpcGroup.RpcGroup<Rpcs>,
+  path: HttpRouter.PathInput,
+  handlersLayer: Layer.Layer<Rpc.ToHandler<Rpcs> | Rpc.ServicesServer<Rpcs>, LE, never>
+) => {
+  const RpcLayer = RpcServer.layerHttp({
+    group,
+    path,
+    protocol: "http",
+    disableFatalDefects: true,
+    disableTracing: true,
+  }).pipe(Layer.provide(Layer.mergeAll(handlersLayer, RpcSerialization.layerSchemaBinary(), HttpServer.layerServices, RpcLoggerLive)));
+
+  return HttpRouter.toWebHandler(RpcLayer, { disableLogger: true });
 };
 
 export const matchPreferredLanguage = <T>(preferredLanguage: PreferredLanguage, en: T, pl: T): T => (preferredLanguage === "en" ? en : pl);

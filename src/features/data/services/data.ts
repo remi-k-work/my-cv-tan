@@ -26,36 +26,31 @@ const educationPlData = Schema.decodeOption(EducationList)(educationPl);
 
 export class Data extends Context.Service<Data>()("Data", {
   make: Effect.sync(() => {
-    const randomPageTitles = Effect.fn("randomPageTitles")(function* (preferredLanguage: Option.Option<PreferredLanguage>) {
-      const resolvedLanguage = requestPreferredLanguage(preferredLanguage);
-      const pageTitles = matchPreferredLanguage(resolvedLanguage, pageTitlesEnData, pageTitlesPlData);
+    const localized = <A>(preferredLanguage: Option.Option<PreferredLanguage>, en: Option.Option<A>, pl: Option.Option<A>) =>
+      matchPreferredLanguage(requestPreferredLanguage(preferredLanguage), en, pl);
+
+    const randomPageTitles = Effect.fnUntraced(function* (preferredLanguage: Option.Option<PreferredLanguage>) {
+      const pageTitles = localized(preferredLanguage, pageTitlesEnData, pageTitlesPlData);
       if (Option.isNone(pageTitles)) return Option.none();
       return yield* Effect.option(Random.choice(pageTitles.value));
     });
 
     const stablePageTitles = (preferredLanguage: Option.Option<PreferredLanguage>) =>
-      Effect.sync(() => {
-        const resolvedLanguage = requestPreferredLanguage(preferredLanguage);
-        return Option.flatMap(matchPreferredLanguage(resolvedLanguage, pageTitlesEnData, pageTitlesPlData), Array.head);
-      });
+      Effect.sync(() => Option.flatMap(localized(preferredLanguage, pageTitlesEnData, pageTitlesPlData), Array.head));
 
     const experienceList = (preferredLanguage: Option.Option<PreferredLanguage>) =>
-      Effect.sync(() => {
-        const resolvedLanguage = requestPreferredLanguage(preferredLanguage);
-        return matchPreferredLanguage(resolvedLanguage, experienceEnData, experiencePlData);
-      });
+      Effect.sync(() => localized(preferredLanguage, experienceEnData, experiencePlData));
 
     const educationList = (preferredLanguage: Option.Option<PreferredLanguage>) =>
-      Effect.sync(() => {
-        const resolvedLanguage = requestPreferredLanguage(preferredLanguage);
-        return matchPreferredLanguage(resolvedLanguage, educationEnData, educationPlData);
-      });
+      Effect.sync(() => localized(preferredLanguage, educationEnData, educationPlData));
 
     const experience = (slug: Experience["slug"], preferredLanguage: Option.Option<PreferredLanguage>) =>
-      Effect.sync(() => {
-        const resolvedLanguage = requestPreferredLanguage(preferredLanguage);
-        return Option.flatMap(matchPreferredLanguage(resolvedLanguage, experienceEnData, experiencePlData), Array.findFirst((exp) => exp.slug === slug));
-      });
+      Effect.sync(() =>
+        Option.flatMap(
+          localized(preferredLanguage, experienceEnData, experiencePlData),
+          Array.findFirst((exp) => exp.slug === slug)
+        )
+      );
 
     return { randomPageTitles, stablePageTitles, experienceList, educationList, experience } as const;
   }),

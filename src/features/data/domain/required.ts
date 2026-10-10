@@ -7,6 +7,5 @@ export class RequiredDataError extends Schema.TaggedError<RequiredDataError>()("
 }) {}
 
 export const requireData = Effect.fnUntraced(function* <A>(data: Option.Option<A>, dataset: string): Effect.fn.Return<A, RequiredDataError> {
-  if (Option.isNone(data)) return yield* new RequiredDataError({ dataset, message: `Required data is unavailable: ${dataset}` });
-  return data.value;
+  return yield* Effect.fromOption(data, () => new RequiredDataError({ dataset, message: `Required data is unavailable: ${dataset}` }));
 });

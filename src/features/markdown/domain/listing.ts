@@ -13,7 +13,7 @@ import type { Translate } from "./models";
 import { LIST_EXCERPT_LENGTH } from "./constants";
 
 // One line per experience in AI indexes: label links the .md twin, excerpt carries the substance
-export const experienceLine = (experience: Experience, preferredLanguage: PreferredLanguage = "en") =>
+const experienceLine = (experience: Experience, preferredLanguage: PreferredLanguage = "en") =>
   `- [${escapeMdInline(experienceHeadline(experience, preferredLanguage))}](${experienceMarkdownHref(experience.slug)}) — ${escapeMdInline(excerpt(experience.txt, LIST_EXCERPT_LENGTH))} (${escapeMdInline(experience.year)})`;
 
 // Section body lines for one experience type, or an explicit empty marker (never a bare heading)

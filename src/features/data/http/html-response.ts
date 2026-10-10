@@ -1,10 +1,11 @@
 // services, features, and other libraries
+import { Schema } from "effect";
 import { RequiredDataError } from "@/features/data/domain/required";
 
 const unavailableHtmlRequests = new WeakSet<Request>();
 
 export const markHtmlDataUnavailable = (request: Request, error: unknown) => {
-  if (error instanceof RequiredDataError) unavailableHtmlRequests.add(request);
+  if (Schema.is(RequiredDataError)(error)) unavailableHtmlRequests.add(request);
 };
 
 export const applyHtmlDataUnavailableResponse = (request: Request, response: Response) => {

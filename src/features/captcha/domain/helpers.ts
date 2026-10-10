@@ -47,14 +47,10 @@ const renderLetter = Effect.fnUntraced(function* (captchaChar: string, index: nu
   return `<text x="${x}" y="${y}" font-family="${font},sans-serif" font-size="25" font-weight="bold" text-anchor="middle" fill="${fill}" transform="rotate(${rot} ${x} ${y})">${captchaChar}</text>`;
 });
 
-export const createCaptchaSvg = Effect.fn("createCaptchaSvg")((captchaString: string) =>
-  Effect.all(
+export const createCaptchaSvg = Effect.fnUntraced(function* (captchaString: string) {
+  const { background, letters } = yield* Effect.all(
     { background: randomBackground, letters: Effect.forEach(Array.fromIterable(captchaString), renderLetter).pipe(Effect.map(Array.join(""))) },
     { concurrency: "unbounded" }
-  ).pipe(
-    Effect.map(
-      ({ background, letters }) =>
-        `<svg xmlns="http://www.w3.org/2000/svg" width="${CAPTCHA_WIDTH}" height="${CAPTCHA_HEIGHT}" viewBox="0 0 ${CAPTCHA_WIDTH} ${CAPTCHA_HEIGHT}">${background}${letters}</svg>`
-    )
-  )
-);
+  );
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${CAPTCHA_WIDTH}" height="${CAPTCHA_HEIGHT}" viewBox="0 0 ${CAPTCHA_WIDTH} ${CAPTCHA_HEIGHT}">${background}${letters}</svg>`;
+});

@@ -1,10 +1,8 @@
 // services, features, and other libraries
 import { Effect, Layer } from "effect";
-import { RpcSerialization, RpcServer } from "effect/rpc";
-import { HttpServer, HttpRouter } from "effect/http";
 import { RpcContactMe } from "./requests";
 import { Send } from "@/features/contact-me/services/send";
-import { RpcLoggerLive } from "@/services/rpc-logger";
+import { makeRpcHandler } from "@/domain/helpers";
 
 const RpcContactMeLayer = RpcContactMe.toLayer({
   contactForm: ({ name, email, subject, message }) =>
@@ -15,12 +13,4 @@ const RpcContactMeLayer = RpcContactMe.toLayer({
     }),
 }).pipe(Layer.provide(Send.layer));
 
-const RpcLayer = RpcServer.layerHttp({
-  group: RpcContactMe,
-  path: "/api/rpc/contact-me",
-  protocol: "http",
-  disableFatalDefects: true,
-  disableTracing: true,
-}).pipe(Layer.provide(Layer.mergeAll(RpcContactMeLayer, RpcSerialization.layerSchemaBinary(), HttpServer.layerServices, RpcLoggerLive)));
-
-export const handler = HttpRouter.toWebHandler(RpcLayer, { disableLogger: true });
+export const handler = makeRpcHandler(RpcContactMe, "/api/rpc/contact-me", RpcContactMeLayer);

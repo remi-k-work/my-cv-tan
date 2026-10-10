@@ -1,3 +1,6 @@
+// react
+import { useMemo } from "react";
+
 // services, features, and other libraries
 import { useAtomSet } from "@effect/atom-react";
 import { contactForm } from "@/features/contact-me/domain";
@@ -13,7 +16,7 @@ export function ContactForm() {
   const gt = useGT();
 
   // Get the form context
-  const form = contactForm();
+  const form = useMemo(() => contactForm(), []);
   const submit = useAtomSet(form.submit);
 
   // Provide feedback to the user regarding this form actions

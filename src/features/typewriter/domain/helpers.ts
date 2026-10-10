@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Array, Effect, Option, pipe, Random, String } from "effect";
+import { Array, Effect, pipe, Random, String } from "effect";
 
 // types
 import type { ChunkAcc } from "./models";
@@ -37,10 +37,4 @@ export const chunkTextByWords = (text: string, maxLength: number) => {
 };
 
 // A random lowercase letter used for insertion typos
-export const randomLetter = Effect.map(Random.nextIntBetween(0, String.length(LOWERCASE_LETTERS)), (index) =>
-  pipe(
-    LOWERCASE_LETTERS,
-    String.charAt(index),
-    Option.getOrElse(() => "")
-  )
-);
+export const randomLetter = Effect.map(Random.nextIntBetween(0, String.length(LOWERCASE_LETTERS) - 1), (index) => LOWERCASE_LETTERS[index]);

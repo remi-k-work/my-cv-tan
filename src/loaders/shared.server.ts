@@ -22,13 +22,13 @@ const fromData = (data: Data["Service"], preferredLanguage: PreferredLanguage): 
 });
 
 // Runs a server loader against the shared services, logging failures before rejecting
-export const serverLoader = <A, E>(use: (source: PageData) => Effect.Effect<A, E>) =>
-  RuntimeServer.runPromise(
+export const serverLoader = <A, E>(use: (source: PageData) => Effect.Effect<A, E>) => {
+  const request = getRequest();
+
+  return RuntimeServer.runPromise(
     Effect.gen(function* () {
       const data = yield* Data;
       return yield* use(fromData(data, preferredLanguageFromLocale(getLocale())));
-    }).pipe(
-      Effect.tapError((error) => Effect.sync(() => markHtmlDataUnavailable(getRequest(), error))),
-      Effect.tapError(Effect.logError)
-    )
+    }).pipe(Effect.tapError((error) => Effect.logError(error).pipe(Effect.andThen(Effect.sync(() => markHtmlDataUnavailable(request, error))))))
   );
+};

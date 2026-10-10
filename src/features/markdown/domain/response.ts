@@ -49,14 +49,7 @@ export const txtUnavailableResponse = (body: string) => unavailableResponse(body
 
 // Shared recovery for document pipelines: a data failure logs, then renders the non-cacheable 503 above
 const dataResponse = (logPrefix: string, fallback: () => Response, document: Effect.Effect<Response, RequiredDataError>) =>
-  document.pipe(
-    Effect.catchTag("RequiredDataError", (error) =>
-      Effect.gen(function* () {
-        yield* Effect.logError(`${logPrefix}: ${error.message}`);
-        return fallback();
-      })
-    )
-  );
+  document.pipe(Effect.catchTag("RequiredDataError", (error) => Effect.logError(`${logPrefix}: ${error.message}`).pipe(Effect.map(() => fallback()))));
 
 export const markdownDataResponse = (preferredLanguage: PreferredLanguage, translate: Translate, document: Effect.Effect<Response, RequiredDataError>) =>
   dataResponse("[MARKDOWN]", () => mdUnavailableResponse(unavailableMarkdownBody(translate), preferredLanguage), document);

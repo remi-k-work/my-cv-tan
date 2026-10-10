@@ -27,6 +27,8 @@ const load = <E>(source: PageData<E>, slug: Option.Option<string>) =>
       const requiredRandomPageTitles = yield* requireData(randomPageTitles, "random page titles");
       const experiences = yield* requireData(experienceList, "experience list");
       const experience = Array.findFirst(experiences, (entry) => entry.slug === slug.value);
+
+      // Defect by design so TanStack's notFound() bypasses the loader's typed-error handling
       if (Option.isNone(experience)) throw notFound();
 
       return {

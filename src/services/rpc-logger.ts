@@ -8,15 +8,13 @@ export const RpcLoggerLive: Layer.Layer<RpcLogger> = Layer.succeed(
   RpcLogger,
   RpcLogger.of((effect, opts) =>
     // Observe the handler's outcome, logging failures without altering the response
-    Effect.exit(effect).pipe(
-      Effect.flatMap((exit) =>
-        Exit.isSuccess(exit)
-          ? exit
-          : Effect.annotateLogs(Effect.logError(`[RPC REQUEST FAILED]: ${opts.rpc._tag}`, exit.cause), {
-              "rpc.method": opts.rpc._tag,
-              "rpc.clientId": opts.client.id,
-            }).pipe(Effect.andThen(exit))
-      )
+    Effect.onExit(effect, (exit) =>
+      Exit.isSuccess(exit)
+        ? Effect.void
+        : Effect.annotateLogs(Effect.logError(`[RPC REQUEST FAILED]: ${opts.rpc._tag}`, exit.cause), {
+            "rpc.method": opts.rpc._tag,
+            "rpc.clientId": opts.client.id,
+          })
     )
   )
 );

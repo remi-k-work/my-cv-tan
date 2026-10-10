@@ -16,30 +16,30 @@ export class Send extends Context.Service<Send>()("Send", {
     const client = (yield* HttpClient.HttpClient).pipe(
       HttpClient.mapRequest(flow(HttpClientRequest.prependUrl("https://api.emailjs.com/api/v1.0"), HttpClientRequest.acceptJson)),
       HttpClient.filterStatusOk,
-      HttpClient.retryTransient({ schedule: Schedule.exponential(100), times: 3 })
+      HttpClient.retryTransient({ retryOn: "errors-only", schedule: Schedule.exponential(100), times: 3 })
     );
 
     // Send the contact form with validated data
-    const send = Effect.fn("send")(
-      function* (name: Name, email: Email, subject: Subject, message: Message) {
-        // Execute request
-        const sendRequest = SendRequest.make({ user_id, accessToken, template_params: { name, email, subject, message } as const });
-        yield* HttpClientRequest.post("/email/send").pipe(
-          HttpClientRequest.bodyJsonUnsafe(yield* Schema.encodeEffect(SendRequest)(sendRequest)),
-          client.execute,
-          // Surface upstream status + body (e.g. rate-limit details) instead of burying them in `cause`
-          Effect.catchTag("HttpClientError", (clientError) => {
-            const response = clientError.response;
-            if (response === undefined) return Effect.fail(new SendError({ cause: clientError }));
-            return response.text.pipe(
-              Effect.orElseSucceed(() => "<unreadable body>"),
-              Effect.flatMap((responseBody) => Effect.fail(new SendError({ cause: clientError, status: response.status, responseBody })))
-            );
-          })
-        );
-      },
-      Effect.mapError((cause) => (Schema.is(SendError)(cause) ? cause : new SendError({ cause })))
-    );
+    const send = Effect.fnUntraced(function* (name: Name, email: Email, subject: Subject, message: Message) {
+      // Execute request
+      const sendRequest = SendRequest.make({ user_id, accessToken, template_params: { name, email, subject, message } as const });
+      const encoded = yield* Schema.encodeEffect(SendRequest)(sendRequest).pipe(Effect.mapError((cause) => new SendError({ cause })));
+      const request = yield* HttpClientRequest.post("/email/send").pipe(
+        HttpClientRequest.bodyJson(encoded),
+        Effect.mapError((cause) => new SendError({ cause }))
+      );
+      yield* client.execute(request).pipe(
+        // Surface upstream status + body (e.g. rate-limit details) instead of burying them in `cause`
+        Effect.catchTag("HttpClientError", (clientError) => {
+          const response = clientError.response;
+          if (response === undefined) return Effect.fail(new SendError({ cause: clientError }));
+          return response.text.pipe(
+            Effect.orElseSucceed(() => "<unreadable body>"),
+            Effect.flatMap((responseBody) => Effect.fail(new SendError({ cause: clientError, status: response.status, responseBody })))
+          );
+        })
+      );
+    });
 
     return { send } as const;
   }),

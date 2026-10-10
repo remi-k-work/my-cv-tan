@@ -43,8 +43,8 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
 
     // Shared document pipeline: language negotiation, translation lookup, unavailable-data recovery and
     // explicit-variant cache policy live here so each twin below stays a thin fetch-and-render step
-    const document = (name: string, render: (request: Request, lang: PreferredLanguage, translate: Translate) => Effect.Effect<Response, RequiredDataError>) =>
-      Effect.fn(name)(function* (request: Request) {
+    const document = (render: (request: Request, lang: PreferredLanguage, translate: Translate) => Effect.Effect<Response, RequiredDataError>) =>
+      Effect.fnUntraced(function* (request: Request) {
         // ?lang= override wins over the GT locale resolved for this request
         const langOverride = yield* parseLangParam(request.url);
         const lang = requestPreferredLanguage(langOverride);
@@ -64,7 +64,7 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
         return response;
       });
 
-    const home = document("home", (_request, lang, translate) =>
+    const home = document((_request, lang, translate) =>
       Effect.gen(function* () {
         const [pageTitles, experiences] = yield* Effect.all(
           [required(data.stablePageTitles(Option.some(lang)), "page titles"), required(data.experienceList(Option.some(lang)), "experience list")],
@@ -74,7 +74,7 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
       })
     );
 
-    const education = document("education", (_request, lang, translate) =>
+    const education = document((_request, lang, translate) =>
       Effect.gen(function* () {
         const [pageTitles, schools] = yield* Effect.all(
           [required(data.stablePageTitles(Option.some(lang)), "page titles"), required(data.educationList(Option.some(lang)), "education list")],
@@ -84,14 +84,14 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
       })
     );
 
-    const contact = document("contact", (_request, lang, translate) =>
+    const contact = document((_request, lang, translate) =>
       Effect.gen(function* () {
         const pageTitles = yield* required(data.stablePageTitles(Option.some(lang)), "page titles");
         return mdResponse(buildContactMd({ pageTitles, preferredLanguage: lang, translate }), lang, absoluteUrl("/contact"));
       })
     );
 
-    const experience = document("experience", (request, lang, translate) =>
+    const experience = document((request, lang, translate) =>
       Effect.gen(function* () {
         const slug = yield* slugFromMdPathname(request.url);
 
@@ -110,7 +110,7 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
     );
 
     // Site index for AI systems (GEO); English only, so no language negotiation
-    const siteIndex = Effect.fn("siteIndex")(function* () {
+    const siteIndex = Effect.fnUntraced(function* () {
       // The fetch must stay inside the recovered effect so a data failure becomes the 503 twin
       return yield* textDataResponse(
         Effect.map(required(data.experienceList(Option.some("en")), "experience list"), (experienceList) => txtResponse(buildLlmsTxt(experienceList)))

@@ -25,6 +25,7 @@ const contactFormBuilder = FormBuilder.empty
       const { isCaptchaValid } = yield* RpcCaptchaClient;
       if (!(yield* isCaptchaValid({ captchaInput }))) return { path: ["captchaInput"], issue: msg("Entered captcha is invalid") };
     }).pipe(
+      Effect.tapError(Effect.logError),
       Effect.orElseSucceed(() => ({
         path: ["captchaInput"],
         issue: msg("Something went wrong, please try again later"),
@@ -43,8 +44,5 @@ export const contactForm = () =>
       captchaInput: TextInput,
     },
     onSubmit: (_, { decoded: { name, email, subject, message } }) =>
-      Effect.gen(function* () {
-        const { contactForm } = yield* RpcContactMeClient;
-        yield* contactForm({ name, email, subject, message });
-      }),
+      Effect.flatMap(RpcContactMeClient, ({ contactForm }) => contactForm({ name, email, subject, message })),
   });

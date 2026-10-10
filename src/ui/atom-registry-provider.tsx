@@ -6,7 +6,7 @@ import { AtomRegistry } from "effect/reactivity";
 import type { ReactNode } from "react";
 
 // Shared AtomRegistry singleton + React provider
-export const sharedAtomRegistry: AtomRegistry.AtomRegistry = AtomRegistry.make({ scheduleTask });
+export const sharedAtomRegistry: AtomRegistry.AtomRegistry = AtomRegistry.make({ scheduleTask, defaultIdleTTL: 400 });
 
 export function AtomRegistryProvider({ children }: { children: ReactNode }) {
   return <RegistryContext value={sharedAtomRegistry}>{children}</RegistryContext>;

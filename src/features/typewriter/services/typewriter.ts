@@ -25,7 +25,7 @@ const expandOp = (currText: string, typewriterOp: TypewriterOp) =>
         Array.makeBy(Math.min(count, String.length(currText)), (index) => index + 1),
         Effect.forEach((removed) =>
           Effect.map(Random.nextIntBetween(60, DELETING_SPEED), (holdMillis) => ({
-            text: pipe(currText, String.slice(0, String.length(currText) - removed)),
+            text: pipe(currText, String.takeLeft(String.length(currText) - removed)),
             holdMillis,
           }))
         )
@@ -36,9 +36,6 @@ const expandOp = (currText: string, typewriterOp: TypewriterOp) =>
 
 export class Typewriter extends Context.Service<Typewriter>()("Typewriter", {
   make: Effect.sync(() => {
-    // Plans the animation script for a full text
-    const plan = (fullText: string) => planScript(fullText);
-
     // Executes a planned script as a stream of progressively visible texts, threading
     // the visible text through the ops and sleeping each frame's hold before emitting it
     const run = (script: ReadonlyArray<TypewriterOp>) =>
@@ -63,7 +60,7 @@ export class Typewriter extends Context.Service<Typewriter>()("Typewriter", {
         Stream.mapEffect((frame) => Effect.as(Effect.sleep(`${frame.holdMillis} millis`), frame.text))
       );
 
-    return { plan, run } as const;
+    return { plan: planScript, run } as const;
   }),
 }) {
   static readonly layer = Layer.effect(this, this.make);
