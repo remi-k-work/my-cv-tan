@@ -8,31 +8,27 @@ interface ScreenShotsProps {
 // constants
 import { SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT } from "@/features/experience/domain";
 
+// The three screenshots that crossfade into one another; delays are literal class strings so Tailwind can generate them
+const FADE_CYCLE = [
+  { suffix: "a", className: "[animation-delay:-9.6s]" },
+  { suffix: "b", className: "[animation-delay:6.4s]" },
+  { suffix: "c", className: "[animation-delay:22.4s]" },
+] as const;
+
 // The experience's cycling screenshots; links to the project's video or live site when it has one
 export function ScreenShots({ experience: { role, imageName, liveLink, videoLink } }: ScreenShotsProps) {
   const shots = (
     <article className="grid">
-      <img
-        src={`/images/${imageName}-a.webp`}
-        width={SCREENSHOT_WIDTH}
-        height={SCREENSHOT_HEIGHT}
-        alt={role}
-        className="col-span-full row-span-full animate-fade-in-out opacity-0 [animation-delay:-9.6s]"
-      />
-      <img
-        src={`/images/${imageName}-b.webp`}
-        width={SCREENSHOT_WIDTH}
-        height={SCREENSHOT_HEIGHT}
-        alt={role}
-        className="col-span-full row-span-full animate-fade-in-out opacity-0 [animation-delay:6.4s]"
-      />
-      <img
-        src={`/images/${imageName}-c.webp`}
-        width={SCREENSHOT_WIDTH}
-        height={SCREENSHOT_HEIGHT}
-        alt={role}
-        className="col-span-full row-span-full animate-fade-in-out opacity-0 [animation-delay:22.4s]"
-      />
+      {FADE_CYCLE.map(({ suffix, className }) => (
+        <img
+          key={suffix}
+          src={`/images/${imageName}-${suffix}.webp`}
+          width={SCREENSHOT_WIDTH}
+          height={SCREENSHOT_HEIGHT}
+          alt={role}
+          className={`col-span-full row-span-full animate-fade-in-out opacity-0 ${className}`}
+        />
+      ))}
     </article>
   );
 

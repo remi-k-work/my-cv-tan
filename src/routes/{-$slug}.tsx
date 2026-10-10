@@ -22,8 +22,7 @@ export const Route = createFileRoute("/{-$slug}")({
 
     const preferredLanguage = headLanguage(matches);
     if (loaderData.type === "item" && params.slug) return experienceHead({ slug: params.slug, experience: loaderData.experience, preferredLanguage });
-    if (loaderData.type === "list")
-      return homeHead({ pageTitles: loaderData.stablePageTitles, experienceList: loaderData.experienceList, preferredLanguage });
+    if (loaderData.type === "list") return homeHead({ pageTitles: loaderData.stablePageTitles, experienceList: loaderData.experienceList, preferredLanguage });
     return {};
   },
   component: HomePage,
@@ -36,12 +35,16 @@ function HomePage() {
   if (loaderData.type === "list") {
     const { randomPageTitles, experienceList } = loaderData;
 
+    // Split the mixed experience list into its two kinds: employment history ("e") and portfolio projects ("p")
+    const employmentHistory = Array.filter(experienceList, ({ type }) => type === "e");
+    const portfolioProjects = Array.filter(experienceList, ({ type }) => type === "p");
+
     return (
       <>
         <PageTitle pagePath="/" pageTitles={randomPageTitles} />
         <article className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-          <SliderPanel title={gt("Experience")} experienceList={Array.filter(experienceList, ({ type }) => type === "e")} />
-          <SliderPanel title={gt("Portfolio Projects")} experienceList={Array.filter(experienceList, ({ type }) => type === "p")} />
+          <SliderPanel title={gt("Experience")} experienceList={employmentHistory} />
+          <SliderPanel title={gt("Portfolio Projects")} experienceList={portfolioProjects} />
         </article>
         {/* Overlay opened by intercepting the "more info" link: no navigation, so the sliders above stay mounted and keep their position */}
         <ExperienceDetailsModal />
@@ -62,6 +65,7 @@ function HomePage() {
 // Subscribes to the selected experience in isolation, so opening/closing the overlay doesn't re-render the sliders it sits on top of
 function ExperienceDetailsModal() {
   const gt = useGT();
+
   const currExperience = useAtomValue(experienceAtom);
   const clearExperience = useAtomSet(experienceAtom);
 

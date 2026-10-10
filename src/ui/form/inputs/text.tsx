@@ -2,9 +2,8 @@
 import { useId } from "react";
 
 // services, features, and other libraries
-import { Hash, Option, pipe } from "effect";
+import { Option } from "effect";
 import { FormReact } from "@lucas-barake/effect-form-react";
-import { AnimatePresence } from "motion/react";
 
 // components
 import { Input } from "@base-ui/react";
@@ -31,24 +30,7 @@ export const TextInput: FormReact.FieldComponent<string, TextInputProps> = ({ fi
         {label}
       </label>
       <Input className="input" id={id} name={path} value={value} onChange={(ev) => onChange(ev.target.value)} onBlur={onBlur} {...rest} />
-      <div className="min-h-6">
-        <AnimatePresence>{Option.isSome(error) && <ErrorLine message={error.value} />}</AnimatePresence>
-      </div>
+      <ErrorLine message={Option.getOrUndefined(error)} />
     </>
   );
 };
-
-export function TextInputSkeleton({ formName = "global", label, ...rest }: TextInputProps & { formName?: string }) {
-  // Generate a hash id from the incoming form name and label
-  const id = pipe(`${formName}::${label}`, Hash.string, Math.abs, (hashValue) => `input-${hashValue}`);
-
-  return (
-    <>
-      <label className="label" htmlFor={id}>
-        {label}
-      </label>
-      <Input className="input" id={id} name={label} disabled {...rest} />
-      <div className="min-h-6" />
-    </>
-  );
-}

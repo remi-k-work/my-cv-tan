@@ -22,6 +22,7 @@ interface FormSubmitProps {
 
 export function FormSubmit({ contactForm }: FormSubmitProps) {
   const gt = useGT();
+
   // Get the form context
   const isDirty = useAtomValue(contactForm.isDirty);
   const { waiting } = useAtomValue(contactForm.submit);
@@ -49,25 +50,6 @@ export function FormSubmit({ contactForm }: FormSubmitProps) {
       <Button className="button bg-secondary" onClick={() => router.history.back()}>
         <ArrowLeftCircleIcon className="size-9" />
         {gt("Cancel")}
-      </Button>
-    </section>
-  );
-}
-
-export function FormSubmitSkeleton() {
-  return (
-    <section className="flex flex-wrap gap-3 *:flex-1 md:gap-6">
-      <Button className="button" type="submit" disabled>
-        <PaperAirplaneIcon className="size-9" />
-        &nbsp;
-      </Button>
-      <Button className="button bg-destructive" disabled>
-        <XCircleIcon className="size-9" />
-        &nbsp;
-      </Button>
-      <Button className="button bg-secondary" disabled>
-        <ArrowLeftCircleIcon className="size-9" />
-        &nbsp;
       </Button>
     </section>
   );
