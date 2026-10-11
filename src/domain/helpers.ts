@@ -20,9 +20,9 @@ export const makeRpcClient = <Rpcs extends Rpc.Any>(serviceName: string, group: 
 };
 
 // Builds the web handler for an RPC group's HTTP route. disableFatalDefects serializes defects
-// as an Exit instead of closing the connection; disableTracing is deliberate (no tracer configured).
+// as an Exit instead of closing the connection; disableTracing is deliberate (no tracer configured)
 // The handlers layer claims Rpc.ServicesServer too: the schema services those requirements resolve
-// to for a concrete group are already covered, and the claim is checked at each call site.
+// to for a concrete group are already covered, and the claim is checked at each call site
 export const makeRpcHandler = <Rpcs extends Rpc.Any, LE>(
   group: RpcGroup.RpcGroup<Rpcs>,
   path: HttpRouter.PathInput,
