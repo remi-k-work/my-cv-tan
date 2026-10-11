@@ -1,22 +1,20 @@
 // services, features, and other libraries
 import { Effect, Option } from "effect";
 import { RuntimeServer } from "@/lib/runtime-server";
-import { requireData } from "@/features/data/domain";
+import { recoverDataFailure, requireDataFrom } from "@/features/data/domain";
 import { Data } from "@/features/data/services/data";
 import { buildSitemapXml, sitemapResponse, sitemapUnavailableResponse } from "@/features/meta/domain";
 
-// Sitemap endpoint: fetch -> require -> build -> respond, with the shared unavailable-data
-// recovery. The pipeline lives beside the builders it serves so the route stays a one-liner.
-export const sitemapHandler = () =>
-  RuntimeServer.runPromise(
-    Effect.gen(function* () {
-      const data = yield* Data;
+// Sitemap pipeline: fetch -> require -> build -> respond; shared data-failure recovery
+// answers 503 instead of ever emitting an incomplete crawlable sitemap
+const sitemapResponseEffect = Effect.gen(function* () {
+  const data = yield* Data;
 
-      // English bundle: both language variants are served from the same canonical URLs
-      const experienceList = yield* requireData(yield* data.experienceList(Option.some("en")), "experience list");
-      return sitemapResponse(buildSitemapXml(experienceList));
-    }).pipe(
-      // A broken dataset must answer 503, never an incomplete crawlable sitemap
-      Effect.catchTag("RequiredDataError", (error) => Effect.logError(`[SITEMAP.XML]: ${error.message}`).pipe(Effect.as(sitemapUnavailableResponse())))
-    )
-  );
+  // English bundle: both language variants are served from the same canonical URLs
+  const experienceList = yield* requireDataFrom(data.experienceList(Option.some("en")), "experience list");
+  return sitemapResponse(buildSitemapXml(experienceList));
+  // Lazy fallback: a fresh 503 Response is built only when a request actually fails
+}).pipe(recoverDataFailure("[SITEMAP.XML]", sitemapUnavailableResponse));
+
+// Thin bridge between the router and the Effect runtime, matching the Markdown twin handlers
+export const sitemapHandler = () => RuntimeServer.runPromise(sitemapResponseEffect);

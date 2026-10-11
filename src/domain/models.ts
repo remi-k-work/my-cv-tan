@@ -6,6 +6,9 @@ export type PreferredLanguage = typeof PreferredLanguage.Type;
 export type PagePath = typeof PagePath.Type;
 export type PageTitles = typeof PageTitles.Type;
 export type PageTitlesList = typeof PageTitlesList.Type;
+
+// Resolves a msg()-registered source string into the requested language; injected so the
+// pure builders stay testable while the service decides where translations come from
 export type Translate = (source: string) => string;
 
 export const PreferredLanguage = Schema.Literals(["en", "pl"]);

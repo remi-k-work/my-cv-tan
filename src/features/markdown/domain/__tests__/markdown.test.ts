@@ -2,11 +2,14 @@
 import { assert, it } from "@effect/vitest";
 import { Effect, Option } from "effect";
 import { requireData } from "@/features/data/domain";
+// txtResponse moved to meta: it serves robots.txt too, so it lives with the other discovery plumbing
+import { STATIC_PAGES, txtResponse } from "@/features/meta/domain";
 import {
   buildContactMd,
   buildEducationMd,
   buildExperienceMd,
   buildHomeMd,
+  buildLlmsFullTxt,
   buildLlmsTxt,
   buildNotFoundMd,
   experienceFromList,
@@ -18,7 +21,6 @@ import {
   mdUnavailableResponse,
   parseLangParam,
   slugFromMdPathname,
-  txtResponse,
   textDataResponse,
   txtUnavailableResponse,
   unavailableMarkdownBody,
@@ -84,10 +86,15 @@ it("frontmatter emits a delimited block with quoted values", () => {
 
 it("escapeMd neutralizes heading characters and collapses blank lines", () => {
   assert.strictEqual(escapeMd("# Hello\n\n\nWorld *bold* [link]"), "\\# Hello\n\nWorld \\*bold\\* \\[link\\]");
+  // Bare "=" / "--" runs under a paragraph would otherwise become setext headings
+  assert.strictEqual(escapeMd("Title\n====="), "Title\n\\=====");
+  assert.strictEqual(escapeMd("Sub\n--"), "Sub\n\\--");
+  // Inline "=" characters are meaningless and stay untouched
+  assert.strictEqual(escapeMd("plain = math"), "plain = math");
 });
 
 it("buildExperienceMd renders frontmatter, H1, skills and links without repeated crawler instructions", () => {
-  const md = buildExperienceMd(sampleExperience, "en", translateEn);
+  const md = buildExperienceMd({ experience: sampleExperience, preferredLanguage: "en", translate: translateEn });
   assert.include(md, `canonical: "https://www.remiforge.dev/sample-role"`);
   assert.include(md, `# Full-Stack Developer at Sample Co`);
   assert.include(md, `- TypeScript`);
@@ -113,18 +120,18 @@ it("buildExperienceMd renders frontmatter, H1, skills and links without repeated
 
 it("experience Markdown canonical encodes a slug as one path segment", () => {
   const experience = { ...sampleExperience, slug: "résumé & more" };
-  const md = buildExperienceMd(experience, "en", translateEn);
+  const md = buildExperienceMd({ experience, preferredLanguage: "en", translate: translateEn });
   assert.include(md, `canonical: "https://www.remiforge.dev/r%C3%A9sum%C3%A9%20%26%20more"`);
 });
 
 it("buildExperienceMd omits the Links section when the experience has no links", () => {
-  const md = buildExperienceMd({ ...sampleExperience, gitHubLink: undefined }, "en", translateEn);
+  const md = buildExperienceMd({ experience: { ...sampleExperience, gitHubLink: undefined }, preferredLanguage: "en", translate: translateEn });
   assert.include(md, `## Skills Used`);
   assert.notInclude(md, `## Links`);
 });
 
 it("buildExperienceMd localizes fixed Polish section and fact labels", () => {
-  const md = buildExperienceMd(sampleExperience, "pl", translatePl);
+  const md = buildExperienceMd({ experience: sampleExperience, preferredLanguage: "pl", translate: translatePl });
   assert.include(md, "## Opis");
   assert.include(md, "## Szczegóły");
   assert.include(md, "Rola: Full-Stack Developer");
@@ -135,8 +142,9 @@ it("buildExperienceMd localizes fixed Polish section and fact labels", () => {
 it("buildHomeMd groups work and projects and links to .md twins", () => {
   const md = buildHomeMd({ pageTitles: stablePageTitles, experienceList: [sampleExperience], preferredLanguage: "en", translate: translateEn });
   assert.include(md, `canonical: "https://www.remiforge.dev/"`);
-  assert.include(md, `title: "Remi Forge ● Stable home title"`);
-  assert.include(md, `description: "Stable home summary."`);
+  assert.include(md, `title: "Remi Forge ● ${STATIC_PAGES["/"].metadata.en.title}"`);
+  assert.include(md, `description: "${STATIC_PAGES["/"].metadata.en.description}"`);
+  assert.include(md, `type: "overview"`);
   assert.notInclude(md, "Cite the canonical HTML URL");
   assert.include(md, `https://www.remiforge.dev/sample-role.md`);
   assert.include(md, `https://www.remiforge.dev/education.md`);
@@ -164,8 +172,8 @@ it("buildHomeMd localizes Markdown structure in Polish", () => {
 it("buildEducationMd stays localized and a missing document has no canonical", () => {
   const edu = buildEducationMd({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "pl", translate: translatePl });
   assert.include(edu, `lang: "pl"`);
-  assert.include(edu, `title: "Remi Forge ● Stable education title"`);
-  assert.include(edu, `description: "Stable education summary."`);
+  assert.include(edu, `title: "Remi Forge ● ${STATIC_PAGES["/education"].metadata.pl.title}"`);
+  assert.include(edu, `description: "${STATIC_PAGES["/education"].metadata.pl.description}"`);
   assert.include(edu, "## Dokumenty");
   assert.include(edu, "_Brak wpisów._");
 
@@ -178,19 +186,19 @@ it("buildEducationMd stays localized and a missing document has no canonical", (
   assert.include(populated, "Lata: 2020");
   assert.include(populated, "Lokalizacja: Poland");
 
-  const missing = buildNotFoundMd("bogus", "en", translateEn);
+  const missing = buildNotFoundMd({ slug: "bogus", preferredLanguage: "en", translate: translateEn });
   assert.include(missing, `# Not Found`);
   assert.include(missing, `https://www.remiforge.dev/index.md`);
   assert.notInclude(missing, "canonical:");
 
-  const missingPl = buildNotFoundMd("brak", "pl", translatePl);
+  const missingPl = buildNotFoundMd({ slug: "brak", preferredLanguage: "pl", translate: translatePl });
   assert.include(missingPl, "# Nie znaleziono");
   assert.include(missingPl, "Dokument Markdown dla adresu /brak nie istnieje.");
 });
 
 it("buildContactMd advertises the same social profiles as the HTML page", () => {
   const md = buildContactMd({ pageTitles: stablePageTitles, preferredLanguage: "en", translate: translateEn });
-  assert.include(md, `title: "Remi Forge ● Stable contact title"`);
+  assert.include(md, `title: "Remi Forge ● ${STATIC_PAGES["/contact"].metadata.en.title}"`);
   assert.notInclude(md, "Notes for AI systems");
   assert.include(md, `GitHub: https://github.com/remi-k-work`);
   assert.include(md, `LinkedIn: https://linkedin.com/in/remi-k-work`);
@@ -213,10 +221,36 @@ it("buildLlmsTxt indexes pages, key facts, grouped experience and negotiated lan
   assert.include(txt, `## Work Experience`);
   assert.include(txt, `- [Full-Stack Developer at Sample Co](https://www.remiforge.dev/my%20project.md)`);
   assert.include(txt, `## Notes for AI systems`);
+  assert.include(txt, `- The complete content of every page is also available in a single request: https://www.remiforge.dev/llms-full.txt.`);
   assert.include(txt, `Append \`?lang=pl\` to any \`.md\` URL to request Polish explicitly`);
   assert.include(txt, "Markdown responses follow the request's language preferences.");
   assert.include(txt, "English is the fallback when no supported preference is present.");
   assert.include(txt, `Always cite the clean canonical HTML URL from each document's frontmatter`);
+  // The XML sitemap is advertised next to the PDF documents
+  assert.include(txt, `- Sitemap: https://www.remiforge.dev/sitemap.xml`);
+});
+
+it("buildLlmsFullTxt concatenates every verbatim twin behind its canonical URL", () => {
+  const txt = buildLlmsFullTxt({
+    pageTitles: stablePageTitles,
+    experienceList: [sampleExperience],
+    educationList: [{ name: "Example School", year: "2020", location: "Poland", info: "Studied interaction design." }],
+  });
+  // One Source marker per twin: the three pages plus the single experience
+  assert.strictEqual((txt.match(/^Source: /gm) ?? []).length, 4);
+  assert.include(txt, `Source: https://www.remiforge.dev/`);
+  assert.include(txt, `Source: https://www.remiforge.dev/education`);
+  assert.include(txt, `Source: https://www.remiforge.dev/contact`);
+  assert.include(txt, `Source: https://www.remiforge.dev/sample-role`);
+  // Twins are verbatim: H1s, frontmatter and machine-classifiable types survive concatenation
+  assert.include(txt, `# Stable home title`);
+  assert.include(txt, `# Full-Stack Developer at Sample Co`);
+  assert.include(txt, `type: "overview"`);
+  assert.include(txt, `type: "education"`);
+  assert.include(txt, `type: "contact"`);
+  assert.include(txt, `type: "work-experience"`);
+  // Citations must land on canonical HTML URLs, never on the aggregation itself
+  assert.include(txt, `Cite the canonical HTML URL, not this file.`);
 });
 
 it("response helpers set content types, indexing and cache headers for success and errors", () => {
@@ -246,6 +280,8 @@ it("response helpers set content types, indexing and cache headers for success a
   const txt = txtResponse("# Plain");
   assert.strictEqual(txt.status, 200);
   assert.strictEqual(txt.headers.get("Content-Type"), "text/plain; charset=utf-8");
+  // Plain-text discovery documents are always English
+  assert.strictEqual(txt.headers.get("Content-Language"), "en");
 
   const unavailableTxt = txtUnavailableResponse("Unavailable");
   assert.strictEqual(unavailableTxt.status, 503);
@@ -275,13 +311,13 @@ it.effect("required-content failures map to non-cacheable 503s and valid missing
     assert.strictEqual(unavailableMarkdown.headers.get("X-Robots-Tag"), "noindex, follow");
     assert.include(unavailableMarkdownBody(translatePl), "portfolio");
 
-    const unavailableIndex = yield* textDataResponse(requireData(Option.none(), "experience list"));
+    const unavailableIndex = yield* textDataResponse("[LLMS.TXT]", "llms.txt is temporarily unavailable.", requireData(Option.none(), "experience list"));
     assert.strictEqual(unavailableIndex.status, 503);
     assert.strictEqual(unavailableIndex.headers.get("Content-Type"), "text/plain; charset=utf-8");
 
     const noMatch = experienceFromList([], "missing");
     const notFound = Option.isNone(noMatch)
-      ? mdNotFoundResponse(buildNotFoundMd("missing", "en", translateEn), "en")
+      ? mdNotFoundResponse(buildNotFoundMd({ slug: "missing", preferredLanguage: "en", translate: translateEn }), "en")
       : mdResponse("# Found", "en", "https://www.remiforge.dev/");
     assert.strictEqual(notFound.status, 404);
     assert.strictEqual(notFound.headers.get("X-Robots-Tag"), "noindex, follow");

@@ -1,44 +1,35 @@
 // services, features, and other libraries
-import { excerpt } from "@/features/experience/domain";
-import { llmsAlternateLink } from "./helpers";
+import { llmsAlternateLink } from "./url";
 import { socialMeta } from "./social";
 import { websitePersonJsonLd } from "./json-ld";
 
 // constants
-import { DESCRIPTION, GLOBAL_SOCIAL_IMAGE, META_DESCRIPTION_LENGTH, SITE_NAME, TITLE } from "./constants";
+import { AVATAR_IMAGE, GLOBAL_SOCIAL_IMAGE, HOME_TITLE, SITE_DESCRIPTION, SITE_NAME, BRANDED_TITLE, SOCIAL_LINKS } from "./constants";
 
-// Root head: every page inherits this, so it must ONLY contain site-wide tags.
-// Page-specific tags (canonical, hreflang, Markdown alternate) live in each route's
-// head() in page.ts: TanStack dedupes meta by name/property keeping the leaf value,
-// but links are only deduped when fully identical, so a root-level canonical "/" would
-// render ALONGSIDE the page's own canonical on every subpage.
+// Site-wide tags only. Meta dedupes by name/property keeping the leaf value, but links dedupe
+// only when identical — a root-level canonical "/" would render beside every page's own canonical
 export const ROOT_HEAD = {
   meta: [
     { charSet: "utf-8" },
     { name: "viewport", content: "width=device-width, initial-scale=1" },
     { name: "theme-color", content: "#1d2549" },
-    { title: `${SITE_NAME} ● ${TITLE}` },
-    { name: "description", content: excerpt(DESCRIPTION, META_DESCRIPTION_LENGTH) },
+    { title: BRANDED_TITLE(HOME_TITLE) },
+    { name: "description", content: SITE_DESCRIPTION },
 
     { name: "author", content: SITE_NAME },
+    // Safe default: pages with complete data opt back into indexing in page.ts
     { name: "robots", content: "noindex, follow" },
-    { name: "category", content: "technology" },
     { name: "google", content: "notranslate" },
-    // Static en_US fallback for pages without their own head (404, errors);
-    // every page head overrides these tags with the resolved locale
-    ...socialMeta({
-      title: TITLE,
-      description: excerpt(DESCRIPTION, META_DESCRIPTION_LENGTH),
-      path: "/",
-      image: GLOBAL_SOCIAL_IMAGE,
-      ogType: "website",
-      preferredLanguage: "en",
-    }),
+    // Static en_US fallback for pages without their own head (404, errors); every page head overrides these
+    ...socialMeta({ title: HOME_TITLE, description: SITE_DESCRIPTION, path: "/", image: GLOBAL_SOCIAL_IMAGE, preferredLanguage: "en" }),
   ],
   links: [
     { rel: "icon", href: "/icon.svg", type: "image/svg+xml" },
-    // Deliberately no canonical / hreflang / Markdown alternate here (see note above).
-    // The llms.txt index is site-wide and identical on every page, so it safely lives here.
+    // iOS "Add to Home Screen" and high-DPI search previews use the touch icon, not the SVG favicon
+    { rel: "apple-touch-icon", href: AVATAR_IMAGE },
+    // Identity links: rel="me" lets profile-based verifiers (Mastodon, IndieWeb) confirm the same person
+    ...SOCIAL_LINKS.map((href) => ({ rel: "me", href })),
+    // The llms.txt index is site-wide and identical on every page, so it safely lives here
     llmsAlternateLink(),
   ],
   scripts: [websitePersonJsonLd()],

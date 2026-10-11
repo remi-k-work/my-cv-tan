@@ -1,80 +1,74 @@
 // services, features, and other libraries
 import { Option, pipe } from "effect";
-import { pageField } from "@/domain";
 import { experienceHeadline, excerpt } from "@/features/experience/domain";
-import { canonicalLink, experienceImageUrl, experienceMarkdownPath, experiencePath, markdownAlternateLink } from "./helpers";
+import { absoluteUrl, canonicalLink, markdownAlternateLink, experienceImageUrl, experienceMarkdownPath, experiencePath } from "./url";
 import { socialMeta } from "./social";
 import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd } from "./json-ld";
+import { staticPageCopy } from "./static-pages";
 
 // types
-import type { SocialImage } from "./models";
-import type { EducationHeadInput, ExperienceHeadInput, HomeHeadInput, PageHeadInput } from "./models";
-import type { PagePath } from "@/domain";
+import type { EducationHeadInput, ExperienceHeadInput, HomeHeadInput, PageHeadInput, SocialImage, SocialMetaInput, StaticPageHeadInput } from "./models";
 
 // constants
-import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain";
-import { CONTACT_MD_HREF, DESCRIPTION, EDUCATION_MD_HREF, GLOBAL_SOCIAL_IMAGE, HOME_MD_HREF, META_DESCRIPTION_LENGTH, SITE_NAME, TITLE } from "./constants";
+import { SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT } from "@/features/experience/domain";
+import { GLOBAL_SOCIAL_IMAGE, META_DESCRIPTION_LENGTH, BRANDED_TITLE } from "./constants";
+import { STATIC_PAGES } from "./static-pages";
 
-// Shared head for content pages: complete data opts into indexing; incomplete responses inherit the root noindex policy instead
-const localizedPageHead = (
-  pageTitles: PageHeadInput["pageTitles"],
-  pagePath: PagePath,
-  mdHref: string,
-  preferredLanguage: PageHeadInput["preferredLanguage"]
-) => {
-  const title = pageField(pageTitles, pagePath, "heading", TITLE);
-  const description = excerpt(pageField(pageTitles, pagePath, "intro", DESCRIPTION), META_DESCRIPTION_LENGTH);
+// Complete data opts into indexing: one shared block keeps title, robots and social tags consistent
+// Incomplete loader responses inherit the root noindex policy instead.
+const indexableMeta = (input: SocialMetaInput) => [
+  { title: BRANDED_TITLE(input.title) },
+  { name: "description", content: input.description },
+  { name: "robots", content: "index, follow, max-image-preview:large" },
+  ...socialMeta(input),
+];
 
-  // title/description are internal values callers feed into their JSON-LD builders;
-  // meta/links are the TanStack head contract (flat shape, no nested `head` key)
+// Static pages share localized visible copy, authored search metadata, canonical links,
+// and JSON-LD; Markdown twins use the same source through staticPageCopy
+const staticPageHead = ({ pageTitles, preferredLanguage, pagePath, jsonLd }: StaticPageHeadInput) => {
+  // Resolve once so the HTML head and Markdown twin share the same canonical and summary
+  const { heading, seoTitle, description, canonical } = staticPageCopy(pageTitles, pagePath, preferredLanguage);
+
   return {
-    title,
-    description,
-    meta: [
-      { title: `${SITE_NAME} ● ${title}` },
-      { name: "description", content: description },
-      { name: "robots", content: "index, follow, max-image-preview:large" },
-      ...socialMeta({ title, description, path: pagePath, image: GLOBAL_SOCIAL_IMAGE, ogType: "website", preferredLanguage }),
-    ],
-    links: [canonicalLink(pagePath), markdownAlternateLink(mdHref)],
+    meta: indexableMeta({ title: seoTitle, description, path: pagePath, image: GLOBAL_SOCIAL_IMAGE, preferredLanguage }),
+    links: [canonicalLink(canonical), markdownAlternateLink(STATIC_PAGES[pagePath].mdHref)],
+    scripts: [jsonLd({ pageName: heading, description, preferredLanguage })],
   };
 };
 
-export const homeHead = ({ pageTitles, experienceList, preferredLanguage }: HomeHeadInput) => {
-  const { title, description, meta, links } = localizedPageHead(pageTitles, "/", HOME_MD_HREF, preferredLanguage);
-  return { meta, links, scripts: [homeJsonLd({ title, description, experienceList, preferredLanguage })] };
-};
+export const homeHead = ({ experienceList, ...page }: HomeHeadInput) =>
+  staticPageHead({
+    ...page,
+    pagePath: "/",
+    jsonLd: (copy) => homeJsonLd({ ...copy, experienceList }),
+  });
 
-export const educationHead = ({ pageTitles, educationList, preferredLanguage }: EducationHeadInput) => {
-  const { title, meta, links } = localizedPageHead(pageTitles, "/education", EDUCATION_MD_HREF, preferredLanguage);
-  return { meta, links, scripts: [educationJsonLd({ title, educationList, preferredLanguage })] };
-};
+export const educationHead = ({ educationList, ...page }: EducationHeadInput) =>
+  staticPageHead({
+    ...page,
+    pagePath: "/education",
+    jsonLd: (copy) => educationJsonLd({ ...copy, educationList }),
+  });
 
-export const contactHead = ({ pageTitles, preferredLanguage }: PageHeadInput) => {
-  const { title, description, meta, links } = localizedPageHead(pageTitles, "/contact", CONTACT_MD_HREF, preferredLanguage);
-  return { meta, links, scripts: [contactJsonLd({ title, description, preferredLanguage })] };
-};
+export const contactHead = (page: PageHeadInput) => staticPageHead({ ...page, pagePath: "/contact", jsonLd: contactJsonLd });
 
-// Detail head always canonicalizes to the clean /{slug} URL, so stray query parameters never become duplicates
-export const experienceHead = ({ slug, experience, preferredLanguage }: ExperienceHeadInput) => {
-  const { txt, imageName } = experience;
+// Detail head always canonicalizes to the clean /{slug} URL derived from experience.slug,
+// so stray query parameters never become duplicates
+export const experienceHead = ({ experience, preferredLanguage }: ExperienceHeadInput) => {
+  const { slug, txt, imageName } = experience;
 
   const path = experiencePath(slug);
-  const title = `${SITE_NAME} ● ${experienceHeadline(experience, preferredLanguage)}`;
+  const headline = experienceHeadline(experience, preferredLanguage);
   const description = excerpt(txt, META_DESCRIPTION_LENGTH);
+  // og:image carries the webp screenshot when one exists; X/Twitter needs jpeg/png, so it always gets the global image
   const image: SocialImage = pipe(
     experienceImageUrl(imageName),
     Option.map((src) => ({ src, mime: "image/webp" as const, width: SCREENSHOT_WIDTH, height: SCREENSHOT_HEIGHT })),
     Option.getOrElse(() => GLOBAL_SOCIAL_IMAGE)
   );
   return {
-    meta: [
-      { title },
-      { name: "description", content: description },
-      { name: "robots", content: "index, follow, max-image-preview:large" },
-      ...socialMeta({ title, description, path, image, ogType: "website", twitterImage: GLOBAL_SOCIAL_IMAGE, preferredLanguage }),
-    ],
-    links: [canonicalLink(path), markdownAlternateLink(experienceMarkdownPath(slug))],
-    scripts: [experienceJsonLd({ slug, experience, preferredLanguage })],
+    meta: indexableMeta({ title: headline, description, path, image, twitterImage: GLOBAL_SOCIAL_IMAGE, preferredLanguage }),
+    links: [canonicalLink(absoluteUrl(path)), markdownAlternateLink(experienceMarkdownPath(slug))],
+    scripts: [experienceJsonLd({ experience, preferredLanguage })],
   };
 };

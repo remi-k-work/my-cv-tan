@@ -1,6 +1,7 @@
 // services, features, and other libraries
 import { Array, Option, pipe, Record, Schema, String } from "effect";
 import { msg } from "gt-tanstack-start";
+import { encodeParens } from "@/features/meta/domain";
 
 // types
 import type { Translate } from "@/domain";
@@ -19,6 +20,8 @@ export const escapeMd = (text: string) =>
     // Block markers are meaningful only at the start of a line
     String.replace(/^(\s*)([-+]|\d+[.)])(?=\s)/gm, "$1\\$2"),
     String.replace(/^(\s{0,3})([-*_])(?=(?:\s*\2){2,}\s*$)/gm, "$1\\$2"),
+    // Setext underlines ("===" / "--" runs under a paragraph) would become headings; escape the first character
+    String.replace(/^(\s{0,3})([-=])(?=\2*\s*$)/gm, "$1\\$2"),
     // Collapse 3+ blank lines (data intros are long prose)
     String.replace(/\n{3,}/g, "\n\n"),
     String.trim
@@ -37,7 +40,7 @@ export const mdExternalLink = (label: string, href: string) =>
     Option.filter((url) => url.protocol === "http:" || url.protocol === "https:"),
     Option.map((url) => {
       // Bare Markdown destinations use percent-encoded parentheses to stay unambiguous
-      const destination = url.href.replace(/[()]/g, (character) => encodeURIComponent(character));
+      const destination = encodeParens(url.href);
       return `[${escapeMdInline(label)}](${destination})`;
     })
   );
@@ -65,3 +68,7 @@ export const mdBulletList = (items: ReadonlyArray<string>) =>
 
 // Explicit "no entries" marker: a bare section heading would read as truncated content to AI parsers
 export const mdEmptyMarker = (translate: Translate) => `_${translate(msg("No entries."))}_`;
+
+// Source-language copy: the same fallback the dictionary itself applies per missing key.
+// Shared by the service's translation-failure recovery and the English-only AI indexes.
+export const translateSource: Translate = (source) => source;
