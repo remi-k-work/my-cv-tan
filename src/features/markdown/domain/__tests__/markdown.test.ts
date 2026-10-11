@@ -2,6 +2,8 @@
 import { assert, it } from "@effect/vitest";
 import { Effect, Option } from "effect";
 import { requireData } from "@/features/data/domain";
+// txtResponse moved to meta: it serves robots.txt too, so it lives with the other discovery plumbing
+import { txtResponse } from "@/features/meta/domain";
 import {
   buildContactMd,
   buildEducationMd,
@@ -19,7 +21,6 @@ import {
   mdUnavailableResponse,
   parseLangParam,
   slugFromMdPathname,
-  txtResponse,
   textDataResponse,
   txtUnavailableResponse,
   unavailableMarkdownBody,

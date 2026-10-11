@@ -8,11 +8,13 @@ import type { PreferredLanguage, Translate } from "@/domain";
 import type { RequiredDataError } from "@/features/data/domain";
 
 // constants
-import { MARKDOWN_CACHE_CONTROL, MARKDOWN_CONTENT_TYPE, MARKDOWN_VARY, TXT_CONTENT_TYPE } from "./constants";
+import { CACHE_CONTROL, TXT_CONTENT_TYPE } from "@/features/meta/domain";
+import { MARKDOWN_CONTENT_TYPE, MARKDOWN_VARY } from "./constants";
 
 const mdHeaders = (preferredLanguage: PreferredLanguage) => ({
   "Content-Type": MARKDOWN_CONTENT_TYPE,
-  "Cache-Control": MARKDOWN_CACHE_CONTROL,
+  // Shares the CDN policy of every other machine-readable document (robots.txt, sitemap.xml, llms.txt)
+  "Cache-Control": CACHE_CONTROL,
   "Content-Language": preferredLanguage,
   Vary: MARKDOWN_VARY,
   "X-Robots-Tag": "index, follow",
@@ -54,7 +56,3 @@ export const markdownDataResponse = (preferredLanguage: PreferredLanguage, trans
 // Plain-text discovery documents (llms.txt, llms-full.txt): same recovery, plain-text 503 with per-document copy
 export const textDataResponse = (logPrefix: string, unavailableBody: string, document: Effect.Effect<Response, RequiredDataError>) =>
   recoverDataFailure(logPrefix, txtUnavailableResponse(unavailableBody))(document);
-
-// Plain-text discovery document (llms.txt, robots.txt): always English and cacheable at the CDN
-export const txtResponse = (body: string) =>
-  new Response(body, { headers: { "Content-Type": TXT_CONTENT_TYPE, "Content-Language": "en", "Cache-Control": MARKDOWN_CACHE_CONTROL } });

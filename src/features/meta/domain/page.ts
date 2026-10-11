@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { Option, pipe } from "effect";
 import { experienceHeadline, excerpt } from "@/features/experience/domain";
-import { canonicalLink, markdownAlternateLink, experienceImageUrl, experienceMarkdownPath, experiencePath } from "./url";
+import { absoluteUrl, canonicalLink, markdownAlternateLink, experienceImageUrl, experienceMarkdownPath, experiencePath } from "./url";
 import { socialMeta } from "./social";
 import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd } from "./json-ld";
 import { staticPageCopy } from "./static-pages";
@@ -29,11 +29,12 @@ const indexableMeta = (input: SocialMetaInput) => [
 // links, and the JSON-LD fed with the same copy (page.ts and markdown twins share both
 // the fallbacks and this resolution through STATIC_PAGES / staticPageCopy)
 const staticPageHead = ({ pageTitles, preferredLanguage, pagePath, jsonLd }: StaticPageHeadInput) => {
-  const { title, description } = staticPageCopy(pageTitles, pagePath);
+  // One copy resolution drives meta, canonical and JSON-LD alike (shared with the Markdown twins)
+  const { title, description, canonical } = staticPageCopy(pageTitles, pagePath);
 
   return {
     meta: indexableMeta({ title, description, path: pagePath, image: GLOBAL_SOCIAL_IMAGE, preferredLanguage }),
-    links: [canonicalLink(pagePath), markdownAlternateLink(STATIC_PAGES[pagePath].mdHref)],
+    links: [canonicalLink(canonical), markdownAlternateLink(STATIC_PAGES[pagePath].mdHref)],
     scripts: [jsonLd({ title, description, preferredLanguage })],
   };
 };
@@ -70,7 +71,7 @@ export const experienceHead = ({ experience, preferredLanguage }: ExperienceHead
   );
   return {
     meta: indexableMeta({ title: headline, description, path, image, twitterImage: GLOBAL_SOCIAL_IMAGE, preferredLanguage }),
-    links: [canonicalLink(path), markdownAlternateLink(experienceMarkdownPath(slug))],
+    links: [canonicalLink(absoluteUrl(path)), markdownAlternateLink(experienceMarkdownPath(slug))],
     scripts: [experienceJsonLd({ experience, preferredLanguage })],
   };
 };

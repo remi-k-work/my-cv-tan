@@ -1,18 +1,19 @@
 // services, features, and other libraries
 import { Option, pipe } from "effect";
 import { experienceHeadline, excerpt } from "@/features/experience/domain";
-import { breadcrumb, jsonLdGraph } from "./core";
+import { breadcrumb, imageObject, jsonLdGraph } from "./core";
 import { absoluteUrl, experienceImageUrl, experiencePath } from "../url";
 
 // types
 import type { ExperienceHeadInput } from "../models";
 
 // constants
-import { GLOBAL_IMAGE, META_DESCRIPTION_LENGTH, PERSON_ID, PUBLISHER_ID, WEBSITE_ID } from "../constants";
+import { GLOBAL_IMAGE, GLOBAL_SOCIAL_IMAGE, META_DESCRIPTION_LENGTH, PERSON_ID, PUBLISHER_ID, WEBSITE_ID } from "../constants";
+import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain";
 
 // Experience / project details: employment is a role at an organization, a project a creative work
 export const experienceJsonLd = ({ experience, preferredLanguage }: ExperienceHeadInput) => {
-  const { type, slug, role, company, txt, imageName, skillsUsed } = experience;
+  const { type, slug, role, company, txt, imageName, skillsUsed, gitHubLink } = experience;
   // One named branch instead of three scattered ternaries
   const employment = type === "e";
   const path = experiencePath(slug);
@@ -21,9 +22,11 @@ export const experienceJsonLd = ({ experience, preferredLanguage }: ExperienceHe
   // Distinct fragment ids keep the two detail kinds separately addressable
   const itemId = `${url}#${employment ? "organization-role" : "project"}`;
   const description = excerpt(txt, META_DESCRIPTION_LENGTH);
+  // Sized image object: webp screenshot when one exists, the global jpeg otherwise
   const image = pipe(
     experienceImageUrl(imageName),
-    Option.getOrElse(() => GLOBAL_IMAGE)
+    Option.map((src) => imageObject(src, SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT)),
+    Option.getOrElse(() => imageObject(GLOBAL_IMAGE, GLOBAL_SOCIAL_IMAGE.width, GLOBAL_SOCIAL_IMAGE.height))
   );
 
   const page = {
@@ -60,6 +63,8 @@ export const experienceJsonLd = ({ experience, preferredLanguage }: ExperienceHe
         creator: { "@id": PERSON_ID },
         publisher: { "@id": PUBLISHER_ID },
         keywords: skillsUsed.join(", "),
+        // Schema.org's own link to the source repository; dropped by JSON.stringify when absent
+        codeRepository: gitHubLink,
       };
 
   // Employment pages also describe the employer, cross-referenced with the role

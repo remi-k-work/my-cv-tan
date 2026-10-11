@@ -8,4 +8,5 @@ export * from "./root";
 export * from "./sitemap";
 export * from "./social";
 export * from "./static-pages";
+export * from "./text";
 export * from "./url";

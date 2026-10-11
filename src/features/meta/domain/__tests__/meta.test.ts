@@ -34,6 +34,7 @@ const sampleExperience: Experience = {
   role: "Full-Stack Developer",
   company: "Sample Co",
   txt: "Built things with care.",
+  gitHubLink: "https://github.com/example/repo",
   imageName: "01",
   skillsUsed: ["TypeScript", "React"],
 };
@@ -87,6 +88,9 @@ it("root graph declares the bilingual audience on WebSite and Person", () => {
   assert.strictEqual(nodeOf(graph, "WebSite")?.description, SITE_DESCRIPTION);
   assert.strictEqual(nodeOf(graph, "Person")?.description, DESCRIPTION);
   assert.include(JSON.stringify(ROOT_HEAD.meta), SITE_DESCRIPTION);
+  // The logo and person image are the square avatar with real dimensions, not the wide OG banner
+  assert.deepStrictEqual(nodeOf(graph, "Organization")?.logo, { "@type": "ImageObject", url: "https://www.remiforge.dev/avatar.jpg", width: 288, height: 288 });
+  assert.deepStrictEqual(nodeOf(graph, "Person")?.image, { "@type": "ImageObject", url: "https://www.remiforge.dev/avatar.jpg", width: 288, height: 288 });
 });
 
 it("project details use CreativeWork linked to the canonical WebPage, person and breadcrumb", () => {
@@ -119,6 +123,10 @@ it("project details use CreativeWork linked to the canonical WebPage, person and
   assert.deepStrictEqual(project?.creator, { "@id": "https://www.remiforge.dev/#person" });
   assert.strictEqual(project?.inLanguage, "pl");
   assert.strictEqual(project?.keywords, "TypeScript, React");
+  // Schema.org's link to the source repository, single-sourced from the content's GitHub URL
+  assert.strictEqual(project?.codeRepository, "https://github.com/example/repo");
+  // The image is a sized ImageObject: scrapers learn the dimensions without fetching the file
+  assert.deepStrictEqual(project?.image, { "@type": "ImageObject", url: "https://www.remiforge.dev/images/01-a.webp", width: 1600, height: 900 });
   assert.isDefined(nodeOf(parsed, "BreadcrumbList"));
 });
 
@@ -155,7 +163,7 @@ it("experience URL construction percent-encodes one slug consistently in canonic
 });
 
 it("localized metadata uses stable copy and emits canonical plus Markdown links without same-URL hreflang", () => {
-  assert.deepStrictEqual(canonicalLink("/education"), { rel: "canonical", href: "https://www.remiforge.dev/education" });
+  assert.deepStrictEqual(canonicalLink("https://www.remiforge.dev/education"), { rel: "canonical", href: "https://www.remiforge.dev/education" });
 
   const head = homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "pl" });
   const html = JSON.stringify(head);

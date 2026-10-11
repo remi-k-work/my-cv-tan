@@ -16,6 +16,9 @@ export const jsonLdGraph = (nodes: ReadonlyArray<unknown>): JsonLdScript => json
 // List-derived nodes are only meaningful when the list decoded and is non-empty
 export const whenNonEmpty = <T, N>(list: ReadonlyArray<T>, build: (items: ReadonlyArray<T>) => N): ReadonlyArray<N> => (list.length === 0 ? [] : [build(list)]);
 
+// Image with verified dimensions: scrapers get the real size without fetching the file
+export const imageObject = (url: string, width: number, height: number) => ({ "@type": "ImageObject", url, width, height }) as const;
+
 // Shared two-level trail: every subpage hangs directly off the homepage. Crumb names follow
 // the page language, matching the localized copy Google and AI systems extract
 export const breadcrumb = (preferredLanguage: PreferredLanguage, path: string, name: string) =>

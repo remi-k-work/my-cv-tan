@@ -12,7 +12,7 @@ interface SitemapEntry {
 }
 
 // constants
-import { SITE_URL } from "./constants";
+import { CACHE_CONTROL, SITE_URL } from "./constants";
 
 // HTML canonical URLs only: Markdown twins (*.md) are deliberately excluded to avoid
 // duplicate-content dilution; AI crawlers discover them via llms.txt and <link rel="alternate">
@@ -50,9 +50,9 @@ export const buildSitemapXml = (experienceList: ExperienceList) =>
     wrapWithUrlSet
   );
 
-// Cacheable success response: entries only change when the portfolio data changes; policy matches the .md / llms.txt twins
+// Cacheable success response: entries only change when the portfolio data changes; shares the twins' CDN policy
 export const sitemapResponse = (xml: string) =>
-  new Response(xml, { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400" } });
+  new Response(xml, { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": CACHE_CONTROL } });
 
 export const sitemapUnavailableResponse = () =>
   new Response('<?xml version="1.0" encoding="UTF-8"?><error>Sitemap is temporarily unavailable.</error>', {

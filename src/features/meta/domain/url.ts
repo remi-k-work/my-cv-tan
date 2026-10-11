@@ -34,8 +34,9 @@ export const experienceImageUrl = (imageName: string) =>
 
 // --- <link> tag builders ---
 
-// Canonical URL for a page: stray query parameters must never become duplicate documents
-export const canonicalLink = (path: string) => ({ rel: "canonical", href: absoluteUrl(path) }) as const;
+// Canonical <link> for a page, from an already-resolved absolute URL: stray query
+// parameters must never become duplicate documents
+export const canonicalLink = (href: string) => ({ rel: "canonical", href }) as const;
 
 // Machine-readable alternate for a page: points crawlers and AI fetchers at the Markdown twin
 export const markdownAlternateLink = (mdPath: string) => ({ rel: "alternate", type: "text/markdown", href: absoluteUrl(mdPath) }) as const;

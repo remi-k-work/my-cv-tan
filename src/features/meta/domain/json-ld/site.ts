@@ -1,12 +1,10 @@
 // services, features, and other libraries
-import { jsonLdGraph } from "./core";
+import { imageObject, jsonLdGraph } from "./core";
 
 // constants
 import {
-  AVATAR_IMAGE,
+  AVATAR,
   DESCRIPTION,
-  GLOBAL_IMAGE,
-  GLOBAL_SOCIAL_IMAGE,
   HOME_COUNTRY,
   HOME_LOCALITY,
   JOB_TITLE,
@@ -42,7 +40,8 @@ export const websitePersonJsonLd = () =>
       // The full bio gives AI systems a rich, quotable identity beyond the site summary
       description: DESCRIPTION,
       url: SITE_URL,
-      image: AVATAR_IMAGE,
+      // Avatar as a sized ImageObject: same headshot everywhere, dimensions included
+      image: imageObject(AVATAR.src, AVATAR.width, AVATAR.height),
       jobTitle: JOB_TITLE,
       knowsAbout: [...KNOWS_ABOUT],
       // The site's bilingual audience is a factual GEO signal for AI extraction
@@ -62,8 +61,8 @@ export const websitePersonJsonLd = () =>
       "@id": PUBLISHER_ID,
       name: SITE_NAME,
       url: SITE_URL,
-      // Dimensions single-sourced from the share image constant
-      logo: { "@type": "ImageObject", url: GLOBAL_IMAGE, width: GLOBAL_SOCIAL_IMAGE.width, height: GLOBAL_SOCIAL_IMAGE.height },
+      // Square avatar, not the wide OG banner: Google wants a logo-shaped image for the knowledge panel
+      logo: imageObject(AVATAR.src, AVATAR.width, AVATAR.height),
       sameAs: [...SOCIAL_LINKS],
     },
   ]);

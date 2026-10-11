@@ -6,7 +6,7 @@ import { Context, Effect, Layer, Option } from "effect";
 import { translateForLanguage } from "@/lib/gt-translations";
 import { requireData, RequiredDataError, requestPreferredLanguage } from "@/features/data/domain";
 import { Data } from "@/features/data/services/data";
-import { absoluteUrl, experiencePath } from "@/features/meta/domain";
+import { absoluteUrl, experiencePath, txtResponse } from "@/features/meta/domain";
 import {
   buildContactMd,
   buildEducationMd,
@@ -23,7 +23,6 @@ import {
   slugFromMdPathname,
   textDataResponse,
   translateSource,
-  txtResponse,
 } from "@/features/markdown/domain";
 
 // types
@@ -111,21 +110,19 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
     const discoveryDocument = (logPrefix: string, unavailableBody: string, content: Effect.Effect<string, RequiredDataError>) =>
       textDataResponse(logPrefix, unavailableBody, Effect.map(content, txtResponse));
 
+    // One honest 503 body for both AI indexes, naming the document so fetchers know what failed
+    const indexUnavailableBody = (name: string) =>
+      `${name} is temporarily unavailable because required portfolio content could not be loaded. Please try again shortly.\n`;
+
     // Site index for AI systems (GEO); Effects are lazy, so these are plain values
-    const siteIndex = discoveryDocument(
-      "[LLMS.TXT]",
-      "llms.txt is temporarily unavailable because required portfolio content could not be loaded. Please try again shortly.\n",
-      Effect.map(experiences("en"), buildLlmsTxt)
-    );
+    const siteIndex = discoveryDocument("[LLMS.TXT]", indexUnavailableBody("llms.txt"), Effect.map(experiences("en"), buildLlmsTxt));
 
     // Full-content companion (llms-full.txt): every twin in one request
     const siteIndexFull = discoveryDocument(
       "[LLMS-FULL.TXT]",
-      "llms-full.txt is temporarily unavailable because required portfolio content could not be loaded. Please try again shortly.\n",
+      indexUnavailableBody("llms-full.txt"),
       Effect.gen(function* () {
-        const [titles, experienceList, educationList] = yield* Effect.all([pageTitles("en"), experiences("en"), schools("en")], {
-          concurrency: "unbounded",
-        });
+        const [titles, experienceList, educationList] = yield* Effect.all([pageTitles("en"), experiences("en"), schools("en")], { concurrency: "unbounded" });
         return buildLlmsFullTxt({ pageTitles: titles, experienceList, educationList });
       })
     );
