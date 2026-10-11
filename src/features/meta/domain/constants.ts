@@ -25,6 +25,9 @@ export const AVATAR = { src: AVATAR_IMAGE, width: 288, height: 288 } as const;
 // One CDN cache policy shared by every machine-readable document (.md twins, llms.txt, robots.txt, sitemap.xml)
 export const CACHE_CONTROL = "public, max-age=3600, stale-while-revalidate=86400";
 
+// Plain-text content type shared by every non-Markdown discovery document (robots.txt, llms.txt, llms-full.txt)
+export const TXT_CONTENT_TYPE = "text/plain; charset=utf-8";
+
 // Document title template shared by the HTML <title> and every Markdown frontmatter
 export const BRANDED_TITLE = (title: string) => `${SITE_NAME} ● ${title}`;
 

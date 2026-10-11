@@ -27,9 +27,10 @@ export const experienceMarkdownHref = (slug: string) => absoluteUrl(experienceMa
 export const experienceImageUrl = (imageName: string) =>
   pipe(
     Option.fromNullishOr(imageName),
-    Option.filter((name) => String.isNonEmpty(String.trim(name))),
+    Option.map(String.trim),
+    Option.filter(String.isNonEmpty),
     // Keep content-provided image keys inside the intended URL path segment
-    Option.map((name) => absoluteUrl(`/images/${encodeURIComponent(name.trim())}-a.webp`))
+    Option.map((name) => absoluteUrl(`/images/${encodeURIComponent(name)}-a.webp`))
   );
 
 // --- <link> tag builders ---

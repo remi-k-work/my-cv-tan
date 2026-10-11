@@ -5,10 +5,19 @@ import { Array } from "effect";
 import { SITE_URL } from "./constants";
 
 // Search bots are separate from training crawlers; providers use different names for each purpose
-const AI_SEARCH_CRAWLERS = ["OAI-SearchBot", "Claude-SearchBot", "PerplexityBot"] as const;
+const AI_SEARCH_CRAWLERS = ["OAI-SearchBot", "Claude-SearchBot", "PerplexityBot", "YouBot"] as const;
 // Bots acting on a user's behalf inside chat products (fetching a link the user shared)
-const AI_USER_CRAWLERS = ["ChatGPT-User", "Claude-User", "Perplexity-User"] as const;
-const AI_DATASET_CRAWLERS = ["GPTBot", "ClaudeBot", "CCBot", "Google-Extended", "Applebot-Extended"] as const;
+const AI_USER_CRAWLERS = ["ChatGPT-User", "Claude-User", "Perplexity-User", "Meta-ExternalFetcher", "MistralAI-User"] as const;
+const AI_DATASET_CRAWLERS = [
+  "GPTBot",
+  "ClaudeBot",
+  "CCBot",
+  "Google-Extended",
+  "Applebot-Extended",
+  "Meta-ExternalAgent",
+  "AI2Bot",
+  "cohere-training-data-crawler",
+] as const;
 const API_DISALLOW = "Disallow: /api";
 
 // Specific bot groups override `*`, so repeat the API exclusion for each crawler

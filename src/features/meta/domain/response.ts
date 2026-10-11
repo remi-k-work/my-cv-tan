@@ -1,10 +1,9 @@
 // HTTP responses for the machine-readable discovery documents (robots.txt, sitemap.xml, llms.txt)
 
 // constants
-import { CACHE_CONTROL } from "./constants";
+import { CACHE_CONTROL, TXT_CONTENT_TYPE } from "./constants";
 
 // Plain-text discovery document (robots.txt, llms.txt, llms-full.txt): always English, cacheable at the CDN
-export const TXT_CONTENT_TYPE = "text/plain; charset=utf-8";
 export const txtResponse = (body: string) =>
   new Response(body, { headers: { "Content-Type": TXT_CONTENT_TYPE, "Content-Language": "en", "Cache-Control": CACHE_CONTROL } });
 

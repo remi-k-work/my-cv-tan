@@ -74,15 +74,15 @@ it("root metadata defaults to noindex and complete page heads explicitly allow i
   // TanStack reads only top-level meta/links off head results (load-server.js): the shape must stay flat
   assert.isDefined(indexable.meta);
   assert.isDefined(indexable.links);
-  assert.include(JSON.stringify(indexable.meta), "index, follow, max-image-preview:large");
+  assert.include(JSON.stringify(indexable.meta), "index, follow, max-snippet:-1, max-image-preview:large");
   assert.notInclude(JSON.stringify(indexable.meta), "noindex");
   assert.notInclude(JSON.stringify(indexable.meta), '"name":"keywords"');
 
   const emptyEducation = educationHead({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "pl" });
-  assert.include(JSON.stringify(emptyEducation.meta), "index, follow, max-image-preview:large");
+  assert.include(JSON.stringify(emptyEducation.meta), "index, follow, max-snippet:-1, max-image-preview:large");
 
   const contact = contactHead({ pageTitles: stablePageTitles, preferredLanguage: "en" });
-  assert.include(JSON.stringify(contact.meta), "index, follow, max-image-preview:large");
+  assert.include(JSON.stringify(contact.meta), "index, follow, max-snippet:-1, max-image-preview:large");
 });
 
 it("root graph declares the bilingual audience on WebSite and Person", () => {

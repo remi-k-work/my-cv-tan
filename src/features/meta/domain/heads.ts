@@ -15,11 +15,12 @@ import { GLOBAL_SOCIAL_IMAGE, META_DESCRIPTION_LENGTH, BRANDED_TITLE } from "./c
 import { STATIC_PAGES } from "./static-pages";
 
 // Complete data opts into indexing: one shared block keeps title, robots and social tags consistent
-// Incomplete loader responses inherit the root noindex policy instead.
+// max-snippet:-1 leaves AI overviews and citation surfaces unconstrained; incomplete loader
+// responses inherit the root noindex policy instead
 const indexableMeta = (input: SocialMetaInput) => [
   { title: BRANDED_TITLE(input.title) },
   { name: "description", content: input.description },
-  { name: "robots", content: "index, follow, max-image-preview:large" },
+  { name: "robots", content: "index, follow, max-snippet:-1, max-image-preview:large" },
   ...socialMeta(input),
 ];
 
@@ -52,8 +53,7 @@ export const educationHead = ({ educationList, ...page }: EducationHeadInput) =>
 
 export const contactHead = (page: PageHeadInput) => staticPageHead({ ...page, pagePath: "/contact", jsonLd: contactJsonLd });
 
-// Detail head always canonicalizes to the clean /{slug} URL derived from experience.slug,
-// so stray query parameters never become duplicates
+// Detail head always canonicalizes to the clean /{slug} URL derived from experience.slug, so stray query parameters never become duplicates
 export const experienceHead = ({ experience, preferredLanguage }: ExperienceHeadInput) => {
   const { slug, txt, imageName } = experience;
 
