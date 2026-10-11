@@ -12,6 +12,7 @@ import {
   buildEducationMd,
   buildExperienceMd,
   buildHomeMd,
+  buildLlmsFullTxt,
   buildLlmsTxt,
   buildNotFoundMd,
   experienceFromList,
@@ -21,6 +22,7 @@ import {
   parseLangParam,
   slugFromMdPathname,
   textDataResponse,
+  translateSource,
   txtResponse,
 } from "@/features/markdown/domain";
 
@@ -31,14 +33,16 @@ import type { PreferredLanguage, Translate } from "@/domain";
 const required = <A>(maybe: Effect.Effect<Option.Option<A>>, dataset: string): Effect.Effect<A, RequiredDataError> =>
   Effect.flatMap(maybe, (option) => requireData(option, dataset));
 
-// Source-language copy: the same fallback the dictionary itself applies per missing key
-const translateSource: Translate = (source) => source;
-
 // One home for every AI-facing document pipeline (GEO): language resolution, data
 // fetch, Markdown rendering and Response construction. Routes only wire named handlers
 export class Markdown extends Context.Service<Markdown>()("Markdown", {
   make: Effect.gen(function* () {
     const data = yield* Data;
+
+    // Dataset shortcuts used by every twin: fetch + require in the requested language
+    const pageTitles = (lang: PreferredLanguage) => required(data.stablePageTitles(Option.some(lang)), "page titles");
+    const experiences = (lang: PreferredLanguage) => required(data.experienceList(Option.some(lang)), "experience list");
+    const schools = (lang: PreferredLanguage) => required(data.educationList(Option.some(lang)), "education list");
 
     // Shared document pipeline: language negotiation, translation lookup, unavailable-data recovery and
     // explicit-variant cache policy live here so each twin below stays a thin fetch-and-render step
@@ -65,28 +69,22 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
 
     const home = document((_request, lang, translate) =>
       Effect.gen(function* () {
-        const [pageTitles, experiences] = yield* Effect.all(
-          [required(data.stablePageTitles(Option.some(lang)), "page titles"), required(data.experienceList(Option.some(lang)), "experience list")],
-          { concurrency: "unbounded" }
-        );
-        return mdResponse(buildHomeMd({ pageTitles, experienceList: experiences, preferredLanguage: lang, translate }), lang, absoluteUrl("/"));
+        const [titles, experienceList] = yield* Effect.all([pageTitles(lang), experiences(lang)], { concurrency: "unbounded" });
+        return mdResponse(buildHomeMd({ pageTitles: titles, experienceList, preferredLanguage: lang, translate }), lang, absoluteUrl("/"));
       })
     );
 
     const education = document((_request, lang, translate) =>
       Effect.gen(function* () {
-        const [pageTitles, schools] = yield* Effect.all(
-          [required(data.stablePageTitles(Option.some(lang)), "page titles"), required(data.educationList(Option.some(lang)), "education list")],
-          { concurrency: "unbounded" }
-        );
-        return mdResponse(buildEducationMd({ pageTitles, educationList: schools, preferredLanguage: lang, translate }), lang, absoluteUrl("/education"));
+        const [titles, educationList] = yield* Effect.all([pageTitles(lang), schools(lang)], { concurrency: "unbounded" });
+        return mdResponse(buildEducationMd({ pageTitles: titles, educationList, preferredLanguage: lang, translate }), lang, absoluteUrl("/education"));
       })
     );
 
     const contact = document((_request, lang, translate) =>
       Effect.gen(function* () {
-        const pageTitles = yield* required(data.stablePageTitles(Option.some(lang)), "page titles");
-        return mdResponse(buildContactMd({ pageTitles, preferredLanguage: lang, translate }), lang, absoluteUrl("/contact"));
+        const titles = yield* pageTitles(lang);
+        return mdResponse(buildContactMd({ pageTitles: titles, preferredLanguage: lang, translate }), lang, absoluteUrl("/contact"));
       })
     );
 
@@ -97,7 +95,7 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
         // Unparseable slug: a clean Markdown 404 instead of an HTML error page
         if (Option.isNone(slug)) return mdNotFoundResponse(buildNotFoundMd({ slug: "unknown", preferredLanguage: lang, translate }), lang);
 
-        const found = experienceFromList(yield* required(data.experienceList(Option.some(lang)), "experience list"), slug.value);
+        const found = experienceFromList(yield* experiences(lang), slug.value);
 
         if (Option.isNone(found)) {
           yield* Effect.logError(`[SLUG.MD]: no experience for slug "${slug.value}", emitting markdown 404`);
@@ -108,15 +106,31 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
       })
     );
 
-    // Site index for AI systems (GEO); English only, so no language negotiation
-    const siteIndex = Effect.fnUntraced(function* () {
-      // The fetch must stay inside the recovered effect so a data failure becomes the 503 twin
-      return yield* textDataResponse(
-        Effect.map(required(data.experienceList(Option.some("en")), "experience list"), (experienceList) => txtResponse(buildLlmsTxt(experienceList)))
-      );
-    });
+    // English-only discovery documents (llms.txt, llms-full.txt): no language negotiation, so a
+    // plain wrapper over textDataResponse; the content fetch stays inside the recovered effect
+    const discoveryDocument = (logPrefix: string, unavailableBody: string, content: Effect.Effect<string, RequiredDataError>) =>
+      textDataResponse(logPrefix, unavailableBody, Effect.map(content, txtResponse));
 
-    return { home, education, contact, experience, siteIndex } as const;
+    // Site index for AI systems (GEO); Effects are lazy, so these are plain values
+    const siteIndex = discoveryDocument(
+      "[LLMS.TXT]",
+      "llms.txt is temporarily unavailable because required portfolio content could not be loaded. Please try again shortly.\n",
+      Effect.map(experiences("en"), buildLlmsTxt)
+    );
+
+    // Full-content companion (llms-full.txt): every twin in one request
+    const siteIndexFull = discoveryDocument(
+      "[LLMS-FULL.TXT]",
+      "llms-full.txt is temporarily unavailable because required portfolio content could not be loaded. Please try again shortly.\n",
+      Effect.gen(function* () {
+        const [titles, experienceList, educationList] = yield* Effect.all([pageTitles("en"), experiences("en"), schools("en")], {
+          concurrency: "unbounded",
+        });
+        return buildLlmsFullTxt({ pageTitles: titles, experienceList, educationList });
+      })
+    );
+
+    return { home, education, contact, experience, siteIndex, siteIndexFull } as const;
   }),
 }) {
   static readonly layer = Layer.effect(this, this.make).pipe(Layer.provide(Data.layer));

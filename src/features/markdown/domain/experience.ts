@@ -10,11 +10,19 @@ import type { ExperienceList } from "@/features/experience/domain";
 import type { BuildNotFoundMdInput, ExperienceMdInput } from "./models";
 
 // constants
-import { HOME_MD_HREF, META_DESCRIPTION_LENGTH, SITE_NAME } from "@/features/meta/domain";
+import { HOME_MD_HREF, LLMS_TXT_HREF, META_DESCRIPTION_LENGTH, brandedTitle } from "@/features/meta/domain";
 
 // Locate one experience by slug inside a decoded list (None = clean 404 candidate);
 // a failed decode stays an error in the caller via requireData
 export const experienceFromList = (experienceList: ExperienceList, slug: string) => Array.findFirst(experienceList, (experience) => experience.slug === slug);
+
+// Optional link bullet: an absent href or a non-web URL (rejected by mdExternalLink) drops the line
+const optionalBulletLink = (label: string, href: string | undefined) =>
+  pipe(
+    Option.fromNullishOr(href),
+    Option.flatMap((href) => mdExternalLink(label, href)),
+    Option.map((link) => `- ${link}`)
+  );
 
 export const buildExperienceMd = ({ experience, preferredLanguage, translate }: ExperienceMdInput) => {
   const { role, company, txt, skillsUsed, year, slug } = experience;
@@ -22,22 +30,20 @@ export const buildExperienceMd = ({ experience, preferredLanguage, translate }: 
   const headline = experienceHeadline(experience, preferredLanguage);
   const description = excerpt(txt, META_DESCRIPTION_LENGTH);
 
-  // Ignore non-web URLs so untrusted content never becomes an active Markdown link
   const links = pipe(
     [
-      Option.fromNullishOr(experience.gitHubLink).pipe(Option.flatMap((href) => mdExternalLink("GitHub", href))),
-      Option.fromNullishOr(experience.liveLink).pipe(Option.flatMap((href) => mdExternalLink(translate(msg("Live")), href))),
-      Option.fromNullishOr(experience.videoLink).pipe(Option.flatMap((href) => mdExternalLink(translate(msg("Video")), href))),
+      optionalBulletLink("GitHub", experience.gitHubLink),
+      optionalBulletLink(translate(msg("Live")), experience.liveLink),
+      optionalBulletLink(translate(msg("Video")), experience.videoLink),
     ],
     Array.getSomes,
-    Array.map((link) => `- ${link}`),
     Array.join("\n")
   );
   const linkSection = links === "" ? [] : [mdHeading(2, translate(msg("Links"))), ``, links, ``];
 
   return [
     frontmatter({
-      title: `${SITE_NAME} ● ${headline}`,
+      title: brandedTitle(headline),
       description,
       canonical,
       lang: preferredLanguage,
@@ -86,7 +92,7 @@ export const buildNotFoundMd = ({ slug, preferredLanguage, translate }: BuildNot
     ``,
     preferredLanguage === "pl" ? `Dokument Markdown dla adresu ${safePath} nie istnieje.` : `No Markdown document exists for ${safePath}.`,
     ``,
-    `${translate(msg("See"))} [${translate(msg("Home page"))}](${absoluteUrl(HOME_MD_HREF)}) ${translate(msg("or"))} [llms.txt](${absoluteUrl("/llms.txt")}).`,
+    `${translate(msg("See"))} [${translate(msg("Home page"))}](${absoluteUrl(HOME_MD_HREF)}) ${translate(msg("or"))} [llms.txt](${absoluteUrl(LLMS_TXT_HREF)}).`,
     ``,
   ].join("\n");
 };

@@ -35,3 +35,19 @@ export interface BuildNotFoundMdInput {
   readonly preferredLanguage: PreferredLanguage;
   readonly translate: Translate;
 }
+
+// Everything the single-request full-content index (llms-full.txt) renders from
+export interface LlmsFullInput {
+  readonly pageTitles: PageTitles;
+  readonly experienceList: ExperienceList;
+  readonly educationList: EducationList;
+}
+
+// One experience section in an AI index; translate and language default to English source
+// copy inside listing.ts so the English-only indexes stay free of translation wiring
+export interface ExperienceLinesInput {
+  readonly experienceList: ExperienceList;
+  readonly type: Experience["type"];
+  readonly translate?: Translate;
+  readonly preferredLanguage?: PreferredLanguage;
+}

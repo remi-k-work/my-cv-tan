@@ -1,5 +1,4 @@
 export * from "./constants";
-export * from "./helpers";
 export * from "./json-ld";
 export * from "./language";
 export * from "./models";
@@ -8,3 +7,4 @@ export * from "./robots";
 export * from "./root";
 export * from "./sitemap";
 export * from "./social";
+export * from "./url";

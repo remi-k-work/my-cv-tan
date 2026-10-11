@@ -1,11 +1,10 @@
 // services, features, and other libraries
-import { excerpt } from "@/features/experience/domain";
-import { llmsAlternateLink } from "./helpers";
+import { llmsAlternateLink } from "./url";
 import { socialMeta } from "./social";
 import { websitePersonJsonLd } from "./json-ld";
 
 // constants
-import { DESCRIPTION, GLOBAL_SOCIAL_IMAGE, META_DESCRIPTION_LENGTH, SITE_NAME, TITLE } from "./constants";
+import { GLOBAL_SOCIAL_IMAGE, SITE_DESCRIPTION, SITE_NAME, TITLE, brandedTitle } from "./constants";
 
 // Root head: every page inherits this, so it must ONLY contain site-wide tags.
 // Page-specific tags (canonical, hreflang, Markdown alternate) live in each route's
@@ -17,21 +16,20 @@ export const ROOT_HEAD = {
     { charSet: "utf-8" },
     { name: "viewport", content: "width=device-width, initial-scale=1" },
     { name: "theme-color", content: "#1d2549" },
-    { title: `${SITE_NAME} ● ${TITLE}` },
-    { name: "description", content: excerpt(DESCRIPTION, META_DESCRIPTION_LENGTH) },
+    { title: brandedTitle(TITLE) },
+    { name: "description", content: SITE_DESCRIPTION },
 
     { name: "author", content: SITE_NAME },
+    // Safe default: pages with complete data opt back into indexing in page.ts
     { name: "robots", content: "noindex, follow" },
-    { name: "category", content: "technology" },
     { name: "google", content: "notranslate" },
     // Static en_US fallback for pages without their own head (404, errors);
     // every page head overrides these tags with the resolved locale
     ...socialMeta({
       title: TITLE,
-      description: excerpt(DESCRIPTION, META_DESCRIPTION_LENGTH),
+      description: SITE_DESCRIPTION,
       path: "/",
       image: GLOBAL_SOCIAL_IMAGE,
-      ogType: "website",
       preferredLanguage: "en",
     }),
   ],

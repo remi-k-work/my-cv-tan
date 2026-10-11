@@ -17,11 +17,11 @@ import { ExperienceModal } from "@/features/modals/ui/experience";
 
 export const Route = createFileRoute("/{-$slug}")({
   loader: ({ params }) => loaderIndex(Option.fromNullishOr(params.slug)),
-  head: ({ loaderData, params, matches }) => {
+  head: ({ loaderData, matches }) => {
     if (!loaderData) return {};
 
     const preferredLanguage = headLanguage(matches);
-    if (loaderData.type === "item" && params.slug) return experienceHead({ slug: params.slug, experience: loaderData.experience, preferredLanguage });
+    if (loaderData.type === "item") return experienceHead({ experience: loaderData.experience, preferredLanguage });
     if (loaderData.type === "list") return homeHead({ pageTitles: loaderData.stablePageTitles, experienceList: loaderData.experienceList, preferredLanguage });
     return {};
   },

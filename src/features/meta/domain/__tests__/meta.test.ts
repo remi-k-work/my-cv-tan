@@ -4,6 +4,7 @@ import { Option } from "effect";
 
 // domain
 import {
+  buildRobotsTxt,
   buildSitemapXml,
   canonicalLink,
   contactHead,
@@ -15,6 +16,7 @@ import {
   sitemapResponse,
   sitemapUnavailableResponse,
 } from "../index";
+import { DESCRIPTION, SITE_DESCRIPTION } from "../constants";
 
 // Minimal JSON-LD graph readers for structured-data assertions
 const graphOf = (children: string | undefined) => (JSON.parse(children ?? "{}") as { "@graph"?: Array<Record<string, unknown>> })["@graph"] ?? [];
@@ -45,13 +47,13 @@ const stablePageTitles = {
 };
 
 it("experienceHead omits unsupported publication dates and keyword meta", () => {
-  const dated = JSON.stringify(experienceHead({ slug: "sample-role", experience: sampleExperience, preferredLanguage: "en" }));
+  const dated = JSON.stringify(experienceHead({ experience: sampleExperience, preferredLanguage: "en" }));
   assert.notInclude(dated, "article:published_time");
   assert.notInclude(dated, "datePublished");
   assert.notInclude(dated, '"name":"keywords"');
   assert.notInclude(dated, "article:tag");
 
-  const undated = JSON.stringify(experienceHead({ slug: "sample-role", experience: { ...sampleExperience, year: "Too Long" }, preferredLanguage: "en" }));
+  const undated = JSON.stringify(experienceHead({ experience: { ...sampleExperience, year: "Too Long" }, preferredLanguage: "en" }));
   assert.notInclude(undated, "article:published_time");
   assert.notInclude(undated, "datePublished");
 });
@@ -78,14 +80,23 @@ it("root graph declares the bilingual audience on WebSite and Person", () => {
   const graph = graphOf(ROOT_HEAD.scripts?.[0]?.children);
   assert.deepStrictEqual(nodeOf(graph, "WebSite")?.inLanguage, ["en", "pl"]);
   assert.deepStrictEqual(nodeOf(graph, "Person")?.knowsLanguage, ["en", "pl"]);
+  // Every root entity carries an extractable description, single-sourced with the meta tags
+  assert.strictEqual(nodeOf(graph, "WebSite")?.description, SITE_DESCRIPTION);
+  assert.strictEqual(nodeOf(graph, "Person")?.description, DESCRIPTION);
+  assert.include(JSON.stringify(ROOT_HEAD.meta), SITE_DESCRIPTION);
 });
 
 it("project details use CreativeWork linked to the canonical WebPage, person and breadcrumb", () => {
-  const pl = experienceHead({ slug: "sample-role", experience: sampleExperience, preferredLanguage: "pl" });
+  const pl = experienceHead({ experience: sampleExperience, preferredLanguage: "pl" });
   const html = JSON.stringify(pl);
   assert.include(html, '"content":"pl_PL"');
   assert.include(html, '"content":"en_US"'); // alternate
   assert.include(html, '"property":"og:type","content":"website"');
+  // og:image carries the webp screenshot with real dimensions; X/Twitter falls back to the global jpeg
+  assert.include(html, '"property":"og:image:type","content":"image/webp"');
+  assert.include(html, '"property":"og:image:width","content":"1600"');
+  assert.include(html, '"property":"og:image:height","content":"900"');
+  assert.include(html, '"name":"twitter:image","content":"https://www.remiforge.dev/opengraph-image.jpg"');
   // og:title carries the bare headline; the document <title> keeps the site prefix
   assert.include(html, '"title":"Remi Forge ● Projekt osobisty: Full-Stack Developer"');
   assert.include(html, '"property":"og:title","content":"Projekt osobisty: Full-Stack Developer"');
@@ -98,6 +109,9 @@ it("project details use CreativeWork linked to the canonical WebPage, person and
   assert.isDefined(project);
   assert.isFalse(parsed.some((node) => node["@type"] === "Article"));
   assert.deepStrictEqual(page?.mainEntity, { "@id": "https://www.remiforge.dev/sample-role#project" });
+  // The page node references its trail by @id, associating both the way Google expects
+  assert.deepStrictEqual(page?.breadcrumb, { "@id": "https://www.remiforge.dev/sample-role#breadcrumb" });
+  assert.strictEqual(nodeOf(parsed, "BreadcrumbList")?.["@id"], "https://www.remiforge.dev/sample-role#breadcrumb");
   assert.deepStrictEqual(project?.mainEntityOfPage, { "@id": "https://www.remiforge.dev/sample-role" });
   assert.deepStrictEqual(project?.creator, { "@id": "https://www.remiforge.dev/#person" });
   assert.strictEqual(project?.inLanguage, "pl");
@@ -107,7 +121,7 @@ it("project details use CreativeWork linked to the canonical WebPage, person and
 
 it("employment details use OrganizationRole linked to the person and canonical WebPage without fabricated dates", () => {
   const experience = { ...sampleExperience, type: "e" as const, slug: "sample-job" };
-  const head = experienceHead({ slug: experience.slug, experience, preferredLanguage: "en" });
+  const head = experienceHead({ experience, preferredLanguage: "en" });
   const parsed = graphOf(head.scripts?.[0]?.children);
   const page = nodeOf(parsed, "WebPage");
   const role = nodeOf(parsed, "OrganizationRole");
@@ -126,7 +140,7 @@ it("employment details use OrganizationRole linked to the person and canonical W
 it("experience URL construction percent-encodes one slug consistently in canonical, social, alternate and JSON-LD URLs", () => {
   const slug = "résumé & more";
   const encodedPath = "/r%C3%A9sum%C3%A9%20%26%20more";
-  const head = experienceHead({ slug, experience: { ...sampleExperience, slug }, preferredLanguage: "en" });
+  const head = experienceHead({ experience: { ...sampleExperience, slug }, preferredLanguage: "en" });
   const html = JSON.stringify(head);
   const graph = graphOf(head.scripts?.[0]?.children);
   const page = nodeOf(graph, "WebPage");
@@ -160,13 +174,30 @@ it("home structured data is a first-party ProfilePage linking site entities plus
   const profile = nodeOf(graph, "ProfilePage");
   assert.deepStrictEqual(profile?.mainEntity, { "@id": "https://www.remiforge.dev/#person" });
   assert.deepStrictEqual(profile?.isPartOf, { "@id": "https://www.remiforge.dev/#website" });
+  // List nodes carry stable @ids like every other entity in the graph; the sample is a
+  // project, so the employment list is absent and only the portfolio list renders
+  assert.strictEqual(nodeOf(graph, "ItemList")?.["@id"], "https://www.remiforge.dev/#portfolio-list");
   assert.strictEqual(listItems(nodeOf(graph, "ItemList"))?.[0]?.url, "https://www.remiforge.dev/sample-role");
   assert.strictEqual(nodeOf(graph, "ItemList")?.inLanguage, "en");
+  // Explicit item counts give AI systems a checkable list size
+  assert.strictEqual(nodeOf(graph, "ItemList")?.numberOfItems, 1);
 
   // An empty portfolio still emits the ProfilePage graph, never a misleading empty ItemList
   const emptyGraph = graphOf(homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" }).scripts?.[0]?.children);
   assert.isTrue(emptyGraph.some((node) => node["@type"] === "ProfilePage"));
   assert.isFalse(emptyGraph.some((node) => node["@type"] === "ItemList"));
+});
+
+it("home structured data splits employment from portfolio projects with localized list names", () => {
+  const mixed = [sampleExperience, { ...sampleExperience, type: "e" as const, slug: "sample-job" }];
+  const graph = graphOf(homeHead({ pageTitles: stablePageTitles, experienceList: mixed, preferredLanguage: "pl" }).scripts?.[0]?.children);
+  // Two labeled lists mirror the HTML page and .md twin grouping; positions restart per list
+  const lists = graph.filter((node) => node["@type"] === "ItemList");
+  assert.deepStrictEqual(lists.map((node) => node.name), ["Doświadczenie", "Projekty do Portfolio"]);
+  assert.deepStrictEqual(lists.map((node) => node["@id"]), ["https://www.remiforge.dev/#experience-list", "https://www.remiforge.dev/#portfolio-list"]);
+  assert.strictEqual(listItems(lists[0])?.[0]?.url, "https://www.remiforge.dev/sample-job");
+  assert.strictEqual(listItems(lists[1])?.[0]?.url, "https://www.remiforge.dev/sample-role");
+  assert.strictEqual(lists[0]?.inLanguage, "pl");
 });
 
 it("contact structured data describes the visible ContactPage inside a breadcrumb graph", () => {
@@ -184,7 +215,15 @@ it("contact structured data describes the visible ContactPage inside a breadcrum
   assert.strictEqual(contact?.description, hostileDescription);
   assert.deepStrictEqual(contact?.isPartOf, { "@id": "https://www.remiforge.dev/#website" });
   assert.deepStrictEqual(contact?.mainEntity, { "@id": "https://www.remiforge.dev/#person" });
+  assert.deepStrictEqual(contact?.breadcrumb, { "@id": "https://www.remiforge.dev/contact#breadcrumb" });
   assert.notInclude(JSON.stringify(graph), "FAQPage");
+  // The bilingual contact form is the machine-readable contact channel
+  const person = nodeOf(graph, "Person");
+  const contactPoint = nodeOf(graph, "ContactPoint");
+  assert.deepStrictEqual(person?.contactPoint, { "@id": "https://www.remiforge.dev/contact#contact-point" });
+  assert.strictEqual(contactPoint?.contactType, "author");
+  assert.strictEqual(contactPoint?.url, "https://www.remiforge.dev/contact");
+  assert.deepStrictEqual(contactPoint?.availableLanguage, ["en", "pl"]);
   // Two-level breadcrumb mirrors the site structure for SERP display and AI extraction
   const trail = nodeOf(graph, "BreadcrumbList");
   // The Home crumb must byte-match the homepage canonical
@@ -230,14 +269,58 @@ it("sitemap data failures return non-cacheable noindex XML with status 503", () 
   assert.strictEqual(response.headers.get("X-Robots-Tag"), "noindex, follow");
 });
 
+it("robots.txt allows content, disallows API endpoints, and advertises the sitemap", () => {
+  const robots = buildRobotsTxt();
+  assert.include(robots, "User-agent: *");
+  assert.include(robots, "Allow: /");
+  assert.include(robots, "Allow: /*.md");
+  // Form/RPC endpoints are not content, so they stay out of crawl budgets
+  assert.include(robots, "Disallow: /api");
+  assert.include(robots, "Sitemap: https://www.remiforge.dev/sitemap.xml");
+  // AI search, user-initiated browsing, and training crawlers each get an explicit named allowance
+  for (const bot of [
+    "OAI-SearchBot",
+    "Claude-SearchBot",
+    "PerplexityBot",
+    "ChatGPT-User",
+    "Claude-User",
+    "Perplexity-User",
+    "GPTBot",
+    "ClaudeBot",
+    "CCBot",
+    "Google-Extended",
+    "Applebot-Extended",
+  ]) {
+    assert.include(robots, `User-agent: ${bot}`);
+  }
+});
+
 it("education structured data describes attended schools, not credentials, inside a breadcrumb graph", () => {
   const head = educationHead({ pageTitles: stablePageTitles, educationList: sampleEducation, preferredLanguage: "en" });
   const graph = graphOf(head.scripts?.[0]?.children);
+  // The page node gives the school list a container the way every other content page has one
+  const collection = nodeOf(graph, "CollectionPage");
+  assert.deepStrictEqual(collection?.isPartOf, { "@id": "https://www.remiforge.dev/#website" });
+  assert.deepStrictEqual(collection?.breadcrumb, { "@id": "https://www.remiforge.dev/education#breadcrumb" });
+  assert.deepStrictEqual(collection?.mainEntity, { "@id": "https://www.remiforge.dev/education#education-list" });
   const school = (listItems(nodeOf(graph, "ItemList"))?.[0] as { item?: Record<string, unknown> } | undefined)?.item;
   assert.strictEqual(school?.["@type"], "EducationalOrganization");
   assert.strictEqual(school?.name, "Pratt Institute");
+  // Each school has a stable fragment id the person's alumniOf edges reference
+  assert.strictEqual(school?.["@id"], "https://www.remiforge.dev/education#school-1");
+  // The alumni edge links each school back to the person so AI systems can extract "studied at"
+  assert.deepStrictEqual(school?.alumni, { "@id": "https://www.remiforge.dev/#person" });
+  // The reciprocal edge on the person fragment makes "studied at" extractable from either direction
+  assert.deepStrictEqual(nodeOf(graph, "Person")?.alumniOf, [{ "@id": "https://www.remiforge.dev/education#school-1" }]);
   assert.notInclude(JSON.stringify(graph), "EducationalOccupationalCredential");
   assert.strictEqual(listItems(nodeOf(graph, "BreadcrumbList"))?.[1]?.name, "Stable education title");
+
+  // An empty education list keeps the page and trail without referencing a missing list
+  const empty = graphOf(educationHead({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "en" }).scripts?.[0]?.children);
+  assert.isTrue(empty.some((node) => node["@type"] === "CollectionPage"));
+  assert.isFalse(empty.some((node) => node["@type"] === "ItemList"));
+  assert.isFalse(empty.some((node) => node["@type"] === "Person"));
+  assert.isUndefined(nodeOf(empty, "CollectionPage")?.mainEntity);
 });
 
 it("languageFromMatches validates the root loader payload and falls back safely", () => {
@@ -248,7 +331,6 @@ it("languageFromMatches validates the root loader payload and falls back safely"
 
 it("JSON-LD children escape < so content can never break out of the script tag", () => {
   const hostile = experienceHead({
-    slug: "sample-role",
     experience: { ...sampleExperience, txt: "evil </script><script>alert(1)</script>" },
     preferredLanguage: "en",
   });

@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { Array, pipe, Record } from "effect";
-import { absoluteUrl, experiencePath } from "./helpers";
+import { absoluteUrl, experiencePath } from "./url";
 
 // types
 import type { ExperienceList } from "@/features/experience/domain";

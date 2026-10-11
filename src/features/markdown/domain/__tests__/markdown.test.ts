@@ -7,6 +7,7 @@ import {
   buildEducationMd,
   buildExperienceMd,
   buildHomeMd,
+  buildLlmsFullTxt,
   buildLlmsTxt,
   buildNotFoundMd,
   experienceFromList,
@@ -142,6 +143,7 @@ it("buildHomeMd groups work and projects and links to .md twins", () => {
   assert.include(md, `canonical: "https://www.remiforge.dev/"`);
   assert.include(md, `title: "Remi Forge ● Stable home title"`);
   assert.include(md, `description: "Stable home summary."`);
+  assert.include(md, `type: "overview"`);
   assert.notInclude(md, "Cite the canonical HTML URL");
   assert.include(md, `https://www.remiforge.dev/sample-role.md`);
   assert.include(md, `https://www.remiforge.dev/education.md`);
@@ -218,10 +220,36 @@ it("buildLlmsTxt indexes pages, key facts, grouped experience and negotiated lan
   assert.include(txt, `## Work Experience`);
   assert.include(txt, `- [Full-Stack Developer at Sample Co](https://www.remiforge.dev/my%20project.md)`);
   assert.include(txt, `## Notes for AI systems`);
+  assert.include(txt, `- The complete content of every page is also available in a single request: https://www.remiforge.dev/llms-full.txt.`);
   assert.include(txt, `Append \`?lang=pl\` to any \`.md\` URL to request Polish explicitly`);
   assert.include(txt, "Markdown responses follow the request's language preferences.");
   assert.include(txt, "English is the fallback when no supported preference is present.");
   assert.include(txt, `Always cite the clean canonical HTML URL from each document's frontmatter`);
+  // The XML sitemap is advertised next to the PDF documents
+  assert.include(txt, `- Sitemap: https://www.remiforge.dev/sitemap.xml`);
+});
+
+it("buildLlmsFullTxt concatenates every verbatim twin behind its canonical URL", () => {
+  const txt = buildLlmsFullTxt({
+    pageTitles: stablePageTitles,
+    experienceList: [sampleExperience],
+    educationList: [{ name: "Example School", year: "2020", location: "Poland", info: "Studied interaction design." }],
+  });
+  // One Source marker per twin: the three pages plus the single experience
+  assert.strictEqual((txt.match(/^Source: /gm) ?? []).length, 4);
+  assert.include(txt, `Source: https://www.remiforge.dev/`);
+  assert.include(txt, `Source: https://www.remiforge.dev/education`);
+  assert.include(txt, `Source: https://www.remiforge.dev/contact`);
+  assert.include(txt, `Source: https://www.remiforge.dev/sample-role`);
+  // Twins are verbatim: H1s, frontmatter and machine-classifiable types survive concatenation
+  assert.include(txt, `# Stable home title`);
+  assert.include(txt, `# Full-Stack Developer at Sample Co`);
+  assert.include(txt, `type: "overview"`);
+  assert.include(txt, `type: "education"`);
+  assert.include(txt, `type: "contact"`);
+  assert.include(txt, `type: "work-experience"`);
+  // Citations must land on canonical HTML URLs, never on the aggregation itself
+  assert.include(txt, `Cite the canonical HTML URL, not this file.`);
 });
 
 it("response helpers set content types, indexing and cache headers for success and errors", () => {
@@ -251,6 +279,8 @@ it("response helpers set content types, indexing and cache headers for success a
   const txt = txtResponse("# Plain");
   assert.strictEqual(txt.status, 200);
   assert.strictEqual(txt.headers.get("Content-Type"), "text/plain; charset=utf-8");
+  // Plain-text discovery documents are always English
+  assert.strictEqual(txt.headers.get("Content-Language"), "en");
 
   const unavailableTxt = txtUnavailableResponse("Unavailable");
   assert.strictEqual(unavailableTxt.status, 503);
@@ -280,7 +310,7 @@ it.effect("required-content failures map to non-cacheable 503s and valid missing
     assert.strictEqual(unavailableMarkdown.headers.get("X-Robots-Tag"), "noindex, follow");
     assert.include(unavailableMarkdownBody(translatePl), "portfolio");
 
-    const unavailableIndex = yield* textDataResponse(requireData(Option.none(), "experience list"));
+    const unavailableIndex = yield* textDataResponse("[LLMS.TXT]", "llms.txt is temporarily unavailable.", requireData(Option.none(), "experience list"));
     assert.strictEqual(unavailableIndex.status, 503);
     assert.strictEqual(unavailableIndex.headers.get("Content-Type"), "text/plain; charset=utf-8");
 

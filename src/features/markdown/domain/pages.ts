@@ -9,7 +9,7 @@ import { experienceLines } from "./listing";
 
 // types
 import type { ContactMdInput, EducationMdInput, HomeMdInput } from "./models";
-import type { PreferredLanguage } from "@/domain";
+import type { PagePath, PageTitles, PreferredLanguage } from "@/domain";
 
 // constants
 import {
@@ -19,56 +19,65 @@ import {
   CV_PL_HREF,
   DESCRIPTION,
   EDUCATION_MD_HREF,
+  LLMS_TXT_HREF,
   META_DESCRIPTION_LENGTH,
-  SITE_NAME,
   SOCIAL_LINKS,
   TITLE,
+  brandedTitle,
 } from "@/features/meta/domain";
 
 // Profile URLs stay single-sourced: the same constants feed the HTML page and JSON-LD
 const [gitHubLink, linkedInLink] = SOCIAL_LINKS;
 
-// Shared opening block for page twins: frontmatter mirrors <head> meta, then H1 and quoted summary
-const pageOpening = (title: string, description: string, canonical: string, preferredLanguage: PreferredLanguage) => [
-  frontmatter({ title: `${SITE_NAME} ● ${title}`, description, canonical, lang: preferredLanguage }),
-  mdHeading(1, title),
-  ``,
-  mdQuote(description),
-  ``,
-];
+// Localized heading + intro and the canonical URL for one static page twin
+const pageCopy = (pageTitles: PageTitles, pagePath: PagePath, fallbackHeading: string, fallbackIntro: string) => ({
+  title: pageField(pageTitles, pagePath, "heading", fallbackHeading),
+  intro: pageField(pageTitles, pagePath, "intro", fallbackIntro),
+  canonical: absoluteUrl(pagePath),
+});
+
+// Shared opening block for page twins: frontmatter mirrors <head> meta plus a machine-classifiable entry type
+interface PageOpening {
+  readonly type: "overview" | "education" | "contact";
+  readonly title: string;
+  readonly intro: string;
+  readonly canonical: string;
+  readonly lang: PreferredLanguage;
+}
+
+const pageOpening = ({ type, title, intro, canonical, lang }: PageOpening) => {
+  const description = excerpt(intro, META_DESCRIPTION_LENGTH);
+  return [frontmatter({ title: brandedTitle(title), description, canonical, lang, type }), mdHeading(1, title), ``, mdQuote(description), ``];
+};
 
 export const buildHomeMd = ({ pageTitles, experienceList, preferredLanguage, translate }: HomeMdInput) => {
-  const title = pageField(pageTitles, "/", "heading", TITLE);
-  const intro = pageField(pageTitles, "/", "intro", DESCRIPTION);
-  const canonical = absoluteUrl("/");
+  const { title, intro, canonical } = pageCopy(pageTitles, "/", TITLE, DESCRIPTION);
 
   return [
-    ...pageOpening(title, excerpt(intro, META_DESCRIPTION_LENGTH), canonical, preferredLanguage),
+    ...pageOpening({ type: "overview", title, intro, canonical, lang: preferredLanguage }),
     escapeMd(intro),
     ``,
     mdHeading(2, translate(msg("Experience"))),
     ``,
-    experienceLines(experienceList, "e", translate, preferredLanguage),
+    experienceLines({ experienceList, type: "e", translate, preferredLanguage }),
     ``,
     mdHeading(2, translate(msg("Portfolio Projects"))),
     ``,
-    experienceLines(experienceList, "p", translate, preferredLanguage),
+    experienceLines({ experienceList, type: "p", translate, preferredLanguage }),
     ``,
     mdHeading(2, translate(msg("Pages"))),
     ``,
     mdBulletList([
       `[${translate(msg("Education & Certificates"))}](${absoluteUrl(EDUCATION_MD_HREF)})`,
       `[${translate(msg("Contact"))}](${absoluteUrl(CONTACT_MD_HREF)})`,
-      `[llms.txt](${absoluteUrl("/llms.txt")})`,
+      `[llms.txt](${absoluteUrl(LLMS_TXT_HREF)})`,
     ]),
     ``,
   ].join("\n");
 };
 
 export const buildEducationMd = ({ pageTitles, educationList, preferredLanguage, translate }: EducationMdInput) => {
-  const title = pageField(pageTitles, "/education", "heading", "Education");
-  const intro = pageField(pageTitles, "/education", "intro", "Education & certificates.");
-  const canonical = absoluteUrl("/education");
+  const { title, intro, canonical } = pageCopy(pageTitles, "/education", "Education", "Education & certificates.");
 
   // One section per school: heading, facts list, then the full prose description
   const schools = pipe(
@@ -86,7 +95,7 @@ export const buildEducationMd = ({ pageTitles, educationList, preferredLanguage,
   );
 
   return [
-    ...pageOpening(title, excerpt(intro, META_DESCRIPTION_LENGTH), canonical, preferredLanguage),
+    ...pageOpening({ type: "education", title, intro, canonical, lang: preferredLanguage }),
     escapeMd(intro),
     ``,
     schools === "" ? mdEmptyMarker(translate) : schools,
@@ -103,12 +112,10 @@ export const buildEducationMd = ({ pageTitles, educationList, preferredLanguage,
 };
 
 export const buildContactMd = ({ pageTitles, preferredLanguage, translate }: ContactMdInput) => {
-  const title = pageField(pageTitles, "/contact", "heading", "Contact");
-  const intro = pageField(pageTitles, "/contact", "intro", "Get in touch via the contact form.");
-  const canonical = absoluteUrl("/contact");
+  const { title, intro, canonical } = pageCopy(pageTitles, "/contact", "Contact", "Get in touch via the contact form.");
 
   return [
-    ...pageOpening(title, excerpt(intro, META_DESCRIPTION_LENGTH), canonical, preferredLanguage),
+    ...pageOpening({ type: "contact", title, intro, canonical, lang: preferredLanguage }),
     escapeMd(intro),
     ``,
     mdHeading(2, translate(msg("Channels"))),

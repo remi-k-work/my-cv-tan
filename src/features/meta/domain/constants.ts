@@ -1,3 +1,6 @@
+// services, features, and other libraries
+import { excerpt } from "@/features/experience/domain";
+
 // constants
 export const SITE_URL = "https://www.remiforge.dev";
 export const SITE_NAME = "Remi Forge";
@@ -6,14 +9,20 @@ export const TITLE = "Curious Web Dev: Eager to Learn, Collaborate, and Make a S
 export const DESCRIPTION =
   "Passionate, self-taught web developer with a strong drive for continuous learning and a proven track record of delivering results. Eager to contribute to impactful projects, collaborate with experienced teams, and build high-quality web applications.";
 
+// Google truncates meta descriptions around 150-160 chars; longer text never displays
+export const META_DESCRIPTION_LENGTH = 160;
+
+// The site's description capped once: the single source for the root meta tag and the WebSite JSON-LD node
+export const SITE_DESCRIPTION = excerpt(DESCRIPTION, META_DESCRIPTION_LENGTH);
+
 export const GLOBAL_IMAGE = `${SITE_URL}/opengraph-image.jpg`;
 export const AVATAR_IMAGE = `${SITE_URL}/avatar.jpg`;
 
 // Global share image: jpeg with known dimensions
 export const GLOBAL_SOCIAL_IMAGE = { src: GLOBAL_IMAGE, mime: "image/jpeg", width: 1200, height: 630 } as const;
 
-// Google truncates meta descriptions around 150-160 chars; longer text never displays
-export const META_DESCRIPTION_LENGTH = 160;
+// Document title template shared by the HTML <title> and every Markdown frontmatter
+export const brandedTitle = (title: string) => `${SITE_NAME} ● ${title}`;
 
 export const SOCIAL_LINKS = ["https://github.com/remi-k-work", "https://linkedin.com/in/remi-k-work"] as const;
 
@@ -36,8 +45,11 @@ export const PERSON_ID = `${SITE_URL}/#person`;
 export const PUBLISHER_ID = `${SITE_URL}/#publisher`;
 export const PROFILE_ID = `${SITE_URL}/#profile`;
 
-// Machine-readable discovery documents (GEO): advertised via <link rel="alternate"> in every head
+// Machine-readable discovery documents (GEO): llms.txt is advertised via <link rel="alternate">
+// in every head; the full-content companion and the XML sitemap are linked from llms.txt
 export const LLMS_TXT_HREF = "/llms.txt";
+export const LLMS_FULL_TXT_HREF = "/llms-full.txt";
+export const SITEMAP_HREF = "/sitemap.xml";
 export const HOME_MD_HREF = "/index.md";
 export const EDUCATION_MD_HREF = "/education.md";
 export const CONTACT_MD_HREF = "/contact.md";

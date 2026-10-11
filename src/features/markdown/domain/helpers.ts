@@ -68,3 +68,7 @@ export const mdBulletList = (items: ReadonlyArray<string>) =>
 
 // Explicit "no entries" marker: a bare section heading would read as truncated content to AI parsers
 export const mdEmptyMarker = (translate: Translate) => `_${translate(msg("No entries."))}_`;
+
+// Source-language copy: the same fallback the dictionary itself applies per missing key.
+// Shared by the service's translation-failure recovery and the English-only AI indexes.
+export const translateSource: Translate = (source) => source;

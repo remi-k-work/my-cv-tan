@@ -46,20 +46,18 @@ export const mdUnavailableResponse = (body: string, preferredLanguage: Preferred
 
 export const txtUnavailableResponse = (body: string) => unavailableResponse(body, { "Content-Type": TXT_CONTENT_TYPE });
 
-// Shared recovery for document pipelines: a data failure logs, then renders the non-cacheable 503 above
-const dataResponse = (logPrefix: string, fallback: () => Response, document: Effect.Effect<Response, RequiredDataError>) =>
-  document.pipe(Effect.catchTag("RequiredDataError", (error) => Effect.logError(`${logPrefix}: ${error.message}`).pipe(Effect.map(() => fallback()))));
+// Shared recovery for document pipelines: a data failure logs, then answers with the
+// non-cacheable 503 built up front (Response construction is pure, so laziness buys nothing)
+const dataResponse = (logPrefix: string, fallback: Response, document: Effect.Effect<Response, RequiredDataError>) =>
+  document.pipe(Effect.catchTag("RequiredDataError", (error) => Effect.logError(`${logPrefix}: ${error.message}`).pipe(Effect.as(fallback))));
 
 export const markdownDataResponse = (preferredLanguage: PreferredLanguage, translate: Translate, document: Effect.Effect<Response, RequiredDataError>) =>
-  dataResponse("[MARKDOWN]", () => mdUnavailableResponse(unavailableMarkdownBody(translate), preferredLanguage), document);
+  dataResponse("[MARKDOWN]", mdUnavailableResponse(unavailableMarkdownBody(translate), preferredLanguage), document);
 
-// Plain-text discovery documents (llms.txt): same recovery, plain-text 503
-export const textDataResponse = (document: Effect.Effect<Response, RequiredDataError>) =>
-  dataResponse(
-    "[LLMS.TXT]",
-    () => txtUnavailableResponse("llms.txt is temporarily unavailable because required portfolio content could not be loaded. Please try again shortly.\n"),
-    document
-  );
+// Plain-text discovery documents (llms.txt, llms-full.txt): same recovery, plain-text 503 with per-document copy
+export const textDataResponse = (logPrefix: string, unavailableBody: string, document: Effect.Effect<Response, RequiredDataError>) =>
+  dataResponse(logPrefix, txtUnavailableResponse(unavailableBody), document);
 
-// Plain-text discovery document (llms.txt, robots.txt): cacheable at the CDN
-export const txtResponse = (body: string) => new Response(body, { headers: { "Content-Type": TXT_CONTENT_TYPE, "Cache-Control": MARKDOWN_CACHE_CONTROL } });
+// Plain-text discovery document (llms.txt, robots.txt): always English and cacheable at the CDN
+export const txtResponse = (body: string) =>
+  new Response(body, { headers: { "Content-Type": TXT_CONTENT_TYPE, "Content-Language": "en", "Cache-Control": MARKDOWN_CACHE_CONTROL } });

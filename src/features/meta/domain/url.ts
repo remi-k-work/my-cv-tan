@@ -1,12 +1,14 @@
 // services, features, and other libraries
-import { Option, String, pipe } from "effect";
+import { Option, Record, String, pipe } from "effect";
 import { matchPreferredLanguage } from "@/domain";
 
 // types
-import type { PreferredLanguage } from "@/domain";
+import type { PagePath, PreferredLanguage } from "@/domain";
 
 // constants
-import { CV_EN_HREF, CV_PL_HREF, LLMS_TXT_HREF, SITE_URL } from "./constants";
+import { CONTACT_MD_HREF, CV_EN_HREF, CV_PL_HREF, EDUCATION_MD_HREF, HOME_MD_HREF, LLMS_TXT_HREF, SITE_URL } from "./constants";
+
+// --- URL building ---
 
 // Canonical absolute URL for a site path
 export const absoluteUrl = (path: string) => `${SITE_URL}${path}`;
@@ -21,18 +23,6 @@ export const experiencePath = (slug: string) => `/${encodeParens(encodeURICompon
 export const experienceMarkdownPath = (slug: string) => `${experiencePath(slug)}.md`;
 export const experienceMarkdownHref = (slug: string) => absoluteUrl(experienceMarkdownPath(slug));
 
-export const canonicalLink = (path: string) => ({ rel: "canonical", href: absoluteUrl(path) }) as const;
-
-// Serialized JSON lives inside a <script> tag; escaping "<" as "\u003C" stops
-// content-sourced strings from breaking out of the tag while staying valid JSON
-export const jsonLdScript = (data: unknown) => ({ type: "application/ld+json", children: JSON.stringify(data).replace(/</g, "\\u003C") }) as const;
-
-// Machine-readable alternate for a page: points crawlers and AI fetchers at the Markdown twin
-export const markdownAlternateLink = (mdPath: string) => ({ rel: "alternate", type: "text/markdown", href: absoluteUrl(mdPath) }) as const;
-
-// llms.txt discovery link, emitted on every page head for GEO crawlers
-export const llmsAlternateLink = () => ({ rel: "alternate", type: "text/plain", title: "llms.txt", href: absoluteUrl(LLMS_TXT_HREF) }) as const;
-
 // Share-image URL for an experience; a blank imageName yields None so callers fall back to the global jpeg
 export const experienceImageUrl = (imageName: string) =>
   pipe(
@@ -41,3 +31,21 @@ export const experienceImageUrl = (imageName: string) =>
     // Keep content-provided image keys inside the intended URL path segment
     Option.map((name) => absoluteUrl(`/images/${encodeURIComponent(name.trim())}-a.webp`))
   );
+
+// --- <link> tag builders ---
+
+// Canonical URL for a page: stray query parameters must never become duplicate documents
+export const canonicalLink = (path: string) => ({ rel: "canonical", href: absoluteUrl(path) }) as const;
+
+// Machine-readable alternate for a page: points crawlers and AI fetchers at the Markdown twin
+export const markdownAlternateLink = (mdPath: string) => ({ rel: "alternate", type: "text/markdown", href: absoluteUrl(mdPath) }) as const;
+
+// llms.txt discovery link, emitted on every page head for GEO crawlers
+export const llmsAlternateLink = () => ({ rel: "alternate", type: "text/plain", title: "llms.txt", href: absoluteUrl(LLMS_TXT_HREF) }) as const;
+
+// The Markdown twin href of every page: exactly one machine-readable twin per HTML page
+export const MARKDOWN_TWIN_HREF: Record.ReadonlyRecord<PagePath, string> = {
+  "/": HOME_MD_HREF,
+  "/education": EDUCATION_MD_HREF,
+  "/contact": CONTACT_MD_HREF,
+};

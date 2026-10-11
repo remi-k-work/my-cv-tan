@@ -14,6 +14,7 @@ import { Route as ContactDotmdRouteImport } from './routes/contact[.]md'
 import { Route as EducationRouteImport } from './routes/education'
 import { Route as EducationDotmdRouteImport } from './routes/education[.]md'
 import { Route as IndexDotmdRouteImport } from './routes/index[.]md'
+import { Route as LlmsFullDottxtRouteImport } from './routes/llms-full[.]txt'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
@@ -49,6 +50,11 @@ const EducationDotmdRoute = EducationDotmdRouteImport.update({
 const IndexDotmdRoute = IndexDotmdRouteImport.update({
   id: '/index.md',
   path: '/index.md',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LlmsFullDottxtRoute = LlmsFullDottxtRouteImport.update({
+  id: '/llms-full.txt',
+  path: '/llms-full.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
@@ -113,6 +119,7 @@ export interface FileRoutesByFullPath {
   '/education': typeof EducationRoute
   '/education.md': typeof EducationDotmdRoute
   '/index.md': typeof IndexDotmdRoute
+  '/llms-full.txt': typeof LlmsFullDottxtRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -131,6 +138,7 @@ export interface FileRoutesByTo {
   '/education': typeof EducationRoute
   '/education.md': typeof EducationDotmdRoute
   '/index.md': typeof IndexDotmdRoute
+  '/llms-full.txt': typeof LlmsFullDottxtRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -150,6 +158,7 @@ export interface FileRoutesById {
   '/education': typeof EducationRoute
   '/education.md': typeof EducationDotmdRoute
   '/index.md': typeof IndexDotmdRoute
+  '/llms-full.txt': typeof LlmsFullDottxtRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -170,6 +179,7 @@ export interface FileRouteTypes {
     | '/education'
     | '/education.md'
     | '/index.md'
+    | '/llms-full.txt'
     | '/llms.txt'
     | '/robots.txt'
     | '/sitemap.xml'
@@ -188,6 +198,7 @@ export interface FileRouteTypes {
     | '/education'
     | '/education.md'
     | '/index.md'
+    | '/llms-full.txt'
     | '/llms.txt'
     | '/robots.txt'
     | '/sitemap.xml'
@@ -206,6 +217,7 @@ export interface FileRouteTypes {
     | '/education'
     | '/education.md'
     | '/index.md'
+    | '/llms-full.txt'
     | '/llms.txt'
     | '/robots.txt'
     | '/sitemap.xml'
@@ -225,6 +237,7 @@ export interface RootRouteChildren {
   EducationRoute: typeof EducationRoute
   EducationDotmdRoute: typeof EducationDotmdRoute
   IndexDotmdRoute: typeof IndexDotmdRoute
+  LlmsFullDottxtRoute: typeof LlmsFullDottxtRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -273,6 +286,13 @@ declare module '@tanstack/react-router' {
       path: '/index.md'
       fullPath: '/index.md'
       preLoaderRoute: typeof IndexDotmdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/llms-full.txt': {
+      id: '/llms-full.txt'
+      path: '/llms-full.txt'
+      fullPath: '/llms-full.txt'
+      preLoaderRoute: typeof LlmsFullDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/llms.txt': {
@@ -361,6 +381,7 @@ const rootRouteChildren: RootRouteChildren = {
   EducationRoute: EducationRoute,
   EducationDotmdRoute: EducationDotmdRoute,
   IndexDotmdRoute: IndexDotmdRoute,
+  LlmsFullDottxtRoute: LlmsFullDottxtRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
