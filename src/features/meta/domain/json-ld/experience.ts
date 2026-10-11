@@ -54,6 +54,8 @@ export const experienceJsonLd = ({ experience, preferredLanguage }: ExperienceHe
         "@type": "OrganizationRole",
         "@id": itemId,
         roleName: role,
+        // Language-tagged claims extract cleanly, like on the project node below
+        inLanguage: preferredLanguage,
         description,
         member: { "@id": PERSON_ID },
         mainEntityOfPage: { "@id": url },

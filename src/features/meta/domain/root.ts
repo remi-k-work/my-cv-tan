@@ -17,7 +17,7 @@ export const ROOT_HEAD = {
     { name: "description", content: SITE_DESCRIPTION },
 
     { name: "author", content: SITE_NAME },
-    // Safe default: pages with complete data opt back into indexing in page.ts
+    // Safe default: pages with complete data opt back into indexing (see indexableMeta in heads.ts)
     { name: "robots", content: "noindex, follow" },
     { name: "google", content: "notranslate" },
     // Static en_US fallback for pages without their own head (404, errors); every page head overrides these

@@ -96,6 +96,8 @@ it("escapeMd neutralizes heading characters and collapses blank lines", () => {
 it("buildExperienceMd renders frontmatter, H1, skills and links without repeated crawler instructions", () => {
   const md = buildExperienceMd({ experience: sampleExperience, preferredLanguage: "en", translate: translateEn });
   assert.include(md, `canonical: "https://www.remiforge.dev/sample-role"`);
+  // author mirrors the HTML author meta on every twin
+  assert.include(md, `author: "Remi Forge"`);
   assert.include(md, `# Full-Stack Developer at Sample Co`);
   assert.include(md, `- TypeScript`);
   assert.include(md, `## Links`);
@@ -144,6 +146,7 @@ it("buildHomeMd groups work and projects and links to .md twins", () => {
   assert.include(md, `canonical: "https://www.remiforge.dev/"`);
   assert.include(md, `title: "Remi Forge ● ${STATIC_PAGES["/"].metadata.en.title}"`);
   assert.include(md, `description: "${STATIC_PAGES["/"].metadata.en.description}"`);
+  assert.include(md, `author: "Remi Forge"`);
   assert.include(md, `type: "overview"`);
   assert.notInclude(md, "Cite the canonical HTML URL");
   assert.include(md, `https://www.remiforge.dev/sample-role.md`);

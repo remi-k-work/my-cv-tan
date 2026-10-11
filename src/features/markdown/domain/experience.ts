@@ -11,7 +11,7 @@ import type { ExperienceList } from "@/features/experience/domain";
 import type { BuildNotFoundMdInput, ExperienceMdInput } from "./models";
 
 // constants
-import { HOME_MD_HREF, LLMS_TXT_HREF, META_DESCRIPTION_LENGTH, BRANDED_TITLE } from "@/features/meta/domain";
+import { HOME_MD_HREF, LLMS_TXT_HREF, META_DESCRIPTION_LENGTH, BRANDED_TITLE, SITE_NAME } from "@/features/meta/domain";
 
 // Locate one experience by slug inside a decoded list (None = clean 404 candidate);
 // a failed decode stays an error in the caller via requireData
@@ -46,6 +46,8 @@ export const buildExperienceMd = ({ experience, preferredLanguage, translate }: 
     frontmatter({
       title: BRANDED_TITLE(headline),
       description,
+      // author mirrors the HTML author meta: authoritative attribution is a GEO signal
+      author: SITE_NAME,
       canonical,
       lang: preferredLanguage,
       // Machine-classifiable entry type (frontmatter mirrors <head> meta for AI indexers)

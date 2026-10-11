@@ -16,21 +16,27 @@ import { PERSON_ID, PROFILE_ID, SITE_URL, WEBSITE_ID } from "../constants";
 // One labeled Collection per experience kind: the labels mirror the HTML page and .md twin so AI
 // systems can tell employment from projects instead of reading one mixed list. Collection rather
 // than ItemList (see core.ts): a portfolio's grouped lists are not carousel candidates
-const experienceCollection = (id: string, name: string, type: Experience["type"], experienceList: ExperienceList, preferredLanguage: PreferredLanguage) =>
+const experienceCollection = (input: {
+  id: string;
+  name: string;
+  type: Experience["type"];
+  experienceList: ExperienceList;
+  preferredLanguage: PreferredLanguage;
+}) =>
   whenNonEmpty(
-    Array.filter(experienceList, (experience) => experience.type === type),
+    Array.filter(input.experienceList, (experience) => experience.type === input.type),
     (experiences) =>
       collectionNode({
-        id,
-        name,
-        preferredLanguage,
+        id: input.id,
+        name: input.name,
+        preferredLanguage: input.preferredLanguage,
         // Each part references the detail page with its translated headline, in visible slider order
         parts: pipe(
           experiences,
           Array.map((experience) => ({
             "@type": "WebPage",
             url: absoluteUrl(experiencePath(experience.slug)),
-            name: experienceHeadline(experience, preferredLanguage),
+            name: experienceHeadline(experience, input.preferredLanguage),
           }))
         ),
       })
@@ -51,18 +57,18 @@ export const homeJsonLd = ({ pageName, description, experienceList, preferredLan
       // First-party profile: the page is about the author of everything on the site
       mainEntity: { "@id": PERSON_ID },
     },
-    ...experienceCollection(
-      `${SITE_URL}/#experience-list`,
-      matchPreferredLanguage(preferredLanguage, "Experience", "Doświadczenie"),
-      "e",
+    ...experienceCollection({
+      id: `${SITE_URL}/#experience-list`,
+      name: matchPreferredLanguage(preferredLanguage, "Experience", "Doświadczenie"),
+      type: "e",
       experienceList,
-      preferredLanguage
-    ),
-    ...experienceCollection(
-      `${SITE_URL}/#portfolio-list`,
-      matchPreferredLanguage(preferredLanguage, "Portfolio Projects", "Projekty do Portfolio"),
-      "p",
+      preferredLanguage,
+    }),
+    ...experienceCollection({
+      id: `${SITE_URL}/#portfolio-list`,
+      name: matchPreferredLanguage(preferredLanguage, "Portfolio Projects", "Projekty do Portfolio"),
+      type: "p",
       experienceList,
-      preferredLanguage
-    ),
+      preferredLanguage,
+    }),
   ]);

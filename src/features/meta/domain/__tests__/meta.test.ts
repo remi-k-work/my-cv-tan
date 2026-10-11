@@ -146,6 +146,7 @@ it("employment details use OrganizationRole linked to the person and canonical W
   const organization = nodeOf(parsed, "Organization");
 
   assert.isDefined(role);
+  assert.strictEqual(role?.inLanguage, "en");
   assert.deepStrictEqual(page?.mainEntity, { "@id": "https://www.remiforge.dev/sample-job#organization-role" });
   assert.deepStrictEqual(role?.member, { "@id": "https://www.remiforge.dev/#person" });
   assert.deepStrictEqual(role?.mainEntityOfPage, { "@id": "https://www.remiforge.dev/sample-job" });
@@ -302,11 +303,13 @@ it("sitemap home URL equals the homepage canonical exactly", () => {
   assert.notInclude(xml, "<loc>https://www.remiforge.dev</loc>");
 });
 
-it("sitemap success responses carry the XML content type and hour-long public caching", () => {
+it("sitemap success responses carry the XML content type, noindex, and hour-long public caching", () => {
   const ok = sitemapResponse(buildSitemapXml([sampleExperience]));
   assert.strictEqual(ok.status, 200);
   assert.strictEqual(ok.headers.get("Content-Type"), "application/xml; charset=utf-8");
   assert.strictEqual(ok.headers.get("Cache-Control"), "public, max-age=3600, stale-while-revalidate=86400");
+  // The sitemap itself is not a search result, but must stay crawlable
+  assert.strictEqual(ok.headers.get("X-Robots-Tag"), "noindex, follow");
 });
 
 it("sitemap percent-encodes unsafe slug characters in generated URLs", () => {
@@ -331,6 +334,8 @@ it("robots.txt allows content, disallows API endpoints, and advertises the sitem
   // Form/RPC endpoints are not content, so they stay out of crawl budgets
   assert.include(robots, "Disallow: /api");
   assert.include(robots, "Sitemap: https://www.remiforge.dev/sitemap.xml");
+  // Content signals state how accessed content may be reused: all three uses allowed site-wide
+  assert.include(robots, "Content-Signal: search=yes, ai-input=yes, ai-train=yes");
   // AI search, user-initiated browsing, and training crawlers each get an explicit named allowance
   for (const bot of [
     "OAI-SearchBot",

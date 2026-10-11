@@ -14,8 +14,22 @@ import { META_DESCRIPTION_LENGTH, PERSON_ID, SITE_NAME, WEBSITE_ID } from "../co
 // Education: the page itself plus attended schools, emitted on /education for GEO attribution
 export const educationJsonLd = ({ pageName, description, educationList, preferredLanguage }: EducationJsonLdInput) => {
   const url = absoluteUrl("/education");
-  // Stable fragment id per school: the person's alumniOf edges below reference them
-  const schoolId = (index: number) => `${url}#school-${index + 1}`;
+  const collectionId = `${url}#education-list`;
+
+  // One node per school, in list order; stable fragment ids let the person's alumniOf edges reference them
+  const schoolNodes = pipe(
+    educationList,
+    Array.map(({ name, info, location }, index) => ({
+      "@type": "EducationalOrganization",
+      "@id": `${url}#school-${index + 1}`,
+      name,
+      description: excerpt(info, META_DESCRIPTION_LENGTH),
+      address: location,
+      // The alumni edge ties each school back to the person, making "studied at" extractable
+      alumni: { "@id": PERSON_ID },
+    }))
+  );
+
   return jsonLdGraph([
     {
       "@type": "CollectionPage",
@@ -26,36 +40,25 @@ export const educationJsonLd = ({ pageName, description, educationList, preferre
       inLanguage: preferredLanguage,
       isPartOf: { "@id": WEBSITE_ID },
       breadcrumb: { "@id": `${url}#breadcrumb` },
-      // Dropped by JSON.stringify when the school list is empty, so the page never references a missing collection
-      mainEntity: educationList.length === 0 ? undefined : { "@id": `${url}#education-list` },
+      // Undefined is dropped by JSON.stringify: an empty list never references a missing collection
+      mainEntity: schoolNodes.length === 0 ? undefined : { "@id": collectionId },
     },
-    ...whenNonEmpty(educationList, (schools) =>
+    ...whenNonEmpty(schoolNodes, (nodes) =>
       collectionNode({
-        id: `${url}#education-list`,
+        id: collectionId,
         name: `${SITE_NAME} — ${matchPreferredLanguage(preferredLanguage, "Education", "Edukacja")}`,
         preferredLanguage,
-        parts: pipe(
-          schools,
-          Array.map(({ name, info, location }, index) => ({
-            "@type": "EducationalOrganization",
-            "@id": schoolId(index),
-            name,
-            description: excerpt(info, META_DESCRIPTION_LENGTH),
-            address: location,
-            // The alumni edge ties each school back to the person, making "studied at" extractable
-            alumni: { "@id": PERSON_ID },
-          }))
-        ),
+        parts: nodes,
       })
     ),
     // Person fragment that merges with the root graph's Person by @id: the reciprocal
     // edge lets extractors read "studied at" from either direction
-    ...whenNonEmpty(educationList, (schools) => ({
+    ...whenNonEmpty(schoolNodes, (nodes) => ({
       "@type": "Person",
       "@id": PERSON_ID,
       alumniOf: pipe(
-        schools,
-        Array.map((_, index) => ({ "@id": schoolId(index) }))
+        nodes,
+        Array.map(({ "@id": id }) => ({ "@id": id }))
       ),
     })),
     breadcrumb(preferredLanguage, "/education", pageName),

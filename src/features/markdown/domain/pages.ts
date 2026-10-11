@@ -18,6 +18,7 @@ import {
   CV_PL_HREF,
   EDUCATION_MD_HREF,
   LLMS_TXT_HREF,
+  SITE_NAME,
   SOCIAL_LINKS,
 } from "@/features/meta/domain";
 
@@ -36,7 +37,8 @@ interface PageOpening {
 }
 
 const pageOpening = ({ type, heading, seoTitle, description, canonical, lang }: PageOpening) => [
-  frontmatter({ title: BRANDED_TITLE(seoTitle), description, canonical, lang, type }),
+  // author mirrors the HTML author meta: authoritative attribution is a GEO signal
+  frontmatter({ title: BRANDED_TITLE(seoTitle), description, author: SITE_NAME, canonical, lang, type }),
   mdHeading(1, heading),
   ``,
   mdQuote(description),
