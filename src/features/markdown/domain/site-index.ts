@@ -1,6 +1,5 @@
 // services, features, and other libraries
 import { Array } from "effect";
-import { excerpt } from "@/features/experience/domain";
 import { absoluteUrl, experiencePath } from "@/features/meta/domain";
 import { buildExperienceMd } from "./experience";
 import { translateSource } from "./helpers";
@@ -26,15 +25,15 @@ import {
   JOB_TITLE,
   KNOWS_ABOUT,
   LLMS_FULL_TXT_HREF,
-  META_DESCRIPTION_LENGTH,
   SITEMAP_HREF,
+  SITE_LANGUAGE_NAMES,
   SITE_NAME,
   SOCIAL_LINKS,
   TITLE,
 } from "@/features/meta/domain";
 
 // Shared header of both AI indexes: site name, one-line value proposition, and full intro
-const siteHeader = (summary: string) => [`# ${SITE_NAME}`, ``, `> ${excerpt(TITLE, META_DESCRIPTION_LENGTH)}`, ``, DESCRIPTION, ``, summary, ``];
+const siteHeader = (summary: string) => [`# ${SITE_NAME}`, ``, `> ${TITLE}`, ``, DESCRIPTION, ``, summary, ``];
 
 // Machine-readable site index for AI systems (GEO). Every entry points at a `.md`
 // twin (never raw HTML) so crawlers fetch exactly one Markdown page at a time.
@@ -47,7 +46,7 @@ export const buildLlmsTxt = (experienceList: ExperienceList) =>
     `- Name: ${SITE_NAME}`,
     `- Role: ${JOB_TITLE} (self-taught)`,
     `- Based in: ${HOME_LOCALITY}, ${HOME_COUNTRY_NAME} (${HOME_COUNTRY})`,
-    `- Site languages: English and Polish`,
+    `- Site languages: ${Array.join(SITE_LANGUAGE_NAMES, " and ")}`,
     `- Focus: ${Array.join(KNOWS_ABOUT, ", ")}`,
     ``,
     `## Pages`,

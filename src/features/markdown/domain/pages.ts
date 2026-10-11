@@ -1,60 +1,52 @@
 // services, features, and other libraries
 import { Array, pipe } from "effect";
 import { msg } from "gt-tanstack-start";
-import { pageField } from "@/domain";
-import { excerpt } from "@/features/experience/domain";
-import { absoluteUrl } from "@/features/meta/domain";
 import { escapeMd, escapeMdInline, frontmatter, mdBulletList, mdEmptyMarker, mdHeading, mdQuote } from "./helpers";
 import { experienceLines } from "./listing";
+import { absoluteUrl, staticPageCopy } from "@/features/meta/domain";
 
 // types
 import type { ContactMdInput, EducationMdInput, HomeMdInput } from "./models";
-import type { PagePath, PageTitles, PreferredLanguage } from "@/domain";
+import type { PreferredLanguage } from "@/domain";
 
 // constants
 import {
+  BRANDED_TITLE,
   CERTIFICATES_HREF,
   CONTACT_MD_HREF,
   CV_EN_HREF,
   CV_PL_HREF,
-  DESCRIPTION,
   EDUCATION_MD_HREF,
   LLMS_TXT_HREF,
-  META_DESCRIPTION_LENGTH,
   SOCIAL_LINKS,
-  TITLE,
-  brandedTitle,
 } from "@/features/meta/domain";
 
 // Profile URLs stay single-sourced: the same constants feed the HTML page and JSON-LD
 const [gitHubLink, linkedInLink] = SOCIAL_LINKS;
 
-// Localized heading + intro and the canonical URL for one static page twin
-const pageCopy = (pageTitles: PageTitles, pagePath: PagePath, fallbackHeading: string, fallbackIntro: string) => ({
-  title: pageField(pageTitles, pagePath, "heading", fallbackHeading),
-  intro: pageField(pageTitles, pagePath, "intro", fallbackIntro),
-  canonical: absoluteUrl(pagePath),
-});
-
-// Shared opening block for page twins: frontmatter mirrors <head> meta plus a machine-classifiable entry type
+// Shared opening block for page twins: frontmatter mirrors <head> meta plus a machine-classifiable entry type.
+// Copy comes from staticPageCopy — the exact resolution the HTML head uses — so .md and HTML meta never drift
 interface PageOpening {
   readonly type: "overview" | "education" | "contact";
   readonly title: string;
-  readonly intro: string;
+  readonly description: string;
   readonly canonical: string;
   readonly lang: PreferredLanguage;
 }
 
-const pageOpening = ({ type, title, intro, canonical, lang }: PageOpening) => {
-  const description = excerpt(intro, META_DESCRIPTION_LENGTH);
-  return [frontmatter({ title: brandedTitle(title), description, canonical, lang, type }), mdHeading(1, title), ``, mdQuote(description), ``];
-};
+const pageOpening = ({ type, title, description, canonical, lang }: PageOpening) => [
+  frontmatter({ title: BRANDED_TITLE(title), description, canonical, lang, type }),
+  mdHeading(1, title),
+  ``,
+  mdQuote(description),
+  ``,
+];
 
 export const buildHomeMd = ({ pageTitles, experienceList, preferredLanguage, translate }: HomeMdInput) => {
-  const { title, intro, canonical } = pageCopy(pageTitles, "/", TITLE, DESCRIPTION);
+  const { title, intro, description, canonical } = staticPageCopy(pageTitles, "/");
 
   return [
-    ...pageOpening({ type: "overview", title, intro, canonical, lang: preferredLanguage }),
+    ...pageOpening({ type: "overview", title, description, canonical, lang: preferredLanguage }),
     escapeMd(intro),
     ``,
     mdHeading(2, translate(msg("Experience"))),
@@ -77,7 +69,7 @@ export const buildHomeMd = ({ pageTitles, experienceList, preferredLanguage, tra
 };
 
 export const buildEducationMd = ({ pageTitles, educationList, preferredLanguage, translate }: EducationMdInput) => {
-  const { title, intro, canonical } = pageCopy(pageTitles, "/education", "Education", "Education & certificates.");
+  const { title, intro, description, canonical } = staticPageCopy(pageTitles, "/education");
 
   // One section per school: heading, facts list, then the full prose description
   const schools = pipe(
@@ -95,7 +87,7 @@ export const buildEducationMd = ({ pageTitles, educationList, preferredLanguage,
   );
 
   return [
-    ...pageOpening({ type: "education", title, intro, canonical, lang: preferredLanguage }),
+    ...pageOpening({ type: "education", title, description, canonical, lang: preferredLanguage }),
     escapeMd(intro),
     ``,
     schools === "" ? mdEmptyMarker(translate) : schools,
@@ -112,10 +104,10 @@ export const buildEducationMd = ({ pageTitles, educationList, preferredLanguage,
 };
 
 export const buildContactMd = ({ pageTitles, preferredLanguage, translate }: ContactMdInput) => {
-  const { title, intro, canonical } = pageCopy(pageTitles, "/contact", "Contact", "Get in touch via the contact form.");
+  const { title, intro, description, canonical } = staticPageCopy(pageTitles, "/contact");
 
   return [
-    ...pageOpening({ type: "contact", title, intro, canonical, lang: preferredLanguage }),
+    ...pageOpening({ type: "contact", title, description, canonical, lang: preferredLanguage }),
     escapeMd(intro),
     ``,
     mdHeading(2, translate(msg("Channels"))),

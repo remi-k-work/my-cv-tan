@@ -1,12 +1,12 @@
 // services, features, and other libraries
-import { Option, Record, String, pipe } from "effect";
+import { Option, String, pipe } from "effect";
 import { matchPreferredLanguage } from "@/domain";
 
 // types
-import type { PagePath, PreferredLanguage } from "@/domain";
+import type { PreferredLanguage } from "@/domain";
 
 // constants
-import { CONTACT_MD_HREF, CV_EN_HREF, CV_PL_HREF, EDUCATION_MD_HREF, HOME_MD_HREF, LLMS_TXT_HREF, SITE_URL } from "./constants";
+import { CV_EN_HREF, CV_PL_HREF, LLMS_TXT_HREF, SITE_URL } from "./constants";
 
 // --- URL building ---
 
@@ -42,10 +42,3 @@ export const markdownAlternateLink = (mdPath: string) => ({ rel: "alternate", ty
 
 // llms.txt discovery link, emitted on every page head for GEO crawlers
 export const llmsAlternateLink = () => ({ rel: "alternate", type: "text/plain", title: "llms.txt", href: absoluteUrl(LLMS_TXT_HREF) }) as const;
-
-// The Markdown twin href of every page: exactly one machine-readable twin per HTML page
-export const MARKDOWN_TWIN_HREF: Record.ReadonlyRecord<PagePath, string> = {
-  "/": HOME_MD_HREF,
-  "/education": EDUCATION_MD_HREF,
-  "/contact": CONTACT_MD_HREF,
-};

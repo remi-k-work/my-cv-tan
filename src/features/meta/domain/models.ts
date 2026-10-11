@@ -34,18 +34,25 @@ export interface LocalizedCopy {
   readonly preferredLanguage: PreferredLanguage;
 }
 
+// Resolved static-page copy: full intro for page bodies, capped description for meta and JSON-LD
+export interface StaticPageCopy {
+  readonly title: string;
+  readonly intro: string;
+  readonly description: string;
+  readonly canonical: string;
+}
+
 // Page heads take the locale resolved from the root match (see language.ts)
 export interface PageHeadInput {
   readonly pageTitles: PageTitles;
   readonly preferredLanguage: PreferredLanguage;
 }
 
-// Shared input of the three static page heads: each page resolves its localized copy and
-// feeds it to its own JSON-LD builder, which closes over the page-specific data
+// Shared input of the three static page heads: pagePath selects the STATIC_PAGES entry
+// (twin href + fallback copy); the page supplies its own JSON-LD builder, which closes
+// over the page-specific data and is fed with the resolved localized copy
 export interface StaticPageHeadInput extends PageHeadInput {
   readonly pagePath: PagePath;
-  readonly fallbackHeading: string;
-  readonly fallbackIntro: string;
   readonly jsonLd: (copy: LocalizedCopy) => JsonLdScript;
 }
 

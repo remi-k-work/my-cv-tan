@@ -41,15 +41,16 @@ const jsonLdGraph = (nodes: ReadonlyArray<unknown>): JsonLdScript => jsonLdScrip
 // List-derived nodes are only meaningful when the list decoded and is non-empty
 const whenNonEmpty = <T, N>(list: ReadonlyArray<T>, build: (items: ReadonlyArray<T>) => N): ReadonlyArray<N> => (list.length === 0 ? [] : [build(list)]);
 
-// Shared two-level trail: every subpage hangs directly off the homepage
-const breadcrumb = (path: string, name: string) =>
+// Shared two-level trail: every subpage hangs directly off the homepage. Crumb names follow
+// the page language, matching the localized copy Google and AI systems extract
+const breadcrumb = (preferredLanguage: PreferredLanguage, path: string, name: string) =>
   ({
     "@type": "BreadcrumbList",
     // Pages reference the trail by @id, associating it with the page node the way Google expects
     "@id": `${absoluteUrl(path)}#breadcrumb`,
     itemListElement: [
       // Byte-equal to the homepage canonical so structured data and canonical signals agree
-      { "@type": "ListItem", position: 1, name: "Home", item: absoluteUrl("/") },
+      { "@type": "ListItem", position: 1, name: matchPreferredLanguage(preferredLanguage, "Home", "Strona główna"), item: absoluteUrl("/") },
       { "@type": "ListItem", position: 2, name, item: absoluteUrl(path) },
     ],
   }) as const;
@@ -130,7 +131,8 @@ export const homeJsonLd = ({ title, description, experienceList, preferredLangua
     {
       "@type": "ProfilePage",
       "@id": PROFILE_ID,
-      url: SITE_URL,
+      // Byte-equal to the homepage canonical (trailing slash), like every other home URL
+      url: absoluteUrl("/"),
       name: title,
       description,
       inLanguage: preferredLanguage,
@@ -205,7 +207,7 @@ export const educationJsonLd = ({ title, description, educationList, preferredLa
         Array.map((_, index) => ({ "@id": schoolId(index) }))
       ),
     })),
-    breadcrumb("/education", title),
+    breadcrumb(preferredLanguage, "/education", title),
   ]);
 };
 
@@ -239,7 +241,7 @@ export const contactJsonLd = ({ title, description, preferredLanguage }: Localiz
       url,
       availableLanguage: [...SITE_LANGUAGES],
     },
-    breadcrumb("/contact", title),
+    breadcrumb(preferredLanguage, "/contact", title),
   ]);
 };
 
@@ -307,5 +309,5 @@ export const experienceJsonLd = ({ experience, preferredLanguage }: ExperienceHe
       ]
     : [];
 
-  return jsonLdGraph([page, ...organization, item, breadcrumb(path, headline)]);
+  return jsonLdGraph([page, ...organization, item, breadcrumb(preferredLanguage, path, headline)]);
 };

@@ -22,7 +22,7 @@ export const AVATAR_IMAGE = `${SITE_URL}/avatar.jpg`;
 export const GLOBAL_SOCIAL_IMAGE = { src: GLOBAL_IMAGE, mime: "image/jpeg", width: 1200, height: 630 } as const;
 
 // Document title template shared by the HTML <title> and every Markdown frontmatter
-export const brandedTitle = (title: string) => `${SITE_NAME} ● ${title}`;
+export const BRANDED_TITLE = (title: string) => `${SITE_NAME} ● ${title}`;
 
 export const SOCIAL_LINKS = ["https://github.com/remi-k-work", "https://linkedin.com/in/remi-k-work"] as const;
 
@@ -38,6 +38,9 @@ export const KNOWS_ABOUT = ["Web Development", "TypeScript", "React", "Next.js",
 
 // Supported content languages: single source for WebSite.inLanguage and Person.knowsLanguage
 export const SITE_LANGUAGES = ["en", "pl"] as const;
+
+// Prose names for the languages above, single-sourced for the AI-facing copy in llms.txt
+export const SITE_LANGUAGE_NAMES = ["English", "Polish"] as const;
 
 // Stable JSON-LD @graph node ids: page-level structured data references these entities
 export const WEBSITE_ID = `${SITE_URL}/#website`;

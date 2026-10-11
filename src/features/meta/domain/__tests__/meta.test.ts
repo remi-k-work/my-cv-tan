@@ -226,8 +226,8 @@ it("contact structured data describes the visible ContactPage inside a breadcrum
   assert.deepStrictEqual(contactPoint?.availableLanguage, ["en", "pl"]);
   // Two-level breadcrumb mirrors the site structure for SERP display and AI extraction
   const trail = nodeOf(graph, "BreadcrumbList");
-  // The Home crumb must byte-match the homepage canonical
-  assert.deepStrictEqual(listItems(trail)?.[0], { "@type": "ListItem", position: 1, name: "Home", item: "https://www.remiforge.dev/" });
+  // The Home crumb must byte-match the homepage canonical and follow the page language
+  assert.deepStrictEqual(listItems(trail)?.[0], { "@type": "ListItem", position: 1, name: "Strona główna", item: "https://www.remiforge.dev/" });
   assert.deepStrictEqual(listItems(trail)?.[1], {
     "@type": "ListItem",
     position: 2,
