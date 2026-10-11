@@ -1,4 +1,4 @@
-// One JSON-LD module per page; core.ts holds the shared script, graph and breadcrumb builders
+// One JSON-LD module per page; core.ts holds the shared script, graph, collection and breadcrumb builders
 export * from "./core";
 export * from "./site";
 export * from "./home";

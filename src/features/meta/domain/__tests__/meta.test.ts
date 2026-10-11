@@ -23,6 +23,8 @@ import { PERSON_DESCRIPTION, SITE_DESCRIPTION } from "../constants";
 const graphOf = (children: string | undefined) => (JSON.parse(children ?? "{}") as { "@graph"?: Array<Record<string, unknown>> })["@graph"] ?? [];
 const nodeOf = (graph: ReadonlyArray<Record<string, unknown>>, type: string) => graph.find((node) => node["@type"] === type);
 const listItems = (node: Record<string, unknown> | undefined) => (node as { itemListElement?: Array<Record<string, unknown>> } | undefined)?.itemListElement;
+// Grouped page/school references carried by Collection nodes (the non-carousel replacement for ItemList)
+const collectionParts = (node: Record<string, unknown> | undefined) => (node as { hasPart?: Array<Record<string, unknown>> } | undefined)?.hasPart;
 
 // types
 import type { EducationList } from "@/features/education/domain";
@@ -202,42 +204,54 @@ it("localized metadata uses authored SEO copy and emits canonical plus Markdown 
   assert.strictEqual(head.links?.[0]?.href, "https://www.remiforge.dev/");
 });
 
-it("home structured data is a first-party ProfilePage linking site entities plus the work ItemList", () => {
+it("home structured data is a first-party ProfilePage linking site entities plus grouped content collections", () => {
   const head = homeHead({ pageTitles: stablePageTitles, experienceList: [sampleExperience], preferredLanguage: "en" });
   const graph = graphOf(head.scripts?.[0]?.children);
   const profile = nodeOf(graph, "ProfilePage");
   assert.deepStrictEqual(profile?.mainEntity, { "@id": "https://www.remiforge.dev/#person" });
   assert.deepStrictEqual(profile?.isPartOf, { "@id": "https://www.remiforge.dev/#website" });
-  // List nodes carry stable @ids like every other entity in the graph; the sample is a
-  // project, so the employment list is absent and only the portfolio list renders
-  assert.strictEqual(nodeOf(graph, "ItemList")?.["@id"], "https://www.remiforge.dev/#portfolio-list");
-  assert.strictEqual(listItems(nodeOf(graph, "ItemList"))?.[0]?.url, "https://www.remiforge.dev/sample-role");
-  assert.strictEqual(nodeOf(graph, "ItemList")?.inLanguage, "en");
-  // Explicit item counts give AI systems a checkable list size
-  assert.strictEqual(nodeOf(graph, "ItemList")?.numberOfItems, 1);
+  // Collection nodes carry stable @ids like every other entity in the graph; the sample is a
+  // project, so the employment group is absent and only the portfolio collection renders
+  const portfolio = nodeOf(graph, "Collection");
+  assert.strictEqual(portfolio?.["@id"], "https://www.remiforge.dev/#portfolio-list");
+  assert.strictEqual(portfolio?.inLanguage, "en");
+  assert.strictEqual(portfolio?.name, "Portfolio Projects");
+  // Each part references the detail page with the same translated headline the page shows, in slider order
+  assert.deepStrictEqual(collectionParts(portfolio), [{ "@type": "WebPage", url: "https://www.remiforge.dev/sample-role", name: "Full-Stack Developer" }]);
 
-  // An empty portfolio still emits the ProfilePage graph, never a misleading empty ItemList
+  // An empty portfolio still emits the ProfilePage graph, never a misleading empty Collection
   const emptyGraph = graphOf(homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" }).scripts?.[0]?.children);
   assert.isTrue(emptyGraph.some((node) => node["@type"] === "ProfilePage"));
-  assert.isFalse(emptyGraph.some((node) => node["@type"] === "ItemList"));
+  assert.isFalse(emptyGraph.some((node) => node["@type"] === "Collection"));
 });
 
-it("home structured data splits employment from portfolio projects with localized list names", () => {
+it("no page head emits an ItemList: Google's Carousel beta only supports Course, Movie, Recipe and Restaurant", () => {
+  const heads = [
+    homeHead({ pageTitles: stablePageTitles, experienceList: [sampleExperience], preferredLanguage: "en" }),
+    educationHead({ pageTitles: stablePageTitles, educationList: sampleEducation, preferredLanguage: "en" }),
+    contactHead({ pageTitles: stablePageTitles, preferredLanguage: "en" }),
+    experienceHead({ experience: sampleExperience, preferredLanguage: "en" }),
+  ];
+  // Any ItemList on this site could only ever surface as an invalid carousel candidate
+  for (const head of heads) assert.notInclude(JSON.stringify(head.scripts), '"@type":"ItemList"');
+});
+
+it("home structured data splits employment from portfolio projects with localized collection names", () => {
   const mixed = [sampleExperience, { ...sampleExperience, type: "e" as const, slug: "sample-job" }];
   const graph = graphOf(homeHead({ pageTitles: stablePageTitles, experienceList: mixed, preferredLanguage: "pl" }).scripts?.[0]?.children);
-  // Two labeled lists mirror the HTML page and .md twin grouping; positions restart per list
-  const lists = graph.filter((node) => node["@type"] === "ItemList");
+  // Two labeled collections mirror the HTML page and .md twin grouping, in visible order
+  const collections = graph.filter((node) => node["@type"] === "Collection");
   assert.deepStrictEqual(
-    lists.map((node) => node.name),
+    collections.map((node) => node.name),
     ["Doświadczenie", "Projekty do Portfolio"]
   );
   assert.deepStrictEqual(
-    lists.map((node) => node["@id"]),
+    collections.map((node) => node["@id"]),
     ["https://www.remiforge.dev/#experience-list", "https://www.remiforge.dev/#portfolio-list"]
   );
-  assert.strictEqual(listItems(lists[0])?.[0]?.url, "https://www.remiforge.dev/sample-job");
-  assert.strictEqual(listItems(lists[1])?.[0]?.url, "https://www.remiforge.dev/sample-role");
-  assert.strictEqual(lists[0]?.inLanguage, "pl");
+  assert.strictEqual(collectionParts(collections[0])?.[0]?.url, "https://www.remiforge.dev/sample-job");
+  assert.strictEqual(collectionParts(collections[1])?.[0]?.url, "https://www.remiforge.dev/sample-role");
+  assert.strictEqual(collections[0]?.inLanguage, "pl");
 });
 
 it("contact structured data describes the visible ContactPage inside a breadcrumb graph", () => {
@@ -343,7 +357,7 @@ it("education structured data describes attended schools, not credentials, insid
   assert.deepStrictEqual(collection?.isPartOf, { "@id": "https://www.remiforge.dev/#website" });
   assert.deepStrictEqual(collection?.breadcrumb, { "@id": "https://www.remiforge.dev/education#breadcrumb" });
   assert.deepStrictEqual(collection?.mainEntity, { "@id": "https://www.remiforge.dev/education#education-list" });
-  const school = (listItems(nodeOf(graph, "ItemList"))?.[0] as { item?: Record<string, unknown> } | undefined)?.item;
+  const school = collectionParts(nodeOf(graph, "Collection"))?.[0];
   assert.strictEqual(school?.["@type"], "EducationalOrganization");
   assert.strictEqual(school?.name, "Pratt Institute");
   // Each school has a stable fragment id the person's alumniOf edges reference
@@ -355,10 +369,10 @@ it("education structured data describes attended schools, not credentials, insid
   assert.notInclude(JSON.stringify(graph), "EducationalOccupationalCredential");
   assert.strictEqual(listItems(nodeOf(graph, "BreadcrumbList"))?.[1]?.name, "Stable education title");
 
-  // An empty education list keeps the page and trail without referencing a missing list
+  // An empty education list keeps the page and trail without referencing a missing collection
   const empty = graphOf(educationHead({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "en" }).scripts?.[0]?.children);
   assert.isTrue(empty.some((node) => node["@type"] === "CollectionPage"));
-  assert.isFalse(empty.some((node) => node["@type"] === "ItemList"));
+  assert.isFalse(empty.some((node) => node["@type"] === "Collection"));
   assert.isFalse(empty.some((node) => node["@type"] === "Person"));
   assert.isUndefined(nodeOf(empty, "CollectionPage")?.mainEntity);
 });
