@@ -60,6 +60,9 @@ it("experienceHead omits unsupported publication dates and keyword meta", () => 
 
 it("root metadata defaults to noindex and complete page heads explicitly allow indexing", () => {
   assert.include(JSON.stringify(ROOT_HEAD.meta), '"content":"noindex, follow"');
+  // iOS and high-DPI search previews resolve the touch icon site-wide, alongside the SVG favicon
+  assert.include(JSON.stringify(ROOT_HEAD.links), '"rel":"apple-touch-icon"');
+  assert.include(JSON.stringify(ROOT_HEAD.links), "https://www.remiforge.dev/avatar.jpg");
 
   const indexable = homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" });
   // TanStack reads only top-level meta/links off head results (load-server.js): the shape must stay flat
@@ -193,8 +196,14 @@ it("home structured data splits employment from portfolio projects with localize
   const graph = graphOf(homeHead({ pageTitles: stablePageTitles, experienceList: mixed, preferredLanguage: "pl" }).scripts?.[0]?.children);
   // Two labeled lists mirror the HTML page and .md twin grouping; positions restart per list
   const lists = graph.filter((node) => node["@type"] === "ItemList");
-  assert.deepStrictEqual(lists.map((node) => node.name), ["Doświadczenie", "Projekty do Portfolio"]);
-  assert.deepStrictEqual(lists.map((node) => node["@id"]), ["https://www.remiforge.dev/#experience-list", "https://www.remiforge.dev/#portfolio-list"]);
+  assert.deepStrictEqual(
+    lists.map((node) => node.name),
+    ["Doświadczenie", "Projekty do Portfolio"]
+  );
+  assert.deepStrictEqual(
+    lists.map((node) => node["@id"]),
+    ["https://www.remiforge.dev/#experience-list", "https://www.remiforge.dev/#portfolio-list"]
+  );
   assert.strictEqual(listItems(lists[0])?.[0]?.url, "https://www.remiforge.dev/sample-job");
   assert.strictEqual(listItems(lists[1])?.[0]?.url, "https://www.remiforge.dev/sample-role");
   assert.strictEqual(lists[0]?.inLanguage, "pl");

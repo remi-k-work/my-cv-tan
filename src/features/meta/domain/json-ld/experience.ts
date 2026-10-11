@@ -1,0 +1,78 @@
+// services, features, and other libraries
+import { Option, pipe } from "effect";
+import { experienceHeadline, excerpt } from "@/features/experience/domain";
+import { breadcrumb, jsonLdGraph } from "./core";
+import { absoluteUrl, experienceImageUrl, experiencePath } from "../url";
+
+// types
+import type { ExperienceHeadInput } from "../models";
+
+// constants
+import { GLOBAL_IMAGE, META_DESCRIPTION_LENGTH, PERSON_ID, PUBLISHER_ID, WEBSITE_ID } from "../constants";
+
+// Experience / project details: employment is a role at an organization, a project a creative work
+export const experienceJsonLd = ({ experience, preferredLanguage }: ExperienceHeadInput) => {
+  const { type, slug, role, company, txt, imageName, skillsUsed } = experience;
+  // One named branch instead of three scattered ternaries
+  const employment = type === "e";
+  const path = experiencePath(slug);
+  const url = absoluteUrl(path);
+  const headline = experienceHeadline(experience, preferredLanguage);
+  // Distinct fragment ids keep the two detail kinds separately addressable
+  const itemId = `${url}#${employment ? "organization-role" : "project"}`;
+  const description = excerpt(txt, META_DESCRIPTION_LENGTH);
+  const image = pipe(
+    experienceImageUrl(imageName),
+    Option.getOrElse(() => GLOBAL_IMAGE)
+  );
+
+  const page = {
+    "@type": "WebPage",
+    "@id": url,
+    url,
+    name: headline,
+    description,
+    inLanguage: preferredLanguage,
+    isPartOf: { "@id": WEBSITE_ID },
+    breadcrumb: { "@id": `${url}#breadcrumb` },
+    mainEntity: { "@id": itemId },
+  };
+
+  // The page's main entity: a role for jobs, a creative work for projects
+  const item = employment
+    ? {
+        "@type": "OrganizationRole",
+        "@id": itemId,
+        roleName: role,
+        description,
+        member: { "@id": PERSON_ID },
+        mainEntityOfPage: { "@id": url },
+      }
+    : {
+        "@type": "CreativeWork",
+        "@id": itemId,
+        name: role,
+        description,
+        image,
+        url,
+        mainEntityOfPage: { "@id": url },
+        inLanguage: preferredLanguage,
+        creator: { "@id": PERSON_ID },
+        publisher: { "@id": PUBLISHER_ID },
+        keywords: skillsUsed.join(", "),
+      };
+
+  // Employment pages also describe the employer, cross-referenced with the role
+  const organization = employment
+    ? [
+        {
+          "@type": "Organization",
+          "@id": `${url}#organization`,
+          name: company,
+          member: { "@id": itemId },
+        },
+      ]
+    : [];
+
+  return jsonLdGraph([page, ...organization, item, breadcrumb(preferredLanguage, path, headline)]);
+};

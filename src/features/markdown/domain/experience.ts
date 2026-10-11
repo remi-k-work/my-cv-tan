@@ -1,6 +1,7 @@
 // services, features, and other libraries
 import { Array, Option, pipe } from "effect";
 import { msg } from "gt-tanstack-start";
+import { matchPreferredLanguage } from "@/domain";
 import { experienceHeadline, excerpt } from "@/features/experience/domain";
 import { absoluteUrl, experiencePath } from "@/features/meta/domain";
 import { escapeMd, escapeMdInline, frontmatter, mdBulletList, mdExternalLink, mdHeading, mdQuote } from "./helpers";
@@ -84,13 +85,13 @@ export const buildNotFoundMd = ({ slug, preferredLanguage, translate }: BuildNot
   const title = translate(msg("Not Found"));
   const safeSlug = escapeMdInline(slug);
   const safePath = escapeMdInline(experiencePath(slug));
-  const description = preferredLanguage === "pl" ? `Nie znaleziono strony dla identyfikatora "${safeSlug}".` : `No page for slug "${safeSlug}".`;
+  const description = matchPreferredLanguage(preferredLanguage, `No page for slug "${safeSlug}".`, `Nie znaleziono strony dla identyfikatora "${safeSlug}".`);
 
   return [
     frontmatter({ title, description, lang: preferredLanguage }),
     mdHeading(1, title),
     ``,
-    preferredLanguage === "pl" ? `Dokument Markdown dla adresu ${safePath} nie istnieje.` : `No Markdown document exists for ${safePath}.`,
+    matchPreferredLanguage(preferredLanguage, `No Markdown document exists for ${safePath}.`, `Dokument Markdown dla adresu ${safePath} nie istnieje.`),
     ``,
     `${translate(msg("See"))} [${translate(msg("Home page"))}](${absoluteUrl(HOME_MD_HREF)}) ${translate(msg("or"))} [llms.txt](${absoluteUrl(LLMS_TXT_HREF)}).`,
     ``,

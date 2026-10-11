@@ -4,7 +4,7 @@ import { socialMeta } from "./social";
 import { websitePersonJsonLd } from "./json-ld";
 
 // constants
-import { GLOBAL_SOCIAL_IMAGE, SITE_DESCRIPTION, SITE_NAME, TITLE, BRANDED_TITLE } from "./constants";
+import { AVATAR_IMAGE, GLOBAL_SOCIAL_IMAGE, SITE_DESCRIPTION, SITE_NAME, TITLE, BRANDED_TITLE } from "./constants";
 
 // Root head: every page inherits this, so it must ONLY contain site-wide tags
 // Page-specific tags (canonical, hreflang, Markdown alternate) live in each route's
@@ -28,6 +28,8 @@ export const ROOT_HEAD = {
   ],
   links: [
     { rel: "icon", href: "/icon.svg", type: "image/svg+xml" },
+    // iOS "Add to Home Screen" and high-DPI search previews use the touch icon, not the SVG favicon
+    { rel: "apple-touch-icon", href: AVATAR_IMAGE },
     // Deliberately no canonical / hreflang / Markdown alternate here (see note above)
     // The llms.txt index is site-wide and identical on every page, so it safely lives here
     llmsAlternateLink(),
