@@ -51,8 +51,8 @@ export const txtUnavailableResponse = (body: string) => unavailableResponse(body
 
 // Markdown twin pipeline recovery: a data failure logs, then answers with the non-cacheable 503
 export const markdownDataResponse = (preferredLanguage: PreferredLanguage, translate: Translate, document: Effect.Effect<Response, RequiredDataError>) =>
-  recoverDataFailure("[MARKDOWN]", mdUnavailableResponse(unavailableMarkdownBody(translate), preferredLanguage))(document);
+  recoverDataFailure("[MARKDOWN]", () => mdUnavailableResponse(unavailableMarkdownBody(translate), preferredLanguage))(document);
 
 // Plain-text discovery documents (llms.txt, llms-full.txt): same recovery, plain-text 503 with per-document copy
 export const textDataResponse = (logPrefix: string, unavailableBody: string, document: Effect.Effect<Response, RequiredDataError>) =>
-  recoverDataFailure(logPrefix, txtUnavailableResponse(unavailableBody))(document);
+  recoverDataFailure(logPrefix, () => txtUnavailableResponse(unavailableBody))(document);

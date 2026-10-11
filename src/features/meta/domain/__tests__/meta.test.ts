@@ -65,6 +65,10 @@ it("root metadata defaults to noindex and complete page heads explicitly allow i
   // iOS and high-DPI search previews resolve the touch icon site-wide, alongside the SVG favicon
   assert.include(JSON.stringify(ROOT_HEAD.links), '"rel":"apple-touch-icon"');
   assert.include(JSON.stringify(ROOT_HEAD.links), "https://www.remiforge.dev/avatar.jpg");
+  // rel="me" identity links mirror the JSON-LD sameAs profiles for verifiers
+  assert.include(JSON.stringify(ROOT_HEAD.links), '"rel":"me"');
+  assert.include(JSON.stringify(ROOT_HEAD.links), "https://github.com/remi-k-work");
+  assert.include(JSON.stringify(ROOT_HEAD.links), "https://linkedin.com/in/remi-k-work");
 
   const indexable = homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" });
   // TanStack reads only top-level meta/links off head results (load-server.js): the shape must stay flat
@@ -147,6 +151,23 @@ it("employment details use OrganizationRole linked to the person and canonical W
   assert.deepStrictEqual(organization?.member, { "@id": "https://www.remiforge.dev/sample-job#organization-role" });
   assert.notInclude(JSON.stringify(role), "startDate");
   assert.notInclude(JSON.stringify(role), "endDate");
+  // Employment pages render screenshots too, so their WebPage claims the same main image
+  assert.deepStrictEqual(page?.primaryImageOfPage, { "@type": "ImageObject", url: "https://www.remiforge.dev/images/01-a.webp", width: 1600, height: 900 });
+});
+
+it("experience pages claim the screenshot as their main image only when one exists", () => {
+  const withShot = graphOf(experienceHead({ experience: sampleExperience, preferredLanguage: "en" }).scripts?.[0]?.children);
+  assert.deepStrictEqual(nodeOf(withShot, "WebPage")?.primaryImageOfPage, {
+    "@type": "ImageObject",
+    url: "https://www.remiforge.dev/images/01-a.webp",
+    width: 1600,
+    height: 900,
+  });
+
+  // No screenshot on the page: no main-image claim, and og:image falls back to the share banner
+  const bareHead = experienceHead({ experience: { ...sampleExperience, imageName: "" }, preferredLanguage: "en" });
+  assert.isUndefined(nodeOf(graphOf(bareHead.scripts?.[0]?.children), "WebPage")?.primaryImageOfPage);
+  assert.include(JSON.stringify(bareHead.meta), "https://www.remiforge.dev/opengraph-image.jpg");
 });
 
 it("experience URL construction percent-encodes one slug consistently in canonical, social, alternate and JSON-LD URLs", () => {

@@ -4,7 +4,7 @@ import { removeResponseHeader } from "@tanstack/react-start/server";
 // services, features, and other libraries
 import { Context, Effect, Layer, Option } from "effect";
 import { translateForLanguage } from "@/lib/gt-translations";
-import { requireData, RequiredDataError, requestPreferredLanguage } from "@/features/data/domain";
+import { RequiredDataError, requestPreferredLanguage, requireDataFrom } from "@/features/data/domain";
 import { Data } from "@/features/data/services/data";
 import { absoluteUrl, experiencePath, txtResponse } from "@/features/meta/domain";
 import {
@@ -28,10 +28,6 @@ import {
 // types
 import type { PreferredLanguage, Translate } from "@/domain";
 
-// Fetch + require in one step: every twin renders from the stable content bundle in the requested language
-const required = <A>(maybe: Effect.Effect<Option.Option<A>>, dataset: string): Effect.Effect<A, RequiredDataError> =>
-  Effect.flatMap(maybe, (option) => requireData(option, dataset));
-
 // One home for every AI-facing document pipeline (GEO): language resolution, data
 // fetch, Markdown rendering and Response construction. Routes only wire named handlers
 export class Markdown extends Context.Service<Markdown>()("Markdown", {
@@ -39,9 +35,9 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
     const data = yield* Data;
 
     // Dataset shortcuts used by every twin: fetch + require in the requested language
-    const pageTitles = (lang: PreferredLanguage) => required(data.stablePageTitles(Option.some(lang)), "page titles");
-    const experiences = (lang: PreferredLanguage) => required(data.experienceList(Option.some(lang)), "experience list");
-    const schools = (lang: PreferredLanguage) => required(data.educationList(Option.some(lang)), "education list");
+    const pageTitles = (lang: PreferredLanguage) => requireDataFrom(data.stablePageTitles(Option.some(lang)), "page titles");
+    const experiences = (lang: PreferredLanguage) => requireDataFrom(data.experienceList(Option.some(lang)), "experience list");
+    const schools = (lang: PreferredLanguage) => requireDataFrom(data.educationList(Option.some(lang)), "education list");
 
     // Shared document pipeline: language negotiation, translation lookup, unavailable-data recovery and
     // explicit-variant cache policy live here so each twin below stays a thin fetch-and-render step
