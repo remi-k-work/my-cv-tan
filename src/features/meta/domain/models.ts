@@ -27,16 +27,19 @@ export interface JsonLdScript {
   readonly children: string;
 }
 
-// Localized copy facts a page resolves once and shares between its meta block and JSON-LD graph
+// Visible page name and summary shared by its JSON-LD node and breadcrumb
 export interface LocalizedCopy {
-  readonly title: string;
+  readonly pageName: string;
   readonly description: string;
   readonly preferredLanguage: PreferredLanguage;
 }
 
-// Resolved static-page copy: full intro for page bodies, capped description for meta and JSON-LD
+// Resolved static-page copy: visible copy plus authored search metadata
 export interface StaticPageCopy {
-  readonly title: string;
+  // Visible page heading stays tied to the rendered page copy
+  readonly heading: string;
+  // Search and share title is authored separately from the longer body heading
+  readonly seoTitle: string;
   readonly intro: string;
   readonly description: string;
   readonly canonical: string;

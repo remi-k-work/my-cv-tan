@@ -12,7 +12,7 @@ import type { EducationJsonLdInput } from "../models";
 import { META_DESCRIPTION_LENGTH, PERSON_ID, SITE_NAME, WEBSITE_ID } from "../constants";
 
 // Education: the page itself plus attended schools, emitted on /education for GEO attribution
-export const educationJsonLd = ({ title, description, educationList, preferredLanguage }: EducationJsonLdInput) => {
+export const educationJsonLd = ({ pageName, description, educationList, preferredLanguage }: EducationJsonLdInput) => {
   const url = absoluteUrl("/education");
   // Stable fragment id per school: the person's alumniOf edges below reference them
   const schoolId = (index: number) => `${url}#school-${index + 1}`;
@@ -21,7 +21,7 @@ export const educationJsonLd = ({ title, description, educationList, preferredLa
       "@type": "CollectionPage",
       "@id": url,
       url,
-      name: title,
+      name: pageName,
       description,
       inLanguage: preferredLanguage,
       isPartOf: { "@id": WEBSITE_ID },
@@ -62,6 +62,6 @@ export const educationJsonLd = ({ title, description, educationList, preferredLa
         Array.map((_, index) => ({ "@id": schoolId(index) }))
       ),
     })),
-    breadcrumb(preferredLanguage, "/education", title),
+    breadcrumb(preferredLanguage, "/education", pageName),
   ]);
 };

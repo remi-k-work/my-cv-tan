@@ -37,14 +37,14 @@ const experienceItemList = (id: string, name: string, type: Experience["type"], 
   );
 
 // Home: a first-party ProfilePage about the author, plus one labeled list per experience kind
-export const homeJsonLd = ({ title, description, experienceList, preferredLanguage }: HomeJsonLdInput) =>
+export const homeJsonLd = ({ pageName, description, experienceList, preferredLanguage }: HomeJsonLdInput) =>
   jsonLdGraph([
     {
       "@type": "ProfilePage",
       "@id": PROFILE_ID,
       // Byte-equal to the homepage canonical (trailing slash), like every other home URL
       url: absoluteUrl("/"),
-      name: title,
+      name: pageName,
       description,
       inLanguage: preferredLanguage,
       isPartOf: { "@id": WEBSITE_ID },

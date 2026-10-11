@@ -16,7 +16,7 @@ import {
   CONTACT_MD_HREF,
   CV_EN_HREF,
   CV_PL_HREF,
-  DESCRIPTION,
+  PERSON_DESCRIPTION,
   EDUCATION_MD_HREF,
   HOME_COUNTRY,
   HOME_COUNTRY_NAME,
@@ -29,11 +29,11 @@ import {
   SITE_LANGUAGE_NAMES,
   SITE_NAME,
   SOCIAL_LINKS,
-  TITLE,
+  HOME_TITLE,
 } from "@/features/meta/domain";
 
 // Shared header of both AI indexes: site name, one-line value proposition, and full intro
-const siteHeader = (summary: string) => [`# ${SITE_NAME}`, ``, `> ${TITLE}`, ``, DESCRIPTION, ``, summary, ``];
+const siteHeader = (summary: string) => [`# ${SITE_NAME}`, ``, `> ${HOME_TITLE}`, ``, PERSON_DESCRIPTION, ``, summary, ``];
 
 // Machine-readable site index for AI systems (GEO). Every entry points at a `.md`
 // twin (never raw HTML) so crawlers fetch exactly one Markdown page at a time.

@@ -13,10 +13,11 @@ import {
   homeHead,
   languageFromMatches,
   ROOT_HEAD,
+  STATIC_PAGES,
   sitemapResponse,
   sitemapUnavailableResponse,
 } from "../index";
-import { DESCRIPTION, SITE_DESCRIPTION } from "../constants";
+import { PERSON_DESCRIPTION, SITE_DESCRIPTION } from "../constants";
 
 // Minimal JSON-LD graph readers for structured-data assertions
 const graphOf = (children: string | undefined) => (JSON.parse(children ?? "{}") as { "@graph"?: Array<Record<string, unknown>> })["@graph"] ?? [];
@@ -86,14 +87,14 @@ it("root graph declares the bilingual audience on WebSite and Person", () => {
   assert.deepStrictEqual(nodeOf(graph, "Person")?.knowsLanguage, ["en", "pl"]);
   // Every root entity carries an extractable description, single-sourced with the meta tags
   assert.strictEqual(nodeOf(graph, "WebSite")?.description, SITE_DESCRIPTION);
-  assert.strictEqual(nodeOf(graph, "Person")?.description, DESCRIPTION);
+  assert.strictEqual(nodeOf(graph, "Person")?.description, PERSON_DESCRIPTION);
   assert.include(JSON.stringify(ROOT_HEAD.meta), SITE_DESCRIPTION);
   // The logo and person image are the square avatar with real dimensions, not the wide OG banner
   assert.deepStrictEqual(nodeOf(graph, "Organization")?.logo, { "@type": "ImageObject", url: "https://www.remiforge.dev/avatar.jpg", width: 288, height: 288 });
   assert.deepStrictEqual(nodeOf(graph, "Person")?.image, { "@type": "ImageObject", url: "https://www.remiforge.dev/avatar.jpg", width: 288, height: 288 });
 });
 
-it("project details use CreativeWork linked to the canonical WebPage, person and breadcrumb", () => {
+it("project details use SoftwareSourceCode linked to the canonical WebPage, person and breadcrumb", () => {
   const pl = experienceHead({ experience: sampleExperience, preferredLanguage: "pl" });
   const html = JSON.stringify(pl);
   assert.include(html, '"content":"pl_PL"');
@@ -111,7 +112,7 @@ it("project details use CreativeWork linked to the canonical WebPage, person and
   const [graph] = pl.scripts ?? [];
   const parsed = graphOf(graph?.children);
   const page = nodeOf(parsed, "WebPage");
-  const project = nodeOf(parsed, "CreativeWork");
+  const project = nodeOf(parsed, "SoftwareSourceCode");
   assert.isDefined(page);
   assert.isDefined(project);
   assert.isFalse(parsed.some((node) => node["@type"] === "Article"));
@@ -162,13 +163,14 @@ it("experience URL construction percent-encodes one slug consistently in canonic
   assert.strictEqual(page?.["@id"], `https://www.remiforge.dev${encodedPath}`);
 });
 
-it("localized metadata uses stable copy and emits canonical plus Markdown links without same-URL hreflang", () => {
+it("localized metadata uses authored SEO copy and emits canonical plus Markdown links", () => {
   assert.deepStrictEqual(canonicalLink("https://www.remiforge.dev/education"), { rel: "canonical", href: "https://www.remiforge.dev/education" });
 
   const head = homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "pl" });
   const html = JSON.stringify(head);
   assert.include(html, "Stable home title");
-  assert.include(html, "Stable home description.");
+  assert.include(html, STATIC_PAGES["/"].metadata.pl.description);
+  assert.include(html, `Remi Forge ● ${STATIC_PAGES["/"].metadata.pl.title}`);
   assert.include(html, '"content":"pl_PL"');
   assert.include(html, "https://www.remiforge.dev/index.md");
   assert.notInclude(html, "hrefLang");
@@ -218,9 +220,9 @@ it("home structured data splits employment from portfolio projects with localize
 });
 
 it("contact structured data describes the visible ContactPage inside a breadcrumb graph", () => {
-  const hostileDescription = "Stable </script> contact description.";
+  const hostileTitle = "Stable </script> contact title.";
   const head = contactHead({
-    pageTitles: { ...stablePageTitles, "/contact": { ...stablePageTitles["/contact"], intro: hostileDescription } },
+    pageTitles: { ...stablePageTitles, "/contact": { ...stablePageTitles["/contact"], heading: hostileTitle } },
     preferredLanguage: "pl",
   });
   const script = head.scripts?.[0]?.children ?? "{}";
@@ -228,8 +230,8 @@ it("contact structured data describes the visible ContactPage inside a breadcrum
   assert.include(script, "\\u003C");
   const graph = graphOf(script);
   const contact = nodeOf(graph, "ContactPage");
-  assert.strictEqual(contact?.name, "Stable contact title");
-  assert.strictEqual(contact?.description, hostileDescription);
+  assert.strictEqual(contact?.name, hostileTitle);
+  assert.strictEqual(contact?.description, STATIC_PAGES["/contact"].metadata.pl.description);
   assert.deepStrictEqual(contact?.isPartOf, { "@id": "https://www.remiforge.dev/#website" });
   assert.deepStrictEqual(contact?.mainEntity, { "@id": "https://www.remiforge.dev/#person" });
   assert.deepStrictEqual(contact?.breadcrumb, { "@id": "https://www.remiforge.dev/contact#breadcrumb" });
@@ -248,7 +250,7 @@ it("contact structured data describes the visible ContactPage inside a breadcrum
   assert.deepStrictEqual(listItems(trail)?.[1], {
     "@type": "ListItem",
     position: 2,
-    name: "Stable contact title",
+    name: hostileTitle,
     item: "https://www.remiforge.dev/contact",
   });
 });

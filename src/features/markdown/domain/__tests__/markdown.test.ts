@@ -3,7 +3,7 @@ import { assert, it } from "@effect/vitest";
 import { Effect, Option } from "effect";
 import { requireData } from "@/features/data/domain";
 // txtResponse moved to meta: it serves robots.txt too, so it lives with the other discovery plumbing
-import { txtResponse } from "@/features/meta/domain";
+import { STATIC_PAGES, txtResponse } from "@/features/meta/domain";
 import {
   buildContactMd,
   buildEducationMd,
@@ -142,8 +142,8 @@ it("buildExperienceMd localizes fixed Polish section and fact labels", () => {
 it("buildHomeMd groups work and projects and links to .md twins", () => {
   const md = buildHomeMd({ pageTitles: stablePageTitles, experienceList: [sampleExperience], preferredLanguage: "en", translate: translateEn });
   assert.include(md, `canonical: "https://www.remiforge.dev/"`);
-  assert.include(md, `title: "Remi Forge ● Stable home title"`);
-  assert.include(md, `description: "Stable home summary."`);
+  assert.include(md, `title: "Remi Forge ● ${STATIC_PAGES["/"].metadata.en.title}"`);
+  assert.include(md, `description: "${STATIC_PAGES["/"].metadata.en.description}"`);
   assert.include(md, `type: "overview"`);
   assert.notInclude(md, "Cite the canonical HTML URL");
   assert.include(md, `https://www.remiforge.dev/sample-role.md`);
@@ -172,8 +172,8 @@ it("buildHomeMd localizes Markdown structure in Polish", () => {
 it("buildEducationMd stays localized and a missing document has no canonical", () => {
   const edu = buildEducationMd({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "pl", translate: translatePl });
   assert.include(edu, `lang: "pl"`);
-  assert.include(edu, `title: "Remi Forge ● Stable education title"`);
-  assert.include(edu, `description: "Stable education summary."`);
+  assert.include(edu, `title: "Remi Forge ● ${STATIC_PAGES["/education"].metadata.pl.title}"`);
+  assert.include(edu, `description: "${STATIC_PAGES["/education"].metadata.pl.description}"`);
   assert.include(edu, "## Dokumenty");
   assert.include(edu, "_Brak wpisów._");
 
@@ -198,7 +198,7 @@ it("buildEducationMd stays localized and a missing document has no canonical", (
 
 it("buildContactMd advertises the same social profiles as the HTML page", () => {
   const md = buildContactMd({ pageTitles: stablePageTitles, preferredLanguage: "en", translate: translateEn });
-  assert.include(md, `title: "Remi Forge ● Stable contact title"`);
+  assert.include(md, `title: "Remi Forge ● ${STATIC_PAGES["/contact"].metadata.en.title}"`);
   assert.notInclude(md, "Notes for AI systems");
   assert.include(md, `GitHub: https://github.com/remi-k-work`);
   assert.include(md, `LinkedIn: https://linkedin.com/in/remi-k-work`);

@@ -4,7 +4,7 @@ import { socialMeta } from "./social";
 import { websitePersonJsonLd } from "./json-ld";
 
 // constants
-import { AVATAR_IMAGE, GLOBAL_SOCIAL_IMAGE, SITE_DESCRIPTION, SITE_NAME, TITLE, BRANDED_TITLE } from "./constants";
+import { AVATAR_IMAGE, GLOBAL_SOCIAL_IMAGE, HOME_TITLE, SITE_DESCRIPTION, SITE_NAME, BRANDED_TITLE } from "./constants";
 
 // Root head: every page inherits this, so it must ONLY contain site-wide tags
 // Page-specific tags (canonical, hreflang, Markdown alternate) live in each route's
@@ -16,7 +16,7 @@ export const ROOT_HEAD = {
     { charSet: "utf-8" },
     { name: "viewport", content: "width=device-width, initial-scale=1" },
     { name: "theme-color", content: "#1d2549" },
-    { title: BRANDED_TITLE(TITLE) },
+    { title: BRANDED_TITLE(HOME_TITLE) },
     { name: "description", content: SITE_DESCRIPTION },
 
     { name: "author", content: SITE_NAME },
@@ -24,7 +24,7 @@ export const ROOT_HEAD = {
     { name: "robots", content: "noindex, follow" },
     { name: "google", content: "notranslate" },
     // Static en_US fallback for pages without their own head (404, errors); every page head overrides these tags with the resolved locale
-    ...socialMeta({ title: TITLE, description: SITE_DESCRIPTION, path: "/", image: GLOBAL_SOCIAL_IMAGE, preferredLanguage: "en" }),
+    ...socialMeta({ title: HOME_TITLE, description: SITE_DESCRIPTION, path: "/", image: GLOBAL_SOCIAL_IMAGE, preferredLanguage: "en" }),
   ],
   links: [
     { rel: "icon", href: "/icon.svg", type: "image/svg+xml" },

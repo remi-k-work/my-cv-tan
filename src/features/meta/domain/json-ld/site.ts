@@ -4,7 +4,7 @@ import { imageObject, jsonLdGraph } from "./core";
 // constants
 import {
   AVATAR,
-  DESCRIPTION,
+  PERSON_DESCRIPTION,
   HOME_COUNTRY,
   HOME_LOCALITY,
   JOB_TITLE,
@@ -38,7 +38,7 @@ export const websitePersonJsonLd = () =>
       "@id": PERSON_ID,
       name: SITE_NAME,
       // The full bio gives AI systems a rich, quotable identity beyond the site summary
-      description: DESCRIPTION,
+      description: PERSON_DESCRIPTION,
       url: SITE_URL,
       // Avatar as a sized ImageObject: same headshot everywhere, dimensions included
       image: imageObject(AVATAR.src, AVATAR.width, AVATAR.height),

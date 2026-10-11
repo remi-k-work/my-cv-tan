@@ -9,14 +9,14 @@ import type { LocalizedCopy } from "../models";
 import { PERSON_ID, SITE_LANGUAGES, WEBSITE_ID } from "../constants";
 
 // Contact: a ContactPage mirroring the visible content, the contact channel, and its breadcrumb
-export const contactJsonLd = ({ title, description, preferredLanguage }: LocalizedCopy) => {
+export const contactJsonLd = ({ pageName, description, preferredLanguage }: LocalizedCopy) => {
   const url = absoluteUrl("/contact");
   const contactPointId = `${url}#contact-point`;
   return jsonLdGraph([
     {
       "@type": "ContactPage",
       "@id": url,
-      name: title,
+      name: pageName,
       description,
       url,
       inLanguage: preferredLanguage,
@@ -38,6 +38,6 @@ export const contactJsonLd = ({ title, description, preferredLanguage }: Localiz
       url,
       availableLanguage: [...SITE_LANGUAGES],
     },
-    breadcrumb(preferredLanguage, "/contact", title),
+    breadcrumb(preferredLanguage, "/contact", pageName),
   ]);
 };

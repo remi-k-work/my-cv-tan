@@ -9,9 +9,10 @@ const AI_SEARCH_CRAWLERS = ["OAI-SearchBot", "Claude-SearchBot", "PerplexityBot"
 // Bots acting on a user's behalf inside chat products (fetching a link the user shared)
 const AI_USER_CRAWLERS = ["ChatGPT-User", "Claude-User", "Perplexity-User"] as const;
 const AI_DATASET_CRAWLERS = ["GPTBot", "ClaudeBot", "CCBot", "Google-Extended", "Applebot-Extended"] as const;
+const API_DISALLOW = "Disallow: /api";
 
-// One explicit "User-agent: X / Allow: /" block per bot; the trailing blank line separates groups
-const botGroup = (bots: ReadonlyArray<string>) => Array.flatMap(bots, (bot) => [`User-agent: ${bot}`, "Allow: /", ""]);
+// Specific bot groups override `*`, so repeat the API exclusion for each crawler
+const botGroup = (bots: ReadonlyArray<string>) => Array.flatMap(bots, (bot) => [`User-agent: ${bot}`, "Allow: /", API_DISALLOW, ""]);
 
 // Crawler directives: HTML and the machine-readable twins (*.md, llms.txt) are fully crawlable
 export const buildRobotsTxt = () =>
@@ -20,7 +21,7 @@ export const buildRobotsTxt = () =>
     "Allow: /",
     "Allow: /*.md",
     // Form/RPC endpoints are not content: the prefix rule keeps them out of crawl logs
-    "Disallow: /api",
+    API_DISALLOW,
     "",
     "# Explicitly allow AI search crawlers on HTML and Markdown twins",
     ...botGroup(AI_SEARCH_CRAWLERS),

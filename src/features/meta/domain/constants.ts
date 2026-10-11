@@ -1,19 +1,17 @@
-// services, features, and other libraries
-import { excerpt } from "@/features/experience/domain";
-
 // constants
 export const SITE_URL = "https://www.remiforge.dev";
 export const SITE_NAME = "Remi Forge";
 
-export const TITLE = "Curious Web Dev: Eager to Learn, Collaborate, and Make a Splash";
-export const DESCRIPTION =
+export const HOME_TITLE = "Web Developer in Rzeszów, Poland";
+export const PERSON_DESCRIPTION =
   "Passionate, self-taught web developer with a strong drive for continuous learning and a proven track record of delivering results. Eager to contribute to impactful projects, collaborate with experienced teams, and build high-quality web applications.";
 
-// Google truncates meta descriptions around 150-160 chars; longer text never displays
-export const META_DESCRIPTION_LENGTH = 160;
+// Keep search summaries authored and concise instead of cutting them from long page copy
+export const SITE_DESCRIPTION =
+  "Remi Forge is a web developer in Rzeszów, Poland, building modern web applications with React, TypeScript, and full-stack tools.";
 
-// The site's description capped once: the single source for the root meta tag and the WebSite JSON-LD node
-export const SITE_DESCRIPTION = excerpt(DESCRIPTION, META_DESCRIPTION_LENGTH);
+// Bounds excerpts from long project, experience, and school copy
+export const META_DESCRIPTION_LENGTH = 160;
 
 export const GLOBAL_IMAGE = `${SITE_URL}/opengraph-image.jpg`;
 export const AVATAR_IMAGE = `${SITE_URL}/avatar.jpg`;

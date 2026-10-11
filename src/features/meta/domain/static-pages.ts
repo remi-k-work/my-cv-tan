@@ -1,34 +1,83 @@
 // services, features, and other libraries
 import { pageField } from "@/domain";
-import { excerpt } from "@/features/experience/domain";
 
 // types
-import type { PagePath, PageTitles } from "@/domain";
+import type { PagePath, PageTitles, PreferredLanguage } from "@/domain";
 import type { StaticPageCopy } from "./models";
 
 // constants
-import { CONTACT_MD_HREF, DESCRIPTION, EDUCATION_MD_HREF, HOME_MD_HREF, META_DESCRIPTION_LENGTH, TITLE } from "./constants";
+import { CONTACT_MD_HREF, EDUCATION_MD_HREF, HOME_MD_HREF, HOME_TITLE, PERSON_DESCRIPTION, SITE_DESCRIPTION } from "./constants";
 import { absoluteUrl } from "./url";
 
-// Single source of truth for the three static pages: Markdown twin href plus the fallback
-// copy used when the loader has no translation. HTML heads (page.ts) and Markdown twins
-// (markdown/pages.ts) both resolve through this record, so their meta can never drift apart
-export const STATIC_PAGES = {
-  "/": { mdHref: HOME_MD_HREF, fallbackHeading: TITLE, fallbackIntro: DESCRIPTION },
-  "/education": { mdHref: EDUCATION_MD_HREF, fallbackHeading: "Education", fallbackIntro: "Education & certificates." },
-  "/contact": { mdHref: CONTACT_MD_HREF, fallbackHeading: "Contact", fallbackIntro: "Get in touch via the contact form." },
-} as const satisfies Record<PagePath, { readonly mdHref: string; readonly fallbackHeading: string; readonly fallbackIntro: string }>;
+interface PageMetadata {
+  readonly title: string;
+  readonly description: string;
+}
 
-// Localized copy of one static page: translated heading/intro when the loader has them, the
-// fallback otherwise; the intro is capped once here so every consumer shares one description
-export const staticPageCopy = (pageTitles: PageTitles, pagePath: PagePath): StaticPageCopy => {
-  const { fallbackHeading, fallbackIntro } = STATIC_PAGES[pagePath];
+interface StaticPageSettings {
+  readonly mdHref: string;
+  readonly fallbackHeading: string;
+  readonly fallbackIntro: string;
+  readonly metadata: Readonly<Record<PreferredLanguage, PageMetadata>>;
+}
+
+// Shared static-page settings keep the HTML head and Markdown frontmatter aligned.
+export const STATIC_PAGES = {
+  "/": {
+    mdHref: HOME_MD_HREF,
+    fallbackHeading: HOME_TITLE,
+    fallbackIntro: PERSON_DESCRIPTION,
+    metadata: {
+      en: { title: HOME_TITLE, description: SITE_DESCRIPTION },
+      pl: {
+        title: "Programista stron internetowych w Rzeszowie",
+        description: "Remi Forge to programista stron internetowych z Rzeszowa, który tworzy aplikacje z użyciem React, TypeScript i nowoczesnych technologii.",
+      },
+    },
+  },
+  "/education": {
+    mdHref: EDUCATION_MD_HREF,
+    fallbackHeading: "Education",
+    fallbackIntro: "Education & certificates.",
+    metadata: {
+      en: {
+        title: "Education & Certificates",
+        description: "Explore Remi Forge's Interactive Media degree, computer science studies, and web development certificates.",
+      },
+      pl: {
+        title: "Wykształcenie i certyfikaty",
+        description: "Poznaj wykształcenie Remiego Forge: studia z informatyki, dyplom z mediów interaktywnych i certyfikaty.",
+      },
+    },
+  },
+  "/contact": {
+    mdHref: CONTACT_MD_HREF,
+    fallbackHeading: "Contact",
+    fallbackIntro: "Get in touch via the contact form.",
+    metadata: {
+      en: {
+        title: "Contact",
+        description: "Contact Remi Forge in Rzeszów, Poland about web development, collaboration, or project opportunities.",
+      },
+      pl: {
+        title: "Kontakt",
+        description: "Skontaktuj się z Remim Forge w sprawie tworzenia stron internetowych, współpracy lub projektów.",
+      },
+    },
+  },
+} as const satisfies Record<PagePath, StaticPageSettings>;
+
+// Body copy can vary; SEO summaries stay stable, authored, and language-specific
+export const staticPageCopy = (pageTitles: PageTitles, pagePath: PagePath, preferredLanguage: PreferredLanguage): StaticPageCopy => {
+  const { fallbackHeading, fallbackIntro, metadata } = STATIC_PAGES[pagePath];
   const intro = pageField(pageTitles, pagePath, "intro", fallbackIntro);
+  const localizedMetadata = metadata[preferredLanguage];
 
   return {
-    title: pageField(pageTitles, pagePath, "heading", fallbackHeading),
+    heading: pageField(pageTitles, pagePath, "heading", fallbackHeading),
+    seoTitle: localizedMetadata.title,
     intro,
-    description: excerpt(intro, META_DESCRIPTION_LENGTH),
+    description: localizedMetadata.description,
     canonical: absoluteUrl(pagePath),
   };
 };

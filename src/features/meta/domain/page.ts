@@ -14,8 +14,7 @@ import { SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT } from "@/features/experience/domai
 import { GLOBAL_SOCIAL_IMAGE, META_DESCRIPTION_LENGTH, BRANDED_TITLE } from "./constants";
 import { STATIC_PAGES } from "./static-pages";
 
-// Complete data opts into indexing: one shared block keeps <title>, robots and social tags
-// consistent; the bare heading goes to og:title so every card renders the same way.
+// Complete data opts into indexing: one shared block keeps title, robots and social tags consistent
 // Incomplete loader responses inherit the root noindex policy instead.
 const indexableMeta = (input: SocialMetaInput) => [
   { title: BRANDED_TITLE(input.title) },
@@ -24,18 +23,16 @@ const indexableMeta = (input: SocialMetaInput) => [
   ...socialMeta(input),
 ];
 
-// Shared builder for the three static pages: one copy resolution (localized heading,
-// capped description, canonical), one indexing meta block, the canonical + Markdown twin
-// links, and the JSON-LD fed with the same copy (page.ts and markdown twins share both
-// the fallbacks and this resolution through STATIC_PAGES / staticPageCopy)
+// Static pages share localized visible copy, authored search metadata, canonical links,
+// and JSON-LD; Markdown twins use the same source through staticPageCopy
 const staticPageHead = ({ pageTitles, preferredLanguage, pagePath, jsonLd }: StaticPageHeadInput) => {
-  // One copy resolution drives meta, canonical and JSON-LD alike (shared with the Markdown twins)
-  const { title, description, canonical } = staticPageCopy(pageTitles, pagePath);
+  // Resolve once so the HTML head and Markdown twin share the same canonical and summary
+  const { heading, seoTitle, description, canonical } = staticPageCopy(pageTitles, pagePath, preferredLanguage);
 
   return {
-    meta: indexableMeta({ title, description, path: pagePath, image: GLOBAL_SOCIAL_IMAGE, preferredLanguage }),
+    meta: indexableMeta({ title: seoTitle, description, path: pagePath, image: GLOBAL_SOCIAL_IMAGE, preferredLanguage }),
     links: [canonicalLink(canonical), markdownAlternateLink(STATIC_PAGES[pagePath].mdHref)],
-    scripts: [jsonLd({ title, description, preferredLanguage })],
+    scripts: [jsonLd({ pageName: heading, description, preferredLanguage })],
   };
 };
 
