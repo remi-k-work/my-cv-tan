@@ -15,16 +15,21 @@ const CaptchaApiHandlers = HttpApiBuilder.group(
   Effect.fn("CaptchaApiHandlers")(function* (handlers) {
     const { generate, seal } = yield* Captcha;
 
-    return handlers.handle("captcha", () =>
-      Effect.gen(function* () {
-        const captchaString = yield* generate;
-        const sealed = yield* seal(captchaString);
-        yield* HttpEffect.appendPreResponseHandler((_request, response) =>
-          HttpServerResponse.setCookie(response, CAPTCHA_COOKIE_NAME, sealed, CAPTCHA_COOKIE_OPTIONS).pipe(Effect.tapError(Effect.logError), Effect.orDie)
-        );
-        const svg = yield* createCaptchaSvg(captchaString);
-        return HttpApiSchema.withHeaders({ body: svg, headers: { "Cache-Control": "private, no-store" as const } });
-      }).pipe(Effect.tapError(Effect.logError), Effect.orDie)
+    return handlers.handle(
+      "captcha",
+      Effect.fnUntraced(
+        function* () {
+          const captchaString = yield* generate;
+          const sealed = yield* seal(captchaString);
+          yield* HttpEffect.appendPreResponseHandler((_request, response) =>
+            HttpServerResponse.setCookie(response, CAPTCHA_COOKIE_NAME, sealed, CAPTCHA_COOKIE_OPTIONS).pipe(Effect.tapError(Effect.logError), Effect.orDie)
+          );
+          const svg = yield* createCaptchaSvg(captchaString);
+          return HttpApiSchema.withHeaders({ body: svg, headers: { "Cache-Control": "private, no-store" as const } });
+        },
+        Effect.tapError(Effect.logError),
+        Effect.orDie
+      )
     );
   })
 ).pipe(Layer.provide(Captcha.layer));

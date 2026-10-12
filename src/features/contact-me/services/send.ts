@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Config, Context, Effect, flow, Layer, Schedule, Schema } from "effect";
+import { Config, Context, Effect, flow, Layer, Schedule } from "effect";
 import { FetchHttpClient, HttpClient, HttpClientRequest } from "effect/http";
 import { SendError } from "@/domain";
 import { SendRequest } from "@/features/contact-me/domain";
@@ -21,11 +21,9 @@ export class Send extends Context.Service<Send>()("Send", {
 
     // Send the contact form with validated data
     const send = Effect.fnUntraced(function* (name: Name, email: Email, subject: Subject, message: Message) {
-      // Execute request
-      const sendRequest = SendRequest.make({ user_id, accessToken, template_params: { name, email, subject, message } as const });
-      const encoded = yield* Schema.encodeEffect(SendRequest)(sendRequest).pipe(Effect.mapError((cause) => new SendError({ cause })));
+      // schemaBodyJson encodes before setting the body: constructor defaults apply and Redacted fields serialize to their plain values
       const request = yield* HttpClientRequest.post("/email/send").pipe(
-        HttpClientRequest.bodyJson(encoded),
+        HttpClientRequest.schemaBodyJson(SendRequest)(SendRequest.make({ user_id, accessToken, template_params: { name, email, subject, message } })),
         Effect.mapError((cause) => new SendError({ cause }))
       );
       yield* client.execute(request).pipe(

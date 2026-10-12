@@ -12,6 +12,13 @@ import type { ContactForm } from "@/features/contact-me/domain";
 export function useSubmitToast(contactForm: ContactForm) {
   const gt = useGT();
 
+  const toastServerError = () =>
+    toastManager.add({
+      type: "error",
+      title: gt("Server error!"),
+      description: gt("The message was not sent successfully; please try again later."),
+    });
+
   useAtomSubscribe(
     contactForm.submit,
     (submitResult) =>
@@ -20,7 +27,7 @@ export function useSubmitToast(contactForm: ContactForm) {
         onSuccess: () => {
           toastManager.add({ title: gt("Success!"), description: gt("Your message has been sent.") });
         },
-        onError: (error) => {
+        onError: (error) =>
           Match.value(error).pipe(
             Match.tag("SchemaError", () => {
               toastManager.add({
@@ -29,22 +36,9 @@ export function useSubmitToast(contactForm: ContactForm) {
                 description: gt("Please correct the contact form fields and try again."),
               });
             }),
-            Match.orElse(() => {
-              toastManager.add({
-                type: "error",
-                title: gt("Server error!"),
-                description: gt("The message was not sent successfully; please try again later."),
-              });
-            })
-          );
-        },
-        onDefect: () => {
-          toastManager.add({
-            type: "error",
-            title: gt("Server error!"),
-            description: gt("The message was not sent successfully; please try again later."),
-          });
-        },
+            Match.orElse(toastServerError)
+          ),
+        onDefect: toastServerError,
       }),
     { immediate: false }
   );

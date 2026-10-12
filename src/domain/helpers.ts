@@ -2,7 +2,7 @@
 import { Context, Layer, Option, pipe } from "effect";
 import { RpcClient, RpcGroup, RpcSerialization, RpcServer } from "effect/rpc";
 import { FetchHttpClient, HttpRouter, HttpServer } from "effect/http";
-import { RpcLoggerLive } from "@/services/rpc-logger";
+import { RpcLogger } from "@/services/rpc-logger";
 
 // types
 import type { Rpc } from "effect/rpc";
@@ -34,7 +34,7 @@ export const makeRpcHandler = <Rpcs extends Rpc.Any, LE>(
     protocol: "http",
     disableFatalDefects: true,
     disableTracing: true,
-  }).pipe(Layer.provide(Layer.mergeAll(handlersLayer, RpcSerialization.layerSchemaBinary(), HttpServer.layerServices, RpcLoggerLive)));
+  }).pipe(Layer.provide(Layer.mergeAll(handlersLayer, RpcSerialization.layerSchemaBinary(), HttpServer.layerServices, RpcLogger.layer)));
 
   return HttpRouter.toWebHandler(RpcLayer, { disableLogger: true });
 };

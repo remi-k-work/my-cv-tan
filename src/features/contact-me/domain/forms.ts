@@ -2,10 +2,11 @@
 import { Effect } from "effect";
 import { FormBuilder, FormReact } from "@lucas-barake/effect-form-react";
 import { msg } from "gt-tanstack-start";
+import { CaptchaInputField } from "@/features/captcha/domain";
 import { RpcCaptchaClient } from "@/features/captcha/rpc/client";
 import { RpcContactMeClient } from "@/features/contact-me/rpc/client";
 import { RuntimeAtom } from "@/lib/runtime-client";
-import { CaptchaInputField, EmailField, MessageField, NameField, SubjectField } from "./fields";
+import { EmailField, MessageField, NameField, SubjectField } from "./fields";
 
 // components
 import { TextAreaInput, TextInput } from "@/ui/form";
@@ -36,13 +37,7 @@ const contactFormBuilder = FormBuilder.empty
 export const contactForm = () =>
   FormReact.make(contactFormBuilder, {
     runtime: RuntimeAtom,
-    fields: {
-      name: TextInput,
-      email: TextInput,
-      subject: TextInput,
-      message: TextAreaInput,
-      captchaInput: TextInput,
-    },
+    fields: { name: TextInput, email: TextInput, subject: TextInput, message: TextAreaInput, captchaInput: TextInput },
     onSubmit: (_, { decoded: { name, email, subject, message } }) =>
-      Effect.flatMap(RpcContactMeClient, ({ contactForm }) => contactForm({ name, email, subject, message })),
+      Effect.flatMap(RpcContactMeClient, ({ contactForm: submit }) => submit({ name, email, subject, message })),
   });

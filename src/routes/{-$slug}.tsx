@@ -71,7 +71,10 @@ function ExperienceDetailsModal() {
 
   return (
     <ExperienceModal isOpen={Option.isSome(currExperience)} onClosed={() => clearExperience(Option.none())} title={gt("Project Info & Description")}>
-      {Option.isSome(currExperience) && <ExperienceDetails experience={currExperience.value} />}
+      {Option.match(currExperience, {
+        onNone: () => null,
+        onSome: (experience) => <ExperienceDetails experience={experience} />,
+      })}
     </ExperienceModal>
   );
 }

@@ -2,7 +2,7 @@
 import { Schema } from "effect";
 import { Rpc, RpcGroup } from "effect/rpc";
 import { CaptchaError } from "@/domain";
-import { CaptchaInputField } from "@/features/contact-me/domain";
+import { CaptchaInputField } from "@/features/captcha/domain";
 import { RpcLogger } from "@/services/rpc-logger";
 
 export class RpcCaptcha extends RpcGroup.make(

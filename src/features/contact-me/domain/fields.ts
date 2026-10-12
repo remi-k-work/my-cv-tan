@@ -39,11 +39,3 @@ export const MessageField = Field.makeField(
     Schema.isMaxLength(2048, { message: msg("Please keep the message to a maximum of 2048 characters") })
   )
 );
-
-export const CaptchaInputField = Field.makeField(
-  "captchaInput",
-  Schema.Trim.check(
-    Schema.isNonEmpty({ message: msg("A captcha is required to proceed") }),
-    Schema.isMaxLength(6, { message: msg("The captcha is no more than six characters long") })
-  )
-);
