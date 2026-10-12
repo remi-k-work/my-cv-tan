@@ -8,7 +8,7 @@ import { useGT } from "gt-tanstack-start";
 import { experienceAtom } from "@/features/modals/state";
 
 // components
-import { ExperienceIdentity } from "@/features/experience/ui/experience-identity";
+import { ExperienceHeader } from "@/features/experience/ui/experience-header";
 import { ExperienceLinks } from "@/features/experience/ui/experience-links";
 
 // assets
@@ -22,10 +22,9 @@ interface SlideHeaderProps {
   experience: Experience;
 }
 
-export function SlideHeader({ experience }: SlideHeaderProps) {
+// The slide's header adds the "More Info" action, which opens the details overlay instead of navigating
+export function SlideHeader({ experience, experience: { slug } }: SlideHeaderProps) {
   const gt = useGT();
-
-  const { slug } = experience;
   const setExperience = useAtomSet(experienceAtom);
 
   function handleMoreInfoClicked(ev: MouseEvent) {
@@ -34,22 +33,17 @@ export function SlideHeader({ experience }: SlideHeaderProps) {
   }
 
   return (
-    <header className="mb-4 flex min-h-28 gap-4 @md:min-h-auto">
-      <ExperienceIdentity experience={experience} />
-      <section className="flex-3">
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <Link
-            className="rounded-full border border-text-1 p-1 hover:scale-110 hover:border-accent hover:text-accent"
-            to="/{-$slug}"
-            params={{ slug }}
-            onClick={handleMoreInfoClicked}
-            title={gt("More Info")}
-          >
-            <InformationCircleIcon className="size-9" />
-          </Link>
-          <ExperienceLinks experience={experience} iconClassName="size-9" />
-        </div>
-      </section>
-    </header>
+    <ExperienceHeader experience={experience}>
+      <Link
+        className="rounded-full border border-text-1 p-1 hover:scale-110 hover:border-accent hover:text-accent"
+        to="/{-$slug}"
+        params={{ slug }}
+        onClick={handleMoreInfoClicked}
+        title={gt("More Info")}
+      >
+        <InformationCircleIcon className="size-9" />
+      </Link>
+      <ExperienceLinks experience={experience} iconClassName="size-9" />
+    </ExperienceHeader>
   );
 }

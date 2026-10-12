@@ -2,7 +2,8 @@
 import { chunkTextByWords } from "@/features/typewriter/domain";
 
 // components
-import { DetailsHeader } from "./header";
+import { ExperienceHeader } from "@/features/experience/ui/experience-header";
+import { ExperienceLinks } from "@/features/experience/ui/experience-links";
 import { ScreenShots } from "@/features/experience/ui/screen-shots";
 import { SkillsUsed } from "./skills-used";
 import { Typewriter } from "@/features/typewriter/ui/typewriter";
@@ -23,7 +24,9 @@ export function ExperienceDetails({ experience, experience: { txt } }: Experienc
 
   return (
     <article className="mx-auto w-full max-w-4xl rounded-xl bg-surface-2 p-3">
-      <DetailsHeader experience={experience} />
+      <ExperienceHeader experience={experience}>
+        <ExperienceLinks experience={experience} iconClassName="size-11" />
+      </ExperienceHeader>
       <ScreenShots experience={experience} />
       <SkillsUsed experience={experience} />
       {paras.map((para, index) => (
