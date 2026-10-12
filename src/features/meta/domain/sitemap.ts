@@ -6,20 +6,15 @@ import { absoluteUrl, experiencePath } from "./url";
 import type { ExperienceList } from "@/features/experience/domain";
 
 // constants
-import { SITE_URL } from "./constants";
+import { CERTIFICATES_HREF, CV_EN_HREF, CV_PL_HREF } from "./constants";
+import { STATIC_PAGES } from "./static-pages";
 
 // Canonical HTML URLs only: the Markdown twins are deliberately excluded (they canonicalize
 // to HTML, and sitemaps must not list non-canonical URLs); AI crawlers find them via llms.txt
 // and the <link rel="alternate"> every page head emits
-const STATIC_URLS = [
-  // Byte-equal to the homepage canonical (SITE_URL + "/"), so sitemap and canonical signals agree
-  `${SITE_URL}/`,
-  `${SITE_URL}/education`,
-  `${SITE_URL}/contact`,
-  `${SITE_URL}/my-cv.pdf`,
-  `${SITE_URL}/my-cv-pl.pdf`,
-  `${SITE_URL}/my-certificates.pdf`,
-] as const;
+// Derived from STATIC_PAGES so a new static page can never drift out of the sitemap; key order
+// is the declaration order, and absoluteUrl("/") stays byte-equal to the homepage canonical
+const STATIC_URLS = pipe(STATIC_PAGES, Record.keys, Array.map(absoluteUrl), Array.appendAll([CV_EN_HREF, CV_PL_HREF, CERTIFICATES_HREF].map(absoluteUrl)));
 
 // Entity references for the five characters that are special inside XML element text;
 // the ampersand stays a unicode escape so the entity literals remain unambiguous

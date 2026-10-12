@@ -82,3 +82,15 @@ export interface HomeJsonLdInput extends LocalizedCopy {
 export interface EducationJsonLdInput extends LocalizedCopy {
   readonly educationList: EducationList;
 }
+
+interface PageMetadata {
+  readonly title: string;
+  readonly description: string;
+}
+
+export interface StaticPageSettings {
+  readonly mdHref: string;
+  readonly fallbackHeading: string;
+  readonly fallbackIntro: string;
+  readonly metadata: Readonly<Record<PreferredLanguage, PageMetadata>>;
+}

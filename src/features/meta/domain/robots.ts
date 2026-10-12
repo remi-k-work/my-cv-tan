@@ -17,6 +17,10 @@ const AI_DATASET_CRAWLERS = [
   "Meta-ExternalAgent",
   "AI2Bot",
   "cohere-training-data-crawler",
+  // Less polite but still named dataset crawlers: ByteDance/TikTok, Timpi and The Image Sift
+  "Bytespider",
+  "Timpibot",
+  "ImagesiftBot",
 ] as const;
 
 // Form/RPC endpoints are not content: the prefix rule keeps them out of crawl budgets

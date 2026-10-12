@@ -1,17 +1,15 @@
 // services, features, and other libraries
-import { Option, Schema, String, pipe } from "effect";
+import { flow, Option, Schema, String, pipe } from "effect";
 import { PreferredLanguage } from "@/domain";
 
 // Parse an absolute request URL without throwing; unparseable input becomes None
 const requestUrl = Option.liftThrowable((url: string) => new URL(url));
 
 // Decodes a raw query value to a supported language; absent or unknown values become None
+// Normalization is case-insensitive and whitespace-tolerant (?lang= EN == en); flow composes
+// the two String helpers into one unary step for Option.map (pipe pipes a value, not functions)
 const langFrom = (raw: string | null) =>
-  pipe(
-    Option.fromNullishOr(raw),
-    Option.map((value) => value.trim().toLowerCase()),
-    Option.flatMap(Schema.decodeUnknownOption(PreferredLanguage))
-  );
+  pipe(Option.fromNullishOr(raw), Option.map(flow(String.trim, String.toLowerCase)), Option.flatMap(Schema.decodeUnknownOption(PreferredLanguage)));
 
 // Parses the explicit `?lang=` override. None carries both "param absent" and
 // "URL unparseable", so callers fall back to cookie / Accept-Language resolution

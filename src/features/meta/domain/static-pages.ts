@@ -3,25 +3,13 @@ import { pageField } from "@/domain";
 
 // types
 import type { PagePath, PageTitles, PreferredLanguage } from "@/domain";
-import type { StaticPageCopy } from "./models";
+import type { StaticPageCopy, StaticPageSettings } from "./models";
 
 // constants
 import { CONTACT_MD_HREF, EDUCATION_MD_HREF, HOME_MD_HREF, HOME_TITLE, PERSON_DESCRIPTION, SITE_DESCRIPTION } from "./constants";
 import { absoluteUrl } from "./url";
 
-interface PageMetadata {
-  readonly title: string;
-  readonly description: string;
-}
-
-interface StaticPageSettings {
-  readonly mdHref: string;
-  readonly fallbackHeading: string;
-  readonly fallbackIntro: string;
-  readonly metadata: Readonly<Record<PreferredLanguage, PageMetadata>>;
-}
-
-// Shared static-page settings keep the HTML head and Markdown frontmatter aligned.
+// Shared static-page settings keep the HTML head and Markdown frontmatter aligned
 export const STATIC_PAGES = {
   "/": {
     mdHref: HOME_MD_HREF,
