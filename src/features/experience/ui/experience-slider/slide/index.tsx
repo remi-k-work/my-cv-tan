@@ -18,8 +18,7 @@ export function Slide({ experience, experience: { txt } }: SlideProps) {
   const { style, handlers } = useTilt();
 
   return (
-    // transform-3d lets the children's translateZ layers float above the card as it tilts
-    <motion.article className="@container relative rounded-xl bg-surface-1 p-3 select-none transform-3d" style={style} {...handlers}>
+    <motion.article className="@container relative rounded-xl bg-surface-1 p-3 select-none" style={style} {...handlers}>
       <SlideHeader experience={experience} />
       <ScreenShots experience={experience} />
       <p className="mx-auto mt-3 text-justify text-sm">{excerpt(txt, 240)}</p>

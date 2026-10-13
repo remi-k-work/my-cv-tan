@@ -14,8 +14,8 @@ import { SPRINGS } from "@/lib/motion-tokens";
 const FINE_POINTER_QUERY = "(hover: hover) and (pointer: fine)";
 
 // How far the card may tip, in degrees, and the depth of the 3D space it tips in
-const TILT_MAX_DEG = 4;
-const TILT_PERSPECTIVE_PX = 800;
+const TILT_MAX_DEG = 6;
+const TILT_PERSPECTIVE_PX = 1000;
 
 // Interactive card tilt: the card leans away from the pointer with gentle spring physics
 // The tilt is a pure enhancement — the motion values start neutral, so the server-rendered

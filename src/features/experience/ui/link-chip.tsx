@@ -14,11 +14,7 @@ interface LinkChipProps {
 export function LinkChip({ href, title, children }: LinkChipProps) {
   return (
     <a
-      className={cn(
-        "rounded-full border border-text-1 p-1",
-        "hover:scale-110 hover:border-accent hover:text-accent",
-        "hover:[transform:perspective(350px)_translateZ(14px)_rotateX(12deg)]"
-      )}
+      className={cn("rounded-full border border-text-1 p-1", "hover:scale-110 hover:border-accent hover:text-accent")}
       href={href}
       target="_blank"
       rel="noopener noreferrer"
