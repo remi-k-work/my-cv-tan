@@ -15,6 +15,7 @@ import { AtomRegistryProvider } from "@/ui/atom-registry-provider";
 import { Toastify } from "@/ui/toastify";
 import { Header } from "@/ui/header";
 import { Skills } from "@/ui/skills";
+import { ScrollProgress } from "@/ui/scroll-progress";
 
 // assets
 import "@fontsource/outfit";
@@ -42,6 +43,7 @@ function RootComponent() {
     >
       <Header />
       <Skills />
+      <ScrollProgress />
       <main className="[grid-area:main]">
         <Outlet />
       </main>

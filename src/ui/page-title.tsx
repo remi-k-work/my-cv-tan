@@ -13,7 +13,7 @@ export function PageTitle({ pagePath, pageTitles }: PageTitleProps) {
   const { eyebrow, heading, intro } = pageTitles[pagePath];
 
   return (
-    <section className="mx-4 my-3 lg:mx-0">
+    <section className="mx-4 my-3 animate-rise lg:mx-0">
       <p className="inline-grid overflow-clip text-lg tracking-widest text-text-2 uppercase">
         <RevealText reverse>{eyebrow}</RevealText>
       </p>

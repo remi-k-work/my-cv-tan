@@ -1,7 +1,8 @@
 @theme inline {
-  --animate-reveal-text: reveal-text 4s ease forwards;
-  --animate-sweep-light-bar: sweep-light-bar 4s ease forwards;
-  --animate-sweep-light-bar-r: sweep-light-bar-r 4s ease forwards;
+  /* The heading reveal and its sweeping light bar share a duration so they stay in lockstep; 2s keeps the sweep readable without stalling the first paint */
+  --animate-reveal-text: reveal-text 2s ease forwards;
+  --animate-sweep-light-bar: sweep-light-bar 2s ease forwards;
+  --animate-sweep-light-bar-r: sweep-light-bar-r 2s ease forwards;
 
   @keyframes reveal-text {
     to {

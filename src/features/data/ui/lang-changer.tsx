@@ -34,7 +34,12 @@ export function LangChanger() {
   }
 
   return (
-    <Button className="button" disabled={isPending} title={gt(locale === "en" ? "English" : "Polish")} onClick={handleLangToggled}>
+    <Button
+      className="button animate-rise [animation-delay:0.64s]"
+      disabled={isPending}
+      title={gt(locale === "en" ? "English" : "Polish")}
+      onClick={handleLangToggled}
+    >
       {locale === "en" ? <UsFlagIcon className="size-11" /> : <PlFlagIcon className="size-11" />}
     </Button>
   );

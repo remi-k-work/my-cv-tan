@@ -45,6 +45,10 @@ const FLOAT_DELAY_CLASSES = {
   "3.6s": "[animation-delay:3.6s]",
 } as const;
 
+// The icons respond to the pointer like every other interactive chip on the site; only the `scale` property is
+// transitioned, so the `transform` the float animation drives keeps running untouched
+const SKILL_CELL_CLASSES = "transition-[scale] duration-300 hover:scale-110";
+
 function SkillIcon({ src, alt, delay, phase = "stay" }: SkillSource & { delay?: SlideDelay; phase?: SlidePhase }) {
   return (
     <img
@@ -63,7 +67,7 @@ function SkillIcon({ src, alt, delay, phase = "stay" }: SkillSource & { delay?: 
 // Two skills trading places in a single cell: the first slides in then periodically fades out while the second fades in
 function SwappingSkillPair({ first, second, delay, floatDelay }: { first: SkillSource; second: SkillSource; delay: SlideDelay; floatDelay: FloatDelay }) {
   return (
-    <li className={cn("grid animate-float *:col-span-full *:row-span-full", FLOAT_DELAY_CLASSES[floatDelay])}>
+    <li className={cn("grid animate-float *:col-span-full *:row-span-full", SKILL_CELL_CLASSES, FLOAT_DELAY_CLASSES[floatDelay])}>
       <SkillIcon {...first} delay={delay} phase="out" />
       <SkillIcon {...second} delay={delay} phase="in" />
     </li>
@@ -88,7 +92,7 @@ export function Skills() {
         "lg:before:animate-spark-v lg:before:bg-linear-to-b lg:before:bg-size-[100%_200%]",
 
         "lg:after:from-primary lg:after:via-accent lg:after:via-5% lg:after:to-primary lg:after:to-10%",
-        "lg:after:direction-[reverse] lg:after:animate-spark-v lg:after:bg-linear-to-b lg:after:bg-size-[100%_200%]"
+        "lg:after:animate-spark-v lg:after:bg-linear-to-b lg:after:bg-size-[100%_200%] lg:after:[animation-direction:reverse]!"
       )}
     >
       <ul
@@ -98,10 +102,10 @@ export function Skills() {
           "lg:sticky lg:top-28 lg:h-[calc(100dvh-7rem)] lg:grid-flow-row lg:grid-cols-2"
         )}
       >
-        <li className={cn("animate-float", FLOAT_DELAY_CLASSES["0s"])}>
+        <li className={cn("animate-float", SKILL_CELL_CLASSES, FLOAT_DELAY_CLASSES["0s"])}>
           <SkillIcon src={html} alt="HTML" />
         </li>
-        <li className={cn("animate-float", FLOAT_DELAY_CLASSES["0.9s"])}>
+        <li className={cn("animate-float", SKILL_CELL_CLASSES, FLOAT_DELAY_CLASSES["0.9s"])}>
           <SkillIcon src={css} alt="CSS" delay="0.2s" />
         </li>
         <SwappingSkillPair first={{ src: javascript, alt: "JavaScript" }} second={{ src: typescript, alt: "TypeScript" }} delay="0.4s" floatDelay="1.8s" />

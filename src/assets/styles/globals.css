@@ -47,6 +47,16 @@
     @apply active:translate-y-0 active:scale-95 active:shadow-none;
     @apply data-disabled:pointer-events-none data-disabled:opacity-50 data-disabled:shadow-none;
     @apply [&_svg]:pointer-events-none [&_svg]:shrink-0;
+
+    /* Resting state of the sheen: the light bar is parked just past the right edge, so it is invisible until hovered */
+    background-image: linear-gradient(100deg, transparent 42%, color-mix(in oklab, var(--accent) 55%, transparent) 50%, transparent 58%);
+    background-size: 300% 100%;
+    background-position: 130% 0;
+    background-repeat: no-repeat;
+  }
+
+  .button:hover {
+    animation: sheen-sweep 0.8s ease;
   }
 
   .label {
@@ -65,6 +75,23 @@
     @apply flex field-sizing-fixed border px-3 py-2;
     @apply disabled:cursor-not-allowed disabled:opacity-50;
     @apply placeholder:text-text-2;
+  }
+
+  /* Focused fields light up like the accent glow the buttons and reveal bars already use */
+  .input:focus,
+  .textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 25%, transparent);
+  }
+}
+
+/* Mirrors the page titles' sweep light: a bright accent bar crossing the button on hover */
+@keyframes sheen-sweep {
+  from {
+    background-position: 130% 0;
+  }
+  to {
+    background-position: -30% 0;
   }
 }
 
@@ -86,7 +113,8 @@
   button,
   input,
   textarea {
-    @apply transition duration-500 ease-in-out focus-visible:outline focus-visible:outline-offset-1 focus-visible:outline-accent;
+    /* Hover/press feedback wants to feel immediate; the 500ms default read as sluggish */
+    @apply transition duration-300 ease-in-out focus-visible:outline focus-visible:outline-offset-1 focus-visible:outline-accent;
   }
 
   h1,

@@ -25,7 +25,7 @@ function EducationPage() {
   return (
     <>
       <PageTitle pagePath="/education" pageTitles={randomPageTitles} />
-      <article className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+      <article className="grid animate-rise grid-cols-1 gap-4 [animation-delay:0.15s] xl:grid-cols-2">
         <section className="rounded-xl bg-surface-2 p-4">
           <Certificates />
         </section>

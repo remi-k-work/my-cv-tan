@@ -24,7 +24,7 @@ export function Header() {
         "before:animate-spark-h before:bg-linear-to-r before:from-primary before:via-accent before:via-5% before:to-primary before:to-10% before:bg-size-[200%]",
         "lg:before:fixed lg:before:top-14",
         "max-lg:after:absolute max-lg:after:top-34 max-lg:after:left-0 max-lg:after:-z-1 max-lg:after:h-px max-lg:after:w-full max-lg:after:content-['']",
-        "max-lg:after:direction-[reverse] max-lg:after:animate-spark-h max-lg:after:bg-linear-to-r max-lg:after:from-primary max-lg:after:via-accent max-lg:after:via-5% max-lg:after:to-primary max-lg:after:to-10% max-lg:after:bg-size-[200%]"
+        "max-lg:after:animate-spark-h max-lg:after:bg-linear-to-r max-lg:after:from-primary max-lg:after:via-accent max-lg:after:via-5% max-lg:after:to-primary max-lg:after:to-10% max-lg:after:bg-size-[200%] max-lg:after:[animation-direction:reverse]!"
       )}
     >
       <nav
@@ -36,7 +36,7 @@ export function Header() {
         )}
       >
         {NAV_ITEMS(cvPdfHref(preferredLanguageFromLocale(locale)), gt).map((navItem, index) => (
-          <NavItem key={navItem.href} {...navItem} animDelay={index ** 2} />
+          <NavItem key={navItem.href} {...navItem} index={index} />
         ))}
         <LangChanger />
       </nav>

@@ -36,7 +36,11 @@ export function SlideHeader({ experience, experience: { slug } }: SlideHeaderPro
   return (
     <ExperienceHeader experience={experience}>
       <Link
-        className={cn("rounded-full border border-text-1 p-1", "hover:scale-110 hover:border-accent hover:text-accent")}
+        className={cn(
+          "rounded-full border border-text-1 p-1",
+          "hover:scale-110 hover:border-accent hover:text-accent",
+          "hover:shadow-[0_0_6px_var(--accent),0_0_12px_var(--accent)]"
+        )}
         to="/{-$slug}"
         params={{ slug }}
         onClick={handleMoreInfoClicked}

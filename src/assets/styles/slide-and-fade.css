@@ -1,4 +1,6 @@
 @theme inline {
+  /* Page-load entrance: content swings up into place on the smooth easing shared with the motion tokens */
+  --animate-rise: rise 1s cubic-bezier(0.22, 1, 0.36, 1) backwards;
   --animate-slide-lr: slide-lr 1s ease-in-out forwards;
   --animate-slide-bt: slide-bt 1s ease-in-out forwards;
   --animate-slide-lr-fade-out: slide-lr 1s ease-in-out forwards, fade-out 24s ease-in-out alternate infinite;
@@ -6,6 +8,18 @@
   --animate-slide-bt-fade-out: slide-bt 1s ease-in-out forwards, fade-out 24s ease-in-out alternate infinite;
   --animate-slide-bt-fade-in: slide-bt 1s ease-in-out forwards, fade-in 24s ease-in-out alternate infinite;
   --animate-fade-in-out: fade-in-out 48s ease-in-out infinite;
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      /* The perspective is baked into the transform so the element foreshortens itself; no ancestor needs a 3D context */
+      transform: perspective(1200px) translateY(1rem) rotateX(6deg) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: perspective(1200px) translateY(0) rotateX(0) scale(1);
+    }
+  }
 
   @keyframes slide-lr {
     0% {
