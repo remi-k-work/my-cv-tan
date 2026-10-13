@@ -19,6 +19,7 @@ interface SkillSource {
 
 type SlidePhase = keyof typeof SLIDE_PHASE_CLASSES;
 type SlideDelay = keyof typeof SLIDE_DELAY_CLASSES;
+type FloatDelay = keyof typeof FLOAT_DELAY_CLASSES;
 
 // constants
 // Kept as literal class strings so Tailwind can generate them
@@ -33,6 +34,15 @@ const SLIDE_DELAY_CLASSES = {
   "0.4s": "max-lg:[animation-delay:0.4s] lg:[animation-delay:0.4s]",
   "0.6s,8s": "max-lg:[animation-delay:0.6s,8s] lg:[animation-delay:0.6s,8s]",
   "0.8s,16s": "max-lg:[animation-delay:0.8s,16s] lg:[animation-delay:0.8s,16s]",
+} as const;
+
+// Staggered float delays so the icons bob out of phase, giving the rail a gentle ripple
+const FLOAT_DELAY_CLASSES = {
+  "0s": "[animation-delay:0s]",
+  "0.9s": "[animation-delay:0.9s]",
+  "1.8s": "[animation-delay:1.8s]",
+  "2.7s": "[animation-delay:2.7s]",
+  "3.6s": "[animation-delay:3.6s]",
 } as const;
 
 function SkillIcon({ src, alt, delay, phase = "stay" }: SkillSource & { delay?: SlideDelay; phase?: SlidePhase }) {
@@ -51,9 +61,9 @@ function SkillIcon({ src, alt, delay, phase = "stay" }: SkillSource & { delay?: 
 }
 
 // Two skills trading places in a single cell: the first slides in then periodically fades out while the second fades in
-function SwappingSkillPair({ first, second, delay }: { first: SkillSource; second: SkillSource; delay: SlideDelay }) {
+function SwappingSkillPair({ first, second, delay, floatDelay }: { first: SkillSource; second: SkillSource; delay: SlideDelay; floatDelay: FloatDelay }) {
   return (
-    <li className="grid *:col-span-full *:row-span-full">
+    <li className={cn("grid animate-float *:col-span-full *:row-span-full", FLOAT_DELAY_CLASSES[floatDelay])}>
       <SkillIcon {...first} delay={delay} phase="out" />
       <SkillIcon {...second} delay={delay} phase="in" />
     </li>
@@ -88,15 +98,15 @@ export function Skills() {
           "lg:sticky lg:top-28 lg:h-[calc(100dvh-7rem)] lg:grid-flow-row lg:grid-cols-2"
         )}
       >
-        <li>
+        <li className={cn("animate-float", FLOAT_DELAY_CLASSES["0s"])}>
           <SkillIcon src={html} alt="HTML" />
         </li>
-        <li>
+        <li className={cn("animate-float", FLOAT_DELAY_CLASSES["0.9s"])}>
           <SkillIcon src={css} alt="CSS" delay="0.2s" />
         </li>
-        <SwappingSkillPair delay="0.4s" first={{ src: javascript, alt: "JavaScript" }} second={{ src: typescript, alt: "TypeScript" }} />
-        <SwappingSkillPair delay="0.6s,8s" first={{ src: react, alt: "React" }} second={{ src: nextjs, alt: "NextJS" }} />
-        <SwappingSkillPair delay="0.8s,16s" first={{ src: inkscape, alt: "Inkscape" }} second={{ src: gimp, alt: "GIMP" }} />
+        <SwappingSkillPair first={{ src: javascript, alt: "JavaScript" }} second={{ src: typescript, alt: "TypeScript" }} delay="0.4s" floatDelay="1.8s" />
+        <SwappingSkillPair first={{ src: react, alt: "React" }} second={{ src: nextjs, alt: "NextJS" }} delay="0.6s,8s" floatDelay="2.7s" />
+        <SwappingSkillPair first={{ src: inkscape, alt: "Inkscape" }} second={{ src: gimp, alt: "GIMP" }} delay="0.8s,16s" floatDelay="3.6s" />
       </ul>
     </aside>
   );

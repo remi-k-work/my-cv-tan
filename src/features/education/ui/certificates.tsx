@@ -10,6 +10,10 @@ import alcc from "@/assets/my-certificates-alcc.webp";
 import prattOrig from "@/assets/my-certificates-pratt-orig.webp";
 import prattTrans from "@/assets/my-certificates-pratt-trans.webp";
 
+// constants
+// Each document tilts back under a distant perspective on hover, like a photo being laid down on a table
+const CERTIFICATE_CLASSES = "h-auto w-full transition-transform duration-500 hover:[transform:perspective(1000px)_rotateX(3deg)]";
+
 export function Certificates() {
   const gt = useGT();
 
@@ -17,10 +21,10 @@ export function Certificates() {
     <figure className="mx-auto w-full max-w-4xl">
       <PanelCaption>{gt("My Certificates")}</PanelCaption>
       <a href="/my-certificates.pdf" target="_blank" rel="noopener noreferrer" className="space-y-4">
-        <img src={artcom} width={1222} height={870} alt="ARTCOM" loading="lazy" className="h-auto w-full" />
-        <img src={alcc} width={1222} height={870} alt="ALCC" loading="lazy" className="h-auto w-full" />
-        <img src={prattOrig} width={1222} height={870} alt="Pratt" loading="lazy" className="h-auto w-full" />
-        <img src={prattTrans} width={1694} height={870} alt="Pratt" loading="lazy" className="h-auto w-full" />
+        <img src={artcom} width={1222} height={870} alt="ARTCOM" loading="lazy" className={CERTIFICATE_CLASSES} />
+        <img src={alcc} width={1222} height={870} alt="ALCC" loading="lazy" className={CERTIFICATE_CLASSES} />
+        <img src={prattOrig} width={1222} height={870} alt="Pratt" loading="lazy" className={CERTIFICATE_CLASSES} />
+        <img src={prattTrans} width={1694} height={870} alt="Pratt" loading="lazy" className={CERTIFICATE_CLASSES} />
       </a>
     </figure>
   );

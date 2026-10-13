@@ -2,6 +2,7 @@
 
 /* custom styles and animations */
 @import "./cursor-blink.css";
+@import "./float.css";
 @import "./slide-and-fade.css";
 @import "./sparks.css";
 @import "./sweep-light-bar.css";
@@ -42,8 +43,8 @@
 @layer components {
   .button {
     @apply flex shrink-0 items-center justify-center gap-2 rounded-xl border bg-primary px-4 py-2 tracking-widest uppercase shadow-sm select-none;
-    @apply hover:shadow-accent;
-    @apply active:scale-95 active:shadow-none;
+    @apply hover:-translate-y-0.5 hover:shadow-accent;
+    @apply active:translate-y-0 active:scale-95 active:shadow-none;
     @apply data-disabled:pointer-events-none data-disabled:opacity-50 data-disabled:shadow-none;
     @apply [&_svg]:pointer-events-none [&_svg]:shrink-0;
   }

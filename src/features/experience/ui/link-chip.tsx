@@ -1,3 +1,6 @@
+// services, features, and other libraries
+import { cn } from "@/lib/utils";
+
 // types
 import type { ReactNode } from "react";
 
@@ -7,11 +10,15 @@ interface LinkChipProps {
   children: ReactNode;
 }
 
-// Round icon chip linking to an external page in a new tab
+// Round icon chip linking out; pops toward the viewer in 3D on hover via the perspective() baked into the transform, so it works at any nesting depth
 export function LinkChip({ href, title, children }: LinkChipProps) {
   return (
     <a
-      className="rounded-full border border-text-1 p-1 hover:scale-110 hover:border-accent hover:text-accent"
+      className={cn(
+        "rounded-full border border-text-1 p-1",
+        "hover:scale-110 hover:border-accent hover:text-accent",
+        "hover:[transform:perspective(350px)_translateZ(14px)_rotateX(12deg)]"
+      )}
       href={href}
       target="_blank"
       rel="noopener noreferrer"

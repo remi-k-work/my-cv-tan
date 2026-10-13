@@ -39,7 +39,9 @@ export function ExperienceModal({ isOpen, onClosed, title, children }: Experienc
             className={cn(
               "relative max-h-[90dvh] w-[90dvw] max-w-3xl overflow-auto bg-surface-1 p-1 text-text-1",
               "transition duration-300 ease-in-out",
-              "data-ending-style:scale-90 data-ending-style:opacity-0 data-starting-style:scale-90 data-starting-style:opacity-0"
+              // Swings in and out on a shallow 3D tilt so the overlay feels like it settles into place
+              "data-ending-style:scale-90 data-ending-style:opacity-0 data-starting-style:scale-90 data-starting-style:opacity-0",
+              "data-ending-style:[transform:perspective(1200px)_rotateX(8deg)] data-starting-style:[transform:perspective(1200px)_rotateX(8deg)]"
             )}
           >
             <header className="flex items-center justify-between gap-4 p-1">
