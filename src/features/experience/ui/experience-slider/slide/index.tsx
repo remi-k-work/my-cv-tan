@@ -15,13 +15,14 @@ interface SlideProps {
 }
 
 export function Slide({ experience, experience: { txt } }: SlideProps) {
-  const { style, handlers } = useTilt();
+  const { style, handlers, glareStyle } = useTilt();
 
   return (
     <motion.article className="@container relative rounded-xl bg-surface-1 p-3 select-none" style={style} {...handlers}>
       <SlideHeader experience={experience} />
       <ScreenShots experience={experience} />
       <p className="mx-auto mt-3 text-justify text-sm">{excerpt(txt, 240)}</p>
+      <motion.div aria-hidden className="pointer-events-none absolute inset-0 rounded-xl" style={glareStyle} />
     </motion.article>
   );
 }

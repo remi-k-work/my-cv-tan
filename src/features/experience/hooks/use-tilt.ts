@@ -2,7 +2,7 @@
 import { useState } from "react";
 
 // services, features, and other libraries
-import { useMotionValue, useSpring, useTransform } from "motion/react";
+import { useMotionTemplate, useMotionValue, useSpring, useTransform } from "motion/react";
 
 // types
 import type { PointerEvent } from "react";
@@ -17,17 +17,26 @@ const FINE_POINTER_QUERY = "(hover: hover) and (pointer: fine)";
 const TILT_MAX_DEG = 6;
 const TILT_PERSPECTIVE_PX = 1000;
 
+// Peak opacity of the sheen that tracks the pointer across the card
+const GLARE_OPACITY = 0.35;
+
 // Interactive card tilt: the card leans away from the pointer with gentle spring physics
 // The tilt is a pure enhancement — the motion values start neutral, so the server-rendered
 // markup is identical, and the handlers are not attached at all for coarse pointers
 export function useTilt() {
   // Pointer position within the card as offsets from its center, from -0.5 (top/left edge) to +0.5 (bottom/right edge)
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
+  const pointerX = useMotionValue(0);
+  const pointerY = useMotionValue(0);
 
   // The pointer's side of the card leans back into the screen, smoothed into a soft physical tilt
-  const rotateX = useSpring(useTransform(y, [-0.5, 0.5], [TILT_MAX_DEG, -TILT_MAX_DEG]), SPRINGS.gentle);
-  const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-TILT_MAX_DEG, TILT_MAX_DEG]), SPRINGS.gentle);
+  const rotateX = useSpring(useTransform(pointerY, [-0.5, 0.5], [TILT_MAX_DEG, -TILT_MAX_DEG]), SPRINGS.gentle);
+  const rotateY = useSpring(useTransform(pointerX, [-0.5, 0.5], [-TILT_MAX_DEG, TILT_MAX_DEG]), SPRINGS.gentle);
+
+  // The sheen follows the pointer and fades in while it hovers the card
+  const glareX = useTransform(pointerX, [-0.5, 0.5], ["0%", "100%"]);
+  const glareY = useTransform(pointerY, [-0.5, 0.5], ["0%", "100%"]);
+  const glareImage = useMotionTemplate`radial-gradient(circle at ${glareX} ${glareY}, color-mix(in oklab, var(--accent) 45%, transparent), transparent 65%)`;
+  const glareOpacity = useSpring(0, SPRINGS.gentle);
 
   // Whether the pointer is precise enough for tilt; false during SSR, where there is nothing to tilt anyway
   const [isFinePointer] = useState(() => typeof window !== "undefined" && window.matchMedia(FINE_POINTER_QUERY).matches);
@@ -37,18 +46,21 @@ export function useTilt() {
     if (ev.buttons !== 0) return;
 
     const rect = ev.currentTarget.getBoundingClientRect();
-    x.set((ev.clientX - rect.left) / rect.width - 0.5);
-    y.set((ev.clientY - rect.top) / rect.height - 0.5);
+    pointerX.set((ev.clientX - rect.left) / rect.width - 0.5);
+    pointerY.set((ev.clientY - rect.top) / rect.height - 0.5);
+    glareOpacity.set(GLARE_OPACITY);
   }
 
   function handlePointerLeave() {
-    x.set(0);
-    y.set(0);
+    pointerX.set(0);
+    pointerY.set(0);
+    glareOpacity.set(0);
   }
 
   return {
     // Fed to a motion element's style; transformPerspective bakes the 3D space into the element's own transform
     style: { rotateX, rotateY, transformPerspective: TILT_PERSPECTIVE_PX },
     handlers: isFinePointer ? { onPointerMove: handlePointerMove, onPointerLeave: handlePointerLeave } : undefined,
+    glareStyle: { backgroundImage: glareImage, opacity: glareOpacity },
   } as const;
 }
