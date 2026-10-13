@@ -34,14 +34,13 @@ export function ExperienceModal({ isOpen, onClosed, title, children }: Experienc
             "supports-[-webkit-touch-callout:none]:absolute"
           )}
         />
-        <Dialog.Viewport className="fixed inset-0 flex items-center justify-center overflow-hidden">
+        <Dialog.Viewport className="fixed inset-0 flex items-center justify-center overflow-hidden perspective-distant">
           <Dialog.Popup
             className={cn(
               "relative max-h-[90dvh] w-[90dvw] max-w-3xl overflow-auto bg-surface-1 p-1 text-text-1",
               "transition duration-300 ease-in-out",
-              // Swings in and out on a shallow 3D tilt so the overlay feels like it settles into place
-              "data-ending-style:scale-90 data-ending-style:opacity-0 data-starting-style:scale-90 data-starting-style:opacity-0",
-              "data-ending-style:[transform:perspective(1200px)_rotateX(8deg)] data-starting-style:[transform:perspective(1200px)_rotateX(8deg)]"
+              "data-ending-style:scale-90 data-ending-style:transform-[rotateX(6deg)] data-ending-style:opacity-0",
+              "data-starting-style:scale-90 data-starting-style:transform-[rotateX(6deg)] data-starting-style:opacity-0"
             )}
           >
             <header className="flex items-center justify-between gap-4 p-1">

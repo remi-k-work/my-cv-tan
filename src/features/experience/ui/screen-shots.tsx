@@ -19,7 +19,7 @@ const FADE_CYCLE = [
 export function ScreenShots({ experience: { role, imageName, liveLink, videoLink } }: ScreenShotsProps) {
   const shots = (
     // translateZ floats the screenshots above the tilting slide card; outside a preserve-3d parent it is a harmless no-op
-    <article className="grid [transform:translateZ(24px)]">
+    <article className="grid">
       {FADE_CYCLE.map(({ suffix, className }) => (
         <img
           key={suffix}

@@ -25,7 +25,7 @@ export function ContactMap() {
           <ReactLeaflet />
         </Suspense>
       </ClientOnly>
-      <div className="absolute inset-e-4 top-4 animate-float bg-surface-1/90 p-3 text-sm [animation-delay:-3.5s]">
+      <div className="absolute inset-e-4 top-4 animate-float bg-surface-1/90 p-3 text-sm select-none [animation-delay:-3.5s]">
         <img src={avatar} width={288} height={288} alt="Avatar" className="max-h-32 w-full object-cover" loading="lazy" />
         <p className="mt-4">Remi</p>
         <p className="text-text-2">Broniewskiego 24</p>

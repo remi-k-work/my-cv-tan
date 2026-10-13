@@ -10,7 +10,7 @@ interface LinkChipProps {
   children: ReactNode;
 }
 
-// Round icon chip linking out; pops toward the viewer in 3D on hover via the perspective() baked into the transform, so it works at any nesting depth
+// Round icon chip linking to an external page in a new tab
 export function LinkChip({ href, title, children }: LinkChipProps) {
   return (
     <a

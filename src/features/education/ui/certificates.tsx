@@ -11,8 +11,7 @@ import prattOrig from "@/assets/my-certificates-pratt-orig.webp";
 import prattTrans from "@/assets/my-certificates-pratt-trans.webp";
 
 // constants
-// Each document tilts back under a distant perspective on hover, like a photo being laid down on a table
-const CERTIFICATE_CLASSES = "h-auto w-full transition-transform duration-500 hover:[transform:perspective(1000px)_rotateX(3deg)]";
+const CERTIFICATE_CLASSES = "h-auto w-full transition-transform duration-500 hover:[transform:rotateX(3deg)_rotateY(-3deg)_scale(1.02)]";
 
 export function Certificates() {
   const gt = useGT();
@@ -20,7 +19,7 @@ export function Certificates() {
   return (
     <figure className="mx-auto w-full max-w-4xl">
       <PanelCaption>{gt("My Certificates")}</PanelCaption>
-      <a href="/my-certificates.pdf" target="_blank" rel="noopener noreferrer" className="space-y-4">
+      <a href="/my-certificates.pdf" target="_blank" rel="noopener noreferrer" className="space-y-4 perspective-distant">
         <img src={artcom} width={1222} height={870} alt="ARTCOM" loading="lazy" className={CERTIFICATE_CLASSES} />
         <img src={alcc} width={1222} height={870} alt="ALCC" loading="lazy" className={CERTIFICATE_CLASSES} />
         <img src={prattOrig} width={1222} height={870} alt="Pratt" loading="lazy" className={CERTIFICATE_CLASSES} />
