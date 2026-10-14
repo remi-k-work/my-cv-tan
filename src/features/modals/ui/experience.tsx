@@ -28,7 +28,7 @@ export function ExperienceModal({ isOpen, onClosed, title, children }: Experienc
       <Dialog.Portal>
         <Dialog.Backdrop
           className={cn(
-            "fixed inset-0 bg-black opacity-75 backdrop-blur-sm",
+            "fixed inset-0 bg-black opacity-75",
             "transition-opacity duration-300 ease-in-out",
             "data-ending-style:opacity-0 data-starting-style:opacity-0",
             "supports-[-webkit-touch-callout:none]:absolute"

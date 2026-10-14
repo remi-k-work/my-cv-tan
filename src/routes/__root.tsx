@@ -49,7 +49,7 @@ function RootComponent() {
       <Header />
       <Skills />
       <ScrollProgress />
-      <main className="[grid-area:main]">
+      <main className="overflow-clip [grid-area:main]">
         <Outlet />
       </main>
     </div>

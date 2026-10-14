@@ -22,12 +22,12 @@ export function RevealText({ reverse = false, children }: RevealTextProps) {
             ? cn(
                 "col-span-full row-span-full flex animate-sweep-light-bar-r",
                 "after:h-full after:w-2 after:flex-none after:rounded-lg after:bg-accent after:shadow-[0_0_6px_#DFFF00,0_0_12px_#DFFF00] after:content-['']",
-                "before:-z-1 before:flex-1 before:bg-surface-1 before:content-['']"
+                "before:-z-1 before:flex-1 before:bg-surface-2 before:content-['']"
               )
             : cn(
                 "col-span-full row-span-full flex animate-sweep-light-bar",
                 "before:h-full before:w-2 before:flex-none before:rounded-lg before:bg-accent before:shadow-[0_0_6px_#DFFF00,0_0_12px_#DFFF00] before:content-['']",
-                "after:-z-1 after:flex-1 after:bg-surface-1 after:content-['']"
+                "after:-z-1 after:flex-1 after:bg-surface-2 after:content-['']"
               )
         }
       />

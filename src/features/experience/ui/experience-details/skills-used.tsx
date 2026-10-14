@@ -13,8 +13,8 @@ export function SkillsUsed({ experience: { skillsUsed } }: SkillsUsedProps) {
 
   return (
     <aside className="my-4">
-      <h4 className="text-sm font-semibold tracking-widest text-accent">{gt("Skills Used")}</h4>
-      <ul className="flex list-none flex-wrap items-center justify-center">
+      <h4 className="mx-auto text-center tracking-widest text-accent uppercase">{gt("Skills Used")}</h4>
+      <ul className="flex list-none flex-wrap items-center justify-center text-center">
         {skillsUsed.map((skillUsed, index) => (
           <li key={index} className="text-text-2 before:mx-2 before:text-accent before:content-['●']">
             {skillUsed}

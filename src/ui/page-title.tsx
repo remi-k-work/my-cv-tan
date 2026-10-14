@@ -22,7 +22,7 @@ export function PageTitle({ pagePath, pageTitles }: PageTitleProps) {
         <RevealText>{heading}</RevealText>
       </h1>
       {/* The intro settles into place a beat after the sweeping reveals, layering the hero entrance instead of popping in */}
-      <p className="animate-rise [animation-delay:0.55s]">{intro}</p>
+      <p className="animate-rise [animation-delay:1s]">{intro}</p>
     </section>
   );
 }
