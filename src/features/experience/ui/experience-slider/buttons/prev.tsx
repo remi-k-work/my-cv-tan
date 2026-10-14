@@ -12,8 +12,9 @@ interface PrevProps {
 
 export function Prev({ disabled, onPrev }: PrevProps) {
   return (
-    <Button className="button p-2" disabled={disabled} onClick={onPrev}>
-      <PrevIcon className="size-6" />
+    <Button className="button group p-2" disabled={disabled} onClick={onPrev}>
+      {/* The arrow drifts the way it will scroll, so hovering already answers "what does this do" */}
+      <PrevIcon className="size-6 transition-transform group-hover:-translate-x-1" />
     </Button>
   );
 }

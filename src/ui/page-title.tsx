@@ -21,7 +21,8 @@ export function PageTitle({ pagePath, pageTitles }: PageTitleProps) {
       <h1 className="inline-grid overflow-clip text-3xl uppercase">
         <RevealText>{heading}</RevealText>
       </h1>
-      <p>{intro}</p>
+      {/* The intro settles into place a beat after the sweeping reveals, layering the hero entrance instead of popping in */}
+      <p className="animate-rise [animation-delay:0.55s]">{intro}</p>
     </section>
   );
 }

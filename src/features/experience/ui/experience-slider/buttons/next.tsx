@@ -12,8 +12,9 @@ interface NextProps {
 
 export function Next({ disabled, onNext }: NextProps) {
   return (
-    <Button className="button p-2" disabled={disabled} onClick={onNext}>
-      <NextIcon className="size-6" />
+    <Button className="button group p-2" disabled={disabled} onClick={onNext}>
+      {/* The arrow drifts the way it will scroll, so hovering already answers "what does this do" */}
+      <NextIcon className="size-6 transition-transform group-hover:translate-x-1" />
     </Button>
   );
 }

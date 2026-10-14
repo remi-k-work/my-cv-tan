@@ -18,7 +18,6 @@ const FADE_CYCLE = [
 // The experience's cycling screenshots; links to the project's video or live site when it has one
 export function ScreenShots({ experience: { role, imageName, liveLink, videoLink } }: ScreenShotsProps) {
   const shots = (
-    // translateZ floats the screenshots above the tilting slide card; outside a preserve-3d parent it is a harmless no-op
     <article className="grid">
       {FADE_CYCLE.map(({ suffix, className }) => (
         <img

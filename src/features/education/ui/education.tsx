@@ -23,12 +23,12 @@ export function Education({ educationList }: EducationProps) {
       <dl>
         {educationList.map(({ name, year, location, info }, index) => (
           <Fragment key={index}>
-            <dt className="mb-4">
+            <dt className="scroll-rise mb-4">
               <h2 className="text-lg text-text-2 uppercase">{name}</h2>
               <p className="text-sm font-semibold tracking-widest text-accent">{year}</p>
               <p>{location}</p>
             </dt>
-            <dd className="mb-8 last:mb-0">
+            <dd className="scroll-rise mb-8 last:mb-0">
               <p>{info}</p>
             </dd>
           </Fragment>

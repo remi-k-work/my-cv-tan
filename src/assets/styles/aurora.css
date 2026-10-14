@@ -1,0 +1,23 @@
+@theme inline {
+  /* Ambient background glows that drift slowly behind every page; colors come from the existing theme palette */
+  --animate-aurora-a: aurora-a 26s ease-in-out infinite alternate;
+  --animate-aurora-b: aurora-b 34s ease-in-out infinite alternate;
+
+  @keyframes aurora-a {
+    from {
+      transform: translate(-4%, -3%) scale(1);
+    }
+    to {
+      transform: translate(5%, 4%) scale(1.12);
+    }
+  }
+
+  @keyframes aurora-b {
+    from {
+      transform: translate(4%, 5%) scale(1.1);
+    }
+    to {
+      transform: translate(-5%, -4%) scale(1);
+    }
+  }
+}

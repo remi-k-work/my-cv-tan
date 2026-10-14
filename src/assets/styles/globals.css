@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 /* custom styles and animations */
+@import "./aurora.css";
 @import "./cursor-blink.css";
 @import "./float.css";
 @import "./slide-and-fade.css";

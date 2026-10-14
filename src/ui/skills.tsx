@@ -45,9 +45,9 @@ const FLOAT_DELAY_CLASSES = {
   "3.6s": "[animation-delay:3.6s]",
 } as const;
 
-// The icons respond to the pointer like every other interactive chip on the site; only the `scale` property is
+// The icons respond to the pointer like every other interactive chip on the site; only `scale` and `rotate` are
 // transitioned, so the `transform` the float animation drives keeps running untouched
-const SKILL_CELL_CLASSES = "transition-[scale] duration-300 hover:scale-110";
+const SKILL_CELL_CLASSES = "transition-[scale,rotate] duration-300 hover:scale-110 hover:-rotate-6";
 
 function SkillIcon({ src, alt, delay, phase = "stay" }: SkillSource & { delay?: SlideDelay; phase?: SlidePhase }) {
   return (
