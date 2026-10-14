@@ -23,7 +23,8 @@ export function ExperienceDetails({ experience, experience: { txt } }: Experienc
   const paras = chunkTextByWords(txt, MAX_CHUNK_LENGTH);
 
   return (
-    <article className="mx-auto w-full max-w-4xl rounded-xl bg-surface-2 p-3">
+    // The rise plays on the details page load and again inside the overlay each time it opens
+    <article className="mx-auto w-full max-w-4xl animate-rise rounded-xl bg-surface-2 p-3">
       <ExperienceHeader experience={experience}>
         <ExperienceLinks experience={experience} iconClassName="size-11" />
       </ExperienceHeader>

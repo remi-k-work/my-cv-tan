@@ -39,7 +39,9 @@ export function SlideHeader({ experience, experience: { slug } }: SlideHeaderPro
         className={cn(
           "rounded-full border border-text-1 p-1",
           "hover:scale-110 hover:border-accent hover:text-accent",
-          "hover:shadow-[0_0_6px_var(--accent),0_0_12px_var(--accent)]"
+          "hover:shadow-[0_0_6px_var(--accent),0_0_12px_var(--accent)]",
+          // Press feedback mirroring the .button utilities
+          "active:scale-95 active:shadow-none"
         )}
         to="/{-$slug}"
         params={{ slug }}

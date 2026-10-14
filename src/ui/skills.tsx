@@ -45,9 +45,10 @@ const FLOAT_DELAY_CLASSES = {
   "3.6s": "[animation-delay:3.6s]",
 } as const;
 
-// The icons respond to the pointer like every other interactive chip on the site; only `scale` and `rotate` are
-// transitioned, so the `transform` the float animation drives keeps running untouched
-const SKILL_CELL_CLASSES = "transition-[scale,rotate] duration-300 hover:scale-110 hover:-rotate-6";
+// The icons respond to the pointer like every other interactive chip on the site; only `scale` and `filter` are
+// transitioned, so the `transform` the float animation drives keeps running untouched, and the hover glow is the same
+// accent halo the link chips and the reveal light bar cast
+const SKILL_CELL_CLASSES = "transition-[scale,filter] duration-300 hover:scale-110 hover:drop-shadow-[0_0_6px_var(--accent)]";
 
 function SkillIcon({ src, alt, delay, phase = "stay" }: SkillSource & { delay?: SlideDelay; phase?: SlidePhase }) {
   return (
