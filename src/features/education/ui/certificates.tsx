@@ -1,4 +1,5 @@
 // services, features, and other libraries
+import { cn } from "@/lib/utils";
 import { useGT } from "gt-tanstack-start";
 import { motion } from "motion/react";
 import { useTilt } from "@/features/experience/hooks";
@@ -28,9 +29,17 @@ function CertificateSheet({ src, width, height, alt }: CertificateSheetProps) {
 
   return (
     <div className="scroll-rise">
-      <motion.div className="relative" style={style} {...handlers}>
+      {/* Only the shadow transitions, never the transform: the tilt spring owns that and must not be smoothed over */}
+      <motion.div
+        className={cn(
+          "relative overflow-clip rounded-xl transition-shadow duration-300",
+          "hover:shadow-[0_0_16px_color-mix(in_oklab,var(--accent)_35%,transparent)]"
+        )}
+        style={style}
+        {...handlers}
+      >
         <img src={src} width={width} height={height} alt={alt} loading="lazy" className="h-auto w-full" />
-        <motion.div aria-hidden className="pointer-events-none absolute inset-0" style={glareStyle} />
+        <motion.div aria-hidden className="pointer-events-none absolute inset-0 rounded-xl" style={glareStyle} />
       </motion.div>
     </div>
   );

@@ -1,4 +1,5 @@
 // services, features, and other libraries
+import { cn } from "@/lib/utils";
 import { useAtomSet } from "@effect/atom-react";
 import { contactForm } from "@/features/contact-me/domain";
 import { useSubmitToast } from "@/features/contact-me/hooks";
@@ -24,7 +25,10 @@ export function ContactForm() {
   return (
     <form.Initialize defaultValues={{ name: "", email: "", subject: "", message: "", captchaInput: "" }}>
       <form
-        className="mx-auto w-full max-w-4xl rounded-xl bg-surface-1 p-3"
+        className={cn(
+          "mx-auto w-full max-w-4xl rounded-xl border border-transparent bg-surface-1 p-3 transition duration-300",
+          "focus-within:border-accent focus-within:shadow-[0_0_18px_color-mix(in_oklab,var(--accent)_25%,transparent)]"
+        )}
         onSubmit={(ev) => {
           ev.preventDefault();
           ev.stopPropagation();

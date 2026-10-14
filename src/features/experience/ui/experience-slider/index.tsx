@@ -25,7 +25,7 @@ export function ExperienceSlider({ experienceList }: ExperienceSliderProps) {
 
   return (
     <article className="grid grid-cols-[auto_1fr] grid-rows-[1fr_auto] gap-4 [grid-template-areas:'viewport_viewport''prevnext_dots']">
-      <section ref={emblaRef} className="overflow-hidden [grid-area:viewport]">
+      <section ref={emblaRef} className="overflow-clip [grid-area:viewport]">
         <div className="-ms-4 flex touch-pan-y touch-pinch-zoom">
           {experienceList.map((experience) => (
             <div key={experience.slug} className="min-w-0 shrink-0 grow-0 basis-full ps-4">

@@ -39,7 +39,7 @@ export function ToastList() {
     >
       <Toast.Content
         className={cn(
-          "flex h-full items-center gap-4 overflow-hidden p-3",
+          "flex h-full items-center gap-4 overflow-clip p-3",
           "transition-opacity duration-300 ease-in-out",
           "data-behind:opacity-0 data-expanded:opacity-100"
         )}

@@ -1,3 +1,6 @@
+// services, features, and other libraries
+import { cn } from "@/lib/utils";
+
 // types
 import type { Experience } from "@/features/experience/domain";
 
@@ -18,15 +21,17 @@ const FADE_CYCLE = [
 // The experience's cycling screenshots; links to the project's video or live site when it has one
 export function ScreenShots({ experience: { role, imageName, liveLink, videoLink } }: ScreenShotsProps) {
   const shots = (
-    <article className="grid">
+    // Framed and clipped so the shots read as a single image panel, and leaning towards the pointer when it
+    // hovers a linked panel — the whole stack moves as one layer while the crossfade keeps running
+    <article className={cn("grid overflow-clip rounded-lg transition duration-300 ease-in-out", "group-hover:scale-105")}>
       {FADE_CYCLE.map(({ suffix, className }) => (
         <img
           key={suffix}
+          className={cn("col-span-full row-span-full animate-fade-in-out opacity-0", className)}
           src={`/images/${imageName}-${suffix}.webp`}
           width={SCREENSHOT_WIDTH}
           height={SCREENSHOT_HEIGHT}
           alt={role}
-          className={`col-span-full row-span-full animate-fade-in-out opacity-0 ${className}`}
         />
       ))}
     </article>
@@ -35,7 +40,7 @@ export function ScreenShots({ experience: { role, imageName, liveLink, videoLink
   const href = videoLink ?? liveLink;
 
   return href ? (
-    <a href={href} target="_blank" rel="noopener noreferrer">
+    <a className="group" href={href} target="_blank" rel="noopener noreferrer">
       {shots}
     </a>
   ) : (

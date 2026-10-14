@@ -3,6 +3,8 @@ import { Link, useLocation } from "@tanstack/react-router";
 
 // services, features, and other libraries
 import { cn } from "@/lib/utils";
+import { motion } from "motion/react";
+import { SPRINGS } from "@/lib/motion-tokens";
 
 // types
 import type { ReactNode } from "react";
@@ -60,6 +62,16 @@ export function NavItem({ href, title, icon, isExternal = false, index }: NavIte
 
   const content = (
     <>
+      {/* The accent halo only ever exists on the active item; the shared layout id lets it spring across the
+          row on navigation instead of blinking out on one tile and into the next */}
+      {isActive && (
+        <motion.span
+          aria-hidden
+          layoutId="nav-active-glow"
+          transition={SPRINGS.snappy}
+          className="absolute inset-0 -z-1 bg-accent/10 shadow-[0_0_10px_var(--accent)]"
+        />
+      )}
       {icon}
       <Sparks animDelay={index ** 2} />
     </>
