@@ -17,28 +17,33 @@ interface ExperienceLinksProps {
 }
 
 // External links for an experience, rendered only for the links that exist
-export function ExperienceLinks({ experience: { gitHubLink, liveLink, videoLink }, iconClassName }: ExperienceLinksProps) {
+export function ExperienceLinks({ experience, iconClassName }: ExperienceLinksProps) {
   const gt = useGT();
+
+  const { role, company, gitHubLink, liveLink, videoLink } = experience;
+
+  // Repeated chips ("Live Link", "GitHub Repo") are told apart by the experience they belong to
+  const context = `${role}, ${company}`;
 
   return (
     <ul className="contents">
       {liveLink && (
         <li className="contents">
-          <LinkChip href={liveLink} title={gt("Live Link")}>
+          <LinkChip href={liveLink} title={gt("Live Link")} context={context}>
             <GlobeAltIcon className={iconClassName} />
           </LinkChip>
         </li>
       )}
       {gitHubLink && (
         <li className="contents">
-          <LinkChip href={gitHubLink} title={gt("GitHub Repo")}>
+          <LinkChip href={gitHubLink} title={gt("GitHub Repo")} context={context}>
             <GitHubIcon className={iconClassName} />
           </LinkChip>
         </li>
       )}
       {videoLink && (
         <li className="contents">
-          <LinkChip href={videoLink} title={gt("Watch Video")}>
+          <LinkChip href={videoLink} title={gt("Watch Video")} context={context}>
             <VideoCameraIcon className={iconClassName} />
           </LinkChip>
         </li>

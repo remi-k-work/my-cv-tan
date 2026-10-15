@@ -7,11 +7,13 @@ import type { ReactNode } from "react";
 interface LinkChipProps {
   href: string;
   title: string;
+  // Extra context (e.g. the experience identity) so repeated chips stay distinguishable by their accessible name
+  context?: string;
   children: ReactNode;
 }
 
 // Round icon chip linking to an external page in a new tab
-export function LinkChip({ href, title, children }: LinkChipProps) {
+export function LinkChip({ href, title, context, children }: LinkChipProps) {
   return (
     <a
       className={cn(
@@ -26,7 +28,7 @@ export function LinkChip({ href, title, children }: LinkChipProps) {
       target="_blank"
       rel="noopener noreferrer"
       title={title}
-      aria-label={title}
+      aria-label={context ? `${title} — ${context}` : title}
     >
       <span className="flex items-center justify-center" aria-hidden="true">
         {children}

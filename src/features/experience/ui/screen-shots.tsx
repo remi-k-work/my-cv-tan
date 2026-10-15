@@ -1,5 +1,6 @@
 // services, features, and other libraries
 import { cn } from "@/lib/utils";
+import { useGT } from "gt-tanstack-start";
 
 // types
 import type { Experience } from "@/features/experience/domain";
@@ -19,7 +20,9 @@ const FADE_CYCLE = [
 ] as const;
 
 // The experience's cycling screenshots; links to the project's video or live site when it has one
-export function ScreenShots({ experience: { role, imageName, liveLink, videoLink } }: ScreenShotsProps) {
+export function ScreenShots({ experience: { role, company, imageName, liveLink, videoLink } }: ScreenShotsProps) {
+  const gt = useGT();
+
   const shots = (
     // Framed and clipped so the shots read as a single image panel, and leaning towards the pointer when it
     // hovers a linked panel — the whole stack moves as one layer while the crossfade keeps running
@@ -31,17 +34,19 @@ export function ScreenShots({ experience: { role, imageName, liveLink, videoLink
           src={`/images/${imageName}-${suffix}.webp`}
           width={SCREENSHOT_WIDTH}
           height={SCREENSHOT_HEIGHT}
-          alt={index === 0 ? role : ""}
-          aria-hidden={index === 0 ? undefined : true}
+          // The empty alt on the later frames already keeps them out of the accessibility tree; no aria-hidden needed
+          alt={index === 0 ? `${role}, ${company}` : ""}
         />
       ))}
     </div>
   );
 
   const href = videoLink ?? liveLink;
+  // Ordered project-first so the thumbnail link reads differently from the matching LinkChip in the same slide
+  const linkLabel = `${role}, ${company} — ${videoLink ? gt("Watch Video") : gt("Live Link")}`;
 
   return href ? (
-    <a className="group" href={href} target="_blank" rel="noopener noreferrer" aria-label={role}>
+    <a className="group" href={href} target="_blank" rel="noopener noreferrer" aria-label={linkLabel}>
       {shots}
     </a>
   ) : (

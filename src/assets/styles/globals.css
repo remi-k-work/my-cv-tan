@@ -83,6 +83,16 @@
     border-color: var(--accent);
     box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 25%, transparent);
   }
+
+  /* The first focusable element on the page: keyboard users can skip the repeated nav and skills rail and land in <main> */
+  .skip-link {
+    @apply fixed top-0 left-0 z-50 border bg-surface-2 px-4 py-2 tracking-widest text-text-1 uppercase shadow-lg;
+    transform: translateY(-100%);
+  }
+
+  .skip-link:focus {
+    transform: translateY(0);
+  }
 }
 
 /* Mirrors the page titles' sweep light: a bright accent bar crossing the button on hover */

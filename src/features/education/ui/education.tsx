@@ -25,7 +25,8 @@ export function Education({ educationList }: EducationProps) {
         {educationList.map(({ name, year, location, info }, index) => (
           <Fragment key={index}>
             <dt className="scroll-rise mb-4">
-              <h3 className="text-lg text-text-2 uppercase">{name}</h3>
+              {/* A paragraph, not a heading: heading content is not allowed inside a definition term */}
+              <p className="max-w-[35ch] text-lg text-balance text-text-2 uppercase">{name}</p>
               <p className="text-sm font-semibold tracking-widest text-accent">{year}</p>
               <p>{location}</p>
             </dt>

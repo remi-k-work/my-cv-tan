@@ -24,7 +24,7 @@ interface SlideHeaderProps {
 }
 
 // The slide's header adds the "More Info" action, which opens the details overlay instead of navigating
-export function SlideHeader({ experience, experience: { slug } }: SlideHeaderProps) {
+export function SlideHeader({ experience, experience: { slug, role, company } }: SlideHeaderProps) {
   const gt = useGT();
   const setExperience = useAtomSet(experienceAtom);
 
@@ -46,7 +46,7 @@ export function SlideHeader({ experience, experience: { slug } }: SlideHeaderPro
         to="/{-$slug}"
         params={{ slug }}
         title={gt("More Info")}
-        aria-label={gt("More Info")}
+        aria-label={`${gt("More Info")} — ${role}, ${company}`}
         onClick={handleMoreInfoClicked}
       >
         <InformationCircleIcon className="size-9" aria-hidden="true" />

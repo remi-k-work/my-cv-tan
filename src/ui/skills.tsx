@@ -1,5 +1,6 @@
 // services, features, and other libraries
 import { cn } from "@/lib/utils";
+import { useGT } from "gt-tanstack-start";
 
 // assets
 import html from "@/assets/my-skills-html.svg";
@@ -71,6 +72,8 @@ function SwappingSkillPair({ first, second, delay, floatDelay }: { first: SkillS
 }
 
 export function Skills() {
+  const gt = useGT();
+
   return (
     <aside
       className={cn(
@@ -90,7 +93,7 @@ export function Skills() {
         "lg:after:from-primary lg:after:via-accent lg:after:via-5% lg:after:to-primary lg:after:to-10%",
         "lg:after:animate-spark-v lg:after:bg-linear-to-b lg:after:bg-size-[100%_200%] lg:after:[animation-direction:reverse]!"
       )}
-      aria-label="Technical Skills"
+      aria-label={gt("Technical Skills")}
     >
       <ul
         className={cn(

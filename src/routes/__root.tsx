@@ -5,7 +5,7 @@ import { Outlet, createRootRoute, HeadContent, Scripts } from "@tanstack/react-r
 
 // services, features, and other libraries
 import { cn } from "@/lib/utils";
-import { getLocale, getTranslationsSnapshot } from "gt-tanstack-start";
+import { getLocale, getTranslationsSnapshot, useGT } from "gt-tanstack-start";
 import { ROOT_HEAD } from "@/features/meta/domain";
 import { preferredLanguageFromLocale } from "@/features/data/domain";
 
@@ -33,6 +33,8 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
+  const gt = useGT();
+
   return (
     <div
       className={cn(
@@ -40,9 +42,13 @@ function RootComponent() {
         "lg:grid-cols-[11rem_1rem_1fr_1rem] lg:grid-rows-[7rem_1fr] lg:[grid-template-areas:'skills_header_header_header''skills_._main_.']"
       )}
     >
+      {/* First focusable element in the layout, so keyboard users can bypass the nav and skills rail */}
+      <a href="#main-content" className="skip-link">
+        {gt("Skip to Main Content")}
+      </a>
       <Header />
       <Skills />
-      <main className="overflow-clip [grid-area:main]">
+      <main id="main-content" tabIndex={-1} className="overflow-clip [grid-area:main]">
         <Outlet />
       </main>
     </div>

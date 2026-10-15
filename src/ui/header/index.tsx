@@ -27,7 +27,7 @@ export function Header() {
         "max-lg:after:animate-spark-h max-lg:after:bg-linear-to-r max-lg:after:from-primary max-lg:after:via-accent max-lg:after:via-5% max-lg:after:to-primary max-lg:after:to-10% max-lg:after:bg-size-[200%] max-lg:after:[animation-direction:reverse]!"
       )}
     >
-      <nav aria-label={gt("Primary Navigation")} className="mx-2">
+      <nav aria-label={gt("Primary")} className="mx-2">
         <ul
           className={cn(
             "grid place-content-evenly place-items-center gap-x-4 gap-y-1",

@@ -1,5 +1,6 @@
 // services, features, and other libraries
 import { cn } from "@/lib/utils";
+import { useGT } from "gt-tanstack-start";
 
 // components
 import { Toast } from "@base-ui/react";
@@ -8,6 +9,7 @@ import { Toast } from "@base-ui/react";
 import { CheckCircleIcon, ExclamationTriangleIcon, XCircleIcon } from "@heroicons/react/24/solid";
 
 export function ToastList() {
+  const gt = useGT();
   const { toasts } = Toast.useToastManager();
 
   return toasts.map((toast) => (
@@ -55,7 +57,7 @@ export function ToastList() {
           </div>
           <Toast.Description className="text-text-1" />
         </div>
-        <Toast.Close className="button bg-secondary p-1 text-text-1">
+        <Toast.Close className="button bg-secondary p-1 text-text-1" aria-label={gt("Close")}>
           <XCircleIcon className="size-11" aria-hidden="true" />
         </Toast.Close>
       </Toast.Content>
