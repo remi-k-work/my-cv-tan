@@ -1,7 +1,6 @@
 @import "tailwindcss";
 
 /* custom styles and animations */
-@import "./aurora.css";
 @import "./cursor-blink.css";
 @import "./float.css";
 @import "./slide-and-fade.css";
@@ -108,6 +107,7 @@
 
   body {
     @apply min-h-dvh bg-surface-1 text-base text-text-1;
+    @apply bg-radial-[at_75%_75%] from-accent/25 via-secondary/15 to-surface-1;
   }
 
   a,

@@ -10,11 +10,9 @@ interface SkillsUsedProps {
 }
 
 // constants
-// How much later each chip settles in, so the skill list assembles itself instead of popping in all at once
-const ENTER_STAGGER_SECONDS = 0.6;
+import { MOTION_TOKENS } from "@/lib/motion-tokens";
 
-// The skills a project leaned on, as glowing chips: they rise in one after another, and pick up the same neon
-// halo the link chips cast when the pointer comes near
+// The skills a project leaned on
 export function SkillsUsed({ experience: { skillsUsed } }: SkillsUsedProps) {
   const gt = useGT();
 
@@ -25,11 +23,8 @@ export function SkillsUsed({ experience: { skillsUsed } }: SkillsUsedProps) {
         {skillsUsed.map((skillUsed, index) => (
           <li
             key={index}
-            className={cn(
-              "animate-rise rounded-full border border-text-1 bg-surface-1 px-3 py-1 text-text-2 transition duration-300 select-none",
-              "hover:-translate-y-0.5 hover:border-accent hover:text-accent hover:shadow-[0_0_6px_var(--accent),0_0_12px_var(--accent)]"
-            )}
-            style={{ animationDelay: `${index * ENTER_STAGGER_SECONDS}s` }}
+            className={cn("animate-rise rounded-full border bg-surface-1 px-3 py-1 text-text-2 select-none", "odd:bg-surface-2")}
+            style={{ animationDelay: `${index * MOTION_TOKENS.duration.slow}s` }}
           >
             {skillUsed}
           </li>

@@ -45,11 +45,6 @@ const FLOAT_DELAY_CLASSES = {
   "3.6s": "[animation-delay:3.6s]",
 } as const;
 
-// The icons respond to the pointer like every other interactive chip on the site; only `scale` and `filter` are
-// transitioned, so the `transform` the float animation drives keeps running untouched, and the hover glow is the same
-// accent halo the link chips and the reveal light bar cast
-const SKILL_CELL_CLASSES = "transition-[scale,filter] duration-300 hover:scale-110 hover:drop-shadow-[0_0_6px_var(--accent)]";
-
 function SkillIcon({ src, alt, delay, phase = "stay" }: SkillSource & { delay?: SlideDelay; phase?: SlidePhase }) {
   return (
     <img
@@ -68,7 +63,7 @@ function SkillIcon({ src, alt, delay, phase = "stay" }: SkillSource & { delay?: 
 // Two skills trading places in a single cell: the first slides in then periodically fades out while the second fades in
 function SwappingSkillPair({ first, second, delay, floatDelay }: { first: SkillSource; second: SkillSource; delay: SlideDelay; floatDelay: FloatDelay }) {
   return (
-    <li className={cn("grid animate-float *:col-span-full *:row-span-full", SKILL_CELL_CLASSES, FLOAT_DELAY_CLASSES[floatDelay])}>
+    <li className={cn("grid animate-float *:col-span-full *:row-span-full", FLOAT_DELAY_CLASSES[floatDelay])}>
       <SkillIcon {...first} delay={delay} phase="out" />
       <SkillIcon {...second} delay={delay} phase="in" />
     </li>
@@ -103,10 +98,10 @@ export function Skills() {
           "lg:sticky lg:top-28 lg:h-[calc(100dvh-7rem)] lg:grid-flow-row lg:grid-cols-2"
         )}
       >
-        <li className={cn("animate-float", SKILL_CELL_CLASSES, FLOAT_DELAY_CLASSES["0s"])}>
+        <li className={cn("animate-float", FLOAT_DELAY_CLASSES["0s"])}>
           <SkillIcon src={html} alt="HTML" />
         </li>
-        <li className={cn("animate-float", SKILL_CELL_CLASSES, FLOAT_DELAY_CLASSES["0.9s"])}>
+        <li className={cn("animate-float", FLOAT_DELAY_CLASSES["0.9s"])}>
           <SkillIcon src={css} alt="CSS" delay="0.2s" />
         </li>
         <SwappingSkillPair first={{ src: javascript, alt: "JavaScript" }} second={{ src: typescript, alt: "TypeScript" }} delay="0.4s" floatDelay="1.8s" />

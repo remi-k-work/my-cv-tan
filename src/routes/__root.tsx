@@ -15,7 +15,6 @@ import { AtomRegistryProvider } from "@/ui/atom-registry-provider";
 import { Toastify } from "@/ui/toastify";
 import { Header } from "@/ui/header";
 import { Skills } from "@/ui/skills";
-import { ScrollProgress } from "@/ui/scroll-progress";
 
 // assets
 import "@fontsource/outfit";
@@ -41,14 +40,8 @@ function RootComponent() {
         "lg:grid-cols-[11rem_1rem_1fr_1rem] lg:grid-rows-[7rem_1fr] lg:[grid-template-areas:'skills_header_header_header''skills_._main_.']"
       )}
     >
-      {/* Ambient glows drifting behind every page; pure decoration, so they stay out of the a11y tree and never await any JavaScript */}
-      <div aria-hidden className="pointer-events-none fixed inset-0 -z-1 overflow-hidden">
-        <div className="absolute top-[-20%] left-[-15%] size-[70vmax] animate-aurora-a rounded-full bg-[radial-gradient(circle_at_center,color-mix(in_oklab,var(--secondary)_15%,transparent),transparent_65%)]" />
-        <div className="absolute right-[-15%] bottom-[-20%] size-[70vmax] animate-aurora-b rounded-full bg-[radial-gradient(circle_at_center,color-mix(in_oklab,var(--accent)_8%,transparent),transparent_65%)]" />
-      </div>
       <Header />
       <Skills />
-      <ScrollProgress />
       <main className="overflow-clip [grid-area:main]">
         <Outlet />
       </main>
