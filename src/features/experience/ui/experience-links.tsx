@@ -21,22 +21,28 @@ export function ExperienceLinks({ experience: { gitHubLink, liveLink, videoLink 
   const gt = useGT();
 
   return (
-    <>
+    <ul className="contents">
       {liveLink && (
-        <LinkChip href={liveLink} title={gt("Live Link")}>
-          <GlobeAltIcon className={iconClassName} />
-        </LinkChip>
+        <li className="contents">
+          <LinkChip href={liveLink} title={gt("Live Link")}>
+            <GlobeAltIcon className={iconClassName} />
+          </LinkChip>
+        </li>
       )}
       {gitHubLink && (
-        <LinkChip href={gitHubLink} title={gt("Go and see the GitHub Repo")}>
-          <GitHubIcon className={iconClassName} />
-        </LinkChip>
+        <li className="contents">
+          <LinkChip href={gitHubLink} title={gt("GitHub Repo")}>
+            <GitHubIcon className={iconClassName} />
+          </LinkChip>
+        </li>
       )}
       {videoLink && (
-        <LinkChip href={videoLink} title={gt("Watch Video")}>
-          <VideoCameraIcon className={iconClassName} />
-        </LinkChip>
+        <li className="contents">
+          <LinkChip href={videoLink} title={gt("Watch Video")}>
+            <VideoCameraIcon className={iconClassName} />
+          </LinkChip>
+        </li>
       )}
-    </>
+    </ul>
   );
 }

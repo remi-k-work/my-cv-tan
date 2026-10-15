@@ -22,15 +22,28 @@ export const TextInput: FormReact.FieldComponent<string, TextInputProps> = ({ fi
   const { label, ...rest } = props;
 
   // Generate a unique id
-  const id = useId();
+  const baseId = useId();
+  const inputId = `${baseId}-input`;
+  const errorId = `${baseId}-error`;
+  const hasError = Option.isSome(error);
 
   return (
     <>
-      <label className="label" htmlFor={id}>
+      <label className="label" htmlFor={inputId}>
         {label}
       </label>
-      <Input className="input" id={id} name={path} value={value} onChange={(ev) => onChange(ev.target.value)} onBlur={onBlur} {...rest} />
-      <ErrorLine message={Option.getOrUndefined(error)} />
+      <Input
+        className="input"
+        id={inputId}
+        name={path}
+        value={value}
+        onChange={(ev) => onChange(ev.target.value)}
+        onBlur={onBlur}
+        aria-invalid={hasError || undefined}
+        aria-describedby={hasError ? errorId : undefined}
+        {...rest}
+      />
+      <ErrorLine id={errorId} message={Option.getOrUndefined(error)} />
     </>
   );
 };

@@ -38,19 +38,19 @@ export function FormSubmit({ contactForm }: FormSubmitProps) {
   const canSubmit = isDirty && !waiting && (hasChangedSinceSubmit || !hasSubmittedSuccessfully);
 
   return (
-    <section className="flex flex-wrap gap-3 *:flex-1 md:gap-6">
+    <div className="flex flex-wrap gap-3 *:flex-1 md:gap-6">
       <Button className="button" type="submit" disabled={!canSubmit}>
-        {waiting ? <Loader2 className="size-9 animate-spin" /> : <PaperAirplaneIcon className="size-9" />}
+        {waiting ? <Loader2 className="size-9 animate-spin" aria-hidden="true" /> : <PaperAirplaneIcon className="size-9" aria-hidden="true" />}
         {waiting ? gt("Sending...") : gt("Send")}
       </Button>
       <Button className="button bg-destructive" onClick={() => reset()}>
-        <XCircleIcon className="size-9" />
+        <XCircleIcon className="size-9" aria-hidden="true" />
         {gt("Reset")}
       </Button>
       <Button className="button bg-secondary" onClick={() => router.history.back()}>
-        <ArrowLeftCircleIcon className="size-9" />
+        <ArrowLeftCircleIcon className="size-9" aria-hidden="true" />
         {gt("Cancel")}
       </Button>
-    </section>
+    </div>
   );
 }

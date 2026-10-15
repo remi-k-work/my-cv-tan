@@ -35,7 +35,7 @@ export function ContactMap() {
       {/* The card floats on its own element, so the CSS float and the pointer tilt never fight over one transform */}
       <motion.div className="absolute inset-e-4 top-4" style={style} {...handlers}>
         <div className="animate-float rounded-xl bg-surface-1/90 p-3 text-sm select-none [animation-delay:-3.5s]">
-          <img src={avatar} width={288} height={288} alt="Avatar" className="max-h-32 w-full object-cover" loading="lazy" />
+          <img src={avatar} width={288} height={288} alt="Portrait of Remi" className="max-h-32 w-full object-cover" loading="lazy" />
           <p className="mt-4">Remi</p>
           <p className="text-text-2">Broniewskiego 24</p>
           <p className="text-text-2">35-206 Rzeszów</p>
@@ -44,7 +44,7 @@ export function ContactMap() {
             remi.k.work@proton.me
           </a>
         </div>
-        <motion.div aria-hidden className="pointer-events-none absolute inset-0 rounded-xl" style={glareStyle} />
+        <motion.div className="pointer-events-none absolute inset-0 rounded-xl" style={glareStyle} aria-hidden="true" />
       </motion.div>
     </div>
   );

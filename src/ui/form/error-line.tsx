@@ -7,6 +7,7 @@ import { ExclamationTriangleIcon } from "@heroicons/react/24/solid";
 
 // types
 interface ErrorLineProps {
+  id?: string;
   message?: string;
 }
 
@@ -15,7 +16,7 @@ import { SPRINGS } from "@/lib/motion-tokens";
 
 // A field validation message animated in and out; reserves its vertical space so the form does not jump
 // Schema validation messages arrive as msg()-registered strings; m resolves those at runtime
-export function ErrorLine({ message }: ErrorLineProps) {
+export function ErrorLine({ id, message }: ErrorLineProps) {
   const m = useMessages();
 
   return (
@@ -23,6 +24,7 @@ export function ErrorLine({ message }: ErrorLineProps) {
       <AnimatePresence>
         {message && (
           <motion.p
+            id={id}
             role="alert"
             className="flex max-w-none items-center gap-2 overflow-clip rounded-b-xl border border-destructive px-3 py-2 text-destructive"
             layout
@@ -31,7 +33,7 @@ export function ErrorLine({ message }: ErrorLineProps) {
             exit={{ opacity: 0, y: "-25%", height: 0 }}
             transition={SPRINGS.gentle}
           >
-            <ExclamationTriangleIcon className="size-9 flex-none" />
+            <ExclamationTriangleIcon className="size-9 flex-none" aria-hidden="true" />
             {m(message)}
           </motion.p>
         )}

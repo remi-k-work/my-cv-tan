@@ -27,18 +27,23 @@ export function Header() {
         "max-lg:after:animate-spark-h max-lg:after:bg-linear-to-r max-lg:after:from-primary max-lg:after:via-accent max-lg:after:via-5% max-lg:after:to-primary max-lg:after:to-10% max-lg:after:bg-size-[200%] max-lg:after:[animation-direction:reverse]!"
       )}
     >
-      <nav
-        className={cn(
-          "mx-2 grid place-content-evenly place-items-center gap-x-4 gap-y-1",
-          "h-44 grid-flow-row grid-cols-4",
-          "lg:h-28 lg:grid-flow-col lg:grid-cols-none",
-          "*:border *:bg-surface-1 *:p-3 *:text-text-2 *:hover:text-accent"
-        )}
-      >
-        {NAV_ITEMS(cvPdfHref(preferredLanguageFromLocale(locale)), gt).map((navItem, index) => (
-          <NavItem key={navItem.href} {...navItem} index={index} />
-        ))}
-        <LangChanger />
+      <nav aria-label={gt("Primary Navigation")} className="mx-2">
+        <ul
+          className={cn(
+            "grid place-content-evenly place-items-center gap-x-4 gap-y-1",
+            "h-44 grid-flow-row grid-cols-4",
+            "lg:h-28 lg:grid-flow-col lg:grid-cols-none"
+          )}
+        >
+          {NAV_ITEMS(cvPdfHref(preferredLanguageFromLocale(locale)), gt).map((navItem, index) => (
+            <li key={navItem.href} className="contents">
+              <NavItem {...navItem} index={index} />
+            </li>
+          ))}
+          <li className="contents">
+            <LangChanger />
+          </li>
+        </ul>
       </nav>
     </header>
   );

@@ -30,6 +30,7 @@ export function RevealText({ reverse = false, children }: RevealTextProps) {
                 "after:-z-1 after:flex-1 after:bg-surface-2 after:content-['']"
               )
         }
+        aria-hidden="true"
       />
     </>
   );

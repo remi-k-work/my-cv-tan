@@ -26,8 +26,11 @@ export function LinkChip({ href, title, children }: LinkChipProps) {
       target="_blank"
       rel="noopener noreferrer"
       title={title}
+      aria-label={title}
     >
-      {children}
+      <span className="flex items-center justify-center" aria-hidden="true">
+        {children}
+      </span>
     </a>
   );
 }

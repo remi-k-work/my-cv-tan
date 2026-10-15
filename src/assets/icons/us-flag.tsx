@@ -1,9 +1,9 @@
 // types
 import type { ComponentPropsWithoutRef } from "react";
 
-export function UsFlagIcon({ className }: ComponentPropsWithoutRef<"svg">) {
+export function UsFlagIcon({ className, ...rest }: ComponentPropsWithoutRef<"svg">) {
   return (
-    <svg viewBox="0 0 512 512" className={className}>
+    <svg viewBox="0 0 512 512" className={className} aria-hidden="true" {...rest}>
       <path fill="#bd3d44" d="M0 0h512v512H0" />
       <path stroke="#fff" strokeWidth="40" d="M0 58h512M0 137h512M0 216h512M0 295h512M0 374h512M0 453h512" />
       <path fill="#192f5d" d="M0 0h390v275H0z" />

@@ -19,12 +19,12 @@ export function Captcha() {
   const [captchaSrc, setCaptchaSrc] = useState("/api/captcha");
 
   return (
-    <article className="flex items-center justify-center gap-3">
+    <div className="flex items-center justify-center gap-3">
       <img className="rounded" src={captchaSrc} width={CAPTCHA_WIDTH} height={CAPTCHA_HEIGHT} alt={gt("Captcha")} />
       <Button className="button" aria-label={gt("Refresh CAPTCHA")} onClick={() => setCaptchaSrc(`/api/captcha?t=${DateTime.nowUnsafe().epochMilliseconds}`)}>
         {/* Keyed by the captcha source, so the icon remounts and spins once whenever a fresh captcha is fetched */}
-        <ArrowPathIcon key={captchaSrc} className="size-9 animate-spin-once" />
+        <ArrowPathIcon key={captchaSrc} className="size-9 animate-spin-once" aria-hidden="true" />
       </Button>
-    </article>
+    </div>
   );
 }

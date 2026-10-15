@@ -25,14 +25,14 @@ function EducationPage() {
   return (
     <>
       <PageTitle pagePath="/education" pageTitles={randomPageTitles} />
-      <article className="grid animate-rise grid-cols-1 gap-4 [animation-delay:0.5s] xl:grid-cols-2">
-        <section className="rounded-xl bg-surface-2 p-4">
+      <div className="grid animate-rise grid-cols-1 gap-4 [animation-delay:0.5s] xl:grid-cols-2">
+        <div className="rounded-xl bg-surface-2 p-4">
           <Certificates />
-        </section>
-        <section className="rounded-xl bg-surface-2 p-4">
+        </div>
+        <div className="rounded-xl bg-surface-2 p-4">
           <Education educationList={educationList} />
-        </section>
-      </article>
+        </div>
+      </div>
     </>
   );
 }

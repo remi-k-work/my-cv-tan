@@ -1,3 +1,6 @@
+// react
+import { useId } from "react";
+
 // services, features, and other libraries
 import { cn } from "@/lib/utils";
 import { useGT } from "gt-tanstack-start";
@@ -39,7 +42,7 @@ function CertificateSheet({ src, width, height, alt }: CertificateSheetProps) {
         {...handlers}
       >
         <img src={src} width={width} height={height} alt={alt} loading="lazy" className="h-auto w-full" />
-        <motion.div aria-hidden className="pointer-events-none absolute inset-0 rounded-xl" style={glareStyle} />
+        <motion.div className="pointer-events-none absolute inset-0 rounded-xl" style={glareStyle} aria-hidden="true" />
       </motion.div>
     </div>
   );
@@ -47,16 +50,17 @@ function CertificateSheet({ src, width, height, alt }: CertificateSheetProps) {
 
 export function Certificates() {
   const gt = useGT();
+  const headingId = useId();
 
   return (
-    <figure className="mx-auto w-full max-w-4xl">
-      <PanelCaption>{gt("My Certificates")}</PanelCaption>
-      <a href="/my-certificates.pdf" target="_blank" rel="noopener noreferrer" className="space-y-4">
+    <section className="mx-auto w-full max-w-4xl" aria-labelledby={headingId}>
+      <PanelCaption id={headingId}>{gt("My Certificates")}</PanelCaption>
+      <a className="space-y-4" href="/my-certificates.pdf" target="_blank" rel="noopener noreferrer" aria-label={gt("View Certificates PDF")}>
         <CertificateSheet src={artcom} width={1222} height={870} alt="ARTCOM" />
         <CertificateSheet src={alcc} width={1222} height={870} alt="ALCC" />
         <CertificateSheet src={prattOrig} width={1222} height={870} alt="Pratt" />
         <CertificateSheet src={prattTrans} width={1694} height={870} alt="Pratt" />
       </a>
-    </figure>
+    </section>
   );
 }

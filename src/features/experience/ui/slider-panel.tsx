@@ -1,3 +1,6 @@
+// react
+import { useId } from "react";
+
 // components
 import { PanelCaption } from "@/ui/panel-caption";
 import { ExperienceSlider } from "./experience-slider";
@@ -11,12 +14,14 @@ interface SliderPanelProps {
 }
 
 export function SliderPanel({ title, experienceList }: SliderPanelProps) {
+  const headingId = useId();
+
   return (
-    <section className="rounded-xl bg-surface-2 p-4">
-      <figure className="mx-auto w-full max-w-4xl">
-        <PanelCaption>{title}</PanelCaption>
+    <section className="rounded-xl bg-surface-2 p-4" aria-labelledby={headingId}>
+      <div className="mx-auto w-full max-w-4xl">
+        <PanelCaption id={headingId}>{title}</PanelCaption>
         <ExperienceSlider experienceList={experienceList} />
-      </figure>
+      </div>
     </section>
   );
 }

@@ -90,6 +90,7 @@ export function Skills() {
         "lg:after:from-primary lg:after:via-accent lg:after:via-5% lg:after:to-primary lg:after:to-10%",
         "lg:after:animate-spark-v lg:after:bg-linear-to-b lg:after:bg-size-[100%_200%] lg:after:[animation-direction:reverse]!"
       )}
+      aria-label="Technical Skills"
     >
       <ul
         className={cn(

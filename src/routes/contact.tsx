@@ -25,14 +25,14 @@ function ContactPage() {
   return (
     <>
       <PageTitle pagePath="/contact" pageTitles={randomPageTitles} />
-      <article className="grid animate-rise auto-rows-fr grid-cols-1 gap-4 [animation-delay:0.5s] xl:grid-cols-2">
-        <section className="rounded-xl bg-surface-2 p-4">
+      <div className="grid animate-rise auto-rows-fr grid-cols-1 gap-4 [animation-delay:0.5s] xl:grid-cols-2">
+        <div className="rounded-xl bg-surface-2 p-4">
           <ContactForm />
-        </section>
-        <section className="rounded-xl bg-surface-2 p-4">
+        </div>
+        <div className="rounded-xl bg-surface-2 p-4">
           <ContactMap />
-        </section>
-      </article>
+        </div>
+      </div>
     </>
   );
 }

@@ -66,7 +66,7 @@ const polishTranslations: Record<string, string> = {
   Years: "Lata",
   Location: "Lokalizacja",
   Channels: "Kanały",
-  "Contact form": "Formularz kontaktowy",
+  "Contact Form": "Formularz Kontaktowy",
   Base: "Lokalizacja",
   "Rzeszów, Poland": "Rzeszów, Polska",
   "Not Found": "Nie znaleziono",
@@ -208,7 +208,7 @@ it("buildContactMd advertises the same social profiles as the HTML page", () => 
 
   const polish = buildContactMd({ pageTitles: stablePageTitles, preferredLanguage: "pl", translate: translatePl });
   assert.include(polish, "## Kanały");
-  assert.include(polish, "Formularz kontaktowy:");
+  assert.include(polish, "Formularz Kontaktowy:");
   assert.include(polish, "Lokalizacja: Rzeszów, Polska");
 });
 

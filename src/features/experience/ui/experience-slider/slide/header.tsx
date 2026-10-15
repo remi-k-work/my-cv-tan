@@ -34,7 +34,7 @@ export function SlideHeader({ experience, experience: { slug } }: SlideHeaderPro
   }
 
   return (
-    <ExperienceHeader experience={experience}>
+    <ExperienceHeader experience={experience} headingLevel={3}>
       <Link
         className={cn(
           "rounded-full border border-text-1 p-1",
@@ -45,10 +45,11 @@ export function SlideHeader({ experience, experience: { slug } }: SlideHeaderPro
         )}
         to="/{-$slug}"
         params={{ slug }}
-        onClick={handleMoreInfoClicked}
         title={gt("More Info")}
+        aria-label={gt("More Info")}
+        onClick={handleMoreInfoClicked}
       >
-        <InformationCircleIcon className="size-9" />
+        <InformationCircleIcon className="size-9" aria-hidden="true" />
       </Link>
       <ExperienceLinks experience={experience} iconClassName="size-9" />
     </ExperienceHeader>

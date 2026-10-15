@@ -23,24 +23,25 @@ export function ScreenShots({ experience: { role, imageName, liveLink, videoLink
   const shots = (
     // Framed and clipped so the shots read as a single image panel, and leaning towards the pointer when it
     // hovers a linked panel — the whole stack moves as one layer while the crossfade keeps running
-    <article className={cn("grid overflow-clip rounded-lg transition duration-300 ease-in-out", "group-hover:scale-105")}>
-      {FADE_CYCLE.map(({ suffix, className }) => (
+    <div className={cn("grid overflow-clip rounded-lg transition duration-300 ease-in-out", "group-hover:scale-105")}>
+      {FADE_CYCLE.map(({ suffix, className }, index) => (
         <img
           key={suffix}
           className={cn("col-span-full row-span-full animate-fade-in-out opacity-0", className)}
           src={`/images/${imageName}-${suffix}.webp`}
           width={SCREENSHOT_WIDTH}
           height={SCREENSHOT_HEIGHT}
-          alt={role}
+          alt={index === 0 ? role : ""}
+          aria-hidden={index === 0 ? undefined : true}
         />
       ))}
-    </article>
+    </div>
   );
 
   const href = videoLink ?? liveLink;
 
   return href ? (
-    <a className="group" href={href} target="_blank" rel="noopener noreferrer">
+    <a className="group" href={href} target="_blank" rel="noopener noreferrer" aria-label={role}>
       {shots}
     </a>
   ) : (

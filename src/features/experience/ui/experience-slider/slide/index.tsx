@@ -22,7 +22,7 @@ export function Slide({ experience, experience: { txt } }: SlideProps) {
       <SlideHeader experience={experience} />
       <ScreenShots experience={experience} />
       <p className="mx-auto mt-3 text-justify text-sm">{excerpt(txt, 240)}</p>
-      <motion.div aria-hidden className="pointer-events-none absolute inset-0 rounded-xl" style={glareStyle} />
+      <motion.div className="pointer-events-none absolute inset-0 rounded-xl" style={glareStyle} aria-hidden="true" />
     </motion.article>
   );
 }

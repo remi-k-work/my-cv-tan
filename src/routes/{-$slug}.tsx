@@ -42,10 +42,10 @@ function HomePage() {
     return (
       <>
         <PageTitle pagePath="/" pageTitles={randomPageTitles} />
-        <article className="grid animate-rise grid-cols-1 gap-4 [animation-delay:0.5s] xl:grid-cols-2">
+        <div className="grid animate-rise grid-cols-1 gap-4 [animation-delay:0.5s] xl:grid-cols-2">
           <SliderPanel title={gt("Experience")} experienceList={employmentHistory} />
           <SliderPanel title={gt("Portfolio Projects")} experienceList={portfolioProjects} />
-        </article>
+        </div>
         {/* Overlay opened by intercepting the "more info" link: no navigation, so the sliders above stay mounted and keep their position */}
         <ExperienceDetailsModal />
       </>

@@ -45,14 +45,18 @@ export function ToastList() {
         )}
       >
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="flex items-center gap-2">
-            {toast.type === "error" ? <ExclamationTriangleIcon className="size-11" /> : <CheckCircleIcon className="size-11" />}
+          <div className="flex items-center gap-2">
+            {toast.type === "error" ? (
+              <ExclamationTriangleIcon className="size-11" aria-hidden="true" />
+            ) : (
+              <CheckCircleIcon className="size-11" aria-hidden="true" />
+            )}
             <Toast.Title className="text-lg font-semibold tracking-widest text-text-2 uppercase data-[type=error]:text-destructive sm:text-xl" />
-          </header>
+          </div>
           <Toast.Description className="text-text-1" />
         </div>
         <Toast.Close className="button bg-secondary p-1 text-text-1">
-          <XCircleIcon className="size-11" />
+          <XCircleIcon className="size-11" aria-hidden="true" />
         </Toast.Close>
       </Toast.Content>
     </Toast.Root>

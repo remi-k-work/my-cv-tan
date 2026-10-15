@@ -116,7 +116,7 @@ export const buildContactMd = ({ pageTitles, preferredLanguage, translate }: Con
     mdHeading(2, translate(msg("Channels"))),
     ``,
     mdBulletList([
-      `${translate(msg("Contact form"))}: ${canonical} (${translate(msg("same page in HTML"))})`,
+      `${translate(msg("Contact Form"))}: ${canonical} (${translate(msg("same page in HTML"))})`,
       `${translate(msg("Base"))}: ${translate(msg("Rzeszów, Poland"))}`,
       `GitHub: ${gitHubLink}`,
       `LinkedIn: ${linkedInLink}`,

@@ -12,7 +12,7 @@ import { ErrorLine } from "@/ui/form";
 import type { ComponentPropsWithoutRef } from "react";
 
 interface TextAreaInputProps extends ComponentPropsWithoutRef<"textarea"> {
-  label?: string;
+  label: string;
 }
 
 export const TextAreaInput: FormReact.FieldComponent<string, TextAreaInputProps> = ({ field, props }) => {
@@ -21,17 +21,28 @@ export const TextAreaInput: FormReact.FieldComponent<string, TextAreaInputProps>
   const { label, ...rest } = props;
 
   // Generate a unique id
-  const id = useId();
+  const baseId = useId();
+  const inputId = `${baseId}-input`;
+  const errorId = `${baseId}-error`;
+  const hasError = Option.isSome(error);
 
   return (
     <>
-      {label && (
-        <label className="label" htmlFor={id}>
-          {label}
-        </label>
-      )}
-      <textarea className="textarea" id={id} name={path} value={value} onChange={(ev) => onChange(ev.target.value)} onBlur={onBlur} {...rest} />
-      <ErrorLine message={Option.getOrUndefined(error)} />
+      <label className="label" htmlFor={inputId}>
+        {label}
+      </label>
+      <textarea
+        className="textarea"
+        id={inputId}
+        name={path}
+        value={value}
+        onChange={(ev) => onChange(ev.target.value)}
+        onBlur={onBlur}
+        aria-invalid={hasError || undefined}
+        aria-describedby={hasError ? errorId : undefined}
+        {...rest}
+      />
+      <ErrorLine id={errorId} message={Option.getOrUndefined(error)} />
     </>
   );
 };

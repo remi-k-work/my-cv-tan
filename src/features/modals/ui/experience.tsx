@@ -44,14 +44,14 @@ export function ExperienceModal({ isOpen, onClosed, title, children }: Experienc
             )}
           >
             <header className="mb-6 flex items-center justify-between gap-4 bg-surface-2 p-1">
-              <section className="flex items-center gap-2 text-text-2">
-                <InformationCircleIcon className="size-11 flex-none" />
-                <h3 className="inline-grid flex-1 overflow-clip text-xl tracking-widest uppercase">
+              <div className="flex items-center gap-2 text-text-2">
+                <InformationCircleIcon className="size-11 flex-none" aria-hidden="true" />
+                <h2 className="inline-grid flex-1 overflow-clip text-xl tracking-widest uppercase">
                   <RevealText>{title}</RevealText>
-                </h3>
-              </section>
+                </h2>
+              </div>
               <Button className="button" title={gt("Close")} aria-label={gt("Close")} onClick={onClosed}>
-                <XCircleIcon className="size-9" />
+                <XCircleIcon className="size-9" aria-hidden="true" />
               </Button>
             </header>
             {children}

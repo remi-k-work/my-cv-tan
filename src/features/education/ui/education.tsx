@@ -1,5 +1,5 @@
 // react
-import { Fragment } from "react";
+import { Fragment, useId } from "react";
 
 // services, features, and other libraries
 import { useGT } from "gt-tanstack-start";
@@ -16,15 +16,16 @@ interface EducationProps {
 
 export function Education({ educationList }: EducationProps) {
   const gt = useGT();
+  const headingId = useId();
 
   return (
-    <figure className="mx-auto w-full max-w-4xl">
-      <PanelCaption>{gt("My Education")}</PanelCaption>
+    <section className="mx-auto w-full max-w-4xl" aria-labelledby={headingId}>
+      <PanelCaption id={headingId}>{gt("My Education")}</PanelCaption>
       <dl>
         {educationList.map(({ name, year, location, info }, index) => (
           <Fragment key={index}>
             <dt className="scroll-rise mb-4">
-              <h2 className="text-lg text-text-2 uppercase">{name}</h2>
+              <h3 className="text-lg text-text-2 uppercase">{name}</h3>
               <p className="text-sm font-semibold tracking-widest text-accent">{year}</p>
               <p>{location}</p>
             </dt>
@@ -34,6 +35,6 @@ export function Education({ educationList }: EducationProps) {
           </Fragment>
         ))}
       </dl>
-    </figure>
+    </section>
   );
 }

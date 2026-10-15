@@ -41,7 +41,8 @@ export function LangChanger() {
     <Button
       className="button animate-rise [animation-delay:0.64s] perspective-distant"
       disabled={isPending}
-      title={gt(locale === "en" ? "English" : "Polish")}
+      title={gt(locale === "en" ? "Switch to Polish" : "Switch to English")}
+      aria-label={gt(locale === "en" ? "Switch to Polish" : "Switch to English")}
       onClick={handleLangToggled}
     >
       {/* The flag flips over to the other language instead of swapping out from under the pointer;
@@ -49,6 +50,7 @@ export function LangChanger() {
       <AnimatePresence mode="wait" initial={false}>
         <motion.span
           key={locale}
+          aria-hidden="true"
           initial={{ rotateY: -90, opacity: 0 }}
           animate={{ rotateY: 0, opacity: 1 }}
           exit={{ rotateY: 90, opacity: 0 }}

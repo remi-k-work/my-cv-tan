@@ -22,7 +22,6 @@ export function InfoLine({ message, className }: InfoLineProps) {
       {message && (
         <motion.p
           role="status"
-          aria-live="polite"
           className={cn("my-3 flex max-w-none items-center justify-center gap-2 border border-destructive px-3 py-2 text-destructive", className)}
           layout
           initial={{ opacity: 0, scale: MOTION_TOKENS.scale.press, y: MOTION_TOKENS.distance.sm }}
@@ -30,7 +29,7 @@ export function InfoLine({ message, className }: InfoLineProps) {
           exit={{ opacity: 0, scale: MOTION_TOKENS.scale.press, y: MOTION_TOKENS.distance.sm }}
           transition={SPRINGS.gentle}
         >
-          <InformationCircleIcon className="size-9 flex-none" />
+          <InformationCircleIcon className="size-9 flex-none" aria-hidden="true" />
           {message}
         </motion.p>
       )}
