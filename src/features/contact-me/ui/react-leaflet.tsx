@@ -10,7 +10,8 @@ export default function ReactLeaflet() {
 
   return (
     <MapContainer center={[50.05142444038861, 21.98322537033913]} zoom={17} className="z-0 size-full">
-      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+      {/* The canonical single-host URL: the a/b/c subdomain placeholders are deprecated now that the tile service speaks HTTP/2/3 */}
+      <TileLayer url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" />
       <Marker position={[50.05142444038861, 21.98322537033913]}>
         <Popup>
           {gt("Let us talk about some projects")}

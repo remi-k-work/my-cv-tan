@@ -17,7 +17,10 @@ import { Header } from "@/ui/header";
 import { Skills } from "@/ui/skills";
 
 // assets
-import "@fontsource/outfit";
+// Only the two weights the design uses (regular body copy + semibold accents); the full
+// barrel would emit @font-face rules and font files for all nine weights
+import "@fontsource/outfit/400.css";
+import "@fontsource/outfit/600.css";
 
 // types
 import type { ReactNode } from "react";

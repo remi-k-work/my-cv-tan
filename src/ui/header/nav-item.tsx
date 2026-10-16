@@ -84,7 +84,7 @@ export function NavItem({ href, title, icon, isExternal = false, index }: NavIte
     );
 
   return (
-    <Link className={className} style={style} to={href} title={title} aria-label={title} aria-current={isActive ? "page" : undefined} preload={false}>
+    <Link className={className} style={style} to={href} title={title} aria-label={title} aria-current={isActive ? "page" : undefined}>
       {content}
     </Link>
   );
