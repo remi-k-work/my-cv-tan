@@ -3,8 +3,19 @@ import { llmsAlternateLink } from "./url";
 import { socialMeta } from "./social";
 import { websitePersonJsonLd } from "./json-ld";
 
+// assets
+// The exact woff2 subsets the stylesheet requests; importing them here yields the same
+// content-hashed URL, so the preload and the CSS fetch resolve to one file
+import outfitLatinWoff2 from "@fontsource/outfit/files/outfit-latin-400-normal.woff2";
+import outfitLatinExtWoff2 from "@fontsource/outfit/files/outfit-latin-ext-400-normal.woff2";
+
 // constants
 import { AVATAR_IMAGE, GLOBAL_SOCIAL_IMAGE, HOME_TITLE, SITE_DESCRIPTION, SITE_NAME, BRANDED_TITLE, SOCIAL_LINKS } from "./constants";
+
+// Preload the UI font's two subsets (base latin plus the Polish diacritics block) so text
+// paints in Outfit instead of flashing the fallback face first. crossorigin is required:
+// fonts always fetch in CORS mode, so a hint without it would download the file twice
+const fontPreload = (href: string) => ({ rel: "preload", href, as: "font", type: "font/woff2", crossOrigin: "anonymous" }) as const;
 
 // Site-wide tags only. Meta dedupes by name/property keeping the leaf value, but links dedupe
 // only when identical — a root-level canonical "/" would render beside every page's own canonical
@@ -24,6 +35,8 @@ export const ROOT_HEAD = {
     ...socialMeta({ title: HOME_TITLE, description: SITE_DESCRIPTION, path: "/", image: GLOBAL_SOCIAL_IMAGE, preferredLanguage: "en" }),
   ],
   links: [
+    fontPreload(outfitLatinWoff2),
+    fontPreload(outfitLatinExtWoff2),
     { rel: "icon", href: "/icon.svg", type: "image/svg+xml" },
     // iOS "Add to Home Screen" and high-DPI search previews use the touch icon, not the SVG favicon
     { rel: "apple-touch-icon", href: AVATAR_IMAGE },

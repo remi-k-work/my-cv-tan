@@ -1,5 +1,6 @@
 // react
 import { Suspense, lazy } from "react";
+import { preconnect } from "react-dom";
 
 // tanstack
 import { ClientOnly } from "@tanstack/react-router";
@@ -15,20 +16,25 @@ const ReactLeaflet = lazy(() => import("./react-leaflet"));
 // assets
 import avatar from "@/assets/avatar.jpg";
 
+// Leaflet touches window at import time, so it must never be evaluated on the server
+// ClientOnly gates SSR, Suspense covers the client-side chunk download; hoisted so every render reuses one element
+const mapFallback = <div className="size-full min-h-96" />;
+
 export function ContactMap() {
   const gt = useGT();
+
+  // Warm the tile origins Leaflet round-robins across, so DNS+TLS overlap with the chunk download instead of delaying the first tile paint
+  preconnect("https://a.tile.openstreetmap.org");
+  preconnect("https://b.tile.openstreetmap.org");
+  preconnect("https://c.tile.openstreetmap.org");
 
   // The address card leans away from the pointer with the same gentle physics as the experience slides
   const { style, handlers, glareStyle } = useTilt();
 
-  // Leaflet touches window at import time, so it must never be evaluated on the server
-  // ClientOnly gates SSR, Suspense covers the client-side chunk download
-  const fallback = <div className="size-full min-h-96" />;
-
   return (
     <div className="relative z-0 mx-auto size-full max-w-4xl">
-      <ClientOnly fallback={fallback}>
-        <Suspense fallback={fallback}>
+      <ClientOnly fallback={mapFallback}>
+        <Suspense fallback={mapFallback}>
           <ReactLeaflet />
         </Suspense>
       </ClientOnly>

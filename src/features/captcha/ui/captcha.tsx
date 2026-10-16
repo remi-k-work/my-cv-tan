@@ -22,8 +22,11 @@ export function Captcha() {
     <div className="flex items-center justify-center gap-3">
       <img className="rounded" src={captchaSrc} width={CAPTCHA_WIDTH} height={CAPTCHA_HEIGHT} alt={gt("Captcha")} />
       <Button className="button" aria-label={gt("Refresh CAPTCHA")} onClick={() => setCaptchaSrc(`/api/captcha?t=${DateTime.nowUnsafe().epochMilliseconds}`)}>
-        {/* Keyed by the captcha source, so the icon remounts and spins once whenever a fresh captcha is fetched */}
-        <ArrowPathIcon key={captchaSrc} className="size-9 animate-spin-once" aria-hidden="true" />
+        {/* Keyed by the captcha source, so the spinner remounts and plays its one-shot spin whenever a fresh captcha is fetched;
+            the wrapper carries the animation because CSS transform animations aren't hardware-accelerated on SVG elements */}
+        <span key={captchaSrc} className="inline-flex size-9 animate-spin-once" aria-hidden="true">
+          <ArrowPathIcon className="size-9" />
+        </span>
       </Button>
     </div>
   );

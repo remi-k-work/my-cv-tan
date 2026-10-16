@@ -40,7 +40,14 @@ export function FormSubmit({ contactForm }: FormSubmitProps) {
   return (
     <div className="flex flex-wrap gap-3 *:flex-1 md:gap-6">
       <Button className="button" type="submit" disabled={!canSubmit}>
-        {waiting ? <Loader2 className="size-9 animate-spin" aria-hidden="true" /> : <PaperAirplaneIcon className="size-9" aria-hidden="true" />}
+        {waiting ? (
+          // The wrapper carries the spin: CSS transform animations aren't hardware-accelerated on SVG elements, but are on the HTML wrapper
+          <span className="inline-flex size-9 animate-spin" aria-hidden="true">
+            <Loader2 className="size-9" />
+          </span>
+        ) : (
+          <PaperAirplaneIcon className="size-9" aria-hidden="true" />
+        )}
         {waiting ? gt("Sending...") : gt("Send")}
       </Button>
       <Button className="button bg-destructive" onClick={() => reset()}>

@@ -7,6 +7,11 @@ import type { Experience } from "@/features/experience/domain";
 
 interface ScreenShotsProps {
   experience: Experience;
+  // Detail pages render the first frame above the fold as their likely LCP image, so it loads
+  // eagerly there and React's SSR emits a preload hint for it in the head. Carousel slides
+  // stay fully lazy instead: React skips preload hints for lazy images, so the homepage
+  // downloads only the visible slide rather than every slide's first frame
+  priorityFirstFrame?: boolean;
 }
 
 // constants
@@ -20,7 +25,7 @@ const FADE_CYCLE = [
 ] as const;
 
 // The experience's cycling screenshots; links to the project's video or live site when it has one
-export function ScreenShots({ experience: { role, company, imageName, liveLink, videoLink } }: ScreenShotsProps) {
+export function ScreenShots({ experience: { role, company, imageName, liveLink, videoLink }, priorityFirstFrame = false }: ScreenShotsProps) {
   const gt = useGT();
 
   const shots = (
@@ -36,6 +41,11 @@ export function ScreenShots({ experience: { role, company, imageName, liveLink, 
           height={SCREENSHOT_HEIGHT}
           // The empty alt on the later frames already keeps them out of the accessibility tree; no aria-hidden needed
           alt={index === 0 ? `${role}, ${company}` : ""}
+          // Only the detail page's first frame is eager (see priorityFirstFrame); everything else defers
+          // to the browser's lazy scheduling — later frames are invisible for seconds, and off-viewport
+          // slides wait until the carousel brings them near the view
+          loading={index === 0 && priorityFirstFrame ? "eager" : "lazy"}
+          decoding="async"
         />
       ))}
     </div>
