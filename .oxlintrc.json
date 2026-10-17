@@ -32,7 +32,7 @@
   "settings": {
     // Oxlint has no "detect"; pin to the installed React version.
     "react": {
-      "version": "19.3.0"
+      "version": "19.3.1"
     }
   },
   "rules": {
