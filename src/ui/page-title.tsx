@@ -2,7 +2,7 @@
 import { RevealText } from "@/ui/reveal-text";
 
 // types
-import type { PagePath, PageTitles } from "@/domain";
+import type { PagePath, PageTitles } from "@/domain/models";
 
 interface PageTitleProps {
   pagePath: PagePath;

@@ -1,13 +1,13 @@
 // services, features, and other libraries
 import { Array } from "effect";
-import { absoluteUrl, experiencePath } from "@/features/meta/domain";
+import { absoluteUrl, experiencePath } from "@/features/meta/domain/url";
 import { buildExperienceMd } from "./experience";
 import { translateSource } from "./helpers";
 import { experienceLines } from "./listing";
 import { buildContactMd, buildEducationMd, buildHomeMd } from "./pages";
 
 // types
-import type { ExperienceList } from "@/features/experience/domain";
+import type { ExperienceList } from "@/features/experience/domain/models";
 import type { LlmsFullInput } from "./models";
 
 // constants
@@ -30,7 +30,7 @@ import {
   SITE_NAME,
   SOCIAL_LINKS,
   HOME_TITLE,
-} from "@/features/meta/domain";
+} from "@/features/meta/domain/constants";
 
 // Shared header of both AI indexes: site name, one-line value proposition, and full intro
 const siteHeader = (summary: string) => [`# ${SITE_NAME}`, ``, `> ${HOME_TITLE}`, ``, PERSON_DESCRIPTION, ``, summary, ``];

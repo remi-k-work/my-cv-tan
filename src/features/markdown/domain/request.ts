@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { flow, Option, Schema, String, pipe } from "effect";
-import { PreferredLanguage } from "@/domain";
+import { PreferredLanguage } from "@/domain/models";
 
 // Parse an absolute request URL without throwing; unparseable input becomes None
 const requestUrl = Option.liftThrowable((url: string) => new URL(url));

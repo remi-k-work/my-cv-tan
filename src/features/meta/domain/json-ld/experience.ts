@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { Option, pipe } from "effect";
-import { experienceHeadline, excerpt } from "@/features/experience/domain";
+import { experienceHeadline, excerpt } from "@/features/experience/domain/helpers";
 import { breadcrumb, imageObject, jsonLdGraph } from "./core";
 import { absoluteUrl, experienceImageUrl, experiencePath } from "../url";
 
@@ -9,7 +9,7 @@ import type { ExperienceHeadInput } from "../models";
 
 // constants
 import { GLOBAL_IMAGE, GLOBAL_SOCIAL_IMAGE, META_DESCRIPTION_LENGTH, PERSON_ID, PUBLISHER_ID, WEBSITE_ID } from "../constants";
-import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain";
+import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain/constants";
 
 // Employment is an organization role; projects use the most specific supported creative-work type
 export const experienceJsonLd = ({ experience, preferredLanguage }: ExperienceHeadInput) => {

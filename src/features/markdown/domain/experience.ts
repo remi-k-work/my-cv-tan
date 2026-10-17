@@ -1,17 +1,17 @@
 // services, features, and other libraries
 import { Array, Option, pipe } from "effect";
 import { msg } from "gt-tanstack-start";
-import { matchPreferredLanguage } from "@/domain";
-import { experienceHeadline, excerpt } from "@/features/experience/domain";
-import { absoluteUrl, experiencePath } from "@/features/meta/domain";
+import { matchPreferredLanguage } from "@/domain/helpers";
+import { experienceHeadline, excerpt } from "@/features/experience/domain/helpers";
+import { absoluteUrl, experiencePath } from "@/features/meta/domain/url";
 import { escapeMd, escapeMdInline, frontmatter, mdBulletList, mdExternalLink, mdHeading, mdQuote } from "./helpers";
 
 // types
-import type { ExperienceList } from "@/features/experience/domain";
+import type { ExperienceList } from "@/features/experience/domain/models";
 import type { BuildNotFoundMdInput, ExperienceMdInput } from "./models";
 
 // constants
-import { HOME_MD_HREF, LLMS_TXT_HREF, META_DESCRIPTION_LENGTH, BRANDED_TITLE, SITE_NAME } from "@/features/meta/domain";
+import { HOME_MD_HREF, LLMS_TXT_HREF, META_DESCRIPTION_LENGTH, BRANDED_TITLE, SITE_NAME } from "@/features/meta/domain/constants";
 
 // Locate one experience by slug inside a decoded list (None = clean 404 candidate);
 // a failed decode stays an error in the caller via requireData

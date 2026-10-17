@@ -1,8 +1,8 @@
 // services, features, and other libraries
-import { pageField } from "@/domain";
+import { pageField } from "@/domain/helpers";
 
 // types
-import type { PagePath, PageTitles, PreferredLanguage } from "@/domain";
+import type { PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
 import type { StaticPageCopy, StaticPageSettings } from "./models";
 
 // constants

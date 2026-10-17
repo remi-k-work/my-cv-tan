@@ -27,8 +27,8 @@ const listItems = (node: Record<string, unknown> | undefined) => (node as { item
 const collectionParts = (node: Record<string, unknown> | undefined) => (node as { hasPart?: Array<Record<string, unknown>> } | undefined)?.hasPart;
 
 // types
-import type { EducationList } from "@/features/education/domain";
-import type { Experience } from "@/features/experience/domain";
+import type { EducationList } from "@/features/education/domain/models";
+import type { Experience } from "@/features/experience/domain/models";
 
 const sampleExperience: Experience = {
   type: "p",

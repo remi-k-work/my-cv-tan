@@ -3,11 +3,11 @@ import { Array, Config, Context, Crypto, Effect, Layer, Option, Record, Redacted
 import { Base64Url } from "effect/encoding";
 import { Cookies, Headers } from "effect/http";
 import { BrowserCrypto } from "@effect/platform-browser";
-import { commitToCaptcha, verifyCaptchaString } from "@/features/captcha/domain";
-import { CaptchaError } from "@/domain";
+import { commitToCaptcha, verifyCaptchaString } from "@/features/captcha/domain/session";
+import { CaptchaError } from "@/domain/errors";
 
 // constants
-import { CAPTCHA_COOKIE_NAME, PERMITTED_CHARS, SALT_BYTES, STRENGTH } from "@/features/captcha/domain";
+import { CAPTCHA_COOKIE_NAME, PERMITTED_CHARS, SALT_BYTES, STRENGTH } from "@/features/captcha/domain/constants";
 
 export class Captcha extends Context.Service<Captcha>()("Captcha", {
   make: Effect.gen(function* () {

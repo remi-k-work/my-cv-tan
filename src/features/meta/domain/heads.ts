@@ -1,16 +1,19 @@
 // services, features, and other libraries
 import { Option, pipe } from "effect";
-import { experienceHeadline, excerpt } from "@/features/experience/domain";
+import { experienceHeadline, excerpt } from "@/features/experience/domain/helpers";
 import { absoluteUrl, canonicalLink, markdownAlternateLink, experienceImageUrl, experienceMarkdownPath, experiencePath } from "./url";
 import { socialMeta } from "./social";
-import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd } from "./json-ld";
+import { contactJsonLd } from "./json-ld/contact";
+import { educationJsonLd } from "./json-ld/education";
+import { experienceJsonLd } from "./json-ld/experience";
+import { homeJsonLd } from "./json-ld/home";
 import { staticPageCopy } from "./static-pages";
 
 // types
 import type { EducationHeadInput, ExperienceHeadInput, HomeHeadInput, PageHeadInput, SocialImage, SocialMetaInput, StaticPageHeadInput } from "./models";
 
 // constants
-import { SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT } from "@/features/experience/domain";
+import { SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT } from "@/features/experience/domain/constants";
 import { GLOBAL_SOCIAL_IMAGE, META_DESCRIPTION_LENGTH, BRANDED_TITLE } from "./constants";
 import { STATIC_PAGES } from "./static-pages";
 

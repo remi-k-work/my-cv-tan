@@ -7,10 +7,10 @@ import { getLocale } from "gt-tanstack-start";
 import { RuntimeServer } from "@/lib/runtime-server";
 import { Data } from "@/features/data/services/data";
 import { markHtmlDataUnavailable } from "@/features/data/http/html-response";
-import { preferredLanguageFromLocale } from "@/features/data/domain";
+import { preferredLanguageFromLocale } from "@/features/data/domain/helpers";
 
 // types
-import type { PreferredLanguage } from "@/domain";
+import type { PreferredLanguage } from "@/domain/models";
 import type { PageData } from "./page-data";
 
 // Binds the Data service to one language, producing the same Effect-valued surface the RPC client exposes

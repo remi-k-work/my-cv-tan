@@ -71,6 +71,27 @@ function SwappingSkillPair({ first, second, delay, floatDelay }: { first: SkillS
   );
 }
 
+// Static list entries hoisted to module scope: re-renders reuse the same elements instead of rebuilding them
+const HTML_SKILL_ITEM = (
+  <li className={cn("animate-float", FLOAT_DELAY_CLASSES["0s"])}>
+    <SkillIcon src={html} alt="HTML" />
+  </li>
+);
+
+const CSS_SKILL_ITEM = (
+  <li className={cn("animate-float", FLOAT_DELAY_CLASSES["0.9s"])}>
+    <SkillIcon src={css} alt="CSS" delay="0.2s" />
+  </li>
+);
+
+const SWAPPING_SKILL_PAIRS = (
+  <>
+    <SwappingSkillPair first={{ src: javascript, alt: "JavaScript" }} second={{ src: typescript, alt: "TypeScript" }} delay="0.4s" floatDelay="1.8s" />
+    <SwappingSkillPair first={{ src: react, alt: "React" }} second={{ src: nextjs, alt: "NextJS" }} delay="0.6s,8s" floatDelay="2.7s" />
+    <SwappingSkillPair first={{ src: inkscape, alt: "Inkscape" }} second={{ src: gimp, alt: "GIMP" }} delay="0.8s,16s" floatDelay="3.6s" />
+  </>
+);
+
 export function Skills() {
   const gt = useGT();
 
@@ -102,15 +123,9 @@ export function Skills() {
           "lg:sticky lg:top-28 lg:h-[calc(100dvh-7rem)] lg:grid-flow-row lg:grid-cols-2"
         )}
       >
-        <li className={cn("animate-float", FLOAT_DELAY_CLASSES["0s"])}>
-          <SkillIcon src={html} alt="HTML" />
-        </li>
-        <li className={cn("animate-float", FLOAT_DELAY_CLASSES["0.9s"])}>
-          <SkillIcon src={css} alt="CSS" delay="0.2s" />
-        </li>
-        <SwappingSkillPair first={{ src: javascript, alt: "JavaScript" }} second={{ src: typescript, alt: "TypeScript" }} delay="0.4s" floatDelay="1.8s" />
-        <SwappingSkillPair first={{ src: react, alt: "React" }} second={{ src: nextjs, alt: "NextJS" }} delay="0.6s,8s" floatDelay="2.7s" />
-        <SwappingSkillPair first={{ src: inkscape, alt: "Inkscape" }} second={{ src: gimp, alt: "GIMP" }} delay="0.8s,16s" floatDelay="3.6s" />
+        {HTML_SKILL_ITEM}
+        {CSS_SKILL_ITEM}
+        {SWAPPING_SKILL_PAIRS}
       </ul>
     </aside>
   );

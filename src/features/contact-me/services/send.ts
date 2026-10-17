@@ -1,11 +1,11 @@
 // services, features, and other libraries
 import { Config, Context, Effect, flow, Layer, Schedule } from "effect";
 import { FetchHttpClient, HttpClient, HttpClientRequest } from "effect/http";
-import { SendError } from "@/domain";
-import { SendRequest } from "@/features/contact-me/domain";
+import { SendError } from "@/domain/errors";
+import { SendRequest } from "@/features/contact-me/domain/models";
 
 // types
-import type { Name, Email, Message, Subject } from "@/features/contact-me/domain";
+import type { Name, Email, Message, Subject } from "@/features/contact-me/domain/models";
 
 export class Send extends Context.Service<Send>()("Send", {
   make: Effect.gen(function* () {

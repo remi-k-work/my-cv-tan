@@ -6,8 +6,9 @@ import { Array, Option, Result } from "effect";
 import { useAtomSet, useAtomValue } from "@effect/atom-react";
 import { useGT } from "gt-tanstack-start";
 import { loaderIndex } from "@/loaders/index";
-import { experienceHead, headLanguage, homeHead } from "@/features/meta/domain";
-import { experienceAtom } from "@/features/modals/state";
+import { experienceHead, homeHead } from "@/features/meta/domain/heads";
+import { headLanguage } from "@/features/meta/domain/language";
+import { experienceAtom } from "@/features/modals/state/experience";
 
 // components
 import { PageTitle } from "@/ui/page-title";

@@ -1,8 +1,8 @@
 // services, features, and other libraries
 import { cn } from "@/lib/utils";
 import { useAtomSet } from "@effect/atom-react";
-import { contactForm } from "@/features/contact-me/domain";
-import { useSubmitToast } from "@/features/contact-me/hooks";
+import { contactForm } from "@/features/contact-me/domain/forms";
+import { useSubmitToast } from "@/features/contact-me/hooks/use-submit-toast";
 import { useGT } from "gt-tanstack-start";
 
 // components

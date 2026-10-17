@@ -7,8 +7,8 @@ import { useGT } from "gt-tanstack-start";
 import { Button } from "@base-ui/react";
 
 // assets
-import { ViewfinderCircleIcon as ViewfinderCircleIconS } from "@heroicons/react/24/solid";
-import { ViewfinderCircleIcon as ViewfinderCircleIconO } from "@heroicons/react/24/outline";
+import ViewfinderCircleIconS from "@heroicons/react/24/solid/ViewfinderCircleIcon";
+import ViewfinderCircleIconO from "@heroicons/react/24/outline/ViewfinderCircleIcon";
 
 // constants
 import { SPRINGS } from "@/lib/motion-tokens";

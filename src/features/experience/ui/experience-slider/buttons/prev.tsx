@@ -5,7 +5,7 @@ import { useGT } from "gt-tanstack-start";
 import { Button } from "@base-ui/react";
 
 // assets
-import { PrevIcon } from "@/assets/icons";
+import { PrevIcon } from "@/assets/icons/prev";
 
 // types
 interface PrevProps {
@@ -19,8 +19,10 @@ export function Prev({ disabled, onPrev }: PrevProps) {
 
   return (
     <Button className="button group p-2" disabled={disabled} title={label} aria-label={label} onClick={onPrev}>
-      {/* The arrow drifts the way it will scroll, so hovering already answers "what does this do" */}
-      <PrevIcon className="size-6 transition-transform group-hover:-translate-x-1" aria-hidden="true" />
+      {/* The wrapper carries the drift: CSS transforms aren't hardware-accelerated on SVG elements, but are on the HTML wrapper */}
+      <span className="inline-flex transition-transform group-hover:-translate-x-1">
+        <PrevIcon className="size-6" aria-hidden="true" />
+      </span>
     </Button>
   );
 }

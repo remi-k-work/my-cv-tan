@@ -4,7 +4,7 @@ import { Field } from "@lucas-barake/effect-form-react";
 import { msg } from "gt-tanstack-start";
 
 // constants
-import { EMAIL_REGEX } from "@/domain";
+import { EMAIL_REGEX } from "@/domain/constants";
 
 export const NameField = <K extends string = "name">(key: K = "name" as K) =>
   Field.makeField(

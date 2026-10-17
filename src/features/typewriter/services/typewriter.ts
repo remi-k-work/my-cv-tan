@@ -1,12 +1,12 @@
 // services, features, and other libraries
 import { Array, Context, Effect, Layer, Match, Option, Random, Stream, String, pipe } from "effect";
-import { planScript } from "@/features/typewriter/domain";
+import { planScript } from "@/features/typewriter/domain/actions";
 
 // types
-import type { TypewriterOp } from "@/features/typewriter/domain";
+import type { TypewriterOp } from "@/features/typewriter/domain/models";
 
 // constants
-import { DELETING_SPEED, TYPING_SPEED } from "@/features/typewriter/domain";
+import { DELETING_SPEED, TYPING_SPEED } from "@/features/typewriter/domain/constants";
 
 // Expands a single script op into the timed frames it produces, starting from the currently visible text
 const expandOp = (currText: string, typewriterOp: TypewriterOp) =>

@@ -1,14 +1,14 @@
 // services, features, and other libraries
 import { Effect, Record } from "effect";
 import { msg } from "gt-tanstack-start";
-import { recoverDataFailure } from "@/features/data/domain";
+import { recoverDataFailure } from "@/features/data/domain/required";
 
 // types
-import type { PreferredLanguage, Translate } from "@/domain";
-import type { RequiredDataError } from "@/features/data/domain";
+import type { PreferredLanguage, Translate } from "@/domain/models";
+import type { RequiredDataError } from "@/features/data/domain/required";
 
 // constants
-import { CACHE_CONTROL, TXT_CONTENT_TYPE } from "@/features/meta/domain";
+import { CACHE_CONTROL, TXT_CONTENT_TYPE } from "@/features/meta/domain/constants";
 import { MARKDOWN_CONTENT_TYPE, MARKDOWN_VARY } from "./constants";
 
 const mdHeaders = (preferredLanguage: PreferredLanguage) => ({

@@ -1,7 +1,7 @@
 // types
-import type { PageTitles, PreferredLanguage, Translate } from "@/domain";
-import type { Experience, ExperienceList } from "@/features/experience/domain";
-import type { EducationList } from "@/features/education/domain";
+import type { PageTitles, PreferredLanguage, Translate } from "@/domain/models";
+import type { Experience, ExperienceList } from "@/features/experience/domain/models";
+import type { EducationList } from "@/features/education/domain/models";
 
 // translate is injected so the pure builders stay testable; the service decides where translations come from
 export interface HomeMdInput {

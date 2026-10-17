@@ -8,7 +8,7 @@ import { ClientOnly } from "@tanstack/react-router";
 // services, features, and other libraries
 import { useGT } from "gt-tanstack-start";
 import { motion } from "motion/react";
-import { useTilt } from "@/features/experience/hooks";
+import { useTilt } from "@/features/experience/hooks/use-tilt";
 
 // components
 const ReactLeaflet = lazy(() => import("./react-leaflet"));

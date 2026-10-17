@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { Array, pipe } from "effect";
-import { matchPreferredLanguage } from "@/domain";
-import { excerpt } from "@/features/experience/domain";
+import { matchPreferredLanguage } from "@/domain/helpers";
+import { excerpt } from "@/features/experience/domain/helpers";
 import { breadcrumb, collectionNode, jsonLdGraph, whenNonEmpty } from "./core";
 import { absoluteUrl } from "../url";
 

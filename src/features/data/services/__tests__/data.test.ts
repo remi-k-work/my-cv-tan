@@ -2,7 +2,7 @@
 import { assert, it } from "@effect/vitest";
 import { Effect, Option } from "effect";
 import { Data } from "../data";
-import { RequiredDataError } from "@/features/data/domain";
+import { RequiredDataError } from "@/features/data/domain/required";
 import { applyHtmlDataUnavailableResponse, markHtmlDataUnavailable } from "@/features/data/http/html-response";
 
 // assets

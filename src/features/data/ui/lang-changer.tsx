@@ -14,7 +14,8 @@ import { AnimatePresence, motion } from "motion/react";
 import { Button } from "@base-ui/react";
 
 // assets
-import { PlFlagIcon, UsFlagIcon } from "@/assets/icons";
+import { PlFlagIcon } from "@/assets/icons/pl-flag";
+import { UsFlagIcon } from "@/assets/icons/us-flag";
 
 // constants
 import { SPRINGS } from "@/lib/motion-tokens";

@@ -3,7 +3,7 @@ import { Array, pipe, Record } from "effect";
 import { absoluteUrl, experiencePath } from "./url";
 
 // types
-import type { ExperienceList } from "@/features/experience/domain";
+import type { ExperienceList } from "@/features/experience/domain/models";
 
 // constants
 import { CERTIFICATES_HREF, CV_EN_HREF, CV_PL_HREF } from "./constants";

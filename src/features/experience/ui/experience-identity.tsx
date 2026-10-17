@@ -1,5 +1,5 @@
 // types
-import type { Experience } from "@/features/experience/domain";
+import type { Experience } from "@/features/experience/domain/models";
 
 interface ExperienceIdentityProps {
   experience: Experience;

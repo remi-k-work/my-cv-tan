@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "motion/react";
 
 // assets
-import { InformationCircleIcon } from "@heroicons/react/24/solid";
+import InformationCircleIcon from "@heroicons/react/24/solid/InformationCircleIcon";
 
 // types
 interface InfoLineProps {

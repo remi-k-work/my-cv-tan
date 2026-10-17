@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { useGT } from "gt-tanstack-start";
 
 // types
-import type { Experience } from "@/features/experience/domain";
+import type { Experience } from "@/features/experience/domain/models";
 
 interface SkillsUsedProps {
   experience: Experience;

@@ -1,8 +1,8 @@
 // services, features, and other libraries
 import { cn } from "@/lib/utils";
 import { useGT, useLocale } from "gt-tanstack-start";
-import { cvPdfHref } from "@/features/meta/domain";
-import { preferredLanguageFromLocale } from "@/features/data/domain";
+import { cvPdfHref } from "@/features/meta/domain/url";
+import { preferredLanguageFromLocale } from "@/features/data/domain/helpers";
 
 // components
 import { NavItem } from "./nav-item";

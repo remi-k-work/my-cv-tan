@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { chunkTextByWords } from "@/features/typewriter/domain";
+import { chunkTextByWords } from "@/features/typewriter/domain/helpers";
 
 // components
 import { ExperienceHeader } from "@/features/experience/ui/experience-header";
@@ -9,14 +9,14 @@ import { SkillsUsed } from "./skills-used";
 import { Typewriter } from "@/features/typewriter/ui/typewriter";
 
 // types
-import type { Experience } from "@/features/experience/domain";
+import type { Experience } from "@/features/experience/domain/models";
 
 interface ExperienceDetailsProps {
   experience: Experience;
 }
 
 // constants
-import { MAX_CHUNK_LENGTH } from "@/features/typewriter/domain";
+import { MAX_CHUNK_LENGTH } from "@/features/typewriter/domain/constants";
 
 // Chunking is pure and the texts are static content, so repeated opens of the same
 // experience reuse the cached paragraphs instead of re-splitting the text

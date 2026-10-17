@@ -6,7 +6,7 @@ import { PanelCaption } from "@/ui/panel-caption";
 import { ExperienceSlider } from "./experience-slider";
 
 // types
-import type { ExperienceList } from "@/features/experience/domain";
+import type { ExperienceList } from "@/features/experience/domain/models";
 
 interface SliderPanelProps {
   title: string;

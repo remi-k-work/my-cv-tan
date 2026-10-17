@@ -8,7 +8,7 @@ import { useGT } from "gt-tanstack-start";
 import { PanelCaption } from "@/ui/panel-caption";
 
 // types
-import type { EducationList } from "@/features/education/domain";
+import type { EducationList } from "@/features/education/domain/models";
 
 interface EducationProps {
   educationList: EducationList;

@@ -6,7 +6,7 @@ import { AsyncResult } from "effect/reactivity";
 import { toastManager } from "@/ui/toastify";
 
 // types
-import type { ContactForm } from "@/features/contact-me/domain";
+import type { ContactForm } from "@/features/contact-me/domain/forms";
 
 // Provide feedback to the user regarding this form actions
 export function useSubmitToast(contactForm: ContactForm) {

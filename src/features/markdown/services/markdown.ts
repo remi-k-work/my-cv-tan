@@ -4,29 +4,20 @@ import { removeResponseHeader } from "@tanstack/react-start/server";
 // services, features, and other libraries
 import { Context, Effect, Layer, Option } from "effect";
 import { translateForLanguage } from "@/lib/gt-translations";
-import { RequiredDataError, requestPreferredLanguage, requireDataFrom } from "@/features/data/domain";
+import { RequiredDataError, requireDataFrom } from "@/features/data/domain/required";
+import { requestPreferredLanguage } from "@/features/data/domain/helpers";
 import { Data } from "@/features/data/services/data";
-import { absoluteUrl, experiencePath, txtResponse } from "@/features/meta/domain";
-import {
-  buildContactMd,
-  buildEducationMd,
-  buildExperienceMd,
-  buildHomeMd,
-  buildLlmsFullTxt,
-  buildLlmsTxt,
-  buildNotFoundMd,
-  experienceFromList,
-  markdownDataResponse,
-  mdNotFoundResponse,
-  mdResponse,
-  parseLangParam,
-  slugFromMdPathname,
-  textDataResponse,
-  translateSource,
-} from "@/features/markdown/domain";
+import { absoluteUrl, experiencePath } from "@/features/meta/domain/url";
+import { txtResponse } from "@/features/meta/domain/response";
+import { buildContactMd, buildEducationMd, buildHomeMd } from "@/features/markdown/domain/pages";
+import { buildExperienceMd, buildNotFoundMd, experienceFromList } from "@/features/markdown/domain/experience";
+import { buildLlmsFullTxt, buildLlmsTxt } from "@/features/markdown/domain/site-index";
+import { markdownDataResponse, mdNotFoundResponse, mdResponse, textDataResponse } from "@/features/markdown/domain/response";
+import { parseLangParam, slugFromMdPathname } from "@/features/markdown/domain/request";
+import { translateSource } from "@/features/markdown/domain/helpers";
 
 // types
-import type { PreferredLanguage, Translate } from "@/domain";
+import type { PreferredLanguage, Translate } from "@/domain/models";
 
 // One home for every AI-facing document pipeline (GEO): language resolution, data
 // fetch, Markdown rendering and Response construction. Routes only wire named handlers

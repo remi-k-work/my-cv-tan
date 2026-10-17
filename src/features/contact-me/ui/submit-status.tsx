@@ -7,7 +7,7 @@ import { AsyncResult } from "effect/reactivity";
 import { InfoLine } from "@/ui/info-line";
 
 // types
-import type { ContactForm } from "@/features/contact-me/domain";
+import type { ContactForm } from "@/features/contact-me/domain/forms";
 
 interface SubmitStatusProps {
   contactForm: ContactForm;

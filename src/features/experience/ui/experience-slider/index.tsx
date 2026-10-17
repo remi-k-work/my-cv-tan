@@ -3,15 +3,17 @@ import { useId } from "react";
 
 // services, features, and other libraries
 import useEmblaCarousel from "embla-carousel-react";
-import { useEmblaSelect } from "@/features/experience/hooks";
+import { useEmblaSelect } from "@/features/experience/hooks/use-embla-select";
 
 // components
 import { Slide } from "./slide";
-import { Dot, Next, Prev } from "./buttons";
+import { Dot } from "./buttons/dot";
+import { Next } from "./buttons/next";
+import { Prev } from "./buttons/prev";
 
 // types
 import type { EmblaCarouselType } from "embla-carousel";
-import type { ExperienceList } from "@/features/experience/domain";
+import type { ExperienceList } from "@/features/experience/domain/models";
 
 interface ExperienceSliderProps {
   experienceList: ExperienceList;

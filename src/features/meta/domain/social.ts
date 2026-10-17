@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { matchPreferredLanguage } from "@/domain";
+import { matchPreferredLanguage } from "@/domain/helpers";
 import { absoluteUrl } from "./url";
 
 // types

@@ -1,9 +1,10 @@
 // services, features, and other libraries
 import { Effect, Option } from "effect";
 import { RuntimeServer } from "@/lib/runtime-server";
-import { recoverDataFailure, requireDataFrom } from "@/features/data/domain";
+import { recoverDataFailure, requireDataFrom } from "@/features/data/domain/required";
 import { Data } from "@/features/data/services/data";
-import { buildSitemapXml, sitemapResponse, sitemapUnavailableResponse } from "@/features/meta/domain";
+import { buildSitemapXml } from "@/features/meta/domain/sitemap";
+import { sitemapResponse, sitemapUnavailableResponse } from "@/features/meta/domain/response";
 
 // Sitemap pipeline: fetch -> require -> build -> respond; shared data-failure recovery
 // answers 503 instead of ever emitting an incomplete crawlable sitemap

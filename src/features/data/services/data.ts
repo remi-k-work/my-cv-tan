@@ -1,9 +1,10 @@
 // services, features, and other libraries
 import { Array, Context, Effect, Layer, Option, Random, Schema } from "effect";
-import { ExperienceList } from "@/features/experience/domain";
-import { EducationList } from "@/features/education/domain";
-import { matchPreferredLanguage, PageTitlesList } from "@/domain";
-import { requestPreferredLanguage } from "@/features/data/domain";
+import { ExperienceList } from "@/features/experience/domain/models";
+import { EducationList } from "@/features/education/domain/models";
+import { matchPreferredLanguage } from "@/domain/helpers";
+import { PageTitlesList } from "@/domain/models";
+import { requestPreferredLanguage } from "@/features/data/domain/helpers";
 
 // assets
 import pageTitlesEn from "@/assets/data/en/page-titles.json";
@@ -14,8 +15,8 @@ import educationEn from "@/assets/data/en/education.json";
 import educationPl from "@/assets/data/pl/education.json";
 
 // types
-import type { PreferredLanguage } from "@/domain";
-import type { Experience } from "@/features/experience/domain";
+import type { PreferredLanguage } from "@/domain/models";
+import type { Experience } from "@/features/experience/domain/models";
 
 const pageTitlesEnData = Schema.decodeOption(PageTitlesList)(pageTitlesEn);
 const pageTitlesPlData = Schema.decodeOption(PageTitlesList)(pageTitlesPl);

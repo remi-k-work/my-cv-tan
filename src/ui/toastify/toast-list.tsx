@@ -6,7 +6,9 @@ import { useGT } from "gt-tanstack-start";
 import { Toast } from "@base-ui/react";
 
 // assets
-import { CheckCircleIcon, ExclamationTriangleIcon, XCircleIcon } from "@heroicons/react/24/solid";
+import CheckCircleIcon from "@heroicons/react/24/solid/CheckCircleIcon";
+import ExclamationTriangleIcon from "@heroicons/react/24/solid/ExclamationTriangleIcon";
+import XCircleIcon from "@heroicons/react/24/solid/XCircleIcon";
 
 export function ToastList() {
   const gt = useGT();

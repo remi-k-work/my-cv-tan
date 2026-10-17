@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { useGT } from "gt-tanstack-start";
 
 // types
-import type { Experience } from "@/features/experience/domain";
+import type { Experience } from "@/features/experience/domain/models";
 
 interface ScreenShotsProps {
   experience: Experience;
@@ -15,7 +15,7 @@ interface ScreenShotsProps {
 }
 
 // constants
-import { SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT } from "@/features/experience/domain";
+import { SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT } from "@/features/experience/domain/constants";
 
 // The three screenshots that crossfade into one another; delays are literal class strings so Tailwind can generate them
 const FADE_CYCLE = [

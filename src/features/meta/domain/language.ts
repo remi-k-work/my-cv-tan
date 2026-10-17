@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { Array, Option, pipe, Schema } from "effect";
-import { PreferredLanguage } from "@/domain";
+import { PreferredLanguage } from "@/domain/models";
 
 // The root route always leads the match chain and its loader resolves the visitor's
 // language, so every page head can emit locale-aware tags without extra loader payloads

@@ -10,11 +10,13 @@ import { useGT } from "gt-tanstack-start";
 import { Button } from "@base-ui/react";
 
 // assets
-import { ArrowLeftCircleIcon, PaperAirplaneIcon, XCircleIcon } from "@heroicons/react/24/solid";
-import { Loader2 } from "lucide-react";
+import ArrowLeftCircleIcon from "@heroicons/react/24/solid/ArrowLeftCircleIcon";
+import ArrowPathIcon from "@heroicons/react/24/solid/ArrowPathIcon";
+import PaperAirplaneIcon from "@heroicons/react/24/solid/PaperAirplaneIcon";
+import XCircleIcon from "@heroicons/react/24/solid/XCircleIcon";
 
 // types
-import type { ContactForm } from "@/features/contact-me/domain";
+import type { ContactForm } from "@/features/contact-me/domain/forms";
 
 interface FormSubmitProps {
   contactForm: ContactForm;
@@ -43,7 +45,7 @@ export function FormSubmit({ contactForm }: FormSubmitProps) {
         {waiting ? (
           // The wrapper carries the spin: CSS transform animations aren't hardware-accelerated on SVG elements, but are on the HTML wrapper
           <span className="inline-flex size-9 animate-spin" aria-hidden="true">
-            <Loader2 className="size-9" />
+            <ArrowPathIcon className="size-9" />
           </span>
         ) : (
           <PaperAirplaneIcon className="size-9" aria-hidden="true" />

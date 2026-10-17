@@ -9,10 +9,10 @@ import { useGT } from "gt-tanstack-start";
 import { Button } from "@base-ui/react";
 
 // assets
-import { ArrowPathIcon } from "@heroicons/react/24/solid";
+import ArrowPathIcon from "@heroicons/react/24/solid/ArrowPathIcon";
 
 // constants
-import { CAPTCHA_HEIGHT, CAPTCHA_WIDTH } from "@/features/captcha/domain";
+import { CAPTCHA_HEIGHT, CAPTCHA_WIDTH } from "@/features/captcha/domain/constants";
 
 export function Captcha() {
   const gt = useGT();

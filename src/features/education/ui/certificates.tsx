@@ -5,7 +5,7 @@ import { useId } from "react";
 import { cn } from "@/lib/utils";
 import { useGT } from "gt-tanstack-start";
 import { motion } from "motion/react";
-import { useTilt } from "@/features/experience/hooks";
+import { useTilt } from "@/features/experience/hooks/use-tilt";
 
 // components
 import { PanelCaption } from "@/ui/panel-caption";

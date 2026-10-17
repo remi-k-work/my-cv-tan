@@ -1,7 +1,7 @@
 // types
-import type { EducationList } from "@/features/education/domain";
-import type { Experience, ExperienceList } from "@/features/experience/domain";
-import type { PageTitles, PagePath, PreferredLanguage } from "@/domain";
+import type { EducationList } from "@/features/education/domain/models";
+import type { Experience, ExperienceList } from "@/features/experience/domain/models";
+import type { PageTitles, PagePath, PreferredLanguage } from "@/domain/models";
 
 // A share image with verified facts: scrapers get the real type and dimensions, never guesses
 export interface SocialImage {

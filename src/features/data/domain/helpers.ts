@@ -3,7 +3,7 @@ import { Option } from "effect";
 import { getLocale } from "gt-tanstack-start";
 
 // types
-import type { PreferredLanguage } from "@/domain";
+import type { PreferredLanguage } from "@/domain/models";
 
 export const preferredLanguageFromLocale = (locale: string): PreferredLanguage => (locale === "pl" ? "pl" : "en");
 

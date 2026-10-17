@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useMessages } from "gt-tanstack-start";
 
 // assets
-import { ExclamationTriangleIcon } from "@heroicons/react/24/solid";
+import ExclamationTriangleIcon from "@heroicons/react/24/solid/ExclamationTriangleIcon";
 
 // types
 interface ErrorLineProps {

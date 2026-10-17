@@ -3,11 +3,12 @@ import { Array, pipe } from "effect";
 import { msg } from "gt-tanstack-start";
 import { escapeMd, escapeMdInline, frontmatter, mdBulletList, mdEmptyMarker, mdHeading, mdQuote } from "./helpers";
 import { experienceLines } from "./listing";
-import { absoluteUrl, staticPageCopy } from "@/features/meta/domain";
+import { absoluteUrl } from "@/features/meta/domain/url";
+import { staticPageCopy } from "@/features/meta/domain/static-pages";
 
 // types
 import type { ContactMdInput, EducationMdInput, HomeMdInput } from "./models";
-import type { PreferredLanguage } from "@/domain";
+import type { PreferredLanguage } from "@/domain/models";
 
 // constants
 import {
@@ -20,7 +21,7 @@ import {
   LLMS_TXT_HREF,
   SITE_NAME,
   SOCIAL_LINKS,
-} from "@/features/meta/domain";
+} from "@/features/meta/domain/constants";
 
 // Profile URLs stay single-sourced: the same constants feed the HTML page and JSON-LD
 const [gitHubLink, linkedInLink] = SOCIAL_LINKS;

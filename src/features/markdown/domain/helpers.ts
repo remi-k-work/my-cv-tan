@@ -1,10 +1,10 @@
 // services, features, and other libraries
 import { Array, Option, pipe, Record, Schema, String } from "effect";
 import { msg } from "gt-tanstack-start";
-import { encodeParens } from "@/features/meta/domain";
+import { encodeParens } from "@/features/meta/domain/url";
 
 // types
-import type { Translate } from "@/domain";
+import type { Translate } from "@/domain/models";
 
 // constants
 import { FRONTMATTER_DELIMITER } from "./constants";

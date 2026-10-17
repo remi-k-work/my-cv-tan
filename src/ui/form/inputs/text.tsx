@@ -7,7 +7,7 @@ import { FormReact } from "@lucas-barake/effect-form-react";
 
 // components
 import { Input } from "@base-ui/react";
-import { ErrorLine } from "@/ui/form";
+import { ErrorLine } from "@/ui/form/error-line";
 
 // types
 import type { ComponentPropsWithoutRef } from "react";

@@ -1,9 +1,9 @@
 // services, features, and other libraries
 import { Option, String, pipe } from "effect";
-import { matchPreferredLanguage } from "@/domain";
+import { matchPreferredLanguage } from "@/domain/helpers";
 
 // types
-import type { PreferredLanguage } from "@/domain";
+import type { PreferredLanguage } from "@/domain/models";
 
 // constants
 import { CV_EN_HREF, CV_PL_HREF, LLMS_TXT_HREF, SITE_URL } from "./constants";

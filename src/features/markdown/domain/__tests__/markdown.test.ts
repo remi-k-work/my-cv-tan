@@ -1,9 +1,10 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { Effect, Option } from "effect";
-import { requireData } from "@/features/data/domain";
+import { requireData } from "@/features/data/domain/required";
 // txtResponse moved to meta: it serves robots.txt too, so it lives with the other discovery plumbing
-import { STATIC_PAGES, txtResponse } from "@/features/meta/domain";
+import { STATIC_PAGES } from "@/features/meta/domain/static-pages";
+import { txtResponse } from "@/features/meta/domain/response";
 import {
   buildContactMd,
   buildEducationMd,
@@ -28,7 +29,7 @@ import {
 import { MARKDOWN_CONTENT_TYPE } from "../constants";
 
 // types
-import type { Experience } from "@/features/experience/domain";
+import type { Experience } from "@/features/experience/domain/models";
 
 const sampleExperience: Experience = {
   type: "e",

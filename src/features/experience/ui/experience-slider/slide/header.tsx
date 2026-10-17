@@ -6,18 +6,18 @@ import { cn } from "@/lib/utils";
 import { Option } from "effect";
 import { useAtomSet } from "@effect/atom-react";
 import { useGT } from "gt-tanstack-start";
-import { experienceAtom } from "@/features/modals/state";
+import { experienceAtom } from "@/features/modals/state/experience";
 
 // components
 import { ExperienceHeader } from "@/features/experience/ui/experience-header";
 import { ExperienceLinks } from "@/features/experience/ui/experience-links";
 
 // assets
-import { InformationCircleIcon } from "@heroicons/react/24/solid";
+import InformationCircleIcon from "@heroicons/react/24/solid/InformationCircleIcon";
 
 // types
 import type { MouseEvent } from "react";
-import type { Experience } from "@/features/experience/domain";
+import type { Experience } from "@/features/experience/domain/models";
 
 interface SlideHeaderProps {
   experience: Experience;

@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { llmsAlternateLink } from "./url";
 import { socialMeta } from "./social";
-import { websitePersonJsonLd } from "./json-ld";
+import { websitePersonJsonLd } from "./json-ld/site";
 
 // constants
 import { AVATAR_IMAGE, GLOBAL_SOCIAL_IMAGE, HOME_TITLE, SITE_DESCRIPTION, SITE_NAME, BRANDED_TITLE, SOCIAL_LINKS } from "./constants";

@@ -1,9 +1,9 @@
 // services, features, and other libraries
-import { matchPreferredLanguage } from "@/domain";
+import { matchPreferredLanguage } from "@/domain/helpers";
 import { absoluteUrl } from "../url";
 
 // types
-import type { PreferredLanguage } from "@/domain";
+import type { PreferredLanguage } from "@/domain/models";
 import type { JsonLdScript } from "../models";
 
 // Serialized JSON lives inside a <script> tag; escaping "<" as "\u003C" stops

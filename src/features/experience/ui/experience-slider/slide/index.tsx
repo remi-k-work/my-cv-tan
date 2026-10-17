@@ -1,14 +1,14 @@
 // services, features, and other libraries
 import { motion } from "motion/react";
-import { excerpt } from "@/features/experience/domain";
-import { useTilt } from "@/features/experience/hooks";
+import { excerpt } from "@/features/experience/domain/helpers";
+import { useTilt } from "@/features/experience/hooks/use-tilt";
 
 // components
 import { SlideHeader } from "./header";
 import { ScreenShots } from "@/features/experience/ui/screen-shots";
 
 // types
-import type { Experience } from "@/features/experience/domain";
+import type { Experience } from "@/features/experience/domain/models";
 
 interface SlideProps {
   experience: Experience;

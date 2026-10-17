@@ -3,7 +3,7 @@ import { ExperienceIdentity } from "@/features/experience/ui/experience-identity
 
 // types
 import type { ReactNode } from "react";
-import type { Experience } from "@/features/experience/domain";
+import type { Experience } from "@/features/experience/domain/models";
 
 interface ExperienceHeaderProps {
   experience: Experience;

@@ -7,7 +7,8 @@ import { Button, Dialog } from "@base-ui/react";
 import { RevealText } from "@/ui/reveal-text";
 
 // assets
-import { InformationCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
+import InformationCircleIcon from "@heroicons/react/24/solid/InformationCircleIcon";
+import XCircleIcon from "@heroicons/react/24/solid/XCircleIcon";
 
 // types
 import type { ReactNode } from "react";

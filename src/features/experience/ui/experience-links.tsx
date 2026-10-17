@@ -5,11 +5,12 @@ import { useGT } from "gt-tanstack-start";
 import { LinkChip } from "@/features/experience/ui/link-chip";
 
 // assets
-import { GlobeAltIcon, VideoCameraIcon } from "@heroicons/react/24/solid";
-import { GitHubIcon } from "@/assets/icons";
+import GlobeAltIcon from "@heroicons/react/24/solid/GlobeAltIcon";
+import VideoCameraIcon from "@heroicons/react/24/solid/VideoCameraIcon";
+import { GitHubIcon } from "@/assets/icons/github";
 
 // types
-import type { Experience } from "@/features/experience/domain";
+import type { Experience } from "@/features/experience/domain/models";
 
 interface ExperienceLinksProps {
   experience: Experience;

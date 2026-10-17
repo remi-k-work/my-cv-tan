@@ -4,7 +4,7 @@ import { getTranslationsSnapshot } from "gt-tanstack-start";
 import { hashSource } from "generaltranslation/id";
 
 // types
-import type { PreferredLanguage, Translate } from "@/domain";
+import type { PreferredLanguage, Translate } from "@/domain/models";
 
 // An explicit map of allowed dictionaries: each import stays statically analyzable, so the
 // bundler knows exactly which locale files exist instead of widening the glob to the folder
