@@ -15,6 +15,18 @@ export default defineConfig({
       { find: /^effect\/unstable\/reactivity\/(.*)$/, replacement: "effect/reactivity/$1" },
     ],
   },
+  build: {
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          // The Effect runtime is shared by every route and only changes when dependencies do,
+          // so it gets its own chunk: repeat visitors keep it in cache, and no chunk crosses
+          // the size warning threshold
+          groups: [{ name: "vendor-effect", test: /node_modules[\\/](effect|@effect|@lucas-barake)[\\/]/ }],
+        },
+      },
+    },
+  },
   plugins: [
     cloudflare({ viteEnvironment: { name: "ssr" } }),
     tanstackStart({
