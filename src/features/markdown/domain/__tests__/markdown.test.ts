@@ -5,28 +5,21 @@ import { requireData } from "@/features/data/domain/required";
 // txtResponse moved to meta: it serves robots.txt too, so it lives with the other discovery plumbing
 import { STATIC_PAGES } from "@/features/meta/domain/static-pages";
 import { txtResponse } from "@/features/meta/domain/response";
+import { MARKDOWN_CONTENT_TYPE } from "../constants";
+import { escapeMd, frontmatter } from "../helpers";
+import { buildExperienceMd, buildNotFoundMd, experienceFromList } from "../experience";
+import { buildContactMd, buildEducationMd, buildHomeMd } from "../pages";
+import { buildLlmsFullTxt, buildLlmsTxt } from "../site-index";
 import {
-  buildContactMd,
-  buildEducationMd,
-  buildExperienceMd,
-  buildHomeMd,
-  buildLlmsFullTxt,
-  buildLlmsTxt,
-  buildNotFoundMd,
-  experienceFromList,
-  escapeMd,
-  frontmatter,
+  markdownDataResponse,
   mdNotFoundResponse,
   mdResponse,
-  markdownDataResponse,
   mdUnavailableResponse,
-  parseLangParam,
-  slugFromMdPathname,
   textDataResponse,
   txtUnavailableResponse,
   unavailableMarkdownBody,
-} from "../index";
-import { MARKDOWN_CONTENT_TYPE } from "../constants";
+} from "../response";
+import { parseLangParam, slugFromMdPathname } from "../request";
 
 // types
 import type { Experience } from "@/features/experience/domain/models";

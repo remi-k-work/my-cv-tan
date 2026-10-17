@@ -1,22 +1,15 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
+import { contactHead, educationHead, experienceHead, homeHead } from "../heads";
+import { ROOT_HEAD } from "../root";
+import { canonicalLink } from "../url";
+import { STATIC_PAGES } from "../static-pages";
+import { buildSitemapXml } from "../sitemap";
+import { sitemapResponse, sitemapUnavailableResponse } from "../response";
+import { buildRobotsTxt } from "../robots";
+import { languageFromMatches } from "../language";
 
-// domain
-import {
-  buildRobotsTxt,
-  buildSitemapXml,
-  canonicalLink,
-  contactHead,
-  educationHead,
-  experienceHead,
-  homeHead,
-  languageFromMatches,
-  ROOT_HEAD,
-  STATIC_PAGES,
-  sitemapResponse,
-  sitemapUnavailableResponse,
-} from "../index";
 import { PERSON_DESCRIPTION, SITE_DESCRIPTION } from "../constants";
 
 // Minimal JSON-LD graph readers for structured-data assertions
