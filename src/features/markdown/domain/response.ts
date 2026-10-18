@@ -8,7 +8,7 @@ import type { PreferredLanguage, Translate } from "@/domain/models";
 import type { RequiredDataError } from "@/features/data/domain/required";
 
 // constants
-import { CACHE_CONTROL, TXT_CONTENT_TYPE } from "@/features/meta/domain/constants";
+import { CACHE_CONTROL, NOINDEX_FOLLOW, NO_STORE, TXT_CONTENT_TYPE } from "@/features/meta/domain/constants";
 import { MARKDOWN_CONTENT_TYPE, MARKDOWN_VARY } from "./constants";
 
 const mdHeaders = (preferredLanguage: PreferredLanguage) => ({
@@ -29,12 +29,12 @@ export const mdResponse = (body: string, preferredLanguage: PreferredLanguage, c
 export const mdNotFoundResponse = (body: string, preferredLanguage: PreferredLanguage) =>
   new Response(body, {
     status: 404,
-    headers: { ...mdHeaders(preferredLanguage), "Cache-Control": "no-store", "X-Robots-Tag": "noindex, follow" },
+    headers: { ...mdHeaders(preferredLanguage), "Cache-Control": NO_STORE, "X-Robots-Tag": NOINDEX_FOLLOW },
   });
 
 // 503 for incomplete documents: they must never be cached as if they were complete
 const unavailableResponse = (body: string, headers: Record.ReadonlyRecord<string, string>) =>
-  new Response(body, { status: 503, headers: { ...headers, "Cache-Control": "no-store", "X-Robots-Tag": "noindex, follow" } });
+  new Response(body, { status: 503, headers: { ...headers, "Cache-Control": NO_STORE, "X-Robots-Tag": NOINDEX_FOLLOW } });
 
 // Honest, parseable unavailable document rather than an HTML error page
 export const unavailableMarkdownBody = (translate: Translate) =>

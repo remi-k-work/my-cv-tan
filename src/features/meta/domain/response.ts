@@ -1,13 +1,13 @@
 // HTTP responses for the machine-readable discovery documents (robots.txt, sitemap.xml, llms.txt)
 
 // constants
-import { CACHE_CONTROL, TXT_CONTENT_TYPE } from "./constants";
+import { CACHE_CONTROL, NOINDEX_FOLLOW, NO_STORE, TXT_CONTENT_TYPE } from "./constants";
 
 const XML_CONTENT_TYPE = "application/xml; charset=utf-8";
 
 // Sitemaps are parsed directly, never ranked: noindex keeps the XML file itself out of
 // search results (Google still crawls noindexed sitemaps), follow lets it find the URLs inside
-const SITEMAP_HEADERS = { "Content-Type": XML_CONTENT_TYPE, "X-Robots-Tag": "noindex, follow" } as const;
+const SITEMAP_HEADERS = { "Content-Type": XML_CONTENT_TYPE, "X-Robots-Tag": NOINDEX_FOLLOW } as const;
 
 // Plain-text discovery document (robots.txt, llms.txt, llms-full.txt): always English, cacheable at the CDN
 export const txtResponse = (body: string) =>
@@ -20,5 +20,5 @@ export const sitemapResponse = (xml: string) => new Response(xml, { headers: { .
 export const sitemapUnavailableResponse = () =>
   new Response('<?xml version="1.0" encoding="UTF-8"?><error>Sitemap is temporarily unavailable.</error>', {
     status: 503,
-    headers: { ...SITEMAP_HEADERS, "Cache-Control": "no-store" },
+    headers: { ...SITEMAP_HEADERS, "Cache-Control": NO_STORE },
   });

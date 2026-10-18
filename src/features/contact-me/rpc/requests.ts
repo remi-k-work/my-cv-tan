@@ -9,8 +9,8 @@ import { RpcLogger } from "@/services/rpc-logger";
 export class RpcContactMe extends RpcGroup.make(
   Rpc.make("contactForm", {
     payload: {
-      name: NameField().schema,
-      email: EmailField().schema,
+      name: NameField.schema,
+      email: EmailField.schema,
       subject: SubjectField.schema,
       message: MessageField.schema,
       // Carried in the payload so the handler can verify the captcha itself: the RPC is a public

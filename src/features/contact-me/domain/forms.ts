@@ -16,8 +16,8 @@ import { TextInput } from "@/ui/form/inputs/text";
 export type ContactForm = ReturnType<typeof contactForm>;
 
 const contactFormBuilder = FormBuilder.empty
-  .addField(NameField())
-  .addField(EmailField())
+  .addField(NameField)
+  .addField(EmailField)
   .addField(SubjectField)
   .addField(MessageField)
   .addField(CaptchaInputField)

@@ -39,6 +39,13 @@ export const makeRpcHandler = <Rpcs extends Rpc.Any, LE>(
   return HttpRouter.toWebHandler(RpcLayer, { disableLogger: true });
 };
 
+// Adapts an HttpRouter web handler to TanStack Start's server route-handler shape,
+// which receives the request wrapped in a context object
+export const routeHandler =
+  (webHandler: { readonly handler: (request: Request) => Response | Promise<Response> }) =>
+  ({ request }: { request: Request }) =>
+    webHandler.handler(request);
+
 export const matchPreferredLanguage = <T>(preferredLanguage: PreferredLanguage, en: T, pl: T): T => (preferredLanguage === "en" ? en : pl);
 
 // Localized page title/intro with a static fallback when loader data is missing or partial

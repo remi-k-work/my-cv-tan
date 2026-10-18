@@ -82,5 +82,10 @@ export const CERTIFICATES_HREF = "/my-certificates.pdf";
 // One CDN cache policy shared by every machine-readable document (.md twins, llms.txt, robots.txt, sitemap.xml)
 export const CACHE_CONTROL = "public, max-age=3600, stale-while-revalidate=86400";
 
+// Failure responses (404 twins, 503 fallbacks): incomplete content must never be cached as if
+// it were complete, and must stay out of search results. Overrides CACHE_CONTROL and "index, follow"
+export const NO_STORE = "no-store";
+export const NOINDEX_FOLLOW = "noindex, follow";
+
 // Plain-text content type shared by every non-Markdown discovery document (robots.txt, llms.txt, llms-full.txt)
 export const TXT_CONTENT_TYPE = "text/plain; charset=utf-8";
