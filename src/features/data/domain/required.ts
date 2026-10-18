@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { Effect, Option, Schema } from "effect";
 
-export class RequiredDataError extends Schema.TaggedError<RequiredDataError>()("RequiredDataError", {
+export class RequiredDataError extends Schema.TaggedError<RequiredDataError, { readonly brand: unique symbol }>()("RequiredDataError", {
   dataset: Schema.String,
   message: Schema.String,
 }) {}

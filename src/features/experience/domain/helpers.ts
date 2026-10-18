@@ -1,23 +1,22 @@
 // services, features, and other libraries
 import { Option, pipe, String } from "effect";
+import { matchPreferredLanguage } from "@/domain/helpers";
+
+// types
+import type { PreferredLanguage } from "@/domain/models";
 
 // constants
 import { EXCERPT_SUFFIX } from "./constants";
 
-// Keep translated headlines consistent across route metadata, JSON-LD, and Markdown twins
+// Keep translated headlines consistent across route metadata, JSON-LD, and Markdown twins;
+// the language switch delegates to the shared helper so every surface branches the same way
 export const experienceHeadline = (
   experience: { readonly type: "e" | "p"; readonly role: string; readonly company: string },
-  language: "en" | "pl"
-) => {
-  if (experience.type === "p") {
-    return language === "pl" ? `Projekt osobisty: ${experience.role}` : experience.role;
-  }
-
-  if (language === "pl") {
-    return `${experience.role} w ${experience.company}`;
-  }
-  return `${experience.role} at ${experience.company}`;
-};
+  preferredLanguage: PreferredLanguage
+) =>
+  experience.type === "p"
+    ? matchPreferredLanguage(preferredLanguage, experience.role, `Projekt osobisty: ${experience.role}`)
+    : matchPreferredLanguage(preferredLanguage, `${experience.role} at ${experience.company}`, `${experience.role} w ${experience.company}`);
 
 export const excerpt = (text: string, maxLength: number) => {
   // Return early if text fits within limits
