@@ -35,4 +35,4 @@ export const ROOT_HEAD = {
     llmsFullAlternateLink(),
   ],
   scripts: [websitePersonJsonLd()],
-} as const;
+};
