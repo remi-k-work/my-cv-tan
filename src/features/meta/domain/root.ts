@@ -4,7 +4,17 @@ import { socialMeta } from "./social";
 import { websitePersonJsonLd } from "./json-ld/site";
 
 // constants
-import { AVATAR_IMAGE, GLOBAL_SOCIAL_IMAGE, HOME_TITLE, SITE_DESCRIPTION, SITE_NAME, BRANDED_TITLE, SOCIAL_LINKS, NOINDEX_FOLLOW } from "./constants";
+import {
+  AVATAR_IMAGE,
+  DEFAULT_LANGUAGE,
+  GLOBAL_SOCIAL_IMAGE,
+  HOME_TITLE,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  BRANDED_TITLE,
+  SOCIAL_LINKS,
+  NOINDEX_FOLLOW,
+} from "./constants";
 
 // Site-wide tags only. Meta dedupes by name/property keeping the leaf value, but links dedupe
 // only when identical — a root-level canonical "/" would render beside every page's own canonical
@@ -17,11 +27,11 @@ export const ROOT_HEAD = {
     { name: "description", content: SITE_DESCRIPTION },
 
     { name: "author", content: SITE_NAME },
-    // Safe default: pages with complete data opt back into indexing (see indexableMeta in heads.ts)
+    // Safe default: pages with complete data opt back into indexing (see pageHead in heads.ts)
     { name: "robots", content: NOINDEX_FOLLOW },
     { name: "google", content: "notranslate" },
-    // Static en_US fallback for pages without their own head (404, errors); every page head overrides these
-    ...socialMeta({ title: HOME_TITLE, description: SITE_DESCRIPTION, path: "/", image: GLOBAL_SOCIAL_IMAGE, preferredLanguage: "en" }),
+    // Static en fallback for pages without their own head (404, errors); every page head overrides these
+    ...socialMeta({ title: HOME_TITLE, description: SITE_DESCRIPTION, path: "/", image: GLOBAL_SOCIAL_IMAGE, preferredLanguage: DEFAULT_LANGUAGE }),
   ],
   links: [
     { rel: "icon", href: "/icon.svg", type: "image/svg+xml" },

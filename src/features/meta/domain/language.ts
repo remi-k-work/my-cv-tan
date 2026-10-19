@@ -2,6 +2,9 @@
 import { Array, Option, pipe, Schema } from "effect";
 import { PreferredLanguage } from "@/domain/models";
 
+// constants
+import { DEFAULT_LANGUAGE } from "./constants";
+
 // The root route always leads the match chain and its loader resolves the visitor's
 // language, so every page head can emit locale-aware tags without extra loader payloads
 const RootLoaderData = Schema.Struct({
@@ -18,4 +21,5 @@ export const languageFromMatches = (matches: ReadonlyArray<{ readonly loaderData
   );
 
 // Total variant for head() call sites: falls back to the site's default language
-export const headLanguage = (matches: ReadonlyArray<{ readonly loaderData?: unknown }>) => Option.getOrElse(languageFromMatches(matches), () => "en" as const);
+export const headLanguage = (matches: ReadonlyArray<{ readonly loaderData?: unknown }>) =>
+  Option.getOrElse(languageFromMatches(matches), () => DEFAULT_LANGUAGE);

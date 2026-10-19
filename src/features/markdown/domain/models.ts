@@ -42,7 +42,7 @@ export interface LlmsFullInput {
 }
 
 // One experience section in an AI index; translate and language default to English source
-// copy inside listing.ts so the English-only indexes stay free of translation wiring
+// copy inside experience.ts so the English-only indexes stay free of translation wiring
 export interface ExperienceLinesInput {
   readonly experienceList: ExperienceList;
   readonly type: Experience["type"];

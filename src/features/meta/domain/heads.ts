@@ -10,32 +10,44 @@ import { homeJsonLd } from "./json-ld/home";
 import { staticPageCopy } from "./static-pages";
 
 // types
-import type { EducationHeadInput, ExperienceHeadInput, HomeHeadInput, PageHeadInput, SocialMetaInput, StaticPageHeadInput } from "./models";
+import type { JsonLdScript, EducationHeadInput, ExperienceHeadInput, HomeHeadInput, PageHeadInput, SocialMetaInput, StaticPageHeadInput } from "./models";
 
 // constants
 import { GLOBAL_SOCIAL_IMAGE, META_DESCRIPTION_LENGTH, BRANDED_TITLE, INDEXABLE_ROBOTS } from "./constants";
-import { STATIC_PAGES } from "./static-pages";
 
-// Complete data opts into indexing: one shared block keeps title, robots and social tags consistent;
-// incomplete loader responses inherit the root noindex policy instead
-const indexableMeta = (input: SocialMetaInput) => [
-  { title: BRANDED_TITLE(input.title) },
-  { name: "description", content: input.description },
-  { name: "robots", content: INDEXABLE_ROBOTS },
-  ...socialMeta(input),
-];
+type PageHeadSpec = SocialMetaInput & {
+  readonly markdownPath: string;
+  readonly jsonLd: JsonLdScript;
+};
+
+// Complete data opts into indexing: one shared block keeps title, robots, social tags,
+// canonical and the Markdown twin consistent; incomplete loader responses inherit the
+// root noindex policy instead
+const pageHead = ({ markdownPath, jsonLd, ...social }: PageHeadSpec) => ({
+  meta: [
+    { title: BRANDED_TITLE(social.title) },
+    { name: "description", content: social.description },
+    { name: "robots", content: INDEXABLE_ROBOTS },
+    ...socialMeta(social),
+  ],
+  links: [canonicalLink(absoluteUrl(social.path)), markdownAlternateLink(markdownPath)],
+  scripts: [jsonLd],
+});
 
 // Static pages share localized visible copy, authored search metadata, canonical links,
 // and JSON-LD; Markdown twins use the same source through staticPageCopy
 const staticPageHead = ({ pageTitles, preferredLanguage, pagePath, jsonLd }: StaticPageHeadInput) => {
-  // Resolve once so the HTML head and Markdown twin share the same canonical and summary
-  const { heading, seoTitle, description, canonical } = staticPageCopy(pageTitles, pagePath, preferredLanguage);
+  const copy = staticPageCopy(pageTitles, pagePath, preferredLanguage);
 
-  return {
-    meta: indexableMeta({ title: seoTitle, description, path: pagePath, image: GLOBAL_SOCIAL_IMAGE, preferredLanguage }),
-    links: [canonicalLink(canonical), markdownAlternateLink(STATIC_PAGES[pagePath].mdHref)],
-    scripts: [jsonLd({ pageName: heading, description, preferredLanguage })],
-  };
+  return pageHead({
+    title: copy.seoTitle,
+    description: copy.description,
+    path: copy.path,
+    markdownPath: copy.mdHref,
+    image: GLOBAL_SOCIAL_IMAGE,
+    preferredLanguage: copy.preferredLanguage,
+    jsonLd: jsonLd(copy),
+  });
 };
 
 export const homeHead = ({ experienceList, ...page }: HomeHeadInput) =>
@@ -51,15 +63,16 @@ export const experienceHead = ({ experience, preferredLanguage }: ExperienceHead
   const { slug, txt, imageName } = experience;
 
   const path = experiencePath(slug);
-  const headline = experienceHeadline(experience, preferredLanguage);
-  const description = excerpt(txt, META_DESCRIPTION_LENGTH);
 
-  // The share image resolves through images.ts, the same source the JSON-LD image uses
-  const image = experienceShareImage(imageName);
-
-  return {
-    meta: indexableMeta({ title: headline, description, path, image, twitterImage: GLOBAL_SOCIAL_IMAGE, preferredLanguage }),
-    links: [canonicalLink(absoluteUrl(path)), markdownAlternateLink(experienceMarkdownPath(slug))],
-    scripts: [experienceJsonLd({ experience, preferredLanguage })],
-  };
+  return pageHead({
+    title: experienceHeadline(experience, preferredLanguage),
+    description: excerpt(txt, META_DESCRIPTION_LENGTH),
+    path,
+    markdownPath: experienceMarkdownPath(slug),
+    // The share image resolves through images.ts, the same source the JSON-LD image uses
+    image: experienceShareImage(imageName),
+    twitterImage: GLOBAL_SOCIAL_IMAGE,
+    preferredLanguage,
+    jsonLd: experienceJsonLd({ experience, preferredLanguage }),
+  });
 };

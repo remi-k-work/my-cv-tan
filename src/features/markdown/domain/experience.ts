@@ -1,17 +1,30 @@
 // services, features, and other libraries
-import { Array, Option, pipe } from "effect";
+import { Array, Option, pipe, Result } from "effect";
 import { msg } from "gt-tanstack-start";
 import { matchPreferredLanguage } from "@/domain/helpers";
 import { experienceHeadline, excerpt } from "@/features/experience/domain/helpers";
-import { absoluteUrl, experiencePath } from "@/features/meta/domain/url";
-import { escapeMd, escapeMdInline, frontmatter, mdBulletList, mdExternalLink, mdHeading, mdQuote } from "./helpers";
+import { absoluteUrl, experienceMarkdownHref, experiencePath } from "@/features/meta/domain/url";
+import {
+  escapeMd,
+  escapeMdInline,
+  frontmatter,
+  mdBulletList,
+  mdDocument,
+  mdEmptyMarker,
+  mdExternalLink,
+  mdHeading,
+  mdQuote,
+  mdSection,
+  translateSource,
+} from "./helpers";
 
 // types
 import type { ExperienceList } from "@/features/experience/domain/models";
-import type { BuildNotFoundMdInput, ExperienceMdInput } from "./models";
+import type { BuildNotFoundMdInput, ExperienceLinesInput, ExperienceMdInput } from "./models";
 
 // constants
-import { HOME_MD_HREF, LLMS_TXT_HREF, META_DESCRIPTION_LENGTH, BRANDED_TITLE, SITE_NAME } from "@/features/meta/domain/constants";
+import { HOME_MD_HREF, LLMS_TXT_HREF, META_DESCRIPTION_LENGTH, BRANDED_TITLE, DEFAULT_LANGUAGE, SITE_NAME } from "@/features/meta/domain/constants";
+import { LIST_EXCERPT_LENGTH } from "./constants";
 
 // Locate one experience by slug inside a decoded list (None = clean 404 candidate);
 // a failed decode stays an error in the caller via requireData
@@ -23,6 +36,23 @@ const optionalBulletLink = (label: string, href: string | undefined) =>
     Option.fromNullishOr(href),
     Option.flatMap((href) => mdExternalLink(label, href)),
     Option.map((link) => `- ${link}`)
+  );
+
+// Section body lines for one experience type, or an explicit empty marker (never a bare heading)
+export const experienceLines = ({ experienceList, type, translate = translateSource, preferredLanguage = DEFAULT_LANGUAGE }: ExperienceLinesInput) =>
+  pipe(
+    experienceList,
+    // Filter and format in one pass: only this experience type contributes a line
+    Array.filterMap((experience) =>
+      experience.type === type
+        ? // One line per experience in AI indexes: label links the .md twin, excerpt carries the substance
+          Result.succeed(
+            `- [${escapeMdInline(experienceHeadline(experience, preferredLanguage))}](${experienceMarkdownHref(experience.slug)}) — ${escapeMdInline(excerpt(experience.txt, LIST_EXCERPT_LENGTH))} (${escapeMdInline(experience.year)})`
+          )
+        : Result.failVoid
+    ),
+    Array.join("\n"),
+    (lines) => (lines === "" ? mdEmptyMarker(translate) : lines)
   );
 
 export const buildExperienceMd = ({ experience, preferredLanguage, translate }: ExperienceMdInput) => {
@@ -40,9 +70,8 @@ export const buildExperienceMd = ({ experience, preferredLanguage, translate }: 
     Array.getSomes,
     Array.join("\n")
   );
-  const linkSection = links === "" ? [] : [mdHeading(2, translate(msg("Links"))), ``, links, ``];
 
-  return [
+  return mdDocument([
     frontmatter({
       title: BRANDED_TITLE(headline),
       description,
@@ -58,27 +87,20 @@ export const buildExperienceMd = ({ experience, preferredLanguage, translate }: 
       skills: skillsUsed.join(", "),
     }),
     mdHeading(1, headline),
-    ``,
     mdQuote(description),
-    ``,
-    mdHeading(2, translate(msg("Overview"))),
-    ``,
-    escapeMd(txt),
-    ``,
-    mdHeading(2, translate(msg("Details"))),
-    ``,
-    mdBulletList([
-      `${translate(msg("Role"))}: ${escapeMdInline(role)}`,
-      `${translate(msg("Company"))}: ${escapeMdInline(company)}`,
-      `${translate(msg("Year"))}: ${escapeMdInline(year)}`,
-    ]),
-    ``,
-    mdHeading(2, translate(msg("Skills Used"))),
-    ``,
-    mdBulletList(skillsUsed.map(escapeMdInline)),
-    ``,
-    ...linkSection,
-  ].join("\n");
+    mdSection(mdHeading(2, translate(msg("Overview"))), escapeMd(txt)),
+    mdSection(
+      mdHeading(2, translate(msg("Details"))),
+      mdBulletList([
+        `${translate(msg("Role"))}: ${escapeMdInline(role)}`,
+        `${translate(msg("Company"))}: ${escapeMdInline(company)}`,
+        `${translate(msg("Year"))}: ${escapeMdInline(year)}`,
+      ])
+    ),
+    mdSection(mdHeading(2, translate(msg("Skills Used"))), mdBulletList(Array.map(skillsUsed, escapeMdInline))),
+    // A linkless experience omits the section entirely instead of rendering an empty heading
+    ...(links === "" ? [] : [mdSection(mdHeading(2, translate(msg("Links"))), links)]),
+  ]);
 };
 
 // Explicit, parseable not-found document rather than an HTML error page: AI fetchers
@@ -89,13 +111,10 @@ export const buildNotFoundMd = ({ slug, preferredLanguage, translate }: BuildNot
   const safePath = escapeMdInline(experiencePath(slug));
   const description = matchPreferredLanguage(preferredLanguage, `No page for slug "${safeSlug}".`, `Nie znaleziono strony dla identyfikatora "${safeSlug}".`);
 
-  return [
+  return mdDocument([
     frontmatter({ title, description, lang: preferredLanguage }),
     mdHeading(1, title),
-    ``,
     matchPreferredLanguage(preferredLanguage, `No Markdown document exists for ${safePath}.`, `Dokument Markdown dla adresu ${safePath} nie istnieje.`),
-    ``,
     `${translate(msg("See"))} [${translate(msg("Home page"))}](${absoluteUrl(HOME_MD_HREF)}) ${translate(msg("or"))} [llms.txt](${absoluteUrl(LLMS_TXT_HREF)}).`,
-    ``,
-  ].join("\n");
+  ]);
 };

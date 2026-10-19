@@ -52,7 +52,7 @@ export const frontmatter = (fields: Record.ReadonlyRecord<string, string>) =>
     Record.toEntries,
     Array.map(([key, value]) => `${key}: ${yamlValue(value)}`),
     Array.join("\n"),
-    (body) => [FRONTMATTER_DELIMITER, body, FRONTMATTER_DELIMITER, ""].join("\n")
+    (body) => [FRONTMATTER_DELIMITER, body, FRONTMATTER_DELIMITER].join("\n")
   );
 
 export const mdHeading = (level: 1 | 2 | 3, text: string) => `${"#".repeat(level)} ${escapeMdInline(text)}`;
@@ -65,6 +65,17 @@ export const mdBulletList = (items: ReadonlyArray<string>) =>
     Array.map((item) => `- ${item}`),
     Array.join("\n")
   );
+
+// Block-level elements are separated by exactly one blank line; keeping that rule here means
+// builders never interleave empty strings by hand
+export const mdBody = (blocks: ReadonlyArray<string>) => pipe(blocks, Array.filter(String.isNonEmpty), Array.join("\n\n"));
+
+// A titled block: heading, blank line, then its body
+export const mdSection = (heading: string, body: string) => mdBody([heading, body]);
+
+// A complete document: normalized blocks plus one trailing newline, so files and the
+// concatenated llms-full.txt always end cleanly at a line boundary
+export const mdDocument = (blocks: ReadonlyArray<string>) => `${mdBody(blocks)}\n`;
 
 // Explicit "no entries" marker: a bare section heading would read as truncated content to AI parsers
 export const mdEmptyMarker = (translate: Translate) => `_${translate(msg("No entries."))}_`;

@@ -1,3 +1,6 @@
+// types
+import type { PreferredLanguage } from "@/domain/models";
+
 // constants
 
 // --- Site identity ---
@@ -35,8 +38,13 @@ export const AVATAR = { src: AVATAR_IMAGE, width: 288, height: 288 } as const;
 
 // --- Languages ---
 
+export const DEFAULT_LANGUAGE = "en" as const;
+
 // Supported content languages: single source for WebSite.inLanguage and Person.knowsLanguage
 export const SITE_LANGUAGES = ["en", "pl"] as const;
+
+// Open Graph uses underscored locale identifiers, not the plain language codes above
+export const OPEN_GRAPH_LOCALES = { en: "en_US", pl: "pl_PL" } as const satisfies Record<PreferredLanguage, string>;
 
 // Prose names for the languages above, single-sourced for the AI-facing copy in llms.txt
 export const SITE_LANGUAGE_NAMES = ["English", "Polish"] as const;
@@ -87,7 +95,7 @@ export const CACHE_CONTROL = "public, max-age=3600, stale-while-revalidate=86400
 export const NO_STORE = "no-store";
 export const NOINDEX_FOLLOW = "noindex, follow";
 
-// Complete-data pages opt into indexing with this directive (see indexableMeta in heads.ts):
+// Complete-data pages opt into indexing with this directive (see pageHead in heads.ts):
 // max-snippet:-1 leaves AI overviews and citation surfaces unconstrained
 export const INDEXABLE_ROBOTS = "index, follow, max-snippet:-1, max-image-preview:large";
 

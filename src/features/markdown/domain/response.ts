@@ -1,6 +1,7 @@
 // services, features, and other libraries
 import { Effect } from "effect";
 import { msg } from "gt-tanstack-start";
+import { withLanguageParam } from "@/features/meta/domain/url";
 import { recoverDataFailure } from "@/features/data/domain/required";
 
 // types
@@ -8,9 +9,10 @@ import type { PreferredLanguage, Translate } from "@/domain/models";
 import type { RequiredDataError } from "@/features/data/domain/required";
 
 // constants
-import { CACHE_CONTROL, INDEXABLE_ROBOTS, NOINDEX_FOLLOW, NO_STORE, SITE_LANGUAGES } from "@/features/meta/domain/constants";
+import { CACHE_CONTROL, DEFAULT_LANGUAGE, INDEXABLE_ROBOTS, NOINDEX_FOLLOW, NO_STORE, SITE_LANGUAGES } from "@/features/meta/domain/constants";
 import { txtUnavailableResponse, unavailableResponse } from "@/features/meta/domain/response";
 import { MARKDOWN_CONTENT_TYPE, MARKDOWN_VARY } from "./constants";
+import { mdDocument, mdHeading } from "./helpers";
 
 // Success headers shared by every Markdown twin; the robots directive is the same one the
 // HTML heads emit (see INDEXABLE_ROBOTS), so AI citation surfaces stay unconstrained
@@ -22,18 +24,14 @@ const mdHeaders = (preferredLanguage: PreferredLanguage) => ({
   "X-Robots-Tag": INDEXABLE_ROBOTS,
 });
 
-// A negotiated response needs stable, fetchable URLs for each language. This keeps
-// crawlers from treating the Cookie or Accept-Language variant as an opaque duplicate
-const markdownVariantUrl = (markdownUrl: string, language: PreferredLanguage) => {
-  const url = new URL(markdownUrl);
-  url.searchParams.set("lang", language);
-  return url.href;
-};
-
+// A negotiated response needs stable, fetchable URLs for each language; explicit variants keep
+// crawlers from treating the Cookie or Accept-Language response as an opaque duplicate.
+// x-default names the source language for requests that match no supported variant
 const markdownLinks = (canonical: string, markdownUrl: string) =>
   [
     `<${canonical}>; rel="canonical"`,
-    ...SITE_LANGUAGES.map((language) => `<${markdownVariantUrl(markdownUrl, language)}>; rel="alternate"; hreflang="${language}"; type="text/markdown"`),
+    ...SITE_LANGUAGES.map((language) => `<${withLanguageParam(markdownUrl, language)}>; rel="alternate"; hreflang="${language}"; type="text/markdown"`),
+    `<${withLanguageParam(markdownUrl, DEFAULT_LANGUAGE)}>; rel="alternate"; hreflang="x-default"; type="text/markdown"`,
   ].join(", ");
 
 // Successful Markdown twin (200). The HTTP-level canonical mirrors the frontmatter
@@ -42,7 +40,7 @@ export const mdResponse = (body: string, preferredLanguage: PreferredLanguage, c
   new Response(body, {
     headers: {
       ...mdHeaders(preferredLanguage),
-      "Content-Location": markdownVariantUrl(markdownUrl, preferredLanguage),
+      "Content-Location": withLanguageParam(markdownUrl, preferredLanguage),
       Link: markdownLinks(canonical, markdownUrl),
     },
   });
@@ -59,12 +57,10 @@ export const mdUnavailableResponse = (body: string, preferredLanguage: Preferred
 
 // Honest, parseable unavailable document rather than an HTML error page
 export const unavailableMarkdownBody = (translate: Translate) =>
-  [
-    `# ${translate(msg("Content temporarily unavailable"))}`,
-    ``,
+  mdDocument([
+    mdHeading(1, translate(msg("Content temporarily unavailable"))),
     translate(msg("The required portfolio content could not be loaded. Please try again shortly.")),
-    ``,
-  ].join("\n");
+  ]);
 
 // Same 503 shape for the AI indexes (llms.txt, llms-full.txt), naming the document so fetchers know what failed
 export const unavailableIndexBody = (name: string) =>

@@ -8,7 +8,7 @@ import { RequiredDataError, requireDataFrom } from "@/features/data/domain/requi
 import { requestPreferredLanguage } from "@/features/data/domain/helpers";
 import { Data } from "@/features/data/services/data";
 import { absoluteUrl, experienceMarkdownPath, experiencePath } from "@/features/meta/domain/url";
-import { txtResponse } from "@/features/meta/domain/response";
+import { discoveryTxtResponse } from "@/features/meta/domain/response";
 import { buildContactMd, buildEducationMd, buildHomeMd } from "@/features/markdown/domain/pages";
 import { buildExperienceMd, buildNotFoundMd, experienceFromList } from "@/features/markdown/domain/experience";
 import { buildLlmsFullTxt, buildLlmsTxt } from "@/features/markdown/domain/site-index";
@@ -20,7 +20,7 @@ import { translateSource } from "@/features/markdown/domain/helpers";
 import type { PageTitles, PreferredLanguage, Translate } from "@/domain/models";
 
 // constants
-import { CONTACT_MD_HREF, EDUCATION_MD_HREF, HOME_MD_HREF } from "@/features/meta/domain/constants";
+import { CONTACT_MD_HREF, DEFAULT_LANGUAGE, EDUCATION_MD_HREF, HOME_MD_HREF } from "@/features/meta/domain/constants";
 
 // An explicit ?lang= pins the cache variant: the response no longer depends on the locale
 // cookie, so drop Vary and the GT set-cookie to keep the response shared-cacheable
@@ -61,25 +61,25 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
         return Option.isSome(langOverride) ? pinCacheVariant(response) : response;
       });
 
-    // Shared shape of the home and education twins: titles + list fetched concurrently,
-    // then rendered — the concurrency policy is stated once, not per page
-    const listPage = <List>(
+    // Home and education share one shape: page titles plus the list the page renders,
+    // fetched in sequence (the data service is in-memory) and rendered once
+    const staticDocument = <List>(
       path: string,
       markdownPath: string,
       fetchList: (lang: PreferredLanguage) => Effect.Effect<List, RequiredDataError>,
       build: (titles: PageTitles, list: List, lang: PreferredLanguage, translate: Translate) => string
     ) =>
       document((_request, lang, translate) =>
-        Effect.map(Effect.all([pageTitles(lang), fetchList(lang)], { concurrency: "unbounded" }), ([titles, list]) =>
+        Effect.map(Effect.all([pageTitles(lang), fetchList(lang)]), ([titles, list]) =>
           mdResponse(build(titles, list, lang, translate), lang, absoluteUrl(path), absoluteUrl(markdownPath))
         )
       );
 
-    const home = listPage("/", HOME_MD_HREF, experiences, (titles, experienceList, lang, translate) =>
+    const home = staticDocument("/", HOME_MD_HREF, experiences, (titles, experienceList, lang, translate) =>
       buildHomeMd({ pageTitles: titles, experienceList, preferredLanguage: lang, translate })
     );
 
-    const education = listPage("/education", EDUCATION_MD_HREF, schools, (titles, educationList, lang, translate) =>
+    const education = staticDocument("/education", EDUCATION_MD_HREF, schools, (titles, educationList, lang, translate) =>
       buildEducationMd({ pageTitles: titles, educationList, preferredLanguage: lang, translate })
     );
 
@@ -116,17 +116,21 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
     // English-only discovery documents (llms.txt, llms-full.txt): no language negotiation, so a
     // plain wrapper over textDataResponse; the content fetch stays inside the recovered effect
     const discoveryDocument = (logPrefix: string, name: string, content: Effect.Effect<string, RequiredDataError>) =>
-      textDataResponse(logPrefix, unavailableIndexBody(name), Effect.map(content, txtResponse));
+      textDataResponse(logPrefix, unavailableIndexBody(name), Effect.map(content, discoveryTxtResponse));
 
     // Site index for AI systems (GEO); Effects are lazy, so these are plain values
-    const siteIndex = discoveryDocument("[LLMS.TXT]", "llms.txt", Effect.map(experiences("en"), buildLlmsTxt));
+    const siteIndex = discoveryDocument("[LLMS.TXT]", "llms.txt", Effect.map(experiences(DEFAULT_LANGUAGE), buildLlmsTxt));
 
     // Full-content companion (llms-full.txt): every twin in one request
     const siteIndexFull = discoveryDocument(
       "[LLMS-FULL.TXT]",
       "llms-full.txt",
       Effect.gen(function* () {
-        const [titles, experienceList, educationList] = yield* Effect.all([pageTitles("en"), experiences("en"), schools("en")], { concurrency: "unbounded" });
+        const [titles, experienceList, educationList] = yield* Effect.all([
+          pageTitles(DEFAULT_LANGUAGE),
+          experiences(DEFAULT_LANGUAGE),
+          schools(DEFAULT_LANGUAGE),
+        ]);
         return buildLlmsFullTxt({ pageTitles: titles, experienceList, educationList });
       })
     );

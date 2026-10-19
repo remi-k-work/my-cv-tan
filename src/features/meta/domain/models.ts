@@ -34,14 +34,17 @@ export interface LocalizedCopy {
   readonly preferredLanguage: PreferredLanguage;
 }
 
-// Resolved static-page copy: visible copy plus authored search metadata
-export interface StaticPageCopy {
-  // Visible page heading stays tied to the rendered page copy
-  readonly heading: string;
+export type StaticPageType = "overview" | "education" | "contact";
+
+// Resolved static-page copy: visible copy plus authored search metadata. Heads and
+// Markdown twins both consume this, so the HTML and .md documents cannot drift apart.
+export interface StaticPageCopy extends LocalizedCopy {
+  readonly path: PagePath;
+  readonly mdHref: string;
+  readonly type: StaticPageType;
   // Search and share title is authored separately from the longer body heading
   readonly seoTitle: string;
   readonly intro: string;
-  readonly description: string;
   readonly canonical: string;
 }
 
@@ -51,9 +54,8 @@ export interface PageHeadInput {
   readonly preferredLanguage: PreferredLanguage;
 }
 
-// Shared input of the three static page heads: pagePath selects the STATIC_PAGES entry
-// (twin href + fallback copy); the page supplies its own JSON-LD builder, which closes
-// over the page-specific data and is fed with the resolved localized copy
+// pagePath selects the STATIC_PAGES entry (twin href + fallback copy); the page supplies
+// its own JSON-LD builder, which closes over the page-specific data and is fed the resolved copy
 export interface StaticPageHeadInput extends PageHeadInput {
   readonly pagePath: PagePath;
   readonly jsonLd: (copy: LocalizedCopy) => JsonLdScript;
@@ -90,6 +92,7 @@ interface PageMetadata {
 
 export interface StaticPageSettings {
   readonly mdHref: string;
+  readonly type: StaticPageType;
   readonly fallbackHeading: string;
   readonly fallbackIntro: string;
   readonly metadata: Readonly<Record<PreferredLanguage, PageMetadata>>;

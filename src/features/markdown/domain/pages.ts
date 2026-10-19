@@ -1,14 +1,13 @@
 // services, features, and other libraries
 import { Array, pipe } from "effect";
 import { msg } from "gt-tanstack-start";
-import { escapeMd, escapeMdInline, frontmatter, mdBulletList, mdEmptyMarker, mdHeading, mdQuote } from "./helpers";
-import { experienceLines } from "./listing";
+import { escapeMd, escapeMdInline, frontmatter, mdBody, mdBulletList, mdDocument, mdEmptyMarker, mdHeading, mdQuote, mdSection } from "./helpers";
+import { experienceLines } from "./experience";
 import { absoluteUrl } from "@/features/meta/domain/url";
 import { staticPageCopy } from "@/features/meta/domain/static-pages";
 
 // types
 import type { ContactMdInput, EducationMdInput, HomeMdInput } from "./models";
-import type { PreferredLanguage } from "@/domain/models";
 import type { StaticPageCopy } from "@/features/meta/domain/models";
 
 // constants
@@ -28,44 +27,43 @@ import {
 // Profile URLs stay single-sourced: the same constants feed the HTML page and JSON-LD
 const [gitHubLink, linkedInLink] = SOCIAL_LINKS;
 
-// Shared opening block for page twins: frontmatter mirrors <head> meta plus a machine-classifiable entry type.
-// Copy comes from staticPageCopy — the exact resolution the HTML head uses — so .md and HTML meta never drift
-const pageOpening = (type: "overview" | "education" | "contact", copy: StaticPageCopy, lang: PreferredLanguage) => [
+// Shared opening of a page twin: frontmatter mirrors <head> meta plus a machine-classifiable
+// entry type. Copy comes from staticPageCopy — the exact resolution the HTML head uses — so
+// the .md and HTML meta can never drift
+const pageOpening = (copy: StaticPageCopy) => [
   // author mirrors the HTML author meta: authoritative attribution is a GEO signal
-  frontmatter({ title: BRANDED_TITLE(copy.seoTitle), description: copy.description, author: SITE_NAME, canonical: copy.canonical, lang, type }),
-  mdHeading(1, copy.heading),
-  ``,
+  frontmatter({
+    title: BRANDED_TITLE(copy.seoTitle),
+    description: copy.description,
+    author: SITE_NAME,
+    canonical: copy.canonical,
+    lang: copy.preferredLanguage,
+    type: copy.type,
+  }),
+  mdHeading(1, copy.pageName),
   mdQuote(copy.description),
-  ``,
 ];
 
 export const buildHomeMd = ({ pageTitles, experienceList, preferredLanguage, translate }: HomeMdInput) => {
   const copy = staticPageCopy(pageTitles, "/", preferredLanguage);
 
-  return [
-    ...pageOpening("overview", copy, preferredLanguage),
+  return mdDocument([
+    ...pageOpening(copy),
     escapeMd(copy.intro),
-    ``,
-    mdHeading(2, translate(msg("Experience"))),
-    ``,
-    experienceLines({ experienceList, type: "e", translate, preferredLanguage }),
-    ``,
-    mdHeading(2, translate(msg("Portfolio Projects"))),
-    ``,
-    experienceLines({ experienceList, type: "p", translate, preferredLanguage }),
-    ``,
-    mdHeading(2, translate(msg("Pages"))),
-    ``,
-    mdBulletList([
-      `[${translate(msg("Education & Certificates"))}](${absoluteUrl(EDUCATION_MD_HREF)})`,
-      `[${translate(msg("Contact"))}](${absoluteUrl(CONTACT_MD_HREF)})`,
-      `[llms.txt](${absoluteUrl(LLMS_TXT_HREF)})`,
-      // Advertised beside llms.txt so a crawler landing on this twin reaches the single-request
-      // full-content document without an extra discovery hop
-      `[llms-full.txt](${absoluteUrl(LLMS_FULL_TXT_HREF)})`,
-    ]),
-    ``,
-  ].join("\n");
+    mdSection(mdHeading(2, translate(msg("Experience"))), experienceLines({ experienceList, type: "e", translate, preferredLanguage })),
+    mdSection(mdHeading(2, translate(msg("Portfolio Projects"))), experienceLines({ experienceList, type: "p", translate, preferredLanguage })),
+    mdSection(
+      mdHeading(2, translate(msg("Pages"))),
+      mdBulletList([
+        `[${translate(msg("Education & Certificates"))}](${absoluteUrl(EDUCATION_MD_HREF)})`,
+        `[${translate(msg("Contact"))}](${absoluteUrl(CONTACT_MD_HREF)})`,
+        `[llms.txt](${absoluteUrl(LLMS_TXT_HREF)})`,
+        // Advertised beside llms.txt so a crawler landing on this twin reaches the single-request
+        // full-content document without an extra discovery hop
+        `[llms-full.txt](${absoluteUrl(LLMS_FULL_TXT_HREF)})`,
+      ])
+    ),
+  ]);
 };
 
 export const buildEducationMd = ({ pageTitles, educationList, preferredLanguage, translate }: EducationMdInput) => {
@@ -75,49 +73,46 @@ export const buildEducationMd = ({ pageTitles, educationList, preferredLanguage,
   const schools = pipe(
     educationList,
     Array.map(({ name, year, location, info }) =>
-      [
+      mdSection(
         mdHeading(2, name),
-        ``,
-        mdBulletList([`${translate(msg("Years"))}: ${escapeMdInline(year)}`, `${translate(msg("Location"))}: ${escapeMdInline(location)}`]),
-        ``,
-        escapeMd(info),
-      ].join("\n")
+        mdBody([
+          mdBulletList([`${translate(msg("Years"))}: ${escapeMdInline(year)}`, `${translate(msg("Location"))}: ${escapeMdInline(location)}`]),
+          escapeMd(info),
+        ])
+      )
     ),
     Array.join("\n\n")
   );
 
-  return [
-    ...pageOpening("education", copy, preferredLanguage),
+  return mdDocument([
+    ...pageOpening(copy),
     escapeMd(copy.intro),
-    ``,
     schools === "" ? mdEmptyMarker(translate) : schools,
-    ``,
-    mdHeading(2, translate(msg("Documents"))),
-    ``,
-    mdBulletList([
-      `[${translate(msg("Certificates"))}](${absoluteUrl(CERTIFICATES_HREF)})`,
-      `[${translate(msg("CV (English)"))}](${absoluteUrl(CV_EN_HREF)})`,
-      `[${translate(msg("CV (Polish)"))}](${absoluteUrl(CV_PL_HREF)})`,
-    ]),
-    ``,
-  ].join("\n");
+    mdSection(
+      mdHeading(2, translate(msg("Documents"))),
+      mdBulletList([
+        `[${translate(msg("Certificates"))}](${absoluteUrl(CERTIFICATES_HREF)})`,
+        `[${translate(msg("CV (English)"))}](${absoluteUrl(CV_EN_HREF)})`,
+        `[${translate(msg("CV (Polish)"))}](${absoluteUrl(CV_PL_HREF)})`,
+      ])
+    ),
+  ]);
 };
 
 export const buildContactMd = ({ pageTitles, preferredLanguage, translate }: ContactMdInput) => {
   const copy = staticPageCopy(pageTitles, "/contact", preferredLanguage);
 
-  return [
-    ...pageOpening("contact", copy, preferredLanguage),
+  return mdDocument([
+    ...pageOpening(copy),
     escapeMd(copy.intro),
-    ``,
-    mdHeading(2, translate(msg("Channels"))),
-    ``,
-    mdBulletList([
-      `${translate(msg("Contact Form"))}: ${copy.canonical} (${translate(msg("same page in HTML"))})`,
-      `${translate(msg("Base"))}: ${translate(msg("Rzeszów, Poland"))}`,
-      `GitHub: ${gitHubLink}`,
-      `LinkedIn: ${linkedInLink}`,
-    ]),
-    ``,
-  ].join("\n");
+    mdSection(
+      mdHeading(2, translate(msg("Channels"))),
+      mdBulletList([
+        `${translate(msg("Contact Form"))}: ${copy.canonical} (${translate(msg("same page in HTML"))})`,
+        `${translate(msg("Base"))}: ${translate(msg("Rzeszów, Poland"))}`,
+        `GitHub: ${gitHubLink}`,
+        `LinkedIn: ${linkedInLink}`,
+      ])
+    ),
+  ]);
 };

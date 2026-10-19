@@ -17,7 +17,14 @@ import {
   SITE_URL,
   SOCIAL_LINKS,
   WEBSITE_ID,
-} from "../constants";
+} from "@/features/meta/domain/constants";
+
+// Postal address shared by the author and publisher nodes; one object keeps both in sync
+const POSTAL_ADDRESS = {
+  "@type": "PostalAddress",
+  addressLocality: HOME_LOCALITY,
+  addressCountry: HOME_COUNTRY,
+} as const;
 
 // Site-wide structured data: the site itself plus its author and publisher
 export const websitePersonJsonLd = () =>
@@ -46,21 +53,16 @@ export const websitePersonJsonLd = () =>
       knowsAbout: [...KNOWS_ABOUT],
       // The site's bilingual audience is a factual GEO signal for AI extraction
       knowsLanguage: [...SITE_LANGUAGES],
-      homeLocation: {
-        "@type": "Place",
-        address: {
-          "@type": "PostalAddress",
-          addressLocality: HOME_LOCALITY,
-          addressCountry: HOME_COUNTRY,
-        },
-      },
+      address: POSTAL_ADDRESS,
       sameAs: [...SOCIAL_LINKS],
     },
     {
       "@type": "Organization",
       "@id": PUBLISHER_ID,
       name: SITE_NAME,
+      description: SITE_DESCRIPTION,
       url: SITE_URL,
+      address: POSTAL_ADDRESS,
       // Square avatar, not the wide OG banner: Google wants a logo-shaped image for the knowledge panel
       logo: imageObject(AVATAR.src, AVATAR.width, AVATAR.height),
       sameAs: [...SOCIAL_LINKS],

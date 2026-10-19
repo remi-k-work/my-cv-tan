@@ -13,6 +13,14 @@ import { CV_EN_HREF, CV_PL_HREF, LLMS_FULL_TXT_HREF, LLMS_TXT_HREF, SITE_URL } f
 // Canonical absolute URL for a site path
 export const absoluteUrl = (path: string) => `${SITE_URL}${path}`;
 
+// Stable, language-pinned variant of a negotiated URL. The Markdown endpoints support
+// ?lang=, so crawlers can fetch each language without relying on cookies or headers.
+export const withLanguageParam = (url: string, preferredLanguage: PreferredLanguage) => {
+  const variant = new URL(url);
+  variant.searchParams.set("lang", preferredLanguage);
+  return variant.href;
+};
+
 // CV download for the visitor's language; the English CV is the source-language document
 export const cvPdfHref = (preferredLanguage: PreferredLanguage) => matchPreferredLanguage(preferredLanguage, CV_EN_HREF, CV_PL_HREF);
 

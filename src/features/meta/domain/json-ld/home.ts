@@ -2,7 +2,7 @@
 import { Array, pipe } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
 import { experienceHeadline, partitionExperiences } from "@/features/experience/domain/helpers";
-import { collectionNode, jsonLdGraph, whenNonEmpty } from "./core";
+import { collectionNode, jsonLdGraph, webPageNode, whenNonEmpty } from "./core";
 import { absoluteUrl, experiencePath } from "@/features/meta/domain/url";
 
 // types
@@ -11,7 +11,7 @@ import type { ExperienceList } from "@/features/experience/domain/models";
 import type { HomeJsonLdInput } from "@/features/meta/domain/models";
 
 // constants
-import { PERSON_ID, PROFILE_ID, SITE_URL, WEBSITE_ID } from "@/features/meta/domain/constants";
+import { PERSON_ID, PROFILE_ID, SITE_URL } from "@/features/meta/domain/constants";
 
 // One labeled Collection per experience kind: the labels mirror the HTML page and .md twin so AI
 // systems can tell employment from projects instead of reading one mixed list. Collection rather
@@ -25,11 +25,10 @@ const experienceCollection = (input: { id: string; name: string; experiences: Ex
       // Each part references the detail page with its translated headline, in visible slider order
       parts: pipe(
         experiences,
-        Array.map((experience) => ({
-          "@type": "WebPage",
-          url: absoluteUrl(experiencePath(experience.slug)),
-          name: experienceHeadline(experience, input.preferredLanguage),
-        }))
+        Array.map((experience) => {
+          const url = absoluteUrl(experiencePath(experience.slug));
+          return { "@type": "WebPage", "@id": url, url, name: experienceHeadline(experience, input.preferredLanguage) };
+        })
       ),
     })
   );
@@ -39,18 +38,17 @@ export const homeJsonLd = ({ pageName, description, experienceList, preferredLan
   const [employment, projects] = partitionExperiences(experienceList);
 
   return jsonLdGraph([
-    {
-      "@type": "ProfilePage",
-      "@id": PROFILE_ID,
+    webPageNode({
+      type: "ProfilePage",
+      id: PROFILE_ID,
       // Byte-equal to the homepage canonical (trailing slash), like every other home URL
       url: absoluteUrl("/"),
       name: pageName,
       description,
-      inLanguage: preferredLanguage,
-      isPartOf: { "@id": WEBSITE_ID },
+      preferredLanguage,
       // First-party profile: the page is about the author of everything on the site
       mainEntity: { "@id": PERSON_ID },
-    },
+    }),
     ...experienceCollection({
       id: `${SITE_URL}/#experience-list`,
       name: matchPreferredLanguage(preferredLanguage, "Experience", "Doświadczenie"),

@@ -4,8 +4,8 @@ import { Effect, Option } from "effect";
 import { requireData } from "@/features/data/domain/required";
 // txtResponse lives in meta: it serves robots.txt too, so it lives with the other discovery plumbing
 import { STATIC_PAGES } from "@/features/meta/domain/static-pages";
-import { txtResponse, txtUnavailableResponse } from "@/features/meta/domain/response";
-import { INDEXABLE_ROBOTS } from "@/features/meta/domain/constants";
+import { discoveryTxtResponse, txtResponse, txtUnavailableResponse } from "@/features/meta/domain/response";
+import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/features/meta/domain/constants";
 import { MARKDOWN_CONTENT_TYPE } from "../constants";
 import { escapeMd, frontmatter } from "../helpers";
 import { buildExperienceMd, buildNotFoundMd, experienceFromList } from "../experience";
@@ -208,13 +208,13 @@ it("buildContactMd advertises the same social profiles as the HTML page", () => 
   assert.include(polish, "Lokalizacja: Rzeszów, Polska");
 });
 
-it("buildLlmsTxt indexes pages, key facts, grouped experience and negotiated language guidance", () => {
+it("buildLlmsTxt indexes pages, about facts, grouped experience and negotiated language guidance", () => {
   const txt = buildLlmsTxt([{ ...sampleExperience, slug: "my project" }]);
   assert.include(txt, `# Remi Forge`);
   assert.include(txt, `## Pages`);
   assert.include(txt, `https://www.remiforge.dev/index.md`);
   // Key facts are dense, extractable claims for AI citation
-  assert.include(txt, `## Key Facts`);
+  assert.include(txt, `## About`);
   // The canonical site root gives AI systems a single citation target for the whole site
   assert.include(txt, `- Website: https://www.remiforge.dev`);
   assert.include(txt, `- Role: Web Developer (self-taught)`);
@@ -252,6 +252,11 @@ it("buildLlmsFullTxt concatenates every verbatim twin behind its canonical URL",
   assert.include(txt, `type: "education"`);
   assert.include(txt, `type: "contact"`);
   assert.include(txt, `type: "work-experience"`);
+  // A table of contents names every document up front, before the verbatim bodies
+  assert.include(txt, `## Table of Contents`);
+  assert.include(txt, `- [Home](https://www.remiforge.dev/)`);
+  assert.include(txt, `- [Education & Certificates](https://www.remiforge.dev/education)`);
+  assert.include(txt, `- [Full-Stack Developer at Sample Co](https://www.remiforge.dev/sample-role)`);
   // Citations must land on canonical HTML URLs, never on the aggregation itself
   assert.include(txt, `Cite the canonical HTML URL, not this file.`);
 });
@@ -268,7 +273,7 @@ it("response helpers set content types, indexing, cache, canonical, and language
   assert.strictEqual(ok.headers.get("Content-Location"), "https://www.remiforge.dev/index.md?lang=en");
   assert.strictEqual(
     ok.headers.get("Link"),
-    '<https://www.remiforge.dev/>; rel="canonical", <https://www.remiforge.dev/index.md?lang=en>; rel="alternate"; hreflang="en"; type="text/markdown", <https://www.remiforge.dev/index.md?lang=pl>; rel="alternate"; hreflang="pl"; type="text/markdown"'
+    '<https://www.remiforge.dev/>; rel="canonical", <https://www.remiforge.dev/index.md?lang=en>; rel="alternate"; hreflang="en"; type="text/markdown", <https://www.remiforge.dev/index.md?lang=pl>; rel="alternate"; hreflang="pl"; type="text/markdown", <https://www.remiforge.dev/index.md?lang=en>; rel="alternate"; hreflang="x-default"; type="text/markdown"'
   );
 
   const missing = mdNotFoundResponse("# Gone", "pl");
@@ -296,6 +301,13 @@ it("response helpers set content types, indexing, cache, canonical, and language
   assert.strictEqual(unavailableTxt.headers.get("Content-Type"), "text/plain; charset=utf-8");
   assert.strictEqual(unavailableTxt.headers.get("Cache-Control"), "no-store");
   assert.strictEqual(unavailableTxt.headers.get("X-Robots-Tag"), "noindex, follow");
+
+  // llms.txt indexes serve AI fetchers, not search results: noindex, but still crawlable
+  const discovery = discoveryTxtResponse("# Index");
+  assert.strictEqual(discovery.status, 200);
+  assert.strictEqual(discovery.headers.get("Content-Type"), "text/plain; charset=utf-8");
+  assert.strictEqual(discovery.headers.get("Cache-Control"), "public, max-age=3600, stale-while-revalidate=86400");
+  assert.strictEqual(discovery.headers.get("X-Robots-Tag"), NOINDEX_FOLLOW);
 });
 
 it.effect("a failed experience-list decode is an error, while a valid missing slug is a 404 candidate", () =>

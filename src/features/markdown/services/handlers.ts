@@ -3,14 +3,10 @@ import { Effect } from "effect";
 import { RuntimeServer } from "@/lib/runtime-server";
 import { Markdown } from "./markdown";
 
-// Wires a Markdown service method into a TanStack server handler. The service owns the whole
-// request pipeline (language negotiation, rendering, response headers), so each handler is a
-// pure bridge between the router and the Effect runtime
-
-// One factory wires every endpoint: pick selects a service method, and request-free
-// discovery indexes wrap their plain Effect in a () => ... thunk. The service owns the
-// whole pipeline (language negotiation, rendering, headers), so each handler stays a
-// pure bridge between the router and the Effect runtime
+// Wires a Markdown service method into a TanStack server handler: pick selects a service
+// method, and request-free discovery indexes wrap their plain Effect in a () => thunk. The
+// service owns the whole pipeline (language negotiation, rendering, headers), so each
+// handler stays a pure bridge between the router and the Effect runtime
 const serviceHandler =
   (pick: (markdown: Markdown["Service"]) => (request: Request) => Effect.Effect<Response>) =>
   ({ request }: { request: Request }) =>

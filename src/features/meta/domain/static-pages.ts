@@ -13,6 +13,7 @@ import { absoluteUrl } from "./url";
 export const STATIC_PAGES = {
   "/": {
     mdHref: HOME_MD_HREF,
+    type: "overview",
     fallbackHeading: HOME_TITLE,
     fallbackIntro: PERSON_DESCRIPTION,
     metadata: {
@@ -25,6 +26,7 @@ export const STATIC_PAGES = {
   },
   "/education": {
     mdHref: EDUCATION_MD_HREF,
+    type: "education",
     fallbackHeading: "Education",
     fallbackIntro: "Education & certificates.",
     metadata: {
@@ -40,6 +42,7 @@ export const STATIC_PAGES = {
   },
   "/contact": {
     mdHref: CONTACT_MD_HREF,
+    type: "contact",
     fallbackHeading: "Contact",
     fallbackIntro: "Get in touch via the contact form.",
     metadata: {
@@ -57,15 +60,18 @@ export const STATIC_PAGES = {
 
 // Body copy can vary; SEO summaries stay stable, authored, and language-specific
 export const staticPageCopy = (pageTitles: PageTitles, pagePath: PagePath, preferredLanguage: PreferredLanguage): StaticPageCopy => {
-  const { fallbackHeading, fallbackIntro, metadata } = STATIC_PAGES[pagePath];
-  const intro = pageField(pageTitles, pagePath, "intro", fallbackIntro);
+  const { fallbackHeading, fallbackIntro, metadata, mdHref, type } = STATIC_PAGES[pagePath];
   const localizedMetadata = metadata[preferredLanguage];
 
   return {
-    heading: pageField(pageTitles, pagePath, "heading", fallbackHeading),
+    path: pagePath,
+    mdHref,
+    type,
+    pageName: pageField(pageTitles, pagePath, "heading", fallbackHeading),
     seoTitle: localizedMetadata.title,
-    intro,
+    intro: pageField(pageTitles, pagePath, "intro", fallbackIntro),
     description: localizedMetadata.description,
     canonical: absoluteUrl(pagePath),
+    preferredLanguage,
   };
 };

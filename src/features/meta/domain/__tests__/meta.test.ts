@@ -139,7 +139,9 @@ it("employment details use OrganizationRole linked to the person and canonical W
   const organization = nodeOf(parsed, "Organization");
 
   assert.isDefined(role);
-  assert.strictEqual(role?.inLanguage, "en");
+  // schema.org Role has no inLanguage; the WebPage node carries the page language instead
+  assert.isUndefined(role?.inLanguage);
+  assert.strictEqual(page?.inLanguage, "en");
   assert.deepStrictEqual(page?.mainEntity, { "@id": "https://www.remiforge.dev/sample-job#organization-role" });
   assert.deepStrictEqual(role?.member, { "@id": "https://www.remiforge.dev/#person" });
   assert.deepStrictEqual(role?.mainEntityOfPage, { "@id": "https://www.remiforge.dev/sample-job" });
@@ -160,9 +162,11 @@ it("experience pages claim the screenshot as their main image only when one exis
     height: 900,
   });
 
-  // No screenshot on the page: no main-image claim, and og:image falls back to the share banner
+  // No screenshot on the page: no main-image (or project image) claim, and og:image falls back to the share banner
   const bareHead = experienceHead({ experience: { ...sampleExperience, imageName: "" }, preferredLanguage: "en" });
-  assert.isUndefined(nodeOf(graphOf(bareHead.scripts?.[0]?.children), "WebPage")?.primaryImageOfPage);
+  const bareGraph = graphOf(bareHead.scripts?.[0]?.children);
+  assert.isUndefined(nodeOf(bareGraph, "WebPage")?.primaryImageOfPage);
+  assert.isUndefined(nodeOf(bareGraph, "SoftwareSourceCode")?.image);
   assert.include(JSON.stringify(bareHead.meta), "https://www.remiforge.dev/opengraph-image.jpg");
 });
 
@@ -210,8 +214,10 @@ it("home structured data is a first-party ProfilePage linking site entities plus
   assert.strictEqual(portfolio?.["@id"], "https://www.remiforge.dev/#portfolio-list");
   assert.strictEqual(portfolio?.inLanguage, "en");
   assert.strictEqual(portfolio?.name, "Portfolio Projects");
-  // Each part references the detail page with the same translated headline the page shows, in slider order
-  assert.deepStrictEqual(collectionParts(portfolio), [{ "@type": "WebPage", url: "https://www.remiforge.dev/sample-role", name: "Full-Stack Developer" }]);
+  // Each part references the detail page (by @id and URL) with the same translated headline the page shows, in slider order
+  assert.deepStrictEqual(collectionParts(portfolio), [
+    { "@type": "WebPage", "@id": "https://www.remiforge.dev/sample-role", url: "https://www.remiforge.dev/sample-role", name: "Full-Stack Developer" },
+  ]);
 
   // An empty portfolio still emits the ProfilePage graph, never a misleading empty Collection
   const emptyGraph = graphOf(homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" }).scripts?.[0]?.children);
@@ -347,6 +353,8 @@ it("robots.txt allows content, disallows API endpoints, and advertises the sitem
   ]) {
     assert.include(robots, `User-agent: ${bot}`);
   }
+  // Named groups override `*` in RFC 9309, so every group must repeat the signal to keep it in force
+  assert.strictEqual((robots.match(/^Content-Signal: /gm) ?? []).length, (robots.match(/^User-agent: /gm) ?? []).length);
 });
 
 it("education structured data describes attended schools, not credentials, inside a breadcrumb graph", () => {

@@ -13,6 +13,13 @@ const SITEMAP_HEADERS = { "Content-Type": XML_CONTENT_TYPE, "X-Robots-Tag": NOIN
 export const txtResponse = (body: string) =>
   new Response(body, { headers: { "Content-Type": TXT_CONTENT_TYPE, "Content-Language": "en", "Cache-Control": CACHE_CONTROL } });
 
+// The llms.txt indexes serve AI fetchers, not search results: noindex keeps them out of SERPs,
+// while follow still admits any URLs a crawler discovers inside them
+export const discoveryTxtResponse = (body: string) =>
+  new Response(body, {
+    headers: { "Content-Type": TXT_CONTENT_TYPE, "Content-Language": "en", "Cache-Control": CACHE_CONTROL, "X-Robots-Tag": NOINDEX_FOLLOW },
+  });
+
 // Shared 503 shape for every discovery document (Markdown twins included): incomplete content
 // must never be cached as if it were complete, and must stay out of search results
 export const unavailableResponse = (body: string, headers: Readonly<Record<string, string>>) =>

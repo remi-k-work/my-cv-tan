@@ -28,26 +28,22 @@ const AI_DATASET_CRAWLERS = [
 // Form/RPC endpoints are not content: the prefix rule keeps them out of crawl budgets
 const API_DISALLOW = "Disallow: /api";
 
-// A named crawler group; specific bot groups override `*`, so each repeats the API exclusion
+// How accessed content may be reused (Cloudflare's CC0 proposal): all three uses allowed.
+// Named groups override `*`, so each repeats both policies — a crawler reading only its
+// own group must still see the API exclusion and the content signal
+const CONTENT_SIGNAL = "Content-Signal: search=yes, ai-input=yes, ai-train=yes";
+
+// A named crawler group for one purpose
 const botSection = (comment: string, bots: ReadonlyArray<string>) => [
   `# ${comment}`,
-  ...Array.flatMap(bots, (bot) => [`User-agent: ${bot}`, "Allow: /", API_DISALLOW, ``]),
+  ...Array.flatMap(bots, (bot) => [`User-agent: ${bot}`, "Allow: /", API_DISALLOW, CONTENT_SIGNAL, ``]),
 ];
 
 // Crawler directives: HTML and the machine-readable twins (*.md, llms.txt) are fully crawlable
 // Fully static content, so it is computed once at module scope; routes only mint the per-request Response
 export const ROBOTS_TXT = pipe(
   [
-    [
-      "User-agent: *",
-      "Allow: /",
-      "Allow: /*.md",
-      API_DISALLOW,
-      // How accessed content may be reused (Cloudflare's CC0 proposal): crawlers that
-      // ignore it still follow the groups below; the site allows all three uses
-      "Content-Signal: search=yes, ai-input=yes, ai-train=yes",
-      "",
-    ],
+    ["User-agent: *", "Allow: /", "Allow: /*.md", API_DISALLOW, CONTENT_SIGNAL, ""],
     botSection("Explicitly allow AI search crawlers on HTML and Markdown twins", AI_SEARCH_CRAWLERS),
     botSection("User-initiated AI browsing is also allowed", AI_USER_CRAWLERS),
     botSection("Training and dataset crawlers are also currently allowed", AI_DATASET_CRAWLERS),
