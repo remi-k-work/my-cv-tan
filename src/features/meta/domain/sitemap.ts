@@ -29,12 +29,17 @@ const urlNode = (loc: string) => `<url><loc>${escapeXml(loc)}</loc></url>`;
 const wrapWithUrlSet = (entries: string) =>
   `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries}\n</urlset>`;
 
-// One <url> per experience detail page, plus the static routes
+// Static canonicals lead (homepage first), then one <url> per experience detail page:
+// sitemap order is a soft crawl signal, and the highest-value canonical should not sit mid-file
 export const buildSitemapXml = (experienceList: ExperienceList) =>
   pipe(
-    experienceList,
-    Array.map(({ slug }) => absoluteUrl(experiencePath(slug))),
-    Array.appendAll(STATIC_URLS),
+    STATIC_URLS,
+    Array.appendAll(
+      pipe(
+        experienceList,
+        Array.map(({ slug }) => absoluteUrl(experiencePath(slug)))
+      )
+    ),
     Array.map(urlNode),
     Array.join("\n"),
     wrapWithUrlSet

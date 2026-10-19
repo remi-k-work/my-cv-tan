@@ -1,15 +1,19 @@
 // services, features, and other libraries
-import { Option, pipe } from "effect";
+import { Option } from "effect";
 import { experienceHeadline, excerpt } from "@/features/experience/domain/helpers";
 import { breadcrumb, imageObject, jsonLdGraph } from "./core";
-import { absoluteUrl, experienceImageUrl, experiencePath } from "../url";
+import { experienceScreenshot, experienceShareImage } from "@/features/meta/domain/images";
+import { absoluteUrl, experiencePath } from "@/features/meta/domain/url";
 
 // types
-import type { ExperienceHeadInput } from "../models";
+import type { ExperienceHeadInput, SocialImage } from "@/features/meta/domain/models";
 
 // constants
-import { GLOBAL_IMAGE, GLOBAL_SOCIAL_IMAGE, META_DESCRIPTION_LENGTH, PERSON_ID, PUBLISHER_ID, WEBSITE_ID } from "../constants";
-import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain/constants";
+import { META_DESCRIPTION_LENGTH, PERSON_ID, PUBLISHER_ID, WEBSITE_ID } from "@/features/meta/domain/constants";
+
+// Maps a share image into its schema.org node; both the social tags and this graph
+// resolve through images.ts, so og:image and the JSON-LD image are always the same picture
+const imageObjectOf = ({ src, width, height }: SocialImage) => imageObject(src, width, height);
 
 // Employment is an organization role; projects use the most specific supported creative-work type
 export const experienceJsonLd = ({ experience, preferredLanguage }: ExperienceHeadInput) => {
@@ -26,13 +30,10 @@ export const experienceJsonLd = ({ experience, preferredLanguage }: ExperienceHe
   const description = excerpt(txt, META_DESCRIPTION_LENGTH);
 
   // The webp screenshot is the page's main image; dimensions included so scrapers skip a fetch
-  const screenshot = pipe(
-    experienceImageUrl(imageName),
-    Option.map((src) => imageObject(src, SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT))
-  );
+  const screenshot = Option.map(experienceScreenshot(imageName), imageObjectOf);
 
   // og:image mirror for the project item below: the screenshot, or the global banner when absent
-  const image = Option.getOrElse(screenshot, () => imageObject(GLOBAL_IMAGE, GLOBAL_SOCIAL_IMAGE.width, GLOBAL_SOCIAL_IMAGE.height));
+  const image = imageObjectOf(experienceShareImage(imageName));
 
   const page = {
     "@type": "WebPage",

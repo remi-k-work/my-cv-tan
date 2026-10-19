@@ -6,7 +6,7 @@ import { matchPreferredLanguage } from "@/domain/helpers";
 import type { PreferredLanguage } from "@/domain/models";
 
 // constants
-import { CV_EN_HREF, CV_PL_HREF, LLMS_TXT_HREF, SITE_URL } from "./constants";
+import { CV_EN_HREF, CV_PL_HREF, LLMS_FULL_TXT_HREF, LLMS_TXT_HREF, SITE_URL } from "./constants";
 
 // --- URL building ---
 
@@ -44,3 +44,6 @@ export const markdownAlternateLink = (mdPath: string) => ({ rel: "alternate", ty
 
 // llms.txt discovery link, emitted on every page head for GEO crawlers
 export const llmsAlternateLink = () => ({ rel: "alternate", type: "text/plain", title: "llms.txt", href: absoluteUrl(LLMS_TXT_HREF) }) as const;
+
+// Full-content companion of llms.txt, advertised beside it so AI fetchers skip one discovery hop
+export const llmsFullAlternateLink = () => ({ rel: "alternate", type: "text/plain", title: "llms-full.txt", href: absoluteUrl(LLMS_FULL_TXT_HREF) }) as const;

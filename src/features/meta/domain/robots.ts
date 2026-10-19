@@ -6,6 +6,7 @@ import { SITE_URL } from "./constants";
 
 // Search bots are separate from user-initiated fetchers and training crawlers; providers name each purpose differently
 const AI_SEARCH_CRAWLERS = ["OAI-SearchBot", "Claude-SearchBot", "PerplexityBot", "YouBot"] as const;
+
 // Bots acting on a user's behalf inside chat products (fetching a link the user shared)
 const AI_USER_CRAWLERS = ["ChatGPT-User", "Claude-User", "Perplexity-User", "Meta-ExternalFetcher", "MistralAI-User"] as const;
 const AI_DATASET_CRAWLERS = [
@@ -17,6 +18,7 @@ const AI_DATASET_CRAWLERS = [
   "Meta-ExternalAgent",
   "AI2Bot",
   "cohere-training-data-crawler",
+
   // Less polite but still named dataset crawlers: ByteDance/TikTok, Timpi and The Image Sift
   "Bytespider",
   "Timpibot",
@@ -33,29 +35,29 @@ const botSection = (comment: string, bots: ReadonlyArray<string>) => [
 ];
 
 // Crawler directives: HTML and the machine-readable twins (*.md, llms.txt) are fully crawlable
-export const buildRobotsTxt = () =>
-  pipe(
+// Fully static content, so it is computed once at module scope; routes only mint the per-request Response
+export const ROBOTS_TXT = pipe(
+  [
     [
-      [
-        "User-agent: *",
-        "Allow: /",
-        "Allow: /*.md",
-        API_DISALLOW,
-        // How accessed content may be reused (Cloudflare's CC0 proposal): crawlers that
-        // ignore it still follow the groups below; the site allows all three uses
-        "Content-Signal: search=yes, ai-input=yes, ai-train=yes",
-        "",
-      ],
-      botSection("Explicitly allow AI search crawlers on HTML and Markdown twins", AI_SEARCH_CRAWLERS),
-      botSection("User-initiated AI browsing is also allowed", AI_USER_CRAWLERS),
-      botSection("Training and dataset crawlers are also currently allowed", AI_DATASET_CRAWLERS),
-      [
-        // Machine-readable indexes for AI systems
-        "# See /llms.txt for the Markdown page index",
-        `Sitemap: ${SITE_URL}/sitemap.xml`,
-        "",
-      ],
+      "User-agent: *",
+      "Allow: /",
+      "Allow: /*.md",
+      API_DISALLOW,
+      // How accessed content may be reused (Cloudflare's CC0 proposal): crawlers that
+      // ignore it still follow the groups below; the site allows all three uses
+      "Content-Signal: search=yes, ai-input=yes, ai-train=yes",
+      "",
     ],
-    Array.flatten,
-    Array.join("\n")
-  );
+    botSection("Explicitly allow AI search crawlers on HTML and Markdown twins", AI_SEARCH_CRAWLERS),
+    botSection("User-initiated AI browsing is also allowed", AI_USER_CRAWLERS),
+    botSection("Training and dataset crawlers are also currently allowed", AI_DATASET_CRAWLERS),
+    [
+      // Machine-readable indexes for AI systems
+      "# See /llms.txt for the Markdown page index",
+      `Sitemap: ${SITE_URL}/sitemap.xml`,
+      "",
+    ],
+  ],
+  Array.flatten,
+  Array.join("\n")
+);

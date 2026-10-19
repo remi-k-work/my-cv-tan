@@ -9,6 +9,7 @@ import { staticPageCopy } from "@/features/meta/domain/static-pages";
 // types
 import type { ContactMdInput, EducationMdInput, HomeMdInput } from "./models";
 import type { PreferredLanguage } from "@/domain/models";
+import type { StaticPageCopy } from "@/features/meta/domain/models";
 
 // constants
 import {
@@ -18,6 +19,7 @@ import {
   CV_EN_HREF,
   CV_PL_HREF,
   EDUCATION_MD_HREF,
+  LLMS_FULL_TXT_HREF,
   LLMS_TXT_HREF,
   SITE_NAME,
   SOCIAL_LINKS,
@@ -28,30 +30,21 @@ const [gitHubLink, linkedInLink] = SOCIAL_LINKS;
 
 // Shared opening block for page twins: frontmatter mirrors <head> meta plus a machine-classifiable entry type.
 // Copy comes from staticPageCopy — the exact resolution the HTML head uses — so .md and HTML meta never drift
-interface PageOpening {
-  readonly type: "overview" | "education" | "contact";
-  readonly heading: string;
-  readonly seoTitle: string;
-  readonly description: string;
-  readonly canonical: string;
-  readonly lang: PreferredLanguage;
-}
-
-const pageOpening = ({ type, heading, seoTitle, description, canonical, lang }: PageOpening) => [
+const pageOpening = (type: "overview" | "education" | "contact", copy: StaticPageCopy, lang: PreferredLanguage) => [
   // author mirrors the HTML author meta: authoritative attribution is a GEO signal
-  frontmatter({ title: BRANDED_TITLE(seoTitle), description, author: SITE_NAME, canonical, lang, type }),
-  mdHeading(1, heading),
+  frontmatter({ title: BRANDED_TITLE(copy.seoTitle), description: copy.description, author: SITE_NAME, canonical: copy.canonical, lang, type }),
+  mdHeading(1, copy.heading),
   ``,
-  mdQuote(description),
+  mdQuote(copy.description),
   ``,
 ];
 
 export const buildHomeMd = ({ pageTitles, experienceList, preferredLanguage, translate }: HomeMdInput) => {
-  const { heading, seoTitle, intro, description, canonical } = staticPageCopy(pageTitles, "/", preferredLanguage);
+  const copy = staticPageCopy(pageTitles, "/", preferredLanguage);
 
   return [
-    ...pageOpening({ type: "overview", heading, seoTitle, description, canonical, lang: preferredLanguage }),
-    escapeMd(intro),
+    ...pageOpening("overview", copy, preferredLanguage),
+    escapeMd(copy.intro),
     ``,
     mdHeading(2, translate(msg("Experience"))),
     ``,
@@ -67,13 +60,16 @@ export const buildHomeMd = ({ pageTitles, experienceList, preferredLanguage, tra
       `[${translate(msg("Education & Certificates"))}](${absoluteUrl(EDUCATION_MD_HREF)})`,
       `[${translate(msg("Contact"))}](${absoluteUrl(CONTACT_MD_HREF)})`,
       `[llms.txt](${absoluteUrl(LLMS_TXT_HREF)})`,
+      // Advertised beside llms.txt so a crawler landing on this twin reaches the single-request
+      // full-content document without an extra discovery hop
+      `[llms-full.txt](${absoluteUrl(LLMS_FULL_TXT_HREF)})`,
     ]),
     ``,
   ].join("\n");
 };
 
 export const buildEducationMd = ({ pageTitles, educationList, preferredLanguage, translate }: EducationMdInput) => {
-  const { heading, seoTitle, intro, description, canonical } = staticPageCopy(pageTitles, "/education", preferredLanguage);
+  const copy = staticPageCopy(pageTitles, "/education", preferredLanguage);
 
   // One section per school: heading, facts list, then the full prose description
   const schools = pipe(
@@ -91,8 +87,8 @@ export const buildEducationMd = ({ pageTitles, educationList, preferredLanguage,
   );
 
   return [
-    ...pageOpening({ type: "education", heading, seoTitle, description, canonical, lang: preferredLanguage }),
-    escapeMd(intro),
+    ...pageOpening("education", copy, preferredLanguage),
+    escapeMd(copy.intro),
     ``,
     schools === "" ? mdEmptyMarker(translate) : schools,
     ``,
@@ -108,16 +104,16 @@ export const buildEducationMd = ({ pageTitles, educationList, preferredLanguage,
 };
 
 export const buildContactMd = ({ pageTitles, preferredLanguage, translate }: ContactMdInput) => {
-  const { heading, seoTitle, intro, description, canonical } = staticPageCopy(pageTitles, "/contact", preferredLanguage);
+  const copy = staticPageCopy(pageTitles, "/contact", preferredLanguage);
 
   return [
-    ...pageOpening({ type: "contact", heading, seoTitle, description, canonical, lang: preferredLanguage }),
-    escapeMd(intro),
+    ...pageOpening("contact", copy, preferredLanguage),
+    escapeMd(copy.intro),
     ``,
     mdHeading(2, translate(msg("Channels"))),
     ``,
     mdBulletList([
-      `${translate(msg("Contact Form"))}: ${canonical} (${translate(msg("same page in HTML"))})`,
+      `${translate(msg("Contact Form"))}: ${copy.canonical} (${translate(msg("same page in HTML"))})`,
       `${translate(msg("Base"))}: ${translate(msg("Rzeszów, Poland"))}`,
       `GitHub: ${gitHubLink}`,
       `LinkedIn: ${linkedInLink}`,

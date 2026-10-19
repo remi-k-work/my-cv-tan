@@ -87,5 +87,9 @@ export const CACHE_CONTROL = "public, max-age=3600, stale-while-revalidate=86400
 export const NO_STORE = "no-store";
 export const NOINDEX_FOLLOW = "noindex, follow";
 
+// Complete-data pages opt into indexing with this directive (see indexableMeta in heads.ts):
+// max-snippet:-1 leaves AI overviews and citation surfaces unconstrained
+export const INDEXABLE_ROBOTS = "index, follow, max-snippet:-1, max-image-preview:large";
+
 // Plain-text content type shared by every non-Markdown discovery document (robots.txt, llms.txt, llms-full.txt)
 export const TXT_CONTENT_TYPE = "text/plain; charset=utf-8";

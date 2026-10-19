@@ -3,22 +3,32 @@ import { Effect } from "effect";
 import { RuntimeServer } from "@/lib/runtime-server";
 import { Markdown } from "./markdown";
 
-// Wires one request-taking Markdown service method into a TanStack server handler. The
-// service owns the whole request pipeline (language negotiation, rendering, response
-// headers), so the handler is a pure bridge between the router and the Effect runtime.
-const markdownHandler =
+// Wires a Markdown service method into a TanStack server handler. The service owns the whole
+// request pipeline (language negotiation, rendering, response headers), so each handler is a
+// pure bridge between the router and the Effect runtime
+
+// One factory wires every endpoint: pick selects a service method, and request-free
+// discovery indexes wrap their plain Effect in a () => ... thunk. The service owns the
+// whole pipeline (language negotiation, rendering, headers), so each handler stays a
+// pure bridge between the router and the Effect runtime
+const serviceHandler =
   (pick: (markdown: Markdown["Service"]) => (request: Request) => Effect.Effect<Response>) =>
   ({ request }: { request: Request }) =>
     RuntimeServer.runPromise(Effect.flatMap(Markdown, (markdown) => pick(markdown)(request)));
 
-// Wires a plain-effect member: the request plays no part in the English-only discovery indexes
-const markdownEffectHandler = (pick: (markdown: Markdown["Service"]) => Effect.Effect<Response>) => () =>
-  RuntimeServer.runPromise(Effect.flatMap(Markdown, pick));
-
 // Named endpoints: routes wire a plain identifier and the full AI-facing surface is listed in one place
-export const homeHandler = markdownHandler(({ home }) => home);
-export const educationHandler = markdownHandler(({ education }) => education);
-export const contactHandler = markdownHandler(({ contact }) => contact);
-export const experienceHandler = markdownHandler(({ experience }) => experience);
-export const llmsTxtHandler = markdownEffectHandler(({ siteIndex }) => siteIndex);
-export const llmsFullTxtHandler = markdownEffectHandler(({ siteIndexFull }) => siteIndexFull);
+export const homeHandler = serviceHandler(({ home }) => home);
+export const educationHandler = serviceHandler(({ education }) => education);
+export const contactHandler = serviceHandler(({ contact }) => contact);
+export const experienceHandler = serviceHandler(({ experience }) => experience);
+
+export const llmsTxtHandler = serviceHandler(
+  ({ siteIndex }) =>
+    () =>
+      siteIndex
+);
+export const llmsFullTxtHandler = serviceHandler(
+  ({ siteIndexFull }) =>
+    () =>
+      siteIndexFull
+);

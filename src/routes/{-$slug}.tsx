@@ -2,12 +2,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 // services, features, and other libraries
-import { Array, Option, Result } from "effect";
+import { Option } from "effect";
 import { useAtomSet, useAtomValue } from "@effect/atom-react";
 import { useGT } from "gt-tanstack-start";
 import { loaderIndex } from "@/loaders/index";
 import { experienceHead, homeHead } from "@/features/meta/domain/heads";
 import { headLanguage } from "@/features/meta/domain/language";
+import { partitionExperiences } from "@/features/experience/domain/helpers";
 import { experienceAtom } from "@/features/modals/state/experience";
 
 // components
@@ -36,10 +37,8 @@ function HomePage() {
   if (loaderData.type === "list") {
     const { randomPageTitles, experienceList } = loaderData;
 
-    // Split the mixed experience list into its two kinds in a single pass: employment history ("e") and portfolio projects ("p")
-    const [employmentHistory, portfolioProjects] = Array.partition(experienceList, (experience) =>
-      experience.type === "e" ? Result.succeed(experience) : Result.fail(experience)
-    );
+    // Same one-pass split the home JSON-LD collections use, so UI and structured data group identically
+    const [employmentHistory, portfolioProjects] = partitionExperiences(experienceList);
 
     return (
       <>

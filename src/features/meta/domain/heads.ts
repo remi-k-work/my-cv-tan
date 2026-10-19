@@ -1,7 +1,7 @@
 // services, features, and other libraries
-import { Option, pipe } from "effect";
 import { experienceHeadline, excerpt } from "@/features/experience/domain/helpers";
-import { absoluteUrl, canonicalLink, markdownAlternateLink, experienceImageUrl, experienceMarkdownPath, experiencePath } from "./url";
+import { absoluteUrl, canonicalLink, markdownAlternateLink, experienceMarkdownPath, experiencePath } from "./url";
+import { experienceShareImage } from "./images";
 import { socialMeta } from "./social";
 import { contactJsonLd } from "./json-ld/contact";
 import { educationJsonLd } from "./json-ld/education";
@@ -10,20 +10,18 @@ import { homeJsonLd } from "./json-ld/home";
 import { staticPageCopy } from "./static-pages";
 
 // types
-import type { EducationHeadInput, ExperienceHeadInput, HomeHeadInput, PageHeadInput, SocialImage, SocialMetaInput, StaticPageHeadInput } from "./models";
+import type { EducationHeadInput, ExperienceHeadInput, HomeHeadInput, PageHeadInput, SocialMetaInput, StaticPageHeadInput } from "./models";
 
 // constants
-import { SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT } from "@/features/experience/domain/constants";
-import { GLOBAL_SOCIAL_IMAGE, META_DESCRIPTION_LENGTH, BRANDED_TITLE } from "./constants";
+import { GLOBAL_SOCIAL_IMAGE, META_DESCRIPTION_LENGTH, BRANDED_TITLE, INDEXABLE_ROBOTS } from "./constants";
 import { STATIC_PAGES } from "./static-pages";
 
-// Complete data opts into indexing: one shared block keeps title, robots and social tags consistent
-// max-snippet:-1 leaves AI overviews and citation surfaces unconstrained; incomplete loader
-// responses inherit the root noindex policy instead
+// Complete data opts into indexing: one shared block keeps title, robots and social tags consistent;
+// incomplete loader responses inherit the root noindex policy instead
 const indexableMeta = (input: SocialMetaInput) => [
   { title: BRANDED_TITLE(input.title) },
   { name: "description", content: input.description },
-  { name: "robots", content: "index, follow, max-snippet:-1, max-image-preview:large" },
+  { name: "robots", content: INDEXABLE_ROBOTS },
   ...socialMeta(input),
 ];
 
@@ -41,18 +39,10 @@ const staticPageHead = ({ pageTitles, preferredLanguage, pagePath, jsonLd }: Sta
 };
 
 export const homeHead = ({ experienceList, ...page }: HomeHeadInput) =>
-  staticPageHead({
-    ...page,
-    pagePath: "/",
-    jsonLd: (copy) => homeJsonLd({ ...copy, experienceList }),
-  });
+  staticPageHead({ ...page, pagePath: "/", jsonLd: (copy) => homeJsonLd({ ...copy, experienceList }) });
 
 export const educationHead = ({ educationList, ...page }: EducationHeadInput) =>
-  staticPageHead({
-    ...page,
-    pagePath: "/education",
-    jsonLd: (copy) => educationJsonLd({ ...copy, educationList }),
-  });
+  staticPageHead({ ...page, pagePath: "/education", jsonLd: (copy) => educationJsonLd({ ...copy, educationList }) });
 
 export const contactHead = (page: PageHeadInput) => staticPageHead({ ...page, pagePath: "/contact", jsonLd: contactJsonLd });
 
@@ -63,12 +53,10 @@ export const experienceHead = ({ experience, preferredLanguage }: ExperienceHead
   const path = experiencePath(slug);
   const headline = experienceHeadline(experience, preferredLanguage);
   const description = excerpt(txt, META_DESCRIPTION_LENGTH);
-  // og:image carries the webp screenshot when one exists; X/Twitter needs jpeg/png, so it always gets the global image
-  const image: SocialImage = pipe(
-    experienceImageUrl(imageName),
-    Option.map((src) => ({ src, mime: "image/webp" as const, width: SCREENSHOT_WIDTH, height: SCREENSHOT_HEIGHT })),
-    Option.getOrElse(() => GLOBAL_SOCIAL_IMAGE)
-  );
+
+  // The share image resolves through images.ts, the same source the JSON-LD image uses
+  const image = experienceShareImage(imageName);
+
   return {
     meta: indexableMeta({ title: headline, description, path, image, twitterImage: GLOBAL_SOCIAL_IMAGE, preferredLanguage }),
     links: [canonicalLink(absoluteUrl(path)), markdownAlternateLink(experienceMarkdownPath(slug))],

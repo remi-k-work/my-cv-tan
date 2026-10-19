@@ -4,36 +4,34 @@ import type { Experience, ExperienceList } from "@/features/experience/domain/mo
 import type { EducationList } from "@/features/education/domain/models";
 
 // translate is injected so the pure builders stay testable; the service decides where translations come from
-export interface HomeMdInput {
+
+// Shared tail of every twin input: the resolved language plus its translate injection
+interface LocalizedMdInput {
+  readonly preferredLanguage: PreferredLanguage;
+  readonly translate: Translate;
+}
+
+// Static-page twins read the same stable page copy the HTML head resolves from
+interface PageMdInput extends LocalizedMdInput {
   readonly pageTitles: PageTitles;
+}
+
+export interface HomeMdInput extends PageMdInput {
   readonly experienceList: ExperienceList;
-  readonly preferredLanguage: PreferredLanguage;
-  readonly translate: Translate;
 }
 
-export interface EducationMdInput {
-  readonly pageTitles: PageTitles;
+export interface EducationMdInput extends PageMdInput {
   readonly educationList: EducationList;
-  readonly preferredLanguage: PreferredLanguage;
-  readonly translate: Translate;
 }
 
-export interface ContactMdInput {
-  readonly pageTitles: PageTitles;
-  readonly preferredLanguage: PreferredLanguage;
-  readonly translate: Translate;
-}
+export type ContactMdInput = PageMdInput;
 
-export interface ExperienceMdInput {
+export interface ExperienceMdInput extends LocalizedMdInput {
   readonly experience: Experience;
-  readonly preferredLanguage: PreferredLanguage;
-  readonly translate: Translate;
 }
 
-export interface BuildNotFoundMdInput {
+export interface BuildNotFoundMdInput extends LocalizedMdInput {
   readonly slug: string;
-  readonly preferredLanguage: PreferredLanguage;
-  readonly translate: Translate;
 }
 
 // Everything the single-request full-content index (llms-full.txt) renders from

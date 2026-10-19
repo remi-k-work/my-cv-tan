@@ -1,17 +1,17 @@
 // services, features, and other libraries
-import { Array, pipe, Result } from "effect";
+import { Array, pipe } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
-import { experienceHeadline } from "@/features/experience/domain/helpers";
+import { experienceHeadline, partitionExperiences } from "@/features/experience/domain/helpers";
 import { collectionNode, jsonLdGraph, whenNonEmpty } from "./core";
-import { absoluteUrl, experiencePath } from "../url";
+import { absoluteUrl, experiencePath } from "@/features/meta/domain/url";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
-import type { HomeJsonLdInput } from "../models";
+import type { HomeJsonLdInput } from "@/features/meta/domain/models";
 
 // constants
-import { PERSON_ID, PROFILE_ID, SITE_URL, WEBSITE_ID } from "../constants";
+import { PERSON_ID, PROFILE_ID, SITE_URL, WEBSITE_ID } from "@/features/meta/domain/constants";
 
 // One labeled Collection per experience kind: the labels mirror the HTML page and .md twin so AI
 // systems can tell employment from projects instead of reading one mixed list. Collection rather
@@ -36,11 +36,8 @@ const experienceCollection = (input: { id: string; name: string; experiences: Ex
 
 // Home: a first-party ProfilePage about the author, plus one labeled collection per experience kind
 export const homeJsonLd = ({ pageName, description, experienceList, preferredLanguage }: HomeJsonLdInput) => {
-  // Split the list once instead of filtering it again for each collection: "e" and "p" are the
-  // only experience types, so whatever is not employment is exactly the project list
-  const [employment, projects] = Array.partition(experienceList, (experience) =>
-    experience.type === "e" ? Result.succeed(experience) : Result.fail(experience)
-  );
+  const [employment, projects] = partitionExperiences(experienceList);
+
   return jsonLdGraph([
     {
       "@type": "ProfilePage",

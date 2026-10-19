@@ -7,10 +7,10 @@ import { canonicalLink } from "../url";
 import { STATIC_PAGES } from "../static-pages";
 import { buildSitemapXml } from "../sitemap";
 import { sitemapResponse, sitemapUnavailableResponse } from "../response";
-import { buildRobotsTxt } from "../robots";
+import { ROBOTS_TXT } from "../robots";
 import { languageFromMatches } from "../language";
 
-import { PERSON_DESCRIPTION, SITE_DESCRIPTION } from "../constants";
+import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW, PERSON_DESCRIPTION, SITE_DESCRIPTION } from "../constants";
 
 // Minimal JSON-LD graph readers for structured-data assertions
 const graphOf = (children: string | undefined) => (JSON.parse(children ?? "{}") as { "@graph"?: Array<Record<string, unknown>> })["@graph"] ?? [];
@@ -56,7 +56,7 @@ it("experienceHead omits unsupported publication dates and keyword meta", () => 
 });
 
 it("root metadata defaults to noindex and complete page heads explicitly allow indexing", () => {
-  assert.include(JSON.stringify(ROOT_HEAD.meta), '"content":"noindex, follow"');
+  assert.include(JSON.stringify(ROOT_HEAD.meta), `"content":"${NOINDEX_FOLLOW}"`);
   // iOS and high-DPI search previews resolve the touch icon site-wide, alongside the SVG favicon
   assert.include(JSON.stringify(ROOT_HEAD.links), '"rel":"apple-touch-icon"');
   assert.include(JSON.stringify(ROOT_HEAD.links), "https://www.remiforge.dev/avatar.jpg");
@@ -69,15 +69,15 @@ it("root metadata defaults to noindex and complete page heads explicitly allow i
   // TanStack reads only top-level meta/links off head results (load-server.js): the shape must stay flat
   assert.isDefined(indexable.meta);
   assert.isDefined(indexable.links);
-  assert.include(JSON.stringify(indexable.meta), "index, follow, max-snippet:-1, max-image-preview:large");
+  assert.include(JSON.stringify(indexable.meta), INDEXABLE_ROBOTS);
   assert.notInclude(JSON.stringify(indexable.meta), "noindex");
   assert.notInclude(JSON.stringify(indexable.meta), '"name":"keywords"');
 
   const emptyEducation = educationHead({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "pl" });
-  assert.include(JSON.stringify(emptyEducation.meta), "index, follow, max-snippet:-1, max-image-preview:large");
+  assert.include(JSON.stringify(emptyEducation.meta), INDEXABLE_ROBOTS);
 
   const contact = contactHead({ pageTitles: stablePageTitles, preferredLanguage: "en" });
-  assert.include(JSON.stringify(contact.meta), "index, follow, max-snippet:-1, max-image-preview:large");
+  assert.include(JSON.stringify(contact.meta), INDEXABLE_ROBOTS);
 });
 
 it("root graph declares the bilingual audience on WebSite and Person", () => {
@@ -284,10 +284,12 @@ it("contact structured data describes the visible ContactPage inside a breadcrum
   });
 });
 
-it("sitemap omits fabricated last-modified dates", () => {
+it("sitemap omits fabricated last-modified dates and leads with the canonical homepage", () => {
   const xml = buildSitemapXml([sampleExperience]);
   assert.include(xml, "https://www.remiforge.dev/sample-role");
   assert.notInclude(xml, "<lastmod>");
+  // Soft crawl signal: static canonicals (homepage first) precede the detail pages
+  assert.isTrue(xml.indexOf("<loc>https://www.remiforge.dev/</loc>") < xml.indexOf("<loc>https://www.remiforge.dev/sample-role</loc>"));
 });
 
 it("sitemap home URL equals the homepage canonical exactly", () => {
@@ -320,7 +322,7 @@ it("sitemap data failures return non-cacheable noindex XML with status 503", () 
 });
 
 it("robots.txt allows content, disallows API endpoints, and advertises the sitemap", () => {
-  const robots = buildRobotsTxt();
+  const robots = ROBOTS_TXT;
   assert.include(robots, "User-agent: *");
   assert.include(robots, "Allow: /");
   assert.include(robots, "Allow: /*.md");

@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Effect, Record } from "effect";
+import { Effect } from "effect";
 import { msg } from "gt-tanstack-start";
 import { recoverDataFailure } from "@/features/data/domain/required";
 
@@ -8,20 +8,22 @@ import type { PreferredLanguage, Translate } from "@/domain/models";
 import type { RequiredDataError } from "@/features/data/domain/required";
 
 // constants
-import { CACHE_CONTROL, NOINDEX_FOLLOW, NO_STORE, TXT_CONTENT_TYPE } from "@/features/meta/domain/constants";
+import { CACHE_CONTROL, INDEXABLE_ROBOTS, NOINDEX_FOLLOW, NO_STORE } from "@/features/meta/domain/constants";
+import { txtUnavailableResponse, unavailableResponse } from "@/features/meta/domain/response";
 import { MARKDOWN_CONTENT_TYPE, MARKDOWN_VARY } from "./constants";
 
+// Success headers shared by every Markdown twin; the robots directive is the same one the
+// HTML heads emit (see INDEXABLE_ROBOTS), so AI citation surfaces stay unconstrained
 const mdHeaders = (preferredLanguage: PreferredLanguage) => ({
   "Content-Type": MARKDOWN_CONTENT_TYPE,
-  // Shares the CDN policy of every other machine-readable document (robots.txt, sitemap.xml, llms.txt)
   "Cache-Control": CACHE_CONTROL,
   "Content-Language": preferredLanguage,
   Vary: MARKDOWN_VARY,
-  "X-Robots-Tag": "index, follow",
+  "X-Robots-Tag": INDEXABLE_ROBOTS,
 });
 
 // Successful Markdown twin (200). The HTTP-level canonical mirrors the frontmatter
-// one, so crawlers that never parse YAML still consolidate signals on the HTML page.
+// one, so crawlers that never parse YAML still consolidate signals on the HTML page
 export const mdResponse = (body: string, preferredLanguage: PreferredLanguage, canonical: string) =>
   new Response(body, { headers: { ...mdHeaders(preferredLanguage), Link: `<${canonical}>; rel="canonical"` } });
 
@@ -33,8 +35,7 @@ export const mdNotFoundResponse = (body: string, preferredLanguage: PreferredLan
   });
 
 // 503 for incomplete documents: they must never be cached as if they were complete
-const unavailableResponse = (body: string, headers: Record.ReadonlyRecord<string, string>) =>
-  new Response(body, { status: 503, headers: { ...headers, "Cache-Control": NO_STORE, "X-Robots-Tag": NOINDEX_FOLLOW } });
+export const mdUnavailableResponse = (body: string, preferredLanguage: PreferredLanguage) => unavailableResponse(body, mdHeaders(preferredLanguage));
 
 // Honest, parseable unavailable document rather than an HTML error page
 export const unavailableMarkdownBody = (translate: Translate) =>
@@ -45,9 +46,9 @@ export const unavailableMarkdownBody = (translate: Translate) =>
     ``,
   ].join("\n");
 
-export const mdUnavailableResponse = (body: string, preferredLanguage: PreferredLanguage) => unavailableResponse(body, mdHeaders(preferredLanguage));
-
-export const txtUnavailableResponse = (body: string) => unavailableResponse(body, { "Content-Type": TXT_CONTENT_TYPE });
+// Same 503 shape for the AI indexes (llms.txt, llms-full.txt), naming the document so fetchers know what failed
+export const unavailableIndexBody = (name: string) =>
+  `${name} is temporarily unavailable because required portfolio content could not be loaded. Please try again shortly.\n`;
 
 // Markdown twin pipeline recovery: a data failure logs, then answers with the non-cacheable 503
 export const markdownDataResponse = (preferredLanguage: PreferredLanguage, translate: Translate, document: Effect.Effect<Response, RequiredDataError>) =>

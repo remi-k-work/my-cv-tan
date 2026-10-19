@@ -2,9 +2,10 @@
 import { assert, it } from "@effect/vitest";
 import { Effect, Option } from "effect";
 import { requireData } from "@/features/data/domain/required";
-// txtResponse moved to meta: it serves robots.txt too, so it lives with the other discovery plumbing
+// txtResponse lives in meta: it serves robots.txt too, so it lives with the other discovery plumbing
 import { STATIC_PAGES } from "@/features/meta/domain/static-pages";
-import { txtResponse } from "@/features/meta/domain/response";
+import { txtResponse, txtUnavailableResponse } from "@/features/meta/domain/response";
+import { INDEXABLE_ROBOTS } from "@/features/meta/domain/constants";
 import { MARKDOWN_CONTENT_TYPE } from "../constants";
 import { escapeMd, frontmatter } from "../helpers";
 import { buildExperienceMd, buildNotFoundMd, experienceFromList } from "../experience";
@@ -16,7 +17,6 @@ import {
   mdResponse,
   mdUnavailableResponse,
   textDataResponse,
-  txtUnavailableResponse,
   unavailableMarkdownBody,
 } from "../response";
 import { parseLangParam, slugFromMdPathname } from "../request";
@@ -145,6 +145,8 @@ it("buildHomeMd groups work and projects and links to .md twins", () => {
   assert.notInclude(md, "Cite the canonical HTML URL");
   assert.include(md, `https://www.remiforge.dev/sample-role.md`);
   assert.include(md, `https://www.remiforge.dev/education.md`);
+  // The single-request ingestion document is reachable from the twin itself, not only from llms.txt
+  assert.include(md, `https://www.remiforge.dev/llms-full.txt`);
   assert.strictEqual((md.match(/^# /gm) ?? []).length, 1);
   assert.strictEqual((md.match(/^## /gm) ?? []).length, 3);
   assert.notInclude(md, "Navigation");
@@ -213,11 +215,15 @@ it("buildLlmsTxt indexes pages, key facts, grouped experience and negotiated lan
   assert.include(txt, `https://www.remiforge.dev/index.md`);
   // Key facts are dense, extractable claims for AI citation
   assert.include(txt, `## Key Facts`);
+  // The canonical site root gives AI systems a single citation target for the whole site
+  assert.include(txt, `- Website: https://www.remiforge.dev`);
   assert.include(txt, `- Role: Web Developer (self-taught)`);
   assert.include(txt, `- Based in: Rzeszów, Poland (PL)`);
   assert.include(txt, `## Work Experience`);
   assert.include(txt, `- [Full-Stack Developer at Sample Co](https://www.remiforge.dev/my%20project.md)`);
   assert.include(txt, `## Notes for AI systems`);
+  // The single-fetch document is surfaced in Pages, not only in the trailing notes
+  assert.include(txt, `- [Full site content](https://www.remiforge.dev/llms-full.txt): every page above in one document, for single-request ingestion.`);
   assert.include(txt, `- The complete content of every page is also available in a single request: https://www.remiforge.dev/llms-full.txt.`);
   assert.include(txt, `Append \`?lang=pl\` to any \`.md\` URL to request Polish explicitly`);
   assert.include(txt, "Markdown responses follow the request's language preferences.");
@@ -256,7 +262,8 @@ it("response helpers set content types, indexing and cache headers for success a
   assert.strictEqual(ok.headers.get("Content-Type"), MARKDOWN_CONTENT_TYPE);
   assert.strictEqual(ok.headers.get("Content-Language"), "en");
   assert.strictEqual(ok.headers.get("Vary"), "Cookie, Accept-Language");
-  assert.strictEqual(ok.headers.get("X-Robots-Tag"), "index, follow");
+  // The twins inherit the same indexing directive the HTML heads emit
+  assert.strictEqual(ok.headers.get("X-Robots-Tag"), INDEXABLE_ROBOTS);
   // HTTP-level canonical mirrors the frontmatter one for crawlers that never parse YAML
   assert.strictEqual(ok.headers.get("Link"), '<https://www.remiforge.dev/>; rel="canonical"');
 

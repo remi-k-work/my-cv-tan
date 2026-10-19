@@ -28,6 +28,7 @@ import {
   SITEMAP_HREF,
   SITE_LANGUAGE_NAMES,
   SITE_NAME,
+  SITE_URL,
   SOCIAL_LINKS,
   HOME_TITLE,
 } from "@/features/meta/domain/constants";
@@ -36,7 +37,7 @@ import {
 const siteHeader = (summary: string) => [`# ${SITE_NAME}`, ``, `> ${HOME_TITLE}`, ``, PERSON_DESCRIPTION, ``, summary, ``];
 
 // Machine-readable site index for AI systems (GEO). Every entry points at a `.md`
-// twin (never raw HTML) so crawlers fetch exactly one Markdown page at a time.
+// twin (never raw HTML) so crawlers fetch exactly one Markdown page at a time
 export const buildLlmsTxt = (experienceList: ExperienceList) =>
   [
     ...siteHeader("Self-taught web developer portfolio. Every page below has a machine-readable Markdown twin; fetch one linked `.md` page at a time."),
@@ -44,6 +45,7 @@ export const buildLlmsTxt = (experienceList: ExperienceList) =>
     `## Key Facts`,
     ``,
     `- Name: ${SITE_NAME}`,
+    `- Website: ${SITE_URL}`,
     `- Role: ${JOB_TITLE} (self-taught)`,
     `- Based in: ${HOME_LOCALITY}, ${HOME_COUNTRY_NAME} (${HOME_COUNTRY})`,
     `- Site languages: ${Array.join(SITE_LANGUAGE_NAMES, " and ")}`,
@@ -54,6 +56,7 @@ export const buildLlmsTxt = (experienceList: ExperienceList) =>
     `- [Home](${absoluteUrl(HOME_MD_HREF)}): portfolio overview with experience and project lists.`,
     `- [Education & Certificates](${absoluteUrl(EDUCATION_MD_HREF)}): schools, courses and certificates.`,
     `- [Contact](${absoluteUrl(CONTACT_MD_HREF)}): contact form, location and social profiles.`,
+    `- [Full site content](${absoluteUrl(LLMS_FULL_TXT_HREF)}): every page above in one document, for single-request ingestion.`,
     ``,
     `## Work Experience`,
     ``,
@@ -86,7 +89,7 @@ export const buildLlmsTxt = (experienceList: ExperienceList) =>
 
 // Full-content companion of llms.txt: every Markdown twin verbatim in one plain-text response so
 // AI systems ingest the whole site from a single fetch. Each section is preceded by its canonical
-// HTML URL; twins keep their frontmatter, so per-document facts stay queryable.
+// HTML URL; twins keep their frontmatter, so per-document facts stay queryable
 export const buildLlmsFullTxt = ({ pageTitles, experienceList, educationList }: LlmsFullInput) => {
   // Page order matches llms.txt; experiences follow in list order
   const documents = [

@@ -12,12 +12,20 @@ import { txtResponse } from "@/features/meta/domain/response";
 import { buildContactMd, buildEducationMd, buildHomeMd } from "@/features/markdown/domain/pages";
 import { buildExperienceMd, buildNotFoundMd, experienceFromList } from "@/features/markdown/domain/experience";
 import { buildLlmsFullTxt, buildLlmsTxt } from "@/features/markdown/domain/site-index";
-import { markdownDataResponse, mdNotFoundResponse, mdResponse, textDataResponse } from "@/features/markdown/domain/response";
+import { markdownDataResponse, mdNotFoundResponse, mdResponse, textDataResponse, unavailableIndexBody } from "@/features/markdown/domain/response";
 import { parseLangParam, slugFromMdPathname } from "@/features/markdown/domain/request";
 import { translateSource } from "@/features/markdown/domain/helpers";
 
 // types
-import type { PreferredLanguage, Translate } from "@/domain/models";
+import type { PageTitles, PreferredLanguage, Translate } from "@/domain/models";
+
+// An explicit ?lang= pins the cache variant: the response no longer depends on the locale
+// cookie, so drop Vary and the GT set-cookie to keep the response shared-cacheable
+const pinCacheVariant = (response: Response) => {
+  response.headers.delete("Vary");
+  removeResponseHeader("set-cookie");
+  return response;
+};
 
 // One home for every AI-facing document pipeline (GEO): language resolution, data
 // fetch, Markdown rendering and Response construction. Routes only wire named handlers
@@ -30,48 +38,52 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
     const experiences = (lang: PreferredLanguage) => requireDataFrom(data.experienceList(Option.some(lang)), "experience list");
     const schools = (lang: PreferredLanguage) => requireDataFrom(data.educationList(Option.some(lang)), "education list");
 
-    // Shared document pipeline: language negotiation, translation lookup, unavailable-data recovery and
-    // explicit-variant cache policy live here so each twin below stays a thin fetch-and-render step
+    // A failed dictionary load must not 500 a machine-readable endpoint: log it and render
+    // source-language copy, the same fallback the dictionary itself applies per missing key
+    const translateFor = Effect.fnUntraced(function* (lang: PreferredLanguage): Effect.fn.Return<Translate> {
+      return yield* Effect.tryPromise(() => translateForLanguage(lang)).pipe(
+        Effect.catch((error) => Effect.logError(`[MARKDOWN]: translation snapshot unavailable for "${lang}"`, error).pipe(Effect.as(translateSource)))
+      );
+    });
+
+    // Shared document pipeline: language negotiation, translation recovery and explicit-variant
+    // cache policy live here so each twin below stays a thin fetch-and-render step
     const document = (render: (request: Request, lang: PreferredLanguage, translate: Translate) => Effect.Effect<Response, RequiredDataError>) =>
       Effect.fnUntraced(function* (request: Request) {
         // ?lang= override wins over the GT locale resolved for this request
         const langOverride = parseLangParam(request.url);
         const lang = requestPreferredLanguage(langOverride);
-        // A failed dictionary load must not 500 a machine-readable endpoint; source-language copy still renders
-        const translate = yield* Effect.tryPromise(() => translateForLanguage(lang)).pipe(
-          Effect.catch((error) => Effect.logError(`[MARKDOWN]: translation snapshot unavailable for "${lang}"`, error).pipe(Effect.as(translateSource)))
-        );
+        const translate = yield* translateFor(lang);
         const response = yield* markdownDataResponse(lang, translate, render(request, lang, translate));
-
-        // An explicit ?lang= pins the cache variant: the response no longer depends on
-        // the locale cookie, so drop Vary and the GT set-cookie to keep it shared-cacheable
-        if (Option.isSome(langOverride)) {
-          response.headers.delete("Vary");
-          removeResponseHeader("set-cookie");
-        }
-
-        return response;
+        return Option.isSome(langOverride) ? pinCacheVariant(response) : response;
       });
 
-    const home = document((_request, lang, translate) =>
-      Effect.gen(function* () {
-        const [titles, experienceList] = yield* Effect.all([pageTitles(lang), experiences(lang)], { concurrency: "unbounded" });
-        return mdResponse(buildHomeMd({ pageTitles: titles, experienceList, preferredLanguage: lang, translate }), lang, absoluteUrl("/"));
-      })
+    // Shared shape of the home and education twins: titles + list fetched concurrently,
+    // then rendered — the concurrency policy is stated once, not per page
+    const listPage = <List>(
+      path: string,
+      fetchList: (lang: PreferredLanguage) => Effect.Effect<List, RequiredDataError>,
+      build: (titles: PageTitles, list: List, lang: PreferredLanguage, translate: Translate) => string
+    ) =>
+      document((_request, lang, translate) =>
+        Effect.map(Effect.all([pageTitles(lang), fetchList(lang)], { concurrency: "unbounded" }), ([titles, list]) =>
+          mdResponse(build(titles, list, lang, translate), lang, absoluteUrl(path))
+        )
+      );
+
+    const home = listPage("/", experiences, (titles, experienceList, lang, translate) =>
+      buildHomeMd({ pageTitles: titles, experienceList, preferredLanguage: lang, translate })
     );
 
-    const education = document((_request, lang, translate) =>
-      Effect.gen(function* () {
-        const [titles, educationList] = yield* Effect.all([pageTitles(lang), schools(lang)], { concurrency: "unbounded" });
-        return mdResponse(buildEducationMd({ pageTitles: titles, educationList, preferredLanguage: lang, translate }), lang, absoluteUrl("/education"));
-      })
+    const education = listPage("/education", schools, (titles, educationList, lang, translate) =>
+      buildEducationMd({ pageTitles: titles, educationList, preferredLanguage: lang, translate })
     );
 
+    // Contact renders from titles alone: no list to fetch
     const contact = document((_request, lang, translate) =>
-      Effect.gen(function* () {
-        const titles = yield* pageTitles(lang);
-        return mdResponse(buildContactMd({ pageTitles: titles, preferredLanguage: lang, translate }), lang, absoluteUrl("/contact"));
-      })
+      Effect.map(pageTitles(lang), (titles) =>
+        mdResponse(buildContactMd({ pageTitles: titles, preferredLanguage: lang, translate }), lang, absoluteUrl("/contact"))
+      )
     );
 
     const experience = document((request, lang, translate) =>
@@ -94,20 +106,16 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
 
     // English-only discovery documents (llms.txt, llms-full.txt): no language negotiation, so a
     // plain wrapper over textDataResponse; the content fetch stays inside the recovered effect
-    const discoveryDocument = (logPrefix: string, unavailableBody: string, content: Effect.Effect<string, RequiredDataError>) =>
-      textDataResponse(logPrefix, unavailableBody, Effect.map(content, txtResponse));
-
-    // One honest 503 body for both AI indexes, naming the document so fetchers know what failed
-    const indexUnavailableBody = (name: string) =>
-      `${name} is temporarily unavailable because required portfolio content could not be loaded. Please try again shortly.\n`;
+    const discoveryDocument = (logPrefix: string, name: string, content: Effect.Effect<string, RequiredDataError>) =>
+      textDataResponse(logPrefix, unavailableIndexBody(name), Effect.map(content, txtResponse));
 
     // Site index for AI systems (GEO); Effects are lazy, so these are plain values
-    const siteIndex = discoveryDocument("[LLMS.TXT]", indexUnavailableBody("llms.txt"), Effect.map(experiences("en"), buildLlmsTxt));
+    const siteIndex = discoveryDocument("[LLMS.TXT]", "llms.txt", Effect.map(experiences("en"), buildLlmsTxt));
 
     // Full-content companion (llms-full.txt): every twin in one request
     const siteIndexFull = discoveryDocument(
       "[LLMS-FULL.TXT]",
-      indexUnavailableBody("llms-full.txt"),
+      "llms-full.txt",
       Effect.gen(function* () {
         const [titles, experienceList, educationList] = yield* Effect.all([pageTitles("en"), experiences("en"), schools("en")], { concurrency: "unbounded" });
         return buildLlmsFullTxt({ pageTitles: titles, experienceList, educationList });
