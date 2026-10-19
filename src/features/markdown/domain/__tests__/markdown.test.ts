@@ -256,16 +256,20 @@ it("buildLlmsFullTxt concatenates every verbatim twin behind its canonical URL",
   assert.include(txt, `Cite the canonical HTML URL, not this file.`);
 });
 
-it("response helpers set content types, indexing and cache headers for success and errors", () => {
-  const ok = mdResponse("# Hi", "en", "https://www.remiforge.dev/");
+it("response helpers set content types, indexing, cache, canonical, and language-variant headers", () => {
+  const ok = mdResponse("# Hi", "en", "https://www.remiforge.dev/", "https://www.remiforge.dev/index.md");
   assert.strictEqual(ok.status, 200);
   assert.strictEqual(ok.headers.get("Content-Type"), MARKDOWN_CONTENT_TYPE);
   assert.strictEqual(ok.headers.get("Content-Language"), "en");
   assert.strictEqual(ok.headers.get("Vary"), "Cookie, Accept-Language");
   // The twins inherit the same indexing directive the HTML heads emit
   assert.strictEqual(ok.headers.get("X-Robots-Tag"), INDEXABLE_ROBOTS);
-  // HTTP-level canonical mirrors the frontmatter one for crawlers that never parse YAML
-  assert.strictEqual(ok.headers.get("Link"), '<https://www.remiforge.dev/>; rel="canonical"');
+  // The response identifies its exact representation and exposes both stable language variants.
+  assert.strictEqual(ok.headers.get("Content-Location"), "https://www.remiforge.dev/index.md?lang=en");
+  assert.strictEqual(
+    ok.headers.get("Link"),
+    '<https://www.remiforge.dev/>; rel="canonical", <https://www.remiforge.dev/index.md?lang=en>; rel="alternate"; hreflang="en"; type="text/markdown", <https://www.remiforge.dev/index.md?lang=pl>; rel="alternate"; hreflang="pl"; type="text/markdown"'
+  );
 
   const missing = mdNotFoundResponse("# Gone", "pl");
   assert.strictEqual(missing.status, 404);
@@ -322,7 +326,7 @@ it.effect("required-content failures map to non-cacheable 503s and valid missing
     const noMatch = experienceFromList([], "missing");
     const notFound = Option.isNone(noMatch)
       ? mdNotFoundResponse(buildNotFoundMd({ slug: "missing", preferredLanguage: "en", translate: translateEn }), "en")
-      : mdResponse("# Found", "en", "https://www.remiforge.dev/");
+      : mdResponse("# Found", "en", "https://www.remiforge.dev/", "https://www.remiforge.dev/index.md");
     assert.strictEqual(notFound.status, 404);
     assert.strictEqual(notFound.headers.get("X-Robots-Tag"), "noindex, follow");
   })

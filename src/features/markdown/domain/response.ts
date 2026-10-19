@@ -8,7 +8,7 @@ import type { PreferredLanguage, Translate } from "@/domain/models";
 import type { RequiredDataError } from "@/features/data/domain/required";
 
 // constants
-import { CACHE_CONTROL, INDEXABLE_ROBOTS, NOINDEX_FOLLOW, NO_STORE } from "@/features/meta/domain/constants";
+import { CACHE_CONTROL, INDEXABLE_ROBOTS, NOINDEX_FOLLOW, NO_STORE, SITE_LANGUAGES } from "@/features/meta/domain/constants";
 import { txtUnavailableResponse, unavailableResponse } from "@/features/meta/domain/response";
 import { MARKDOWN_CONTENT_TYPE, MARKDOWN_VARY } from "./constants";
 
@@ -22,10 +22,30 @@ const mdHeaders = (preferredLanguage: PreferredLanguage) => ({
   "X-Robots-Tag": INDEXABLE_ROBOTS,
 });
 
+// A negotiated response needs stable, fetchable URLs for each language. This keeps
+// crawlers from treating the Cookie or Accept-Language variant as an opaque duplicate
+const markdownVariantUrl = (markdownUrl: string, language: PreferredLanguage) => {
+  const url = new URL(markdownUrl);
+  url.searchParams.set("lang", language);
+  return url.href;
+};
+
+const markdownLinks = (canonical: string, markdownUrl: string) =>
+  [
+    `<${canonical}>; rel="canonical"`,
+    ...SITE_LANGUAGES.map((language) => `<${markdownVariantUrl(markdownUrl, language)}>; rel="alternate"; hreflang="${language}"; type="text/markdown"`),
+  ].join(", ");
+
 // Successful Markdown twin (200). The HTTP-level canonical mirrors the frontmatter
-// one, so crawlers that never parse YAML still consolidate signals on the HTML page
-export const mdResponse = (body: string, preferredLanguage: PreferredLanguage, canonical: string) =>
-  new Response(body, { headers: { ...mdHeaders(preferredLanguage), Link: `<${canonical}>; rel="canonical"` } });
+// one, while Content-Location and Link expose stable language variants for AI fetchers
+export const mdResponse = (body: string, preferredLanguage: PreferredLanguage, canonical: string, markdownUrl: string) =>
+  new Response(body, {
+    headers: {
+      ...mdHeaders(preferredLanguage),
+      "Content-Location": markdownVariantUrl(markdownUrl, preferredLanguage),
+      Link: markdownLinks(canonical, markdownUrl),
+    },
+  });
 
 // Missing slug response: still Markdown so AI fetchers get an explicit, parseable 404
 export const mdNotFoundResponse = (body: string, preferredLanguage: PreferredLanguage) =>
