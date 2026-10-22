@@ -1,4 +1,5 @@
 // services, features, and other libraries
+import { matchPreferredLanguage } from "@/domain/helpers";
 import { absoluteUrl } from "./url";
 
 // types
@@ -7,13 +8,11 @@ import type { SocialMetaInput } from "./models";
 // constants
 import { GLOBAL_SOCIAL_IMAGE, OPEN_GRAPH_LOCALES, SITE_NAME } from "./constants";
 
-// Shared Open Graph + Twitter Card tags for a page.
-// og:type is always "website": no page here is an article, and og:locale mirrors
-// the served language variant so scrapers render the right card.
-// X/Twitter cards only reliably accept jpeg/png, so twitterImage defaults to the jpeg fallback.
+// Generates OpenGraph and Twitter Card metadata for rich previews in search and social platforms
+// Twitter requires JPEG/PNG (rejecting WebP on cards), so twitterImage falls back to global JPEG banner
 export const socialMeta = ({ title, description, path, image, preferredLanguage, twitterImage }: SocialMetaInput) => {
   const twitter = twitterImage ?? GLOBAL_SOCIAL_IMAGE;
-  const localeAlternate = OPEN_GRAPH_LOCALES[preferredLanguage === "en" ? "pl" : "en"];
+  const localeAlternate = matchPreferredLanguage(preferredLanguage, OPEN_GRAPH_LOCALES.pl, OPEN_GRAPH_LOCALES.en);
 
   return [
     { property: "og:title", content: title },

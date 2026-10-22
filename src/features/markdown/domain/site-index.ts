@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Array, String } from "effect";
+import { Array, pipe, String } from "effect";
 import { experienceHeadline } from "@/features/experience/domain/helpers";
 import { absoluteUrl, experiencePath } from "@/features/meta/domain/url";
 import { buildExperienceMd, experienceLines } from "./experience";
@@ -90,12 +90,10 @@ export const buildLlmsTxt = (experienceList: ExperienceList) =>
     ),
   ]);
 
-// Full-content companion of llms.txt: every Markdown twin verbatim in one plain-text response so
-// AI systems ingest the whole site from a single fetch. A table of contents names each document
-// up front; the twins keep their frontmatter, so per-document facts stay queryable
+// Full-content companion of llms.txt: concatenates all markdown twins behind their canonical URLs
+// Enables single-request ingestion for LLMs (Perplexity, ChatGPT, Claude) with structured Table of Contents
 export const buildLlmsFullTxt = ({ pageTitles, experienceList, educationList }: LlmsFullInput) => {
-  // Page order matches llms.txt; experiences follow in data order
-  const documents = [
+  const staticDocs = [
     {
       name: "Home",
       canonical: absoluteUrl("/"),
@@ -111,18 +109,21 @@ export const buildLlmsFullTxt = ({ pageTitles, experienceList, educationList }: 
       canonical: absoluteUrl("/contact"),
       body: buildContactMd({ pageTitles, preferredLanguage: DEFAULT_LANGUAGE, translate: translateSource }),
     },
-    ...Array.map(experienceList, (experience) => ({
-      name: experienceHeadline(experience, DEFAULT_LANGUAGE),
-      canonical: absoluteUrl(experiencePath(experience.slug)),
-      body: buildExperienceMd({ experience, preferredLanguage: DEFAULT_LANGUAGE, translate: translateSource }),
-    })),
   ];
+
+  const experienceDocs = Array.map(experienceList, (experience) => ({
+    name: experienceHeadline(experience, DEFAULT_LANGUAGE),
+    canonical: absoluteUrl(experiencePath(experience.slug)),
+    body: buildExperienceMd({ experience, preferredLanguage: DEFAULT_LANGUAGE, translate: translateSource }),
+  }));
+
+  const documents = pipe(staticDocs, Array.appendAll(experienceDocs));
 
   return mdDocument([
     ...siteOpening(),
     'Complete Markdown content of every page, concatenated for single-request ingestion. Each section begins with its canonical HTML URL after "Source:". Cite the canonical HTML URL, not this file.',
     mdSection(mdHeading(2, "Table of Contents"), mdBulletList(Array.map(documents, ({ name, canonical }) => `[${escapeMdInline(name)}](${canonical})`))),
-    // Each twin stays verbatim (frontmatter and H1 included); the Source line names the page it came from
+    // Keep twins verbatim including frontmatter and headings; source header provides attribution
     ...Array.map(documents, ({ canonical, body }) => mdBody([`Source: ${canonical}`, String.trimEnd(body)])),
   ]);
 };

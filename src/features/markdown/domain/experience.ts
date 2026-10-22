@@ -84,7 +84,7 @@ export const buildExperienceMd = ({ experience, preferredLanguage, translate }: 
       role,
       company,
       year,
-      skills: skillsUsed.join(", "),
+      skills: Array.join(skillsUsed, ", "),
     }),
     mdHeading(1, headline),
     mdQuote(description),

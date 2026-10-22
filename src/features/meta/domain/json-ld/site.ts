@@ -19,21 +19,20 @@ import {
   WEBSITE_ID,
 } from "@/features/meta/domain/constants";
 
-// Postal address shared by the author and publisher nodes; one object keeps both in sync
+// Physical locality shared between Person and Organization for consistent geographical entity grounding
 const POSTAL_ADDRESS = {
   "@type": "PostalAddress",
   addressLocality: HOME_LOCALITY,
   addressCountry: HOME_COUNTRY,
 } as const;
 
-// Site-wide structured data: the site itself plus its author and publisher
+// Site-wide structured graph declaring WebSite, Person, and Organization entities with stable URI @id references
 export const websitePersonJsonLd = () =>
   jsonLdGraph([
     {
       "@type": "WebSite",
       "@id": WEBSITE_ID,
       name: SITE_NAME,
-      // Same capped copy as the root meta description: one extractable summary everywhere
       description: SITE_DESCRIPTION,
       url: SITE_URL,
       inLanguage: [...SITE_LANGUAGES],
@@ -44,14 +43,12 @@ export const websitePersonJsonLd = () =>
       "@type": "Person",
       "@id": PERSON_ID,
       name: SITE_NAME,
-      // The full bio gives AI systems a rich, quotable identity beyond the site summary
       description: PERSON_DESCRIPTION,
       url: SITE_URL,
-      // Avatar as a sized ImageObject: same headshot everywhere, dimensions included
+      // Square ImageObject satisfies Google Knowledge Graph logo/author requirements (>=112x112 px)
       image: imageObject(AVATAR.src, AVATAR.width, AVATAR.height),
       jobTitle: JOB_TITLE,
       knowsAbout: [...KNOWS_ABOUT],
-      // The site's bilingual audience is a factual GEO signal for AI extraction
       knowsLanguage: [...SITE_LANGUAGES],
       address: POSTAL_ADDRESS,
       sameAs: [...SOCIAL_LINKS],
@@ -63,7 +60,6 @@ export const websitePersonJsonLd = () =>
       description: SITE_DESCRIPTION,
       url: SITE_URL,
       address: POSTAL_ADDRESS,
-      // Square avatar, not the wide OG banner: Google wants a logo-shaped image for the knowledge panel
       logo: imageObject(AVATAR.src, AVATAR.width, AVATAR.height),
       sameAs: [...SOCIAL_LINKS],
     },

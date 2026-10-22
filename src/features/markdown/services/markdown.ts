@@ -49,20 +49,19 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
       );
     });
 
-    // Shared document pipeline: language negotiation, translation recovery and explicit-variant
-    // cache policy live here so each twin below stays a thin fetch-and-render step
+    // Shared document pipeline: handles language negotiation, translation recovery, and CDN cache-pinning
     const document = (render: (request: Request, lang: PreferredLanguage, translate: Translate) => Effect.Effect<Response, RequiredDataError>) =>
       Effect.fnUntraced(function* (request: Request) {
-        // ?lang= override wins over the GT locale resolved for this request
+        // ?lang= query parameter overrides request-level Accept-Language/cookie negotiation
         const langOverride = parseLangParam(request.url);
         const lang = requestPreferredLanguage(langOverride);
         const translate = yield* translateFor(lang);
         const response = yield* markdownDataResponse(lang, translate, render(request, lang, translate));
+        // Pinned ?lang= query variants drop Vary header and session cookies for shared edge caching
         return Option.isSome(langOverride) ? pinCacheVariant(response) : response;
       });
 
-    // Home and education share one shape: page titles plus the list the page renders,
-    // fetched concurrently with bounded concurrency to minimize rendering latency
+    // Home and education share one pipeline shape: fetches page titles and collection data concurrently
     const staticDocument = <List>(
       path: string,
       markdownPath: string,
@@ -83,45 +82,50 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
       buildEducationMd({ pageTitles: titles, educationList, preferredLanguage: lang, translate })
     );
 
-    // Contact renders from titles alone: no list to fetch
+    // Contact renders from titles alone without supplementary collection fetches
     const contact = document((_request, lang, translate) =>
       Effect.map(pageTitles(lang), (titles) =>
         mdResponse(buildContactMd({ pageTitles: titles, preferredLanguage: lang, translate }), lang, absoluteUrl("/contact"), absoluteUrl(CONTACT_MD_HREF))
       )
     );
 
+    // Experience detail endpoint: resolves slug, retrieves localized item, and renders clean markdown twin or 404
     const experience = document((request, lang, translate) =>
       Effect.gen(function* () {
-        const slug = slugFromMdPathname(request.url);
+        const slugOpt = slugFromMdPathname(request.url);
 
-        // Unparseable slug: a clean Markdown 404 instead of an HTML error page
-        if (Option.isNone(slug)) return mdNotFoundResponse(buildNotFoundMd({ slug: "unknown", preferredLanguage: lang, translate }), lang);
+        // Unparseable slug returns an explicit, crawlable Markdown 404 document
+        if (Option.isNone(slugOpt)) {
+          return mdNotFoundResponse(buildNotFoundMd({ slug: "unknown", preferredLanguage: lang, translate }), lang);
+        }
 
-        const found = experienceFromList(yield* experiences(lang), slug.value);
+        const slug = slugOpt.value;
+        const list = yield* experiences(lang);
+        const matched = experienceFromList(list, slug);
 
-        if (Option.isNone(found)) {
-          yield* Effect.logError(`[SLUG.MD]: no experience for slug "${slug.value}", emitting markdown 404`);
-          return mdNotFoundResponse(buildNotFoundMd({ slug: slug.value, preferredLanguage: lang, translate }), lang);
+        // Missing experience item logs defect and answers with semantic localized Markdown 404
+        if (Option.isNone(matched)) {
+          yield* Effect.logError(`[SLUG.MD]: no experience for slug "${slug}", emitting markdown 404`);
+          return mdNotFoundResponse(buildNotFoundMd({ slug, preferredLanguage: lang, translate }), lang);
         }
 
         return mdResponse(
-          buildExperienceMd({ experience: found.value, preferredLanguage: lang, translate }),
+          buildExperienceMd({ experience: matched.value, preferredLanguage: lang, translate }),
           lang,
-          absoluteUrl(experiencePath(slug.value)),
-          absoluteUrl(experienceMarkdownPath(slug.value))
+          absoluteUrl(experiencePath(slug)),
+          absoluteUrl(experienceMarkdownPath(slug))
         );
       })
     );
 
-    // English-only discovery documents (llms.txt, llms-full.txt): no language negotiation, so a
-    // plain wrapper over textDataResponse; the content fetch stays inside the recovered effect
+    // English-only discovery documents (llms.txt, llms-full.txt): static plain-text endpoints for AI crawlers
     const discoveryDocument = (logPrefix: string, name: string, content: Effect.Effect<string, RequiredDataError>) =>
       textDataResponse(logPrefix, unavailableIndexBody(name), Effect.map(content, discoveryTxtResponse));
 
-    // Site index for AI systems (GEO); Effects are lazy, so these are plain values
+    // Structured index for AI crawlers (GEO): provides factual profile and .md twin catalog
     const siteIndex = discoveryDocument("[LLMS.TXT]", "llms.txt", Effect.map(experiences(DEFAULT_LANGUAGE), buildLlmsTxt));
 
-    // Full-content companion (llms-full.txt): every twin in one request, fetching datasets concurrently
+    // Full-content companion (llms-full.txt): concatenates every markdown twin for single-request ingestion
     const siteIndexFull = discoveryDocument(
       "[LLMS-FULL.TXT]",
       "llms-full.txt",

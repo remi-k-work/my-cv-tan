@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Effect } from "effect";
+import { Array, Effect, pipe } from "effect";
 import { msg } from "gt-tanstack-start";
 import { withLanguageParam } from "@/features/meta/domain/url";
 import { recoverDataFailure } from "@/features/data/domain/required";
@@ -24,15 +24,19 @@ const mdHeaders = (preferredLanguage: PreferredLanguage) => ({
   "X-Robots-Tag": INDEXABLE_ROBOTS,
 });
 
-// A negotiated response needs stable, fetchable URLs for each language; explicit variants keep
-// crawlers from treating the Cookie or Accept-Language response as an opaque duplicate.
-// x-default names the source language for requests that match no supported variant
+// RFC 8288 Link header exposing canonical and language variants for crawlers avoiding duplicate penalization
 const markdownLinks = (canonical: string, markdownUrl: string) =>
-  [
-    `<${canonical}>; rel="canonical"`,
-    ...SITE_LANGUAGES.map((language) => `<${withLanguageParam(markdownUrl, language)}>; rel="alternate"; hreflang="${language}"; type="text/markdown"`),
-    `<${withLanguageParam(markdownUrl, DEFAULT_LANGUAGE)}>; rel="alternate"; hreflang="x-default"; type="text/markdown"`,
-  ].join(", ");
+  pipe(
+    [
+      `<${canonical}>; rel="canonical"`,
+      ...Array.map(
+        SITE_LANGUAGES,
+        (language) => `<${withLanguageParam(markdownUrl, language)}>; rel="alternate"; hreflang="${language}"; type="text/markdown"`
+      ),
+      `<${withLanguageParam(markdownUrl, DEFAULT_LANGUAGE)}>; rel="alternate"; hreflang="x-default"; type="text/markdown"`,
+    ],
+    Array.join(", ")
+  );
 
 // Successful Markdown twin (200). The HTTP-level canonical mirrors the frontmatter
 // one, while Content-Location and Link expose stable language variants for AI fetchers

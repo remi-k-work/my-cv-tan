@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Option } from "effect";
+import { Array, Option } from "effect";
 import { experienceHeadline, excerpt } from "@/features/experience/domain/helpers";
 import { breadcrumb, imageObject, jsonLdGraph, webPageNode } from "./core";
 import { experienceScreenshot } from "@/features/meta/domain/images";
@@ -11,22 +11,21 @@ import type { ExperienceHeadInput } from "@/features/meta/domain/models";
 // constants
 import { META_DESCRIPTION_LENGTH, PERSON_ID, PUBLISHER_ID } from "@/features/meta/domain/constants";
 
-// Detail page: one WebPage about the single role or project the page and its .md twin both show
+// Detail structured data: builds a WebPage node linked to an OrganizationRole or SoftwareSourceCode main entity
 export const experienceJsonLd = ({ experience, preferredLanguage }: ExperienceHeadInput) => {
   const { type, slug, role, company, txt, imageName, skillsUsed, gitHubLink } = experience;
 
-  // One named branch instead of three scattered ternaries
+  // Disambiguate employment roles from creative portfolio software projects
   const employment = type === "e";
   const path = experiencePath(slug);
   const url = absoluteUrl(path);
   const headline = experienceHeadline(experience, preferredLanguage);
 
-  // Distinct fragment ids keep the two detail kinds separately addressable
+  // Distinct fragment ids keep entity types separately addressable in the knowledge graph
   const itemId = `${url}#${employment ? "organization-role" : "project"}`;
   const description = excerpt(txt, META_DESCRIPTION_LENGTH);
 
-  // The webp screenshot is the page's main image; None means no screenshot renders on the page,
-  // so structured data must not claim a picture it cannot show
+  // Resolves screenshot dimensions only when an actual image asset is present
   const screenshot = Option.map(experienceScreenshot(imageName), ({ src, width, height }) => imageObject(src, width, height));
 
   const page = webPageNode({
@@ -38,11 +37,11 @@ export const experienceJsonLd = ({ experience, preferredLanguage }: ExperienceHe
     preferredLanguage,
     breadcrumb: true,
     mainEntity: { "@id": itemId },
-    // Claimed only when the screenshot really renders on the page; the banner fallback never is
+    // Only claim primaryImageOfPage when screenshot exists (prevent claiming non-rendered images)
     primaryImageOfPage: Option.getOrUndefined(screenshot),
   });
 
-  // A repository link identifies source code; projects without one remain generic creative works
+  // Source repositories map to SoftwareSourceCode; employment maps to OrganizationRole linked to person
   const item = employment
     ? {
         "@type": "OrganizationRole",
@@ -57,18 +56,17 @@ export const experienceJsonLd = ({ experience, preferredLanguage }: ExperienceHe
         "@id": itemId,
         name: role,
         description,
-        // Only a rendered screenshot is claimed; the global banner is not this work's image
         ...(Option.isSome(screenshot) ? { image: screenshot.value } : {}),
         url,
         mainEntityOfPage: { "@id": url },
         inLanguage: preferredLanguage,
         creator: { "@id": PERSON_ID },
         publisher: { "@id": PUBLISHER_ID },
-        keywords: skillsUsed.join(", "),
+        keywords: Array.join(skillsUsed, ", "),
         ...(gitHubLink ? { codeRepository: gitHubLink } : {}),
       };
 
-  // Employment pages also describe the employer, cross-referenced with the role
+  // Employment nodes link reciprocal Organization entity for employer graph resolution
   const organization = employment
     ? [
         {

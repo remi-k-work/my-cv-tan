@@ -9,37 +9,39 @@ import type { ExperienceList } from "@/features/experience/domain/models";
 import { CERTIFICATES_HREF, CV_EN_HREF, CV_PL_HREF } from "./constants";
 import { STATIC_PAGES } from "./static-pages";
 
-// Canonical HTML URLs only: the Markdown twins are deliberately excluded (they canonicalize
-// to HTML, and sitemaps must not list non-canonical URLs); AI crawlers find them via llms.txt
-// and the <link rel="alternate"> every page head emits
-// Derived from STATIC_PAGES so a new static page can never drift out of the sitemap; key order
-// is the declaration order, and absoluteUrl("/") stays byte-equal to the homepage canonical
-const STATIC_URLS = pipe(STATIC_PAGES, Record.keys, Array.map(absoluteUrl), Array.appendAll([CV_EN_HREF, CV_PL_HREF, CERTIFICATES_HREF].map(absoluteUrl)));
+// Canonical HTML URLs only: markdown twins canonicalize to HTML and must not appear in sitemap.xml
+// Static paths lead in declaration order with documents appended, ensuring homepage is the primary crawl entry
+const STATIC_URLS = pipe(
+  STATIC_PAGES,
+  Record.keys,
+  Array.map(absoluteUrl),
+  Array.appendAll(Array.map([CV_EN_HREF, CV_PL_HREF, CERTIFICATES_HREF], absoluteUrl))
+);
 
-// Entity references for the five characters that are special inside XML element text;
-// the ampersand stays a unicode escape so the entity literals remain unambiguous
-const XML_ENTITIES: Record.ReadonlyRecord<string, string> = { "&": "\u0026amp;", "<": "\u0026lt;", ">": "\u0026gt;", '"': "\u0026quot;", "'": "\u0026apos;" };
+// XML entity substitution table preserving valid XML character encoding in <loc> elements
+const XML_ENTITIES: Record.ReadonlyRecord<string, string> = {
+  "&": "\u0026amp;",
+  "<": "\u0026lt;",
+  ">": "\u0026gt;",
+  '"': "\u0026quot;",
+  "'": "\u0026apos;",
+};
 
-// The match set is exactly the keys above, so every special character is replaced
-const escapeXml = (value: string) => value.replace(/[&<>"']/g, (character) => XML_ENTITIES[character]);
+// Escapes reserved XML characters so URL query parameters and encoded characters never corrupt the markup
+const escapeXml = (value: string) => value.replace(/[&<>"']/g, (char) => XML_ENTITIES[char]);
 
-// Minimal entries: Google ignores priority and changefreq, and the data has no real modified dates
+// Generates an individual XML <url> element without obsolete changefreq/priority tags (per Google guidelines)
 const urlNode = (loc: string) => `<url><loc>${escapeXml(loc)}</loc></url>`;
 
+// Wraps generated URL entries in standard sitemaps schema definition
 const wrapWithUrlSet = (entries: string) =>
   `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries}\n</urlset>`;
 
-// Static canonicals lead (homepage first), then one <url> per experience detail page:
-// sitemap order is a soft crawl signal, and the highest-value canonical should not sit mid-file
+// Maps static pages followed by detail experiences into an XML document conforming to sitemaps.org 0.9
 export const buildSitemapXml = (experienceList: ExperienceList) =>
   pipe(
     STATIC_URLS,
-    Array.appendAll(
-      pipe(
-        experienceList,
-        Array.map(({ slug }) => absoluteUrl(experiencePath(slug)))
-      )
-    ),
+    Array.appendAll(Array.map(experienceList, ({ slug }) => absoluteUrl(experiencePath(slug)))),
     Array.map(urlNode),
     Array.join("\n"),
     wrapWithUrlSet

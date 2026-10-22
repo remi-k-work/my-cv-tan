@@ -9,13 +9,11 @@ import { sitemapResponse, sitemapUnavailableResponse } from "@/features/meta/dom
 // constants
 import { SITE_LANGUAGES } from "@/features/meta/domain/constants";
 
-// Each language bundle ships its own list and translations may rename a slug, so the sitemap
-// unions both by slug: a page that exists in only one language must still be crawlable
+// Unpack supported languages: sitemap indexes all valid localized slugs across English and Polish
 const [sourceLanguage, translatedLanguage] = SITE_LANGUAGES;
 
-// Pure document pipeline, one run per request: fetch concurrently -> require -> build -> respond
-// Both language lists are fetched concurrently since language data sets are independent
-export const sitemapDocument = Effect.gen(function* () {
+// Pure document pipeline: fetches both localized lists concurrently, deduplicates slugs, and handles errors with 503
+export const sitemapDocument: Effect.Effect<Response, never, Data> = Effect.gen(function* () {
   const data = yield* Data;
 
   // Concurrent fetch of both language lists to minimize TTFB for crawler requests
@@ -27,12 +25,12 @@ export const sitemapDocument = Effect.gen(function* () {
     { concurrency: 2 }
   );
 
-  // Union by slug ensures pages with translated slugs or language-specific entries are both crawlable
+  // Union by slug guarantees both localized variants and unique items are crawlable without duplicates
   return sitemapResponse(buildSitemapXml(Array.unionWith(sourceList, translatedList, (a, b) => a.slug === b.slug)));
 }).pipe(
-  // Lazy fallback: a fresh 503 Response is minted only when a request actually fails
+  // Transient failure returns 503 with no-store to avoid poisoning search engine caches with incomplete sitemaps
   recoverDataFailure("[SITEMAP.XML]", sitemapUnavailableResponse)
 );
 
-// Route wiring only: thin bridge executing the Effect pipeline on the managed server runtime
+// Thin adapter executing the Effect pipeline on the application managed server runtime
 export const sitemapHandler = () => RuntimeServer.runPromise(sitemapDocument);

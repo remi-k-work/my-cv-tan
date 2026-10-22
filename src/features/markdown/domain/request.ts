@@ -1,18 +1,15 @@
 // services, features, and other libraries
-import { flow, Option, Schema, String, pipe } from "effect";
+import { Array, flow, Option, Schema, String, pipe } from "effect";
 import { PreferredLanguage } from "@/domain/models";
 
-// Parse an absolute request URL without throwing; unparseable input becomes None
+// Safely constructs URL object without throwing; malformed strings evaluate to None
 const requestUrl = Option.liftThrowable((url: string) => new URL(url));
 
-// Decodes a raw query value to a supported language; absent or unknown values become None
-// Normalization is case-insensitive and whitespace-tolerant (?lang= EN == en); flow composes
-// the two String helpers into one unary step for Option.map (pipe pipes a value, not functions)
+// Decodes query parameter into supported language variant; case-insensitive and trimmed
 const langFrom = (raw: string | null) =>
   pipe(Option.fromNullishOr(raw), Option.map(flow(String.trim, String.toLowerCase)), Option.flatMap(Schema.decodeUnknownOption(PreferredLanguage)));
 
-// Parses the explicit `?lang=` override. None carries both "param absent" and
-// "URL unparseable", so callers fall back to cookie / Accept-Language resolution
+// Extracts explicit ?lang= parameter; None triggers header/cookie language negotiation
 export const parseLangParam = (url: string) =>
   pipe(
     requestUrl(url),
@@ -20,14 +17,20 @@ export const parseLangParam = (url: string) =>
     Option.flatMap(langFrom)
   );
 
-// Extract a slug only from a Markdown twin URL; malformed encodings become clean 404 candidates
+// Extracts and safely decodes URL slug from .md endpoints; invalid percent-encoding becomes None (clean 404)
 export const slugFromMdPathname = (url: string) =>
   pipe(
     requestUrl(url),
-    Option.map(({ pathname }) => pathname.split("/").pop() ?? ""),
+    Option.map(({ pathname }) =>
+      pipe(
+        pathname,
+        String.split("/"),
+        Array.last,
+        Option.getOrElse(() => "")
+      )
+    ),
     Option.filter(String.endsWith(".md")),
     Option.map(String.slice(0, -".md".length)),
-    // decodeURIComponent throws on malformed percent-encoding; lifted so it becomes None
     Option.flatMap(Option.liftThrowable(decodeURIComponent)),
     Option.filter(String.isNonEmpty)
   );
