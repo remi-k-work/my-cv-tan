@@ -62,7 +62,7 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
       });
 
     // Home and education share one shape: page titles plus the list the page renders,
-    // fetched in sequence (the data service is in-memory) and rendered once
+    // fetched concurrently with bounded concurrency to minimize rendering latency
     const staticDocument = <List>(
       path: string,
       markdownPath: string,
@@ -70,7 +70,7 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
       build: (titles: PageTitles, list: List, lang: PreferredLanguage, translate: Translate) => string
     ) =>
       document((_request, lang, translate) =>
-        Effect.map(Effect.all([pageTitles(lang), fetchList(lang)]), ([titles, list]) =>
+        Effect.map(Effect.all([pageTitles(lang), fetchList(lang)], { concurrency: 2 }), ([titles, list]) =>
           mdResponse(build(titles, list, lang, translate), lang, absoluteUrl(path), absoluteUrl(markdownPath))
         )
       );
@@ -121,16 +121,15 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
     // Site index for AI systems (GEO); Effects are lazy, so these are plain values
     const siteIndex = discoveryDocument("[LLMS.TXT]", "llms.txt", Effect.map(experiences(DEFAULT_LANGUAGE), buildLlmsTxt));
 
-    // Full-content companion (llms-full.txt): every twin in one request
+    // Full-content companion (llms-full.txt): every twin in one request, fetching datasets concurrently
     const siteIndexFull = discoveryDocument(
       "[LLMS-FULL.TXT]",
       "llms-full.txt",
       Effect.gen(function* () {
-        const [titles, experienceList, educationList] = yield* Effect.all([
-          pageTitles(DEFAULT_LANGUAGE),
-          experiences(DEFAULT_LANGUAGE),
-          schools(DEFAULT_LANGUAGE),
-        ]);
+        const [titles, experienceList, educationList] = yield* Effect.all(
+          [pageTitles(DEFAULT_LANGUAGE), experiences(DEFAULT_LANGUAGE), schools(DEFAULT_LANGUAGE)],
+          { concurrency: "unbounded" }
+        );
         return buildLlmsFullTxt({ pageTitles: titles, experienceList, educationList });
       })
     );

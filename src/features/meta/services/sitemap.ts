@@ -13,20 +13,26 @@ import { SITE_LANGUAGES } from "@/features/meta/domain/constants";
 // unions both by slug: a page that exists in only one language must still be crawlable
 const [sourceLanguage, translatedLanguage] = SITE_LANGUAGES;
 
-// Pure document pipeline, one run per request: fetch -> require -> build -> respond. Shared data-failure
-// recovery answers 503 instead of ever emitting an incomplete crawlable sitemap
+// Pure document pipeline, one run per request: fetch concurrently -> require -> build -> respond
+// Both language lists are fetched concurrently since language data sets are independent
 export const sitemapDocument = Effect.gen(function* () {
   const data = yield* Data;
 
-  const sourceList = yield* requireDataFrom(data.experienceList(Option.some(sourceLanguage)), "experience list");
-  const translatedList = yield* requireDataFrom(data.experienceList(Option.some(translatedLanguage)), "experience list (translated)");
+  // Concurrent fetch of both language lists to minimize TTFB for crawler requests
+  const [sourceList, translatedList] = yield* Effect.all(
+    [
+      requireDataFrom(data.experienceList(Option.some(sourceLanguage)), "experience list"),
+      requireDataFrom(data.experienceList(Option.some(translatedLanguage)), "experience list (translated)"),
+    ],
+    { concurrency: 2 }
+  );
 
+  // Union by slug ensures pages with translated slugs or language-specific entries are both crawlable
   return sitemapResponse(buildSitemapXml(Array.unionWith(sourceList, translatedList, (a, b) => a.slug === b.slug)));
 }).pipe(
-  // Lazy fallback: a fresh 503 Response is built only when a request actually fails
+  // Lazy fallback: a fresh 503 Response is minted only when a request actually fails
   recoverDataFailure("[SITEMAP.XML]", sitemapUnavailableResponse)
 );
 
-// Route wiring only: the same pure-Effect-plus-thin-bridge shape the Markdown service uses,
-// so the pipeline stays independently testable and the router never touches Effect internals
+// Route wiring only: thin bridge executing the Effect pipeline on the managed server runtime
 export const sitemapHandler = () => RuntimeServer.runPromise(sitemapDocument);

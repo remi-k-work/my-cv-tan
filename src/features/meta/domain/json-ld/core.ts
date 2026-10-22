@@ -19,7 +19,11 @@ export const jsonLdGraph = (nodes: ReadonlyArray<unknown>) =>
   jsonLdScript({ "@context": "https://schema.org", "@graph": pipe(nodes, Array.filter(Predicate.isNotNullish)) });
 
 // List-derived nodes are only meaningful when the list decoded and is non-empty
-export const whenNonEmpty = <T, N>(list: ReadonlyArray<T>, build: (items: ReadonlyArray<T>) => N): ReadonlyArray<N> => (list.length === 0 ? [] : [build(list)]);
+export const whenNonEmpty = <T, N>(list: ReadonlyArray<T>, build: (items: ReadonlyArray<T>) => N): ReadonlyArray<N> =>
+  Array.match(list, {
+    onEmpty: () => [],
+    onNonEmpty: (items) => [build(items)],
+  });
 
 export type PageNodeType = "WebPage" | "ContactPage" | "CollectionPage" | "ProfilePage";
 
