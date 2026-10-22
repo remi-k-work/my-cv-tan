@@ -1,7 +1,7 @@
 {
     "$schema": "node_modules/wrangler/config-schema.json",
     "name": "my-cv-v4-tan",
-    "compatibility_date": "2026-09-25",
+    "compatibility_date": "2026-10-19",
     "compatibility_flags": [
         "nodejs_compat"
     ],
