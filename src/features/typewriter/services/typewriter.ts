@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Array, Context, Effect, Layer, Match, Option, Random, Stream, String, pipe } from "effect";
+import { Array, Context, Duration, Effect, Layer, Match, Option, Random, Stream, String, pipe } from "effect";
 import { planScript } from "@/features/typewriter/domain/actions";
 
 // types
@@ -47,17 +47,15 @@ export class Typewriter extends Context.Service<Typewriter>()("Typewriter", {
               expandOp(currText, typewriterOp),
               (frames) =>
                 [
-                  pipe(
-                    frames,
-                    Array.last,
-                    Option.map((frame) => frame.text),
-                    Option.getOrElse(() => currText)
-                  ),
+                  Option.match(Array.last(frames), {
+                    onNone: () => currText,
+                    onSome: (frame) => frame.text,
+                  }),
                   frames,
                 ] as const
             )
         ),
-        Stream.mapEffect((frame) => Effect.as(Effect.sleep(`${frame.holdMillis} millis`), frame.text))
+        Stream.mapEffect((frame) => Effect.as(Effect.sleep(Duration.millis(frame.holdMillis)), frame.text))
       );
 
     return { plan: planScript, run } as const;

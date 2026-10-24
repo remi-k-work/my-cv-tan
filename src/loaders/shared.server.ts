@@ -31,10 +31,10 @@ export const serverLoader = <A, E>(use: (source: PageData) => Effect.Effect<A, E
       return yield* use(fromData(data, preferredLanguageFromLocale(getLocale())));
     }).pipe(
       Effect.tapError((error) =>
-        Effect.andThen(
-          Effect.logError(error),
-          Effect.sync(() => markHtmlDataUnavailable(request, error))
-        )
+        Effect.gen(function* () {
+          yield* Effect.logError(error);
+          markHtmlDataUnavailable(request, error);
+        })
       )
     )
   );

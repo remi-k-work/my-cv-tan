@@ -43,11 +43,10 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
 
     // A failed dictionary load must not 500 a machine-readable endpoint: log it and render
     // source-language copy, the same fallback the dictionary itself applies per missing key
-    const translateFor = Effect.fnUntraced(function* (lang: PreferredLanguage): Effect.fn.Return<Translate> {
-      return yield* Effect.tryPromise(() => translateForLanguage(lang)).pipe(
+    const translateFor = (lang: PreferredLanguage): Effect.Effect<Translate> =>
+      Effect.tryPromise(() => translateForLanguage(lang)).pipe(
         Effect.catch((error) => Effect.logError(`[MARKDOWN]: translation snapshot unavailable for "${lang}"`, error).pipe(Effect.as(translateSource)))
       );
-    });
 
     // Shared document pipeline: handles language negotiation, translation recovery, and CDN cache-pinning
     const document = (render: (request: Request, lang: PreferredLanguage, translate: Translate) => Effect.Effect<Response, RequiredDataError>) =>

@@ -29,7 +29,7 @@ const load = <E>(source: PageData<E>, slug: Option.Option<string>) =>
       const experience = Array.findFirst(experiences, (entry) => entry.slug === slug.value);
 
       // Defect by design so TanStack's notFound() bypasses the loader's typed-error handling
-      if (Option.isNone(experience)) throw notFound();
+      if (Option.isNone(experience)) return yield* Effect.die(notFound());
 
       return {
         type: "item" as const,

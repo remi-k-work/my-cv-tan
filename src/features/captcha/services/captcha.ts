@@ -20,7 +20,7 @@ export class Captcha extends Context.Service<Captcha>()("Captcha", {
       // Indices are guaranteed in-bounds by construction, so each maps directly to a character
       Effect.map((indices) =>
         Array.join(
-          indices.map((index) => PERMITTED_CHARS[index]),
+          Array.map(indices, (index) => PERMITTED_CHARS[index]),
           ""
         )
       )

@@ -28,14 +28,15 @@ export class Send extends Context.Service<Send>()("Send", {
       );
       yield* client.execute(request).pipe(
         // Surface upstream status + body (e.g. rate-limit details) instead of burying them in `cause`
-        Effect.catchTag("HttpClientError", (clientError) => {
-          const response = clientError.response;
-          if (response === undefined) return Effect.fail(new SendError({ cause: clientError }));
-          return response.text.pipe(
-            Effect.orElseSucceed(() => "<unreadable body>"),
-            Effect.flatMap((responseBody) => Effect.fail(new SendError({ cause: clientError, status: response.status, responseBody })))
-          );
-        })
+        Effect.catchTag("HttpClientError", (clientError) =>
+          Effect.gen(function* () {
+            const response = clientError.response;
+            if (response === undefined) return yield* new SendError({ cause: clientError });
+
+            const responseBody = yield* response.text.pipe(Effect.orElseSucceed(() => "<unreadable body>"));
+            return yield* new SendError({ cause: clientError, status: response.status, responseBody });
+          })
+        )
       );
     });
 

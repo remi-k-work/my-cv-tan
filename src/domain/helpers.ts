@@ -52,7 +52,7 @@ export const matchPreferredLanguage = <T>(preferredLanguage: PreferredLanguage, 
 export const pageField = (pageTitles: PageTitles | null, pagePath: PagePath, key: "heading" | "intro", fallback: string) =>
   pipe(
     Option.fromNullishOr(pageTitles),
-    Option.flatMap((titles) => Option.fromNullishOr(titles[pagePath])),
+    Option.flatMapNullishOr((titles) => titles[pagePath]),
     Option.map((page) => page[key]),
     Option.getOrElse(() => fallback)
   );

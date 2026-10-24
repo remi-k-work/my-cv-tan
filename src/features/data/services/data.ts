@@ -30,11 +30,11 @@ export class Data extends Context.Service<Data>()("Data", {
     const localized = <A>(preferredLanguage: Option.Option<PreferredLanguage>, en: Option.Option<A>, pl: Option.Option<A>) =>
       matchPreferredLanguage(requestPreferredLanguage(preferredLanguage), en, pl);
 
-    const randomPageTitles = Effect.fnUntraced(function* (preferredLanguage: Option.Option<PreferredLanguage>) {
-      const pageTitles = localized(preferredLanguage, pageTitlesEnData, pageTitlesPlData);
-      if (Option.isNone(pageTitles)) return Option.none();
-      return yield* Effect.option(Random.choice(pageTitles.value));
-    });
+    const randomPageTitles = (preferredLanguage: Option.Option<PreferredLanguage>) =>
+      Option.match(localized(preferredLanguage, pageTitlesEnData, pageTitlesPlData), {
+        onNone: () => Effect.succeedNone,
+        onSome: (pageTitles) => Effect.option(Random.choice(pageTitles)),
+      });
 
     const stablePageTitles = (preferredLanguage: Option.Option<PreferredLanguage>) =>
       Effect.sync(() => Option.flatMap(localized(preferredLanguage, pageTitlesEnData, pageTitlesPlData), Array.head));

@@ -4,8 +4,6 @@ import { Array, Effect, Random } from "effect";
 // constants
 import { CAPTCHA_HEIGHT, CAPTCHA_WIDTH, LETTER_FONTS } from "./constants";
 
-const randomElement = <A>(items: ReadonlyArray<A>) => Random.nextIntBetween(0, items.length - 1).pipe(Effect.map((index) => items[index]));
-
 const makeRect = Effect.fnUntraced(function* (shades: ReadonlyArray<string>) {
   const { x, y, w, h, rot, fill } = yield* Effect.all(
     {
@@ -14,7 +12,7 @@ const makeRect = Effect.fnUntraced(function* (shades: ReadonlyArray<string>) {
       w: Random.nextIntBetween(2, 10),
       h: Random.nextIntBetween(10, 40),
       rot: Random.nextIntBetween(-30, 30),
-      fill: randomElement(shades),
+      fill: Random.choice(shades as [string, ...string[]]),
     },
     { concurrency: "unbounded" }
   );
@@ -33,7 +31,7 @@ const randomBackground = Effect.gen(function* () {
 const renderLetter = Effect.fnUntraced(function* (captchaChar: string, index: number) {
   const { font, dx, dy, rot, isWhite } = yield* Effect.all(
     {
-      font: randomElement(LETTER_FONTS),
+      font: Random.choice(LETTER_FONTS),
       dx: Random.nextIntBetween(-4, 4),
       dy: Random.nextIntBetween(-8, 8),
       rot: Random.nextIntBetween(-15, 15),

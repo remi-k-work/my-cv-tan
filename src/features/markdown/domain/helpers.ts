@@ -52,7 +52,7 @@ export const frontmatter = (fields: Record.ReadonlyRecord<string, string>) =>
     Record.toEntries,
     Array.map(([key, value]) => `${key}: ${yamlValue(value)}`),
     Array.join("\n"),
-    (body) => [FRONTMATTER_DELIMITER, body, FRONTMATTER_DELIMITER].join("\n")
+    (body) => Array.join([FRONTMATTER_DELIMITER, body, FRONTMATTER_DELIMITER], "\n")
   );
 
 export const mdHeading = (level: 1 | 2 | 3, text: string) => `${"#".repeat(level)} ${escapeMdInline(text)}`;
