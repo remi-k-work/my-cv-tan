@@ -14,7 +14,7 @@ const TRANSLATION_LOADERS = {
 } as const;
 
 export async function loadTranslations(locale: string): Promise<unknown> {
-  const load = locale in TRANSLATION_LOADERS ? TRANSLATION_LOADERS[locale as keyof typeof TRANSLATION_LOADERS] : TRANSLATION_LOADERS.en;
+  const load = TRANSLATION_LOADERS[locale === "pl" ? "pl" : "en"];
   return (await load()).default;
 }
 

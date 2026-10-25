@@ -1,10 +1,10 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-import { Crypto, Effect } from "effect";
+import { Bytes, Crypto, Effect } from "effect";
 import { Base64Url } from "effect/encoding";
 
 // domain
-import { concatBytes, verifyCaptchaString } from "../session";
+import { verifyCaptchaString } from "../session";
 
 const testCrypto = Crypto.make({
   randomBytes: (size) => new Uint8Array(size),
@@ -27,7 +27,7 @@ const echoCrypto = Crypto.make({
 const textEncoder = new TextEncoder();
 
 const sealWith = (secret: string, salt: Uint8Array, answer: string) =>
-  `${Base64Url.encode(salt)}.${Base64Url.encode(concatBytes([textEncoder.encode(secret), salt, textEncoder.encode(answer)]))}`;
+  `${Base64Url.encode(salt)}.${Base64Url.encode(Bytes.concat([textEncoder.encode(secret), salt, textEncoder.encode(answer)]))}`;
 
 it.effect("accepts a sealed captcha only when the input matches the commitment", () =>
   Effect.gen(function* () {

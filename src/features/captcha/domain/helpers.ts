@@ -4,7 +4,7 @@ import { Array, Effect, Random } from "effect";
 // constants
 import { CAPTCHA_HEIGHT, CAPTCHA_WIDTH, LETTER_FONTS } from "./constants";
 
-const makeRect = Effect.fnUntraced(function* (shades: ReadonlyArray<string>) {
+const makeRect = Effect.fnUntraced(function* (shades: Array.NonEmptyReadonlyArray<string>) {
   const { x, y, w, h, rot, fill } = yield* Effect.all(
     {
       x: Random.nextIntBetween(0, CAPTCHA_WIDTH),
@@ -12,7 +12,7 @@ const makeRect = Effect.fnUntraced(function* (shades: ReadonlyArray<string>) {
       w: Random.nextIntBetween(2, 10),
       h: Random.nextIntBetween(10, 40),
       rot: Random.nextIntBetween(-30, 30),
-      fill: Random.choice(shades as [string, ...string[]]),
+      fill: Random.choice(shades),
     },
     { concurrency: "unbounded" }
   );
@@ -47,7 +47,10 @@ const renderLetter = Effect.fnUntraced(function* (captchaChar: string, index: nu
 
 export const createCaptchaSvg = Effect.fnUntraced(function* (captchaString: string) {
   const { background, letters } = yield* Effect.all(
-    { background: randomBackground, letters: Effect.forEach(Array.fromIterable(captchaString), renderLetter).pipe(Effect.map(Array.join(""))) },
+    {
+      background: randomBackground,
+      letters: Effect.forEach(Array.fromIterable(captchaString), renderLetter).pipe(Effect.map(Array.join(""))),
+    },
     { concurrency: "unbounded" }
   );
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${CAPTCHA_WIDTH}" height="${CAPTCHA_HEIGHT}" viewBox="0 0 ${CAPTCHA_WIDTH} ${CAPTCHA_HEIGHT}">${background}${letters}</svg>`;
