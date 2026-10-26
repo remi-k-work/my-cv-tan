@@ -31,9 +31,6 @@
     "plugins": [
       {
         "name": "@effect/language-service",
-        // Effect diagnostics are reported by Oxlint (type-aware) as the single
-        // source; disable them here to avoid double-reporting.
-        // See https://effect.website/docs/v4/getting-started/devtools#oxlint
         "diagnostics": false
       }
     ]

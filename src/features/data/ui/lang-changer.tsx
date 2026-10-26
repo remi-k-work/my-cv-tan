@@ -1,5 +1,3 @@
-// oxlint-disable effecttsgo/async-function
-
 // react
 import { useTransition } from "react";
 
