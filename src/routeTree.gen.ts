@@ -8,370 +8,370 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as ContactRouteImport } from './routes/contact'
-import { Route as ContactDotmdRouteImport } from './routes/contact[.]md'
-import { Route as EducationRouteImport } from './routes/education'
-import { Route as EducationDotmdRouteImport } from './routes/education[.]md'
-import { Route as IndexDotmdRouteImport } from './routes/index[.]md'
-import { Route as LlmsFullDottxtRouteImport } from './routes/llms-full[.]txt'
-import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
-import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as Char123slugChar125DotmdRouteImport } from './routes/{$slug}[.]md'
-import { Route as Char123SlugChar125RouteImport } from './routes/{-$slug}'
-import { Route as ApiCaptchaRouteImport } from './routes/api.captcha'
-import { Route as ExpIndexRouteImport } from './routes/exp.index'
-import { Route as ExpSplatRouteImport } from './routes/exp.$'
-import { Route as ApiRpcCaptchaRouteImport } from './routes/api.rpc.captcha'
-import { Route as ApiRpcContactMeRouteImport } from './routes/api.rpc.contact-me'
-import { Route as ApiRpcDataRouteImport } from './routes/api.rpc.data'
+import { Route as rootRouteImport } from "./routes/__root";
+import { Route as ContactRouteImport } from "./routes/contact";
+import { Route as ContactDotmdRouteImport } from "./routes/contact[.]md";
+import { Route as EducationRouteImport } from "./routes/education";
+import { Route as EducationDotmdRouteImport } from "./routes/education[.]md";
+import { Route as IndexDotmdRouteImport } from "./routes/index[.]md";
+import { Route as LlmsFullDottxtRouteImport } from "./routes/llms-full[.]txt";
+import { Route as LlmsDottxtRouteImport } from "./routes/llms[.]txt";
+import { Route as RobotsDottxtRouteImport } from "./routes/robots[.]txt";
+import { Route as SitemapDotxmlRouteImport } from "./routes/sitemap[.]xml";
+import { Route as Char123slugChar125DotmdRouteImport } from "./routes/{$slug}[.]md";
+import { Route as Char123SlugChar125RouteImport } from "./routes/{-$slug}";
+import { Route as ApiCaptchaRouteImport } from "./routes/api.captcha";
+import { Route as ExpIndexRouteImport } from "./routes/exp.index";
+import { Route as ExpSplatRouteImport } from "./routes/exp.$";
+import { Route as ApiRpcCaptchaRouteImport } from "./routes/api.rpc.captcha";
+import { Route as ApiRpcContactMeRouteImport } from "./routes/api.rpc.contact-me";
+import { Route as ApiRpcDataRouteImport } from "./routes/api.rpc.data";
 
 const ContactRoute = ContactRouteImport.update({
-  id: '/contact',
-  path: '/contact',
+  id: "/contact",
+  path: "/contact",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ContactDotmdRoute = ContactDotmdRouteImport.update({
-  id: '/contact.md',
-  path: '/contact.md',
+  id: "/contact.md",
+  path: "/contact.md",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const EducationRoute = EducationRouteImport.update({
-  id: '/education',
-  path: '/education',
+  id: "/education",
+  path: "/education",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const EducationDotmdRoute = EducationDotmdRouteImport.update({
-  id: '/education.md',
-  path: '/education.md',
+  id: "/education.md",
+  path: "/education.md",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const IndexDotmdRoute = IndexDotmdRouteImport.update({
-  id: '/index.md',
-  path: '/index.md',
+  id: "/index.md",
+  path: "/index.md",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const LlmsFullDottxtRoute = LlmsFullDottxtRouteImport.update({
-  id: '/llms-full.txt',
-  path: '/llms-full.txt',
+  id: "/llms-full.txt",
+  path: "/llms-full.txt",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
-  id: '/llms.txt',
-  path: '/llms.txt',
+  id: "/llms.txt",
+  path: "/llms.txt",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
-  id: '/robots.txt',
-  path: '/robots.txt',
+  id: "/robots.txt",
+  path: "/robots.txt",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
+  id: "/sitemap.xml",
+  path: "/sitemap.xml",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const Char123slugChar125DotmdRoute = Char123slugChar125DotmdRouteImport.update({
-  id: '/{$slug}.md',
-  path: '/{$slug}.md',
+  id: "/{$slug}.md",
+  path: "/{$slug}.md",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const Char123SlugChar125Route = Char123SlugChar125RouteImport.update({
-  id: '/{-$slug}',
-  path: '/{-$slug}',
+  id: "/{-$slug}",
+  path: "/{-$slug}",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ApiCaptchaRoute = ApiCaptchaRouteImport.update({
-  id: '/api/captcha',
-  path: '/api/captcha',
+  id: "/api/captcha",
+  path: "/api/captcha",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ExpIndexRoute = ExpIndexRouteImport.update({
-  id: '/exp/',
-  path: '/exp/',
+  id: "/exp/",
+  path: "/exp/",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ExpSplatRoute = ExpSplatRouteImport.update({
-  id: '/exp/$',
-  path: '/exp/$',
+  id: "/exp/$",
+  path: "/exp/$",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ApiRpcCaptchaRoute = ApiRpcCaptchaRouteImport.update({
-  id: '/api/rpc/captcha',
-  path: '/api/rpc/captcha',
+  id: "/api/rpc/captcha",
+  path: "/api/rpc/captcha",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ApiRpcContactMeRoute = ApiRpcContactMeRouteImport.update({
-  id: '/api/rpc/contact-me',
-  path: '/api/rpc/contact-me',
+  id: "/api/rpc/contact-me",
+  path: "/api/rpc/contact-me",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ApiRpcDataRoute = ApiRpcDataRouteImport.update({
-  id: '/api/rpc/data',
-  path: '/api/rpc/data',
+  id: "/api/rpc/data",
+  path: "/api/rpc/data",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 
 export interface FileRoutesByFullPath {
-  '/contact': typeof ContactRoute
-  '/contact.md': typeof ContactDotmdRoute
-  '/education': typeof EducationRoute
-  '/education.md': typeof EducationDotmdRoute
-  '/index.md': typeof IndexDotmdRoute
-  '/llms-full.txt': typeof LlmsFullDottxtRoute
-  '/llms.txt': typeof LlmsDottxtRoute
-  '/robots.txt': typeof RobotsDottxtRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/{$slug}.md': typeof Char123slugChar125DotmdRoute
-  '/{-$slug}': typeof Char123SlugChar125Route
-  '/api/captcha': typeof ApiCaptchaRoute
-  '/exp/$': typeof ExpSplatRoute
-  '/exp/': typeof ExpIndexRoute
-  '/api/rpc/captcha': typeof ApiRpcCaptchaRoute
-  '/api/rpc/contact-me': typeof ApiRpcContactMeRoute
-  '/api/rpc/data': typeof ApiRpcDataRoute
+  "/contact": typeof ContactRoute;
+  "/contact.md": typeof ContactDotmdRoute;
+  "/education": typeof EducationRoute;
+  "/education.md": typeof EducationDotmdRoute;
+  "/index.md": typeof IndexDotmdRoute;
+  "/llms-full.txt": typeof LlmsFullDottxtRoute;
+  "/llms.txt": typeof LlmsDottxtRoute;
+  "/robots.txt": typeof RobotsDottxtRoute;
+  "/sitemap.xml": typeof SitemapDotxmlRoute;
+  "/{$slug}.md": typeof Char123slugChar125DotmdRoute;
+  "/{-$slug}": typeof Char123SlugChar125Route;
+  "/api/captcha": typeof ApiCaptchaRoute;
+  "/exp/$": typeof ExpSplatRoute;
+  "/exp/": typeof ExpIndexRoute;
+  "/api/rpc/captcha": typeof ApiRpcCaptchaRoute;
+  "/api/rpc/contact-me": typeof ApiRpcContactMeRoute;
+  "/api/rpc/data": typeof ApiRpcDataRoute;
 }
 export interface FileRoutesByTo {
-  '/contact': typeof ContactRoute
-  '/contact.md': typeof ContactDotmdRoute
-  '/education': typeof EducationRoute
-  '/education.md': typeof EducationDotmdRoute
-  '/index.md': typeof IndexDotmdRoute
-  '/llms-full.txt': typeof LlmsFullDottxtRoute
-  '/llms.txt': typeof LlmsDottxtRoute
-  '/robots.txt': typeof RobotsDottxtRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/{$slug}.md': typeof Char123slugChar125DotmdRoute
-  '/{-$slug}': typeof Char123SlugChar125Route
-  '/api/captcha': typeof ApiCaptchaRoute
-  '/exp/$': typeof ExpSplatRoute
-  '/exp': typeof ExpIndexRoute
-  '/api/rpc/captcha': typeof ApiRpcCaptchaRoute
-  '/api/rpc/contact-me': typeof ApiRpcContactMeRoute
-  '/api/rpc/data': typeof ApiRpcDataRoute
+  "/contact": typeof ContactRoute;
+  "/contact.md": typeof ContactDotmdRoute;
+  "/education": typeof EducationRoute;
+  "/education.md": typeof EducationDotmdRoute;
+  "/index.md": typeof IndexDotmdRoute;
+  "/llms-full.txt": typeof LlmsFullDottxtRoute;
+  "/llms.txt": typeof LlmsDottxtRoute;
+  "/robots.txt": typeof RobotsDottxtRoute;
+  "/sitemap.xml": typeof SitemapDotxmlRoute;
+  "/{$slug}.md": typeof Char123slugChar125DotmdRoute;
+  "/{-$slug}": typeof Char123SlugChar125Route;
+  "/api/captcha": typeof ApiCaptchaRoute;
+  "/exp/$": typeof ExpSplatRoute;
+  "/exp": typeof ExpIndexRoute;
+  "/api/rpc/captcha": typeof ApiRpcCaptchaRoute;
+  "/api/rpc/contact-me": typeof ApiRpcContactMeRoute;
+  "/api/rpc/data": typeof ApiRpcDataRoute;
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/contact': typeof ContactRoute
-  '/contact.md': typeof ContactDotmdRoute
-  '/education': typeof EducationRoute
-  '/education.md': typeof EducationDotmdRoute
-  '/index.md': typeof IndexDotmdRoute
-  '/llms-full.txt': typeof LlmsFullDottxtRoute
-  '/llms.txt': typeof LlmsDottxtRoute
-  '/robots.txt': typeof RobotsDottxtRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/{$slug}.md': typeof Char123slugChar125DotmdRoute
-  '/{-$slug}': typeof Char123SlugChar125Route
-  '/api/captcha': typeof ApiCaptchaRoute
-  '/exp/$': typeof ExpSplatRoute
-  '/exp/': typeof ExpIndexRoute
-  '/api/rpc/captcha': typeof ApiRpcCaptchaRoute
-  '/api/rpc/contact-me': typeof ApiRpcContactMeRoute
-  '/api/rpc/data': typeof ApiRpcDataRoute
+  __root__: typeof rootRouteImport;
+  "/contact": typeof ContactRoute;
+  "/contact.md": typeof ContactDotmdRoute;
+  "/education": typeof EducationRoute;
+  "/education.md": typeof EducationDotmdRoute;
+  "/index.md": typeof IndexDotmdRoute;
+  "/llms-full.txt": typeof LlmsFullDottxtRoute;
+  "/llms.txt": typeof LlmsDottxtRoute;
+  "/robots.txt": typeof RobotsDottxtRoute;
+  "/sitemap.xml": typeof SitemapDotxmlRoute;
+  "/{$slug}.md": typeof Char123slugChar125DotmdRoute;
+  "/{-$slug}": typeof Char123SlugChar125Route;
+  "/api/captcha": typeof ApiCaptchaRoute;
+  "/exp/$": typeof ExpSplatRoute;
+  "/exp/": typeof ExpIndexRoute;
+  "/api/rpc/captcha": typeof ApiRpcCaptchaRoute;
+  "/api/rpc/contact-me": typeof ApiRpcContactMeRoute;
+  "/api/rpc/data": typeof ApiRpcDataRoute;
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
+  fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
-    | '/contact'
-    | '/contact.md'
-    | '/education'
-    | '/education.md'
-    | '/index.md'
-    | '/llms-full.txt'
-    | '/llms.txt'
-    | '/robots.txt'
-    | '/sitemap.xml'
-    | '/{$slug}.md'
-    | '/{-$slug}'
-    | '/api/captcha'
-    | '/exp/$'
-    | '/exp/'
-    | '/api/rpc/captcha'
-    | '/api/rpc/contact-me'
-    | '/api/rpc/data'
-  fileRoutesByTo: FileRoutesByTo
+    | "/contact"
+    | "/contact.md"
+    | "/education"
+    | "/education.md"
+    | "/index.md"
+    | "/llms-full.txt"
+    | "/llms.txt"
+    | "/robots.txt"
+    | "/sitemap.xml"
+    | "/{$slug}.md"
+    | "/{-$slug}"
+    | "/api/captcha"
+    | "/exp/$"
+    | "/exp/"
+    | "/api/rpc/captcha"
+    | "/api/rpc/contact-me"
+    | "/api/rpc/data";
+  fileRoutesByTo: FileRoutesByTo;
   to:
-    | '/contact'
-    | '/contact.md'
-    | '/education'
-    | '/education.md'
-    | '/index.md'
-    | '/llms-full.txt'
-    | '/llms.txt'
-    | '/robots.txt'
-    | '/sitemap.xml'
-    | '/{$slug}.md'
-    | '/{-$slug}'
-    | '/api/captcha'
-    | '/exp/$'
-    | '/exp'
-    | '/api/rpc/captcha'
-    | '/api/rpc/contact-me'
-    | '/api/rpc/data'
+    | "/contact"
+    | "/contact.md"
+    | "/education"
+    | "/education.md"
+    | "/index.md"
+    | "/llms-full.txt"
+    | "/llms.txt"
+    | "/robots.txt"
+    | "/sitemap.xml"
+    | "/{$slug}.md"
+    | "/{-$slug}"
+    | "/api/captcha"
+    | "/exp/$"
+    | "/exp"
+    | "/api/rpc/captcha"
+    | "/api/rpc/contact-me"
+    | "/api/rpc/data";
   id:
-    | '__root__'
-    | '/contact'
-    | '/contact.md'
-    | '/education'
-    | '/education.md'
-    | '/index.md'
-    | '/llms-full.txt'
-    | '/llms.txt'
-    | '/robots.txt'
-    | '/sitemap.xml'
-    | '/{$slug}.md'
-    | '/{-$slug}'
-    | '/api/captcha'
-    | '/exp/$'
-    | '/exp/'
-    | '/api/rpc/captcha'
-    | '/api/rpc/contact-me'
-    | '/api/rpc/data'
-  fileRoutesById: FileRoutesById
+    | "__root__"
+    | "/contact"
+    | "/contact.md"
+    | "/education"
+    | "/education.md"
+    | "/index.md"
+    | "/llms-full.txt"
+    | "/llms.txt"
+    | "/robots.txt"
+    | "/sitemap.xml"
+    | "/{$slug}.md"
+    | "/{-$slug}"
+    | "/api/captcha"
+    | "/exp/$"
+    | "/exp/"
+    | "/api/rpc/captcha"
+    | "/api/rpc/contact-me"
+    | "/api/rpc/data";
+  fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-  ContactRoute: typeof ContactRoute
-  ContactDotmdRoute: typeof ContactDotmdRoute
-  EducationRoute: typeof EducationRoute
-  EducationDotmdRoute: typeof EducationDotmdRoute
-  IndexDotmdRoute: typeof IndexDotmdRoute
-  LlmsFullDottxtRoute: typeof LlmsFullDottxtRoute
-  LlmsDottxtRoute: typeof LlmsDottxtRoute
-  RobotsDottxtRoute: typeof RobotsDottxtRoute
-  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  Char123slugChar125DotmdRoute: typeof Char123slugChar125DotmdRoute
-  Char123SlugChar125Route: typeof Char123SlugChar125Route
-  ApiCaptchaRoute: typeof ApiCaptchaRoute
-  ExpSplatRoute: typeof ExpSplatRoute
-  ExpIndexRoute: typeof ExpIndexRoute
-  ApiRpcCaptchaRoute: typeof ApiRpcCaptchaRoute
-  ApiRpcContactMeRoute: typeof ApiRpcContactMeRoute
-  ApiRpcDataRoute: typeof ApiRpcDataRoute
+  ContactRoute: typeof ContactRoute;
+  ContactDotmdRoute: typeof ContactDotmdRoute;
+  EducationRoute: typeof EducationRoute;
+  EducationDotmdRoute: typeof EducationDotmdRoute;
+  IndexDotmdRoute: typeof IndexDotmdRoute;
+  LlmsFullDottxtRoute: typeof LlmsFullDottxtRoute;
+  LlmsDottxtRoute: typeof LlmsDottxtRoute;
+  RobotsDottxtRoute: typeof RobotsDottxtRoute;
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute;
+  Char123slugChar125DotmdRoute: typeof Char123slugChar125DotmdRoute;
+  Char123SlugChar125Route: typeof Char123SlugChar125Route;
+  ApiCaptchaRoute: typeof ApiCaptchaRoute;
+  ExpSplatRoute: typeof ExpSplatRoute;
+  ExpIndexRoute: typeof ExpIndexRoute;
+  ApiRpcCaptchaRoute: typeof ApiRpcCaptchaRoute;
+  ApiRpcContactMeRoute: typeof ApiRpcContactMeRoute;
+  ApiRpcDataRoute: typeof ApiRpcDataRoute;
 }
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    '/contact': {
-      id: '/contact'
-      path: '/contact'
-      fullPath: '/contact'
-      preLoaderRoute: typeof ContactRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/contact.md': {
-      id: '/contact.md'
-      path: '/contact.md'
-      fullPath: '/contact.md'
-      preLoaderRoute: typeof ContactDotmdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/education': {
-      id: '/education'
-      path: '/education'
-      fullPath: '/education'
-      preLoaderRoute: typeof EducationRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/education.md': {
-      id: '/education.md'
-      path: '/education.md'
-      fullPath: '/education.md'
-      preLoaderRoute: typeof EducationDotmdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/index.md': {
-      id: '/index.md'
-      path: '/index.md'
-      fullPath: '/index.md'
-      preLoaderRoute: typeof IndexDotmdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/llms-full.txt': {
-      id: '/llms-full.txt'
-      path: '/llms-full.txt'
-      fullPath: '/llms-full.txt'
-      preLoaderRoute: typeof LlmsFullDottxtRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/llms.txt': {
-      id: '/llms.txt'
-      path: '/llms.txt'
-      fullPath: '/llms.txt'
-      preLoaderRoute: typeof LlmsDottxtRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/robots.txt': {
-      id: '/robots.txt'
-      path: '/robots.txt'
-      fullPath: '/robots.txt'
-      preLoaderRoute: typeof RobotsDottxtRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/{$slug}.md': {
-      id: '/{$slug}.md'
-      path: '/{$slug}.md'
-      fullPath: '/{$slug}.md'
-      preLoaderRoute: typeof Char123slugChar125DotmdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/{-$slug}': {
-      id: '/{-$slug}'
-      path: '/{-$slug}'
-      fullPath: '/{-$slug}'
-      preLoaderRoute: typeof Char123SlugChar125RouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/captcha': {
-      id: '/api/captcha'
-      path: '/api/captcha'
-      fullPath: '/api/captcha'
-      preLoaderRoute: typeof ApiCaptchaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/exp/': {
-      id: '/exp/'
-      path: '/exp'
-      fullPath: '/exp/'
-      preLoaderRoute: typeof ExpIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/exp/$': {
-      id: '/exp/$'
-      path: '/exp/$'
-      fullPath: '/exp/$'
-      preLoaderRoute: typeof ExpSplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/rpc/captcha': {
-      id: '/api/rpc/captcha'
-      path: '/api/rpc/captcha'
-      fullPath: '/api/rpc/captcha'
-      preLoaderRoute: typeof ApiRpcCaptchaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/rpc/contact-me': {
-      id: '/api/rpc/contact-me'
-      path: '/api/rpc/contact-me'
-      fullPath: '/api/rpc/contact-me'
-      preLoaderRoute: typeof ApiRpcContactMeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/rpc/data': {
-      id: '/api/rpc/data'
-      path: '/api/rpc/data'
-      fullPath: '/api/rpc/data'
-      preLoaderRoute: typeof ApiRpcDataRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+    "/contact": {
+      id: "/contact";
+      path: "/contact";
+      fullPath: "/contact";
+      preLoaderRoute: typeof ContactRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/contact.md": {
+      id: "/contact.md";
+      path: "/contact.md";
+      fullPath: "/contact.md";
+      preLoaderRoute: typeof ContactDotmdRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/education": {
+      id: "/education";
+      path: "/education";
+      fullPath: "/education";
+      preLoaderRoute: typeof EducationRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/education.md": {
+      id: "/education.md";
+      path: "/education.md";
+      fullPath: "/education.md";
+      preLoaderRoute: typeof EducationDotmdRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/index.md": {
+      id: "/index.md";
+      path: "/index.md";
+      fullPath: "/index.md";
+      preLoaderRoute: typeof IndexDotmdRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/llms-full.txt": {
+      id: "/llms-full.txt";
+      path: "/llms-full.txt";
+      fullPath: "/llms-full.txt";
+      preLoaderRoute: typeof LlmsFullDottxtRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/llms.txt": {
+      id: "/llms.txt";
+      path: "/llms.txt";
+      fullPath: "/llms.txt";
+      preLoaderRoute: typeof LlmsDottxtRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/robots.txt": {
+      id: "/robots.txt";
+      path: "/robots.txt";
+      fullPath: "/robots.txt";
+      preLoaderRoute: typeof RobotsDottxtRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/sitemap.xml": {
+      id: "/sitemap.xml";
+      path: "/sitemap.xml";
+      fullPath: "/sitemap.xml";
+      preLoaderRoute: typeof SitemapDotxmlRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/{$slug}.md": {
+      id: "/{$slug}.md";
+      path: "/{$slug}.md";
+      fullPath: "/{$slug}.md";
+      preLoaderRoute: typeof Char123slugChar125DotmdRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/{-$slug}": {
+      id: "/{-$slug}";
+      path: "/{-$slug}";
+      fullPath: "/{-$slug}";
+      preLoaderRoute: typeof Char123SlugChar125RouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/api/captcha": {
+      id: "/api/captcha";
+      path: "/api/captcha";
+      fullPath: "/api/captcha";
+      preLoaderRoute: typeof ApiCaptchaRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/exp/": {
+      id: "/exp/";
+      path: "/exp";
+      fullPath: "/exp/";
+      preLoaderRoute: typeof ExpIndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/exp/$": {
+      id: "/exp/$";
+      path: "/exp/$";
+      fullPath: "/exp/$";
+      preLoaderRoute: typeof ExpSplatRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/api/rpc/captcha": {
+      id: "/api/rpc/captcha";
+      path: "/api/rpc/captcha";
+      fullPath: "/api/rpc/captcha";
+      preLoaderRoute: typeof ApiRpcCaptchaRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/api/rpc/contact-me": {
+      id: "/api/rpc/contact-me";
+      path: "/api/rpc/contact-me";
+      fullPath: "/api/rpc/contact-me";
+      preLoaderRoute: typeof ApiRpcContactMeRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/api/rpc/data": {
+      id: "/api/rpc/data";
+      path: "/api/rpc/data";
+      fullPath: "/api/rpc/data";
+      preLoaderRoute: typeof ApiRpcDataRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
   }
 }
 
@@ -393,17 +393,15 @@ const rootRouteChildren: RootRouteChildren = {
   ApiRpcCaptchaRoute: ApiRpcCaptchaRoute,
   ApiRpcContactMeRoute: ApiRpcContactMeRoute,
   ApiRpcDataRoute: ApiRpcDataRoute,
-}
-export const routeTree = rootRouteImport
-  ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+};
+export const routeTree = rootRouteImport._addFileChildren(rootRouteChildren)._addFileTypes<FileRouteTypes>();
 
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
+import type { getRouter } from "./router.tsx";
+import type { startInstance } from "./start.ts";
+declare module "@tanstack/react-start" {
   interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+    ssr: true;
+    router: Awaited<ReturnType<typeof getRouter>>;
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>;
   }
 }

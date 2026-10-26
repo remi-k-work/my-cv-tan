@@ -28,7 +28,7 @@ export default defineConfig({
     printWidth: 160,
     sortPackageJson: false,
     sortTailwindcss: { stylesheet: "src/assets/styles/globals.css", functions: ["cn", "cva"] },
-    ignorePatterns: [".agents/**"],
+    ignorePatterns: [".agents/**", ".vscode/**", "tsconfig.json", "wrangler.jsonc"],
   },
   resolve: {
     tsconfigPaths: true,
