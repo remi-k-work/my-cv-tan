@@ -1,6 +1,3 @@
-// react
-import { useId } from "react";
-
 // services, features, and other libraries
 import { cn } from "@/lib/utils";
 import { useGT } from "gt-tanstack-start";
@@ -8,7 +5,7 @@ import { motion } from "motion/react";
 import { useTilt } from "@/features/experience/hooks/use-tilt";
 
 // components
-import { PanelCaption } from "@/ui/panel-caption";
+import { PageSection } from "@/ui/page-section";
 
 // assets
 import artcom from "@/assets/my-certificates-artcom.webp";
@@ -24,8 +21,16 @@ interface CertificateSheetProps {
   alt: string;
 }
 
+// constants
+const CERTIFICATES = [
+  { src: artcom, width: 1222, height: 870, alt: "ARTCOM" },
+  { src: alcc, width: 1222, height: 870, alt: "ALCC" },
+  { src: prattOrig, width: 1222, height: 870, alt: "Pratt" },
+  { src: prattTrans, width: 1694, height: 870, alt: "Pratt" },
+] as const satisfies ReadonlyArray<CertificateSheetProps>;
+
 // One certificate sheet: rises in on scroll, then leans away from the pointer with the same gentle physics as the
-// experience slides, the accent sheen tracking the pointer across the paper. Pure enhancement — the sheet is fully
+// experience slides, the accent sheen tracking the pointer across the paper; pure enhancement — the sheet is fully
 // visible in the SSR markup, and tilt handlers are only attached for fine pointers
 function CertificateSheet({ src, width, height, alt }: CertificateSheetProps) {
   const { style, handlers, glareStyle } = useTilt();
@@ -50,17 +55,14 @@ function CertificateSheet({ src, width, height, alt }: CertificateSheetProps) {
 
 export function Certificates() {
   const gt = useGT();
-  const headingId = useId();
 
   return (
-    <section className="mx-auto w-full max-w-4xl" aria-labelledby={headingId}>
-      <PanelCaption id={headingId}>{gt("My Certificates")}</PanelCaption>
+    <PageSection title={gt("My Certificates")}>
       <a className="space-y-4" href="/my-certificates.pdf" target="_blank" rel="noopener noreferrer" aria-label={gt("View Certificates PDF")}>
-        <CertificateSheet src={artcom} width={1222} height={870} alt="ARTCOM" />
-        <CertificateSheet src={alcc} width={1222} height={870} alt="ALCC" />
-        <CertificateSheet src={prattOrig} width={1222} height={870} alt="Pratt" />
-        <CertificateSheet src={prattTrans} width={1694} height={870} alt="Pratt" />
+        {CERTIFICATES.map((cert) => (
+          <CertificateSheet key={cert.src} {...cert} />
+        ))}
       </a>
-    </section>
+    </PageSection>
   );
 }

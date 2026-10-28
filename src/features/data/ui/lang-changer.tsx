@@ -29,9 +29,15 @@ export function LangChanger() {
   // To be able to refresh the page
   const router = useRouter();
 
+  // Named once so the button's labels and the flag swap stay in sync without repeating the condition
+  const isEnglish = locale === "en";
+
+  // The accessible name and title refer to the language being switched *to*, so they are computed from a single value and can never drift out of sync
+  const switchLabel = gt(isEnglish ? "Switch to Polish" : "Switch to English");
+
   function handleLangToggled() {
     startTransition(async () => {
-      setLocale(locale === "en" ? "pl" : "en");
+      setLocale(isEnglish ? "pl" : "en");
       await router.invalidate();
     });
   }
@@ -40,8 +46,8 @@ export function LangChanger() {
     <Button
       className="button animate-rise [animation-delay:0.64s] perspective-distant"
       disabled={isPending}
-      title={gt(locale === "en" ? "Switch to Polish" : "Switch to English")}
-      aria-label={gt(locale === "en" ? "Switch to Polish" : "Switch to English")}
+      title={switchLabel}
+      aria-label={switchLabel}
       onClick={handleLangToggled}
     >
       {/* The flag flips over to the other language instead of swapping out from under the pointer;
@@ -55,7 +61,7 @@ export function LangChanger() {
           exit={{ rotateY: 90, opacity: 0 }}
           transition={SPRINGS.snappy}
         >
-          {locale === "en" ? <UsFlagIcon className="size-11" /> : <PlFlagIcon className="size-11" />}
+          {isEnglish ? <UsFlagIcon className="size-11" /> : <PlFlagIcon className="size-11" />}
         </motion.span>
       </AnimatePresence>
     </Button>

@@ -8,33 +8,30 @@ import { toastManager } from "@/ui/toastify";
 // types
 import type { ContactForm } from "@/features/contact-me/domain/forms";
 
+// constants
+import { SUBMIT_FEEDBACK_MESSAGES } from "@/features/contact-me/domain/constants";
+
 // Provide feedback to the user regarding this form actions
-export function useSubmitToast(contactForm: ContactForm) {
+export function useSubmitToast(submit: ContactForm["submit"]) {
   const gt = useGT();
 
-  const toastServerError = () =>
-    toastManager.add({
-      type: "error",
-      title: gt("Server error!"),
-      description: gt("The message was not sent successfully; please try again later."),
-    });
+  const { SUCCESS_TITLE, SUCCESS_DESCRIPTION, MISSING_FIELDS_TITLE, MISSING_FIELDS_DESCRIPTION, SERVER_ERROR_TITLE, SERVER_ERROR_DESCRIPTION } =
+    SUBMIT_FEEDBACK_MESSAGES(gt);
+
+  const toastServerError = () => toastManager.add({ type: "error", title: SERVER_ERROR_TITLE, description: SERVER_ERROR_DESCRIPTION });
 
   useAtomSubscribe(
-    contactForm.submit,
+    submit,
     (submitResult) =>
       AsyncResult.matchWithWaiting(submitResult, {
         onWaiting: () => {},
         onSuccess: () => {
-          toastManager.add({ title: gt("Success!"), description: gt("Your message has been sent.") });
+          toastManager.add({ title: SUCCESS_TITLE, description: SUCCESS_DESCRIPTION });
         },
         onError: (error) =>
           Match.value(error).pipe(
             Match.tag("SchemaError", () => {
-              toastManager.add({
-                type: "error",
-                title: gt("Missing fields!"),
-                description: gt("Please correct the contact form fields and try again."),
-              });
+              toastManager.add({ type: "error", title: MISSING_FIELDS_TITLE, description: MISSING_FIELDS_DESCRIPTION });
             }),
             Match.orElse(toastServerError)
           ),

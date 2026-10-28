@@ -1,5 +1,5 @@
 // tanstack
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 
 // services, features, and other libraries
 import { cn } from "@/lib/utils";
@@ -12,6 +12,7 @@ interface NavItemProps {
   href: string;
   title: string;
   icon: ReactNode;
+  isActive: boolean;
   isExternal?: boolean;
   index: number;
 }
@@ -45,10 +46,7 @@ function Sparks({ animDelay }: { animDelay: number }) {
   );
 }
 
-export function NavItem({ href, title, icon, isExternal = false, index }: NavItemProps) {
-  const { pathname } = useLocation();
-  const isActive = href === pathname;
-
+export function NavItem({ href, title, icon, isActive, isExternal = false, index }: NavItemProps) {
   const className = cn(
     "relative isolate animate-rise border bg-surface-1 p-3 text-text-2 hover:text-accent",
     isActive ? "border-text-1 transition-colors [&_svg]:size-13 [&_svg]:text-text-1" : "hover:scale-110 hover:border-accent"
@@ -76,15 +74,14 @@ export function NavItem({ href, title, icon, isExternal = false, index }: NavIte
     </>
   );
 
-  if (isExternal)
-    return (
-      <a className={className} style={style} href={href} title={title} aria-label={title} target="_blank" rel="noopener noreferrer">
-        {content}
-      </a>
-    );
+  const common = { className, style, title, "aria-label": title } as const;
 
-  return (
-    <Link className={className} style={style} to={href} title={title} aria-label={title} aria-current={isActive ? "page" : undefined}>
+  return isExternal ? (
+    <a {...common} href={href} target="_blank" rel="noopener noreferrer">
+      {content}
+    </a>
+  ) : (
+    <Link {...common} to={href} aria-current={isActive ? "page" : undefined}>
       {content}
     </Link>
   );

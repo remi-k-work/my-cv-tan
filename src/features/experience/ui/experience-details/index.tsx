@@ -18,21 +18,12 @@ interface ExperienceDetailsProps {
 // constants
 import { MAX_CHUNK_LENGTH } from "@/features/typewriter/domain/constants";
 
-// Chunking is pure and the texts are static content, so repeated opens of the same
-// experience reuse the cached paragraphs instead of re-splitting the text
-const chunkCache = new Map<string, ReadonlyArray<string>>();
-const chunkText = (txt: string): ReadonlyArray<string> => {
-  const cached = chunkCache.get(txt);
-  if (cached !== undefined) return cached;
+export function ExperienceDetails({ experience }: ExperienceDetailsProps) {
+  const { txt } = experience;
 
-  const chunks = chunkTextByWords(txt, MAX_CHUNK_LENGTH);
-  chunkCache.set(txt, chunks);
-  return chunks;
-};
-
-export function ExperienceDetails({ experience, experience: { txt } }: ExperienceDetailsProps) {
-  // Use the helper function to create perfectly chunked paragraphs
-  const paras = chunkText(txt);
+  // Chunking is pure and the text is static per experience, so it is computed directly
+  // during render without memoization — the result is identical on every render
+  const paras = chunkTextByWords(txt, MAX_CHUNK_LENGTH);
 
   return (
     // The rise plays on the details page load and again inside the overlay each time it opens
@@ -41,7 +32,7 @@ export function ExperienceDetails({ experience, experience: { txt } }: Experienc
         <ExperienceLinks experience={experience} iconClassName="size-11" />
       </ExperienceHeader>
       <ScreenShots experience={experience} priorityFirstFrame />
-      <SkillsUsed experience={experience} />
+      <SkillsUsed skillsUsed={experience.skillsUsed} />
       {paras.map((para, index) => (
         <Typewriter key={index} fullText={para} />
       ))}

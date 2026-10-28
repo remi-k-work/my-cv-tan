@@ -19,18 +19,21 @@ import XCircleIcon from "@heroicons/react/24/solid/XCircleIcon";
 import type { ContactForm } from "@/features/contact-me/domain/forms";
 
 interface FormSubmitProps {
-  contactForm: ContactForm;
+  form: ContactForm;
 }
 
-export function FormSubmit({ contactForm }: FormSubmitProps) {
+export function FormSubmit({ form }: FormSubmitProps) {
   const gt = useGT();
 
-  // Get the form context
-  const isDirty = useAtomValue(contactForm.isDirty);
-  const { waiting } = useAtomValue(contactForm.submit);
-  const hasChangedSinceSubmit = useAtomValue(contactForm.hasChangedSinceSubmit);
-  const lastSubmittedValues = useAtomValue(contactForm.lastSubmittedValues);
-  const reset = useAtomSet(contactForm.reset);
+  // Subscribe only to the submission-state atoms this component actually reads,
+  // so it re-renders independently of the rest of the form; taking the whole form
+  // (rather than forwarding each atom as its own prop) keeps ContactForm from
+  // needing to know which atoms FormSubmit subscribes to
+  const isDirty = useAtomValue(form.isDirty);
+  const { waiting } = useAtomValue(form.submit);
+  const hasChangedSinceSubmit = useAtomValue(form.hasChangedSinceSubmit);
+  const lastSubmittedValues = useAtomValue(form.lastSubmittedValues);
+  const reset = useAtomSet(form.reset);
 
   // To be able to send the user back after canceling
   const router = useRouter();

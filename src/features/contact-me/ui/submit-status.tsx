@@ -10,18 +10,24 @@ import { InfoLine } from "@/ui/info-line";
 import type { ContactForm } from "@/features/contact-me/domain/forms";
 
 interface SubmitStatusProps {
-  contactForm: ContactForm;
+  submit: ContactForm["submit"];
 }
 
-export function SubmitStatus({ contactForm }: SubmitStatusProps) {
+// constants
+import { SUBMIT_FEEDBACK_MESSAGES } from "@/features/contact-me/domain/constants";
+
+export function SubmitStatus({ submit }: SubmitStatusProps) {
   const gt = useGT();
-  const submitResult = useAtomValue(contactForm.submit);
+  const submitResult = useAtomValue(submit);
+
+  const { SUCCESS_TITLE, SUCCESS_DESCRIPTION, MISSING_FIELDS_TITLE, MISSING_FIELDS_DESCRIPTION, SERVER_ERROR_TITLE, SERVER_ERROR_DESCRIPTION } =
+    SUBMIT_FEEDBACK_MESSAGES(gt);
 
   // Show the permanent feedback message as well
   return AsyncResult.builder(submitResult)
     .onInitialOrWaiting(() => null)
-    .onSuccess(() => <InfoLine message={`${gt("Success!")} → ${gt("Your message has been sent.")}`} />)
-    .onErrorTag("SchemaError", () => <InfoLine message={`${gt("Missing fields!")} → ${gt("Please correct the contact form fields and try again.")}`} />)
-    .onFailure(() => <InfoLine message={`${gt("Server error!")} → ${gt("The message was not sent successfully; please try again later.")}`} />)
+    .onSuccess(() => <InfoLine message={`${SUCCESS_TITLE} → ${SUCCESS_DESCRIPTION}`} />)
+    .onErrorTag("SchemaError", () => <InfoLine message={`${MISSING_FIELDS_TITLE} → ${MISSING_FIELDS_DESCRIPTION}`} />)
+    .onFailure(() => <InfoLine message={`${SERVER_ERROR_TITLE} → ${SERVER_ERROR_DESCRIPTION}`} />)
     .render();
 }

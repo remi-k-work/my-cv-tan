@@ -1,3 +1,6 @@
+// react
+import type { ElementType } from "react";
+
 // services, features, and other libraries
 import { useGT } from "gt-tanstack-start";
 
@@ -17,7 +20,16 @@ interface ExperienceLinksProps {
   iconClassName: string;
 }
 
+interface ExperienceLink {
+  href: string;
+  title: string;
+  icon: ElementType;
+}
+
 // External links for an experience, rendered only for the links that exist
+// Links are filtered before their icon elements are created, so a link without a URL
+// never renders (and discards) an icon; keeping the icon components out of the filtered
+// array also avoids rebuilding discarded elements on every render
 export function ExperienceLinks({ experience, iconClassName }: ExperienceLinksProps) {
   const gt = useGT();
 
@@ -26,29 +38,27 @@ export function ExperienceLinks({ experience, iconClassName }: ExperienceLinksPr
   // Repeated chips ("Live Link", "GitHub Repo") are told apart by the experience they belong to
   const context = `${role}, ${company}`;
 
+  const links: ReadonlyArray<{ href: string | undefined; title: string; icon: ElementType }> = [
+    { href: liveLink, title: gt("Live Link"), icon: GlobeAltIcon },
+    { href: gitHubLink, title: gt("GitHub Repo"), icon: GitHubIcon },
+    { href: videoLink, title: gt("Watch Video"), icon: VideoCameraIcon },
+  ];
+
+  const existingLinks = links.filter((link): link is ExperienceLink => link.href !== undefined);
+
   return (
     <ul className="contents">
-      {liveLink && (
-        <li className="contents">
-          <LinkChip href={liveLink} title={gt("Live Link")} context={context}>
-            <GlobeAltIcon className={iconClassName} />
-          </LinkChip>
-        </li>
-      )}
-      {gitHubLink && (
-        <li className="contents">
-          <LinkChip href={gitHubLink} title={gt("GitHub Repo")} context={context}>
-            <GitHubIcon className={iconClassName} />
-          </LinkChip>
-        </li>
-      )}
-      {videoLink && (
-        <li className="contents">
-          <LinkChip href={videoLink} title={gt("Watch Video")} context={context}>
-            <VideoCameraIcon className={iconClassName} />
-          </LinkChip>
-        </li>
-      )}
+      {existingLinks.map((link, index) => {
+        const Icon = link.icon;
+
+        return (
+          <li key={index} className="contents">
+            <LinkChip href={link.href} title={link.title} context={context}>
+              <Icon className={iconClassName} />
+            </LinkChip>
+          </li>
+        );
+      })}
     </ul>
   );
 }

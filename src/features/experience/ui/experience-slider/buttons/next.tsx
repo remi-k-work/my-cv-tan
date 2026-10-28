@@ -2,7 +2,7 @@
 import { useGT } from "gt-tanstack-start";
 
 // components
-import { Button } from "@base-ui/react";
+import { SlideButton } from "./slide-button";
 
 // assets
 import { NextIcon } from "@/assets/icons/next";
@@ -18,11 +18,12 @@ export function Next({ disabled, onNext }: NextProps) {
   const label = gt("Next Slide");
 
   return (
-    <Button className="button group p-2" disabled={disabled} title={label} aria-label={label} onClick={onNext}>
-      {/* The wrapper carries the drift: CSS transforms aren't hardware-accelerated on SVG elements, but are on the HTML wrapper */}
-      <span className="inline-flex transition-transform group-hover:translate-x-1">
-        <NextIcon className="size-6" aria-hidden="true" />
-      </span>
-    </Button>
+    <SlideButton
+      disabled={disabled}
+      onClick={onNext}
+      label={label}
+      icon={<NextIcon className="size-6" aria-hidden="true" />}
+      hoverTranslate="group-hover:translate-x-1"
+    />
   );
 }

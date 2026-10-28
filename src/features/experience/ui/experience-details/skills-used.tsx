@@ -5,18 +5,11 @@ import { useId } from "react";
 import { cn } from "@/lib/utils";
 import { useGT } from "gt-tanstack-start";
 
-// types
-import type { Experience } from "@/features/experience/domain/models";
-
-interface SkillsUsedProps {
-  experience: Experience;
-}
-
 // constants
 import { MOTION_TOKENS } from "@/lib/motion-tokens";
 
 // The skills a project leaned on
-export function SkillsUsed({ experience: { skillsUsed } }: SkillsUsedProps) {
+export function SkillsUsed({ skillsUsed }: { skillsUsed: readonly string[] }) {
   const gt = useGT();
   const headingId = useId();
 
@@ -28,7 +21,7 @@ export function SkillsUsed({ experience: { skillsUsed } }: SkillsUsedProps) {
       <ul className="flex list-none flex-wrap items-center justify-center gap-2 text-center">
         {skillsUsed.map((skillUsed, index) => (
           <li
-            key={index}
+            key={skillUsed}
             className={cn("animate-rise rounded-full border bg-surface-1 px-3 py-1 text-text-2 select-none", "odd:bg-surface-2")}
             style={{ animationDelay: `${index * MOTION_TOKENS.duration.slow}s` }}
           >

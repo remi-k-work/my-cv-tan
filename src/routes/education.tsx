@@ -7,9 +7,11 @@ import { educationHead } from "@/features/meta/domain/heads";
 import { headLanguage } from "@/features/meta/domain/language";
 
 // components
-import { PageTitle } from "@/ui/page-title";
 import { Certificates } from "@/features/education/ui/certificates";
 import { Education } from "@/features/education/ui/education";
+import { PageGrid } from "@/ui/page-grid";
+import { PagePanel } from "@/ui/page-panel";
+import { PageTitle } from "@/ui/page-title";
 
 export const Route = createFileRoute("/education")({
   loader: () => loaderEducation(),
@@ -26,14 +28,14 @@ function EducationPage() {
   return (
     <>
       <PageTitle pagePath="/education" pageTitles={randomPageTitles} />
-      <div className="grid animate-rise grid-cols-1 gap-4 [animation-delay:0.5s] xl:grid-cols-2">
-        <div className="rounded-xl bg-surface-2 p-4">
+      <PageGrid>
+        <PagePanel>
           <Certificates />
-        </div>
-        <div className="rounded-xl bg-surface-2 p-4">
+        </PagePanel>
+        <PagePanel>
           <Education educationList={educationList} />
-        </div>
-      </div>
+        </PagePanel>
+      </PageGrid>
     </>
   );
 }

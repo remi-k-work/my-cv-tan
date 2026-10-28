@@ -7,9 +7,11 @@ import { contactHead } from "@/features/meta/domain/heads";
 import { headLanguage } from "@/features/meta/domain/language";
 
 // components
-import { PageTitle } from "@/ui/page-title";
 import { ContactForm } from "@/features/contact-me/ui/contact-form";
 import { ContactMap } from "@/features/contact-me/ui/contact-map";
+import { PageGrid } from "@/ui/page-grid";
+import { PagePanel } from "@/ui/page-panel";
+import { PageTitle } from "@/ui/page-title";
 
 export const Route = createFileRoute("/contact")({
   loader: () => loaderContact(),
@@ -26,14 +28,14 @@ function ContactPage() {
   return (
     <>
       <PageTitle pagePath="/contact" pageTitles={randomPageTitles} />
-      <div className="grid animate-rise auto-rows-fr grid-cols-1 gap-4 [animation-delay:0.5s] xl:grid-cols-2">
-        <div className="rounded-xl bg-surface-2 p-4">
+      <PageGrid className="auto-rows-fr">
+        <PagePanel>
           <ContactForm />
-        </div>
-        <div className="rounded-xl bg-surface-2 p-4">
+        </PagePanel>
+        <PagePanel>
           <ContactMap />
-        </div>
-      </div>
+        </PagePanel>
+      </PageGrid>
     </>
   );
 }

@@ -1,3 +1,6 @@
+// tanstack
+import { useLocation } from "@tanstack/react-router";
+
 // services, features, and other libraries
 import { cn } from "@/lib/utils";
 import { useGT, useLocale } from "gt-tanstack-start";
@@ -14,6 +17,13 @@ import { NAV_ITEMS } from "./constants";
 export function Header() {
   const gt = useGT();
   const locale = useLocale();
+  const { pathname } = useLocation();
+
+  // Icons are hoisted to module scope (constants.tsx) and React keys are stable (href), so
+  // NavItems don't remount on re-render; NavItem isn't React.memo, so it re-renders whenever
+  // Header re-renders regardless — a useMemo here wouldn't prevent that, only avoid object
+  // allocation; inlining keeps the component simple without changing behavior
+  const navItems = NAV_ITEMS(cvPdfHref(preferredLanguageFromLocale(locale)), gt);
 
   return (
     <header
@@ -35,9 +45,9 @@ export function Header() {
             "lg:h-28 lg:grid-flow-col lg:grid-cols-none"
           )}
         >
-          {NAV_ITEMS(cvPdfHref(preferredLanguageFromLocale(locale)), gt).map((navItem, index) => (
+          {navItems.map((navItem, index) => (
             <li key={navItem.href} className="contents">
-              <NavItem {...navItem} index={index} />
+              <NavItem {...navItem} index={index} isActive={navItem.href === pathname} />
             </li>
           ))}
           <li className="contents">

@@ -1,5 +1,9 @@
+// oxlint-disable react/set-state-in-effect — reading window/matchMedia after mount to decide whether to attach
+// pointer handlers; this can only run after mount (it's unavailable during SSR), so the one-off setState in this
+// mount effect is intentional and matches the mount gate in features/typewriter/ui/typewriter.tsx
+
 // react
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 // services, features, and other libraries
 import { useMotionTemplate, useMotionValue, useSpring, useTransform } from "motion/react";
@@ -38,8 +42,14 @@ export function useTilt() {
   const glareImage = useMotionTemplate`radial-gradient(circle at ${glareX} ${glareY}, color-mix(in oklab, var(--accent) 45%, transparent), transparent 65%)`;
   const glareOpacity = useSpring(0, SPRINGS.gentle);
 
-  // Whether the pointer is precise enough for tilt; false during SSR, where there is nothing to tilt anyway
-  const [isFinePointer] = useState(() => typeof window !== "undefined" && window.matchMedia(FINE_POINTER_QUERY).matches);
+  // Whether the pointer is precise enough for tilt; it starts false so the SSR/hydration render emits no
+  // pointer handlers (matching the server markup); the real value is read after mount: reading it during the
+  // initial render would freeze the SSR value (false) forever, so tilt would never work on the client
+  const [isFinePointer, setIsFinePointer] = useState(false);
+
+  useEffect(() => {
+    setIsFinePointer(typeof window !== "undefined" && window.matchMedia(FINE_POINTER_QUERY).matches);
+  }, []);
 
   function handlePointerMove(ev: PointerEvent<HTMLElement>) {
     // A held button means the pointer is dragging the carousel; the tilt must not fight it

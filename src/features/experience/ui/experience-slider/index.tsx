@@ -19,6 +19,31 @@ interface ExperienceSliderProps {
   experienceList: ExperienceList;
 }
 
+// Declared at module scope (not nested inside ExperienceSlider) so that re-rendering the slider
+// never recreates this component's type and forces its subtree to remount — which would reset the
+// carousel navigation state and re-subscribe to Embla events; the same module-scope rule is applied
+// to the route pages in src/routes/{-$slug}.tsx for the same reason; see also the comment on
+// useEmblaSelect: the controls exist so scrolling re-renders only them, not the slide viewport
+function SliderControls({ emblaApi, frameLayoutId }: { emblaApi: EmblaCarouselType | undefined; frameLayoutId: string }) {
+  const { selectedIndex, snapCount, canScrollPrev, canScrollNext } = useEmblaSelect(emblaApi);
+
+  return (
+    <>
+      <div className="flex items-center gap-4 [grid-area:prevnext]">
+        <Prev disabled={!canScrollPrev} onPrev={() => emblaApi?.scrollPrev()} />
+        <Next disabled={!canScrollNext} onNext={() => emblaApi?.scrollNext()} />
+      </div>
+      <ul className="flex flex-wrap items-center justify-end gap-1 [grid-area:dots]">
+        {Array.from({ length: snapCount }, (_, index) => (
+          <li key={index}>
+            <Dot index={index} selected={index === selectedIndex} onSelect={() => emblaApi?.scrollTo(index)} frameLayoutId={frameLayoutId} />
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
 export function ExperienceSlider({ experienceList }: ExperienceSliderProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel();
 
@@ -38,26 +63,5 @@ export function ExperienceSlider({ experienceList }: ExperienceSliderProps) {
       </div>
       <SliderControls emblaApi={emblaApi} frameLayoutId={frameLayoutId} />
     </div>
-  );
-}
-
-// Owns the carousel navigation state, so scrolling re-renders only the controls, not every slide
-function SliderControls({ emblaApi, frameLayoutId }: { emblaApi: EmblaCarouselType | undefined; frameLayoutId: string }) {
-  const { selectedIndex, snapCount, canScrollPrev, canScrollNext } = useEmblaSelect(emblaApi);
-
-  return (
-    <>
-      <div className="flex items-center gap-4 [grid-area:prevnext]">
-        <Prev disabled={!canScrollPrev} onPrev={() => emblaApi?.scrollPrev()} />
-        <Next disabled={!canScrollNext} onNext={() => emblaApi?.scrollNext()} />
-      </div>
-      <ul className="flex flex-wrap items-center justify-end gap-1 [grid-area:dots]">
-        {Array.from({ length: snapCount }, (_, index) => (
-          <li key={index}>
-            <Dot index={index} selected={index === selectedIndex} onSelect={() => emblaApi?.scrollTo(index)} frameLayoutId={frameLayoutId} />
-          </li>
-        ))}
-      </ul>
-    </>
   );
 }

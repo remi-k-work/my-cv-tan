@@ -1,13 +1,9 @@
-// react
-import { useId } from "react";
-
 // services, features, and other libraries
-import { Option } from "effect";
 import { FormReact } from "@lucas-barake/effect-form-react";
 
 // components
 import { Input } from "@base-ui/react";
-import { ErrorLine } from "@/ui/form/error-line";
+import { LabeledField } from "./field";
 
 // types
 import type { ComponentPropsWithoutRef } from "react";
@@ -16,34 +12,7 @@ interface TextInputProps extends ComponentPropsWithoutRef<typeof Input> {
   label: string;
 }
 
-export const TextInput: FormReact.FieldComponent<string, TextInputProps> = ({ field, props }) => {
-  // Get the field context
-  const { path, value, onChange, onBlur, error } = field;
-  const { label, ...rest } = props;
-
-  // Generate a unique id
-  const baseId = useId();
-  const inputId = `${baseId}-input`;
-  const errorId = `${baseId}-error`;
-  const hasError = Option.isSome(error);
-
-  return (
-    <>
-      <label className="label" htmlFor={inputId}>
-        {label}
-      </label>
-      <Input
-        className="input"
-        id={inputId}
-        name={path}
-        value={value}
-        onChange={(ev) => onChange(ev.target.value)}
-        onBlur={onBlur}
-        aria-invalid={hasError || undefined}
-        aria-describedby={hasError ? errorId : undefined}
-        {...rest}
-      />
-      <ErrorLine id={errorId} message={Option.getOrUndefined(error)} />
-    </>
-  );
-};
+// A labeled text input backed by the form field
+export const TextInput: FormReact.FieldComponent<string, TextInputProps> = ({ field, props }) => (
+  <LabeledField field={field} props={props} element={Input} fieldClassName="input" />
+);
