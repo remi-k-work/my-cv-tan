@@ -1,4 +1,8 @@
+// tanstack
+import { Link } from "@tanstack/react-router";
+
 // services, features, and other libraries
+import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 import { excerpt } from "@/features/experience/domain/helpers";
 import { useTilt } from "@/features/experience/hooks/use-tilt";
@@ -14,14 +18,16 @@ interface SlideProps {
   experience: Experience;
 }
 
-export function Slide({ experience, experience: { txt } }: SlideProps) {
+export function Slide({ experience, experience: { slug, txt } }: SlideProps) {
   const { style, handlers, glareStyle } = useTilt();
 
   return (
     <motion.article className="@container relative rounded-xl bg-surface-1 p-3 select-none" style={style} {...handlers}>
       <SlideHeader experience={experience} />
       <ScreenShots experience={experience} />
-      <p className="mx-auto mt-3 text-justify text-sm">{excerpt(txt, 240)}</p>
+      <Link className={cn("mx-auto mt-3 block text-center", "hover:text-accent")} to="/{-$slug}" params={{ slug }}>
+        {excerpt(txt, 240)}
+      </Link>
       <motion.div className="pointer-events-none absolute inset-0 rounded-xl" style={glareStyle} aria-hidden="true" />
     </motion.article>
   );

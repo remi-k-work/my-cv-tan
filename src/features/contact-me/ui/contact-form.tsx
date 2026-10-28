@@ -4,7 +4,6 @@ import { useGT } from "gt-tanstack-start";
 import { useContactForm } from "@/features/contact-me/hooks/use-contact-form";
 
 // components
-import { ContactField } from "./contact-field";
 import { ContactFormFields } from "./contact-form-fields";
 import { SubmitStatus } from "./submit-status";
 import { FormSubmit } from "./form-submit";
@@ -24,12 +23,8 @@ export function ContactForm() {
         onSubmit={handleSubmitted}
       >
         <ContactFormFields form={form} />
-        <ContactField>
-          <SubmitStatus submit={form.submit} />
-        </ContactField>
-        <ContactField>
-          <FormSubmit form={form} />
-        </ContactField>
+        <SubmitStatus submit={form.submit} />
+        <FormSubmit form={form} />
       </form>
     </form.Initialize>
   );
