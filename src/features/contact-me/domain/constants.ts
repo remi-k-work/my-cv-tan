@@ -1,7 +1,7 @@
 // Shared feedback messages for contact-form submission, used both by the inline
 // status line (SubmitStatus) and the toast notification (useSubmitToast); keeping
 // them in one place prevents the two UI layers from drifting out of sync
-export function SUBMIT_FEEDBACK_MESSAGES(gt: (message: string) => string) {
+export function makeSubmitFeedbackMessages(gt: (message: string) => string) {
   return {
     SUCCESS_TITLE: gt("Success!"),
     SUCCESS_DESCRIPTION: gt("Your message has been sent."),

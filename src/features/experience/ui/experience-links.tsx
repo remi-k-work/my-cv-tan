@@ -1,7 +1,5 @@
-// react
-import type { ElementType } from "react";
-
 // services, features, and other libraries
+import { Array, Option, pipe } from "effect";
 import { useGT } from "gt-tanstack-start";
 
 // components
@@ -13,6 +11,7 @@ import VideoCameraIcon from "@heroicons/react/24/solid/VideoCameraIcon";
 import { GitHubIcon } from "@/assets/icons/github";
 
 // types
+import type { ElementType } from "react";
 import type { Experience } from "@/features/experience/domain/models";
 
 interface ExperienceLinksProps {
@@ -27,9 +26,10 @@ interface ExperienceLink {
 }
 
 // External links for an experience, rendered only for the links that exist
-// Links are filtered before their icon elements are created, so a link without a URL
-// never renders (and discards) an icon; keeping the icon components out of the filtered
-// array also avoids rebuilding discarded elements on every render
+// Each candidate link is an Option, so discarding the absent ones is type-safe rather than
+// a hand-written type guard; links are filtered before their icon elements are created, so
+// a link without a URL never renders (and discards) an icon, and the icon components stay
+// out of the filtered array rather than being rebuilt on every render
 export function ExperienceLinks({ experience, iconClassName }: ExperienceLinksProps) {
   const gt = useGT();
 
@@ -38,13 +38,13 @@ export function ExperienceLinks({ experience, iconClassName }: ExperienceLinksPr
   // Repeated chips ("Live Link", "GitHub Repo") are told apart by the experience they belong to
   const context = `${role}, ${company}`;
 
-  const links: ReadonlyArray<{ href: string | undefined; title: string; icon: ElementType }> = [
-    { href: liveLink, title: gt("Live Link"), icon: GlobeAltIcon },
-    { href: gitHubLink, title: gt("GitHub Repo"), icon: GitHubIcon },
-    { href: videoLink, title: gt("Watch Video"), icon: VideoCameraIcon },
-  ];
+  const link = (href: string | undefined, title: string, icon: ElementType): Option.Option<ExperienceLink> =>
+    Option.map(Option.fromNullishOr(href), (href) => ({ href, title, icon }));
 
-  const existingLinks = links.filter((link): link is ExperienceLink => link.href !== undefined);
+  const existingLinks = pipe(
+    [link(liveLink, gt("Live Link"), GlobeAltIcon), link(gitHubLink, gt("GitHub Repo"), GitHubIcon), link(videoLink, gt("Watch Video"), VideoCameraIcon)],
+    Array.getSomes
+  );
 
   return (
     <ul className="contents">

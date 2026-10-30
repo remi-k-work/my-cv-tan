@@ -2,7 +2,6 @@
 import { Array, Context, Effect, Layer, Option, Random, Schema } from "effect";
 import { ExperienceList } from "@/features/experience/domain/models";
 import { EducationList } from "@/features/education/domain/models";
-import { matchPreferredLanguage } from "@/domain/helpers";
 import { PageTitlesList } from "@/domain/models";
 import { requestPreferredLanguage } from "@/features/data/domain/helpers";
 
@@ -18,37 +17,47 @@ import educationPl from "@/assets/data/pl/education.json";
 import type { PreferredLanguage } from "@/domain/models";
 import type { Experience } from "@/features/experience/domain/models";
 
-const pageTitlesEnData = Schema.decodeOption(PageTitlesList)(pageTitlesEn);
-const pageTitlesPlData = Schema.decodeOption(PageTitlesList)(pageTitlesPl);
-const experienceEnData = Schema.decodeUnknownOption(ExperienceList)(experienceEn);
-const experiencePlData = Schema.decodeUnknownOption(ExperienceList)(experiencePl);
-const educationEnData = Schema.decodeOption(EducationList)(educationEn);
-const educationPlData = Schema.decodeOption(EducationList)(educationPl);
+// A decoded JSON asset in both supported languages; keeping the variants in one value means a
+// call site selects the bundle, never an (en, pl) pair, so the two languages can't be swapped
+type LocalizedAsset<A> = Record<PreferredLanguage, Option.Option<A>>;
 
 export class Data extends Context.Service<Data>()("Data", {
   make: Effect.sync(() => {
-    const localized = <A>(preferredLanguage: Option.Option<PreferredLanguage>, en: Option.Option<A>, pl: Option.Option<A>) =>
-      matchPreferredLanguage(requestPreferredLanguage(preferredLanguage), en, pl);
+    // Decode localized JSON assets once at service construction; decoding to Option turns
+    // malformed assets into None (treated as missing data downstream) instead of failing
+    // the layer; `decodeOption` keeps compile-time checking where the imported JSON already
+    // matches the schema's encoded type; the experience assets mix "e" and "p" entries, which
+    // widen to `string` on import, so they need the untyped decoder
+    const pageTitlesAsset = {
+      en: Schema.decodeOption(PageTitlesList)(pageTitlesEn),
+      pl: Schema.decodeOption(PageTitlesList)(pageTitlesPl),
+    };
+    const experienceAsset = {
+      en: Schema.decodeUnknownOption(ExperienceList)(experienceEn),
+      pl: Schema.decodeUnknownOption(ExperienceList)(experiencePl),
+    };
+    const educationAsset = {
+      en: Schema.decodeOption(EducationList)(educationEn),
+      pl: Schema.decodeOption(EducationList)(educationPl),
+    };
+
+    const localized = <A>(preferredLanguage: Option.Option<PreferredLanguage>, asset: LocalizedAsset<A>) => asset[requestPreferredLanguage(preferredLanguage)];
 
     const randomPageTitles = (preferredLanguage: Option.Option<PreferredLanguage>) =>
-      Option.match(localized(preferredLanguage, pageTitlesEnData, pageTitlesPlData), {
+      Option.match(localized(preferredLanguage, pageTitlesAsset), {
         onNone: () => Effect.succeedNone,
         onSome: (pageTitles) => Effect.option(Random.choice(pageTitles)),
       });
 
     const stablePageTitles = (preferredLanguage: Option.Option<PreferredLanguage>) =>
-      Effect.sync(() => Option.flatMap(localized(preferredLanguage, pageTitlesEnData, pageTitlesPlData), Array.head));
-
-    const experienceList = (preferredLanguage: Option.Option<PreferredLanguage>) =>
-      Effect.sync(() => localized(preferredLanguage, experienceEnData, experiencePlData));
-
-    const educationList = (preferredLanguage: Option.Option<PreferredLanguage>) =>
-      Effect.sync(() => localized(preferredLanguage, educationEnData, educationPlData));
+      Effect.succeed(Option.flatMap(localized(preferredLanguage, pageTitlesAsset), Array.head));
+    const experienceList = (preferredLanguage: Option.Option<PreferredLanguage>) => Effect.succeed(localized(preferredLanguage, experienceAsset));
+    const educationList = (preferredLanguage: Option.Option<PreferredLanguage>) => Effect.succeed(localized(preferredLanguage, educationAsset));
 
     const experience = (slug: Experience["slug"], preferredLanguage: Option.Option<PreferredLanguage>) =>
-      Effect.sync(() =>
+      Effect.succeed(
         Option.flatMap(
-          localized(preferredLanguage, experienceEnData, experiencePlData),
+          localized(preferredLanguage, experienceAsset),
           Array.findFirst((exp) => exp.slug === slug)
         )
       );

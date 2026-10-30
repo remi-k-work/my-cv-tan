@@ -36,5 +36,10 @@ export const chunkTextByWords = (text: string, maxLength: number) => {
   return String.isEmpty(current) ? chunks : Array.append(chunks, current);
 };
 
+// Length of a text in user-visible characters (Unicode code points); typing emits one frame
+// per code point, so delete counts must be measured in the same unit to stay aligned; using
+// `String.length` would split surrogate pairs and delete past the intended word
+export const charCount = (text: string) => Array.length(Array.fromIterable(text));
+
 // A random lowercase letter used for insertion typos
 export const randomLetter = Effect.map(Random.nextIntBetween(0, String.length(LOWERCASE_LETTERS) - 1), (index) => LOWERCASE_LETTERS[index]);

@@ -4,12 +4,16 @@ import { RpcData } from "./requests";
 import { Data } from "@/features/data/services/data";
 import { makeRpcHandler } from "@/domain/helpers";
 
-const RpcDataLayer = RpcData.toLayer({
-  randomPageTitles: () => Effect.flatMap(Data, (data) => data.randomPageTitles(Option.none())),
-  stablePageTitles: () => Effect.flatMap(Data, (data) => data.stablePageTitles(Option.none())),
-  experienceList: () => Effect.flatMap(Data, (data) => data.experienceList(Option.none())),
-  educationList: () => Effect.flatMap(Data, (data) => data.educationList(Option.none())),
-  experience: ({ slug }) => Effect.flatMap(Data, (data) => data.experience(slug, Option.none())),
-}).pipe(Layer.provide(Data.layer));
+// Every handler resolves its language from the request (see requestPreferredLanguage), so the
+// service is acquired once and each handler only picks a method off it
+const RpcDataLayer = RpcData.toLayer(
+  Effect.map(Data, (data) => ({
+    randomPageTitles: () => data.randomPageTitles(Option.none()),
+    stablePageTitles: () => data.stablePageTitles(Option.none()),
+    experienceList: () => data.experienceList(Option.none()),
+    educationList: () => data.educationList(Option.none()),
+    experience: ({ slug }) => data.experience(slug, Option.none()),
+  }))
+).pipe(Layer.provide(Data.layer));
 
 export const handler = makeRpcHandler(RpcData, "/api/rpc/data", RpcDataLayer);

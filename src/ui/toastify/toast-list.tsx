@@ -54,7 +54,7 @@ const TOAST_CONTENT_BASE = cn(
 // One toast notification: its icon, title, description, and close button, plus the
 // entrance/exit transform stack shared by every toast in the viewport; extracted from
 // ToastList so the list itself stays a simple map and each toast is a single, named unit
-function ToastItem({ toast }: { toast: ToastObject<any> }) {
+function ToastItem({ toast }: { toast: ToastObject<object> }) {
   const gt = useGT();
 
   return (

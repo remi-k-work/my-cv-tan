@@ -7,7 +7,7 @@ import { getLocale } from "gt-tanstack-start";
 import { RuntimeServer } from "@/lib/runtime-server";
 import { Data } from "@/features/data/services/data";
 import { markHtmlDataUnavailable } from "@/features/data/http/html-response";
-import { preferredLanguageFromLocale } from "@/features/data/domain/helpers";
+import { preferredLanguageFromLocale } from "@/domain/helpers";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
@@ -26,15 +26,10 @@ export const serverLoader = <A, E>(use: (source: PageData) => Effect.Effect<A, E
   const request = getRequest();
 
   return RuntimeServer.runPromise(
-    Effect.gen(function* () {
-      const data = yield* Data;
-      return yield* use(fromData(data, preferredLanguageFromLocale(getLocale())));
-    }).pipe(
+    Effect.flatMap(Data, (data) => use(fromData(data, preferredLanguageFromLocale(getLocale())))).pipe(
       Effect.tapError((error) =>
-        Effect.gen(function* () {
-          yield* Effect.logError(error);
-          markHtmlDataUnavailable(request, error);
-        })
+        // A failed dataset must also downgrade the rendered HTML response to a non-cacheable 503
+        Effect.logError(error).pipe(Effect.andThen(Effect.sync(() => markHtmlDataUnavailable(request, error))))
       )
     )
   );

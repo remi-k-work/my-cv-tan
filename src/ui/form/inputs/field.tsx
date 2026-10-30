@@ -12,18 +12,20 @@ import type { ChangeEvent, ElementType } from "react";
 
 // A shared labeled form field: label, input element, and error line
 // Parameterized by the rendered element so text inputs and textareas reuse one structure
-interface LabeledFieldProps {
+// The caller's props type is carried through instead of being cast through an untyped
+// record here, so every input keeps its own prop types end to end
+interface LabeledFieldProps<P> {
   field: { path: string; value: string; onChange: (value: string) => void; onBlur: () => void; error: Option.Option<string> };
-  props: unknown;
+  props: P & { readonly label: string };
   element: ElementType;
   fieldClassName?: string;
 }
 
 // Label + input + error line, shared by TextInput and TextAreaInput; the element and its className are passed in; everything else is identical
-export function LabeledField({ field, props, element: Element, fieldClassName }: LabeledFieldProps) {
+export function LabeledField<P extends object>({ field, props, element: Element, fieldClassName }: LabeledFieldProps<P>) {
   // Get the field context
   const { path, value, onChange, onBlur, error } = field;
-  const { label, ...rest } = props as { label: string; [key: string]: unknown };
+  const { label, ...rest } = props;
 
   // Generate a unique id
   const baseId = useId();

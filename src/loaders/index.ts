@@ -3,10 +3,11 @@ import { createIsomorphicFn } from "@tanstack/react-start";
 import { notFound } from "@tanstack/react-router";
 
 // services, features, and other libraries
-import { Array, Effect, Option } from "effect";
+import { Effect, Option } from "effect";
 import { clientLoader } from "./shared";
 import { serverLoader } from "./shared.server";
 import { requireData } from "@/features/data/domain/required";
+import { experienceFromList } from "@/features/experience/domain/helpers";
 
 // types
 import type { PageData } from "./page-data";
@@ -26,7 +27,7 @@ const load = <E>(source: PageData<E>, slug: Option.Option<string>) =>
 
       const requiredRandomPageTitles = yield* requireData(randomPageTitles, "random page titles");
       const experiences = yield* requireData(experienceList, "experience list");
-      const experience = Array.findFirst(experiences, (entry) => entry.slug === slug.value);
+      const experience = experienceFromList(experiences, slug.value);
 
       // Defect by design so TanStack's notFound() bypasses the loader's typed-error handling
       if (Option.isNone(experience)) return yield* Effect.die(notFound());

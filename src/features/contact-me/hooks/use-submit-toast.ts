@@ -9,14 +9,14 @@ import { toastManager } from "@/ui/toastify";
 import type { ContactForm } from "@/features/contact-me/domain/forms";
 
 // constants
-import { SUBMIT_FEEDBACK_MESSAGES } from "@/features/contact-me/domain/constants";
+import { makeSubmitFeedbackMessages } from "@/features/contact-me/domain/constants";
 
 // Provide feedback to the user regarding this form actions
 export function useSubmitToast(submit: ContactForm["submit"]) {
   const gt = useGT();
 
   const { SUCCESS_TITLE, SUCCESS_DESCRIPTION, MISSING_FIELDS_TITLE, MISSING_FIELDS_DESCRIPTION, SERVER_ERROR_TITLE, SERVER_ERROR_DESCRIPTION } =
-    SUBMIT_FEEDBACK_MESSAGES(gt);
+    makeSubmitFeedbackMessages(gt);
 
   const toastServerError = () => toastManager.add({ type: "error", title: SERVER_ERROR_TITLE, description: SERVER_ERROR_DESCRIPTION });
 

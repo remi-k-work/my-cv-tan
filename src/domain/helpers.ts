@@ -48,6 +48,13 @@ export const routeHandler =
 
 export const matchPreferredLanguage = <T>(preferredLanguage: PreferredLanguage, en: T, pl: T): T => (preferredLanguage === "en" ? en : pl);
 
+// Normalizes any locale string a caller can hand us (GT's resolved locale, a header value,
+// a typed route locale) onto the site's supported languages: only an exact "pl" keeps
+// Polish, everything else — including "en-US", an empty string, or an unknown locale — is
+// English; every surface resolves the language through this one function so the site never
+// branches on locale in more than one place
+export const preferredLanguageFromLocale = (locale: string): PreferredLanguage => (locale === "pl" ? "pl" : "en");
+
 // Localized page title/intro with a static fallback when loader data is missing or partial
 export const pageField = (pageTitles: PageTitles | null, pagePath: PagePath, key: "heading" | "intro", fallback: string) =>
   pipe(

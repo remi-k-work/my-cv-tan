@@ -10,7 +10,8 @@ import { Data } from "@/features/data/services/data";
 import { absoluteUrl, experienceMarkdownPath, experiencePath } from "@/features/meta/domain/url";
 import { discoveryTxtResponse } from "@/features/meta/domain/response";
 import { buildContactMd, buildEducationMd, buildHomeMd } from "@/features/markdown/domain/pages";
-import { buildExperienceMd, buildNotFoundMd, experienceFromList } from "@/features/markdown/domain/experience";
+import { experienceFromList } from "@/features/experience/domain/helpers";
+import { buildExperienceMd, buildNotFoundMd } from "@/features/markdown/domain/experience";
 import { buildLlmsFullTxt, buildLlmsTxt } from "@/features/markdown/domain/site-index";
 import { markdownDataResponse, mdNotFoundResponse, mdResponse, textDataResponse, unavailableIndexBody } from "@/features/markdown/domain/response";
 import { parseLangParam, slugFromMdPathname } from "@/features/markdown/domain/request";
@@ -60,7 +61,9 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
         return Option.isSome(langOverride) ? pinCacheVariant(response) : response;
       });
 
-    // Home and education share one pipeline shape: fetches page titles and collection data concurrently
+    // Home and education share one pipeline shape: fetches page titles and collection data together
+    // Both lookups read already-decoded in-memory assets, so they resolve synchronously and the
+    // default sequential Effect.all avoids forking fibers to run them
     const staticDocument = <List>(
       path: string,
       markdownPath: string,
@@ -68,7 +71,7 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
       build: (titles: PageTitles, list: List, lang: PreferredLanguage, translate: Translate) => string
     ) =>
       document((_request, lang, translate) =>
-        Effect.map(Effect.all([pageTitles(lang), fetchList(lang)], { concurrency: 2 }), ([titles, list]) =>
+        Effect.map(Effect.all([pageTitles(lang), fetchList(lang)]), ([titles, list]) =>
           mdResponse(build(titles, list, lang, translate), lang, absoluteUrl(path), absoluteUrl(markdownPath))
         )
       );
@@ -129,10 +132,13 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
       "[LLMS-FULL.TXT]",
       "llms-full.txt",
       Effect.gen(function* () {
-        const [titles, experienceList, educationList] = yield* Effect.all(
-          [pageTitles(DEFAULT_LANGUAGE), experiences(DEFAULT_LANGUAGE), schools(DEFAULT_LANGUAGE)],
-          { concurrency: "unbounded" }
-        );
+        // The three datasets are synchronous in-memory lookups, so the plain
+        // (sequential) Effect.all runs them without forking fibers
+        const [titles, experienceList, educationList] = yield* Effect.all([
+          pageTitles(DEFAULT_LANGUAGE),
+          experiences(DEFAULT_LANGUAGE),
+          schools(DEFAULT_LANGUAGE),
+        ]);
         return buildLlmsFullTxt({ pageTitles: titles, experienceList, educationList });
       })
     );

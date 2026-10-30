@@ -1,7 +1,7 @@
 // services, features, and other libraries
-import { Array, Option, pipe, Record, Schema, String } from "effect";
+import { Array, Option, pipe, Record, String } from "effect";
 import { msg } from "gt-tanstack-start";
-import { encodeParens } from "@/features/meta/domain/url";
+import { decodeUrlOption, encodeParens } from "@/features/meta/domain/url";
 
 // types
 import type { Translate } from "@/domain/models";
@@ -36,7 +36,7 @@ const yamlValue = (value: string) => JSON.stringify(value);
 // Content bundles may contain stale or malformed URLs; only publish links with web protocols
 export const mdExternalLink = (label: string, href: string) =>
   pipe(
-    Schema.decodeOption(Schema.URLFromString)(href),
+    decodeUrlOption(href),
     Option.filter((url) => url.protocol === "http:" || url.protocol === "https:"),
     Option.map((url) => {
       // Bare Markdown destinations use percent-encoded parentheses to stay unambiguous

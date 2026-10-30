@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Array, Option, pipe, Result } from "effect";
+import { Array, Option, pipe } from "effect";
 import { msg } from "gt-tanstack-start";
 import { matchPreferredLanguage } from "@/domain/helpers";
 import { experienceHeadline, excerpt } from "@/features/experience/domain/helpers";
@@ -19,16 +19,11 @@ import {
 } from "./helpers";
 
 // types
-import type { ExperienceList } from "@/features/experience/domain/models";
 import type { BuildNotFoundMdInput, ExperienceLinesInput, ExperienceMdInput } from "./models";
 
 // constants
 import { HOME_MD_HREF, LLMS_TXT_HREF, META_DESCRIPTION_LENGTH, BRANDED_TITLE, DEFAULT_LANGUAGE, SITE_NAME } from "@/features/meta/domain/constants";
 import { LIST_EXCERPT_LENGTH } from "./constants";
-
-// Locate one experience by slug inside a decoded list (None = clean 404 candidate);
-// a failed decode stays an error in the caller via requireData
-export const experienceFromList = (experienceList: ExperienceList, slug: string) => Array.findFirst(experienceList, (experience) => experience.slug === slug);
 
 // Optional link bullet: an absent href or a non-web URL (rejected by mdExternalLink) drops the line
 const optionalBulletLink = (label: string, href: string | undefined) =>
@@ -43,13 +38,11 @@ export const experienceLines = ({ experienceList, type, translate = translateSou
   pipe(
     experienceList,
     // Filter and format in one pass: only this experience type contributes a line
-    Array.filterMap((experience) =>
-      experience.type === type
-        ? // One line per experience in AI indexes: label links the .md twin, excerpt carries the substance
-          Result.succeed(
-            `- [${escapeMdInline(experienceHeadline(experience, preferredLanguage))}](${experienceMarkdownHref(experience.slug)}) — ${escapeMdInline(excerpt(experience.txt, LIST_EXCERPT_LENGTH))} (${escapeMdInline(experience.year)})`
-          )
-        : Result.failVoid
+    Array.filter((experience) => experience.type === type),
+    Array.map(
+      (experience) =>
+        // One line per experience in AI indexes: label links the .md twin, excerpt carries the substance
+        `- [${escapeMdInline(experienceHeadline(experience, preferredLanguage))}](${experienceMarkdownHref(experience.slug)}) — ${escapeMdInline(excerpt(experience.txt, LIST_EXCERPT_LENGTH))} (${escapeMdInline(experience.year)})`
     ),
     Array.join("\n"),
     (lines) => (lines === "" ? mdEmptyMarker(translate) : lines)

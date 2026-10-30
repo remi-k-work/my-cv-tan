@@ -36,6 +36,26 @@ it.effect("deletes characters frame by frame", () =>
   }).pipe(Effect.provide(Typewriter.layer))
 );
 
+it.effect("emits no deletion frames when the visible text is already empty", () =>
+  Effect.gen(function* () {
+    // Array.makeBy always returns at least one element, so deleting from an empty text must
+    // be skipped rather than emitting a frame for a character that is not there
+    const frames = yield* collectFrames([DeleteChars({ count: 4 })]);
+
+    assert.deepStrictEqual(Array.from(frames), []);
+  }).pipe(Effect.provide(Typewriter.layer))
+);
+
+it.effect("deletes astral characters whole instead of leaving lone surrogates", () =>
+  Effect.gen(function* () {
+    // Typing splits by code point; deletion must use the same unit, so the emoji is removed in
+    // one frame rather than the UTF-16 halves being sliced apart into invalid text
+    const frames = yield* collectFrames([TypeChars({ text: "a😀 " }), DeleteChars({ count: 3 })]);
+
+    assert.deepStrictEqual(Array.from(frames), ["a", "a😀", "a😀 ", "a😀", "a", ""]);
+  }).pipe(Effect.provide(Typewriter.layer))
+);
+
 it.effect("always finishes on the exact full text", () =>
   Effect.gen(function* () {
     const { plan } = yield* Typewriter;

@@ -1,5 +1,4 @@
 // services, features, and other libraries
-import { matchPreferredLanguage } from "@/domain/helpers";
 import { absoluteUrl } from "./url";
 
 // types
@@ -12,7 +11,9 @@ import { GLOBAL_SOCIAL_IMAGE, OPEN_GRAPH_LOCALES, SITE_NAME } from "./constants"
 // Twitter requires JPEG/PNG (rejecting WebP on cards), so twitterImage falls back to global JPEG banner
 export const socialMeta = ({ title, description, path, image, preferredLanguage, twitterImage }: SocialMetaInput) => {
   const twitter = twitterImage ?? GLOBAL_SOCIAL_IMAGE;
-  const localeAlternate = matchPreferredLanguage(preferredLanguage, OPEN_GRAPH_LOCALES.pl, OPEN_GRAPH_LOCALES.en);
+  // The alternate locale is the one the page is not in; deriving it by name keeps the
+  // record lookup readable instead of swapping the (en, pl) arguments
+  const alternateLocale = preferredLanguage === "en" ? OPEN_GRAPH_LOCALES.pl : OPEN_GRAPH_LOCALES.en;
 
   return [
     { property: "og:title", content: title },
@@ -26,7 +27,7 @@ export const socialMeta = ({ title, description, path, image, preferredLanguage,
     { property: "og:url", content: absoluteUrl(path) },
     { property: "og:site_name", content: SITE_NAME },
     { property: "og:locale", content: OPEN_GRAPH_LOCALES[preferredLanguage] },
-    { property: "og:locale:alternate", content: localeAlternate },
+    { property: "og:locale:alternate", content: alternateLocale },
     { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:title", content: title },
     { name: "twitter:description", content: description },

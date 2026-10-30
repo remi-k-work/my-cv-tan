@@ -16,7 +16,7 @@ export class Send extends Context.Service<Send>()("Send", {
     const client = (yield* HttpClient.HttpClient).pipe(
       HttpClient.mapRequest(flow(HttpClientRequest.prependUrl("https://api.emailjs.com/api/v1.0"), HttpClientRequest.acceptJson)),
       HttpClient.filterStatusOk,
-      HttpClient.retryTransient({ retryOn: "errors-only", schedule: Schedule.exponential(100), times: 3 })
+      HttpClient.retryTransient({ retryOn: "errors-only", schedule: Schedule.exponential("100 millis"), times: 3 })
     );
 
     // Send the contact form with validated data
@@ -24,7 +24,7 @@ export class Send extends Context.Service<Send>()("Send", {
       // schemaBodyJson encodes before setting the body: constructor defaults apply and Redacted fields serialize to their plain values
       const request = yield* HttpClientRequest.post("/email/send").pipe(
         HttpClientRequest.schemaBodyJson(SendRequest)(SendRequest.make({ user_id, accessToken, template_params: { name, email, subject, message } })),
-        Effect.mapError((cause) => new SendError({ cause }))
+        Effect.mapError((error) => new SendError({ cause: error }))
       );
       yield* client.execute(request).pipe(
         // Surface upstream status + body (e.g. rate-limit details) instead of burying them in `cause`

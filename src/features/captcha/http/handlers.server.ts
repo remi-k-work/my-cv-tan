@@ -24,12 +24,20 @@ const CaptchaApiHandlers = HttpApiBuilder.group(
           // Sealing the cookie and rendering the SVG are independent, so run them together
           const [sealed, svg] = yield* Effect.all([seal(captchaString), createCaptchaSvg(captchaString)], { concurrency: "unbounded" });
           yield* HttpEffect.appendPreResponseHandler((_request, response) =>
-            HttpServerResponse.setCookie(response, CAPTCHA_COOKIE_NAME, sealed, CAPTCHA_COOKIE_OPTIONS).pipe(Effect.tapError(Effect.logError), Effect.orDie)
+            HttpServerResponse.setCookie(response, CAPTCHA_COOKIE_NAME, sealed, CAPTCHA_COOKIE_OPTIONS).pipe(
+              // A cookie failure must not break the captcha response: log it and keep the response
+              Effect.catchTag("CookiesError", (error) => Effect.logError("[CAPTCHA]: failed to set captcha cookie", error).pipe(Effect.as(response)))
+            )
           );
           return HttpApiSchema.withHeaders({ body: svg, headers: { "Cache-Control": "private, no-store" as const } });
         },
-        Effect.tapError(Effect.logError),
-        Effect.orDie
+        // Sealing failures are a real error condition (bad seal, missing entropy), not a reason to
+        // kill the connection: log with context and answer with a 500 instead of terminating abruptly
+        Effect.catchTag("CaptchaError", (error) =>
+          Effect.logError("[CAPTCHA]: captcha sealing failed", error).pipe(
+            Effect.as(HttpServerResponse.text("Captcha temporarily unavailable", { status: 500 }))
+          )
+        )
       )
     );
   })

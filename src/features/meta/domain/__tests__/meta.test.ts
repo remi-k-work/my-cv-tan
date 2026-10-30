@@ -1,9 +1,9 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-import { Option } from "effect";
+import { Option, Schema, pipe } from "effect";
 import { contactHead, educationHead, experienceHead, homeHead } from "../heads";
 import { ROOT_HEAD } from "../root";
-import { canonicalLink } from "../url";
+import { canonicalLink, withLanguageParam } from "../url";
 import { STATIC_PAGES } from "../static-pages";
 import { buildSitemapXml } from "../sitemap";
 import { sitemapResponse, sitemapUnavailableResponse } from "../response";
@@ -12,12 +12,42 @@ import { languageFromMatches } from "../language";
 
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW, PERSON_DESCRIPTION, SITE_DESCRIPTION } from "../constants";
 
-// Minimal JSON-LD graph readers for structured-data assertions
-const graphOf = (children: string | undefined) => (JSON.parse(children ?? "{}") as { "@graph"?: Array<Record<string, unknown>> })["@graph"] ?? [];
-const nodeOf = (graph: ReadonlyArray<Record<string, unknown>>, type: string) => graph.find((node) => node["@type"] === type);
-const listItems = (node: Record<string, unknown> | undefined) => (node as { itemListElement?: Array<Record<string, unknown>> } | undefined)?.itemListElement;
+// Minimal JSON-LD graph readers for structured-data assertions.
+//
+// Every page emits `jsonLdScript`, so the payload is already a JSON string by the time it
+// reaches here. Rather than asserting its shape with casts, the document is decoded with
+// Schema: structured data that fails to parse becomes an empty graph, which makes the
+// following assertions fail loudly instead of quietly reading `undefined` off a cast.
+//
+// A node is an open record (any schema.org property) because the assertions below probe
+// arbitrary fields; the two containers are the only shapes the readers index into.
+const JsonLdNode = Schema.Record(Schema.String, Schema.Unknown);
+type JsonLdNode = typeof JsonLdNode.Type;
+const JsonLdReferenceList = Schema.Array(JsonLdNode);
+const decodeReferenceList = Schema.decodeUnknownOption(JsonLdReferenceList);
+// `fromJsonString` parses the JSON string and validates the document in one step, so malformed
+// or non-conforming payloads decode to `None` instead of throwing out of a raw `JSON.parse`
+const decodeGraph = Schema.decodeUnknownOption(Schema.fromJsonString(Schema.Struct({ "@graph": JsonLdReferenceList })));
+// The escaping test reads one known field, so decode its type instead of casting the parsed document
+const decodeString = Schema.decodeUnknownOption(Schema.String);
+
+const graphOf = (children: string | undefined): ReadonlyArray<JsonLdNode> =>
+  pipe(
+    decodeGraph(children ?? "{}"),
+    Option.map((document) => document["@graph"]),
+    Option.getOrElse<ReadonlyArray<JsonLdNode>>(() => [])
+  );
+
+const nodeOf = (graph: ReadonlyArray<JsonLdNode>, type: string) => graph.find((node) => node["@type"] === type);
+
+// Optional ordered reference list carried by a node; validated on read so a node that lacks
+// the key, or carries something that is not a list of nodes, decodes to an empty list
+const childNodes = (node: JsonLdNode | undefined, key: string): ReadonlyArray<JsonLdNode> =>
+  pipe(Option.fromNullishOr(node), Option.flatMap((value) => decodeReferenceList(value[key])), Option.getOrElse<ReadonlyArray<JsonLdNode>>(() => []));
+
+const listItems = (node: JsonLdNode | undefined) => childNodes(node, "itemListElement");
 // Grouped page/school references carried by Collection nodes (the non-carousel replacement for ItemList)
-const collectionParts = (node: Record<string, unknown> | undefined) => (node as { hasPart?: Array<Record<string, unknown>> } | undefined)?.hasPart;
+const collectionParts = (node: JsonLdNode | undefined) => childNodes(node, "hasPart");
 
 // types
 import type { EducationList } from "@/features/education/domain/models";
@@ -290,6 +320,16 @@ it("contact structured data describes the visible ContactPage inside a breadcrum
   });
 });
 
+it("language-pinned Markdown URLs attach ?lang= and survive values the URL parser rejects", () => {
+  assert.strictEqual(withLanguageParam("https://www.remiforge.dev/index.md", "pl"), "https://www.remiforge.dev/index.md?lang=pl");
+  assert.strictEqual(withLanguageParam("https://www.remiforge.dev/index.md", "en"), "https://www.remiforge.dev/index.md?lang=en");
+  // An existing variant is replaced rather than duplicated, so each language still pins the document
+  assert.strictEqual(withLanguageParam("https://www.remiforge.dev/index.md?lang=en", "pl"), "https://www.remiforge.dev/index.md?lang=pl");
+  // A relative path is a bad canonical, not a crash: it is passed through untouched
+  assert.strictEqual(withLanguageParam("/index.md", "pl"), "/index.md");
+  assert.strictEqual(withLanguageParam("not a url", "pl"), "not a url");
+});
+
 it("sitemap omits fabricated last-modified dates and leads with the canonical homepage", () => {
   const xml = buildSitemapXml([sampleExperience]);
   assert.include(xml, "https://www.remiforge.dev/sample-role");
@@ -400,6 +440,10 @@ it("JSON-LD children escape < so content can never break out of the script tag",
   assert.notInclude(graph?.children, "</script>");
   assert.include(graph?.children, "\\u003C");
   // The escape is transparent: parsers still see the original text
-  const parsed = JSON.parse(graph?.children ?? "{}") as { "@graph": Array<{ description: string }> };
-  assert.include(parsed["@graph"][0].description, "</script>");
+  const description = pipe(
+    decodeGraph(graph?.children ?? "{}"),
+    Option.flatMap((document) => decodeString(document["@graph"][0]?.description)),
+    Option.getOrThrow
+  );
+  assert.include(description, "</script>");
 });

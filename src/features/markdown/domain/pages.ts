@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Array, pipe } from "effect";
+import { Array } from "effect";
 import { msg } from "gt-tanstack-start";
 import { escapeMd, escapeMdInline, frontmatter, mdBody, mdBulletList, mdDocument, mdEmptyMarker, mdHeading, mdQuote, mdSection } from "./helpers";
 import { experienceLines } from "./experience";
@@ -70,9 +70,8 @@ export const buildEducationMd = ({ pageTitles, educationList, preferredLanguage,
   const copy = staticPageCopy(pageTitles, "/education", preferredLanguage);
 
   // One section per school: heading, facts list, then the full prose description
-  const schools = pipe(
-    educationList,
-    Array.map(({ name, year, location, info }) =>
+  const schools = mdBody(
+    Array.map(educationList, ({ name, year, location, info }) =>
       mdSection(
         mdHeading(2, name),
         mdBody([
@@ -80,8 +79,7 @@ export const buildEducationMd = ({ pageTitles, educationList, preferredLanguage,
           escapeMd(info),
         ])
       )
-    ),
-    Array.join("\n\n")
+    )
   );
 
   return mdDocument([

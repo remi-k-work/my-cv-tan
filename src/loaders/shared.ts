@@ -10,14 +10,13 @@ import type { PageData } from "./page-data";
 // Runs a client loader against the data RPC client, logging failures before rejecting
 export const clientLoader = <A, E>(use: (source: PageData<RpcClientError.RpcClientError>) => Effect.Effect<A, E>) =>
   RuntimeClient.runPromise(
-    Effect.gen(function* () {
-      const client = yield* RpcDataClient;
+    Effect.flatMap(RpcDataClient, (client) =>
       // Effects are lazy, so the requests below are only described here, not fired
-      return yield* use({
+      use({
         randomPageTitles: client.randomPageTitles(),
         stablePageTitles: client.stablePageTitles(),
         experienceList: client.experienceList(),
         educationList: client.educationList(),
-      });
-    }).pipe(Effect.tapError(Effect.logError))
+      })
+    ).pipe(Effect.tapError(Effect.logError))
   );

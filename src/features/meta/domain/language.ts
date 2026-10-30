@@ -11,12 +11,15 @@ const RootLoaderData = Schema.Struct({
   preferredLanguage: PreferredLanguage,
 });
 
+// Built once at module scope: every page head validates the root loader payload through it
+const decodeRootLoaderData = Schema.decodeUnknownOption(RootLoaderData);
+
 // Loader data is unknown at this boundary; the schema rejects anything but "en" / "pl"
 export const languageFromMatches = (matches: ReadonlyArray<{ readonly loaderData?: unknown }>) =>
   pipe(
     Array.head(matches),
-    Option.flatMap(({ loaderData }) => Option.fromNullishOr(loaderData)),
-    Option.flatMap(Schema.decodeUnknownOption(RootLoaderData)),
+    // `decodeUnknownOption` already yields `None` for nullish input, so no separate guard is needed
+    Option.flatMap(({ loaderData }) => decodeRootLoaderData(loaderData)),
     Option.map(({ preferredLanguage }) => preferredLanguage)
   );
 

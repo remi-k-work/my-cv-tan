@@ -5,7 +5,7 @@ import { useLocation } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { useGT, useLocale } from "gt-tanstack-start";
 import { cvPdfHref } from "@/features/meta/domain/url";
-import { preferredLanguageFromLocale } from "@/features/data/domain/helpers";
+import { preferredLanguageFromLocale } from "@/domain/helpers";
 
 // components
 import { NavItem } from "./nav-item";

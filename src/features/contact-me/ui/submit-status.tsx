@@ -14,14 +14,14 @@ interface SubmitStatusProps {
 }
 
 // constants
-import { SUBMIT_FEEDBACK_MESSAGES } from "@/features/contact-me/domain/constants";
+import { makeSubmitFeedbackMessages } from "@/features/contact-me/domain/constants";
 
 export function SubmitStatus({ submit }: SubmitStatusProps) {
   const gt = useGT();
   const submitResult = useAtomValue(submit);
 
   const { SUCCESS_TITLE, SUCCESS_DESCRIPTION, MISSING_FIELDS_TITLE, MISSING_FIELDS_DESCRIPTION, SERVER_ERROR_TITLE, SERVER_ERROR_DESCRIPTION } =
-    SUBMIT_FEEDBACK_MESSAGES(gt);
+    makeSubmitFeedbackMessages(gt);
 
   // Show the permanent feedback message as well
   return AsyncResult.builder(submitResult)

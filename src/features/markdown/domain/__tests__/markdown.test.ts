@@ -8,7 +8,8 @@ import { discoveryTxtResponse, txtResponse, txtUnavailableResponse } from "@/fea
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/features/meta/domain/constants";
 import { MARKDOWN_CONTENT_TYPE } from "../constants";
 import { escapeMd, frontmatter } from "../helpers";
-import { buildExperienceMd, buildNotFoundMd, experienceFromList } from "../experience";
+import { experienceFromList } from "@/features/experience/domain/helpers";
+import { buildExperienceMd, buildNotFoundMd } from "../experience";
 import { buildContactMd, buildEducationMd, buildHomeMd } from "../pages";
 import { buildLlmsFullTxt, buildLlmsTxt } from "../site-index";
 import { markdownDataResponse, mdNotFoundResponse, mdResponse, mdUnavailableResponse, textDataResponse, unavailableMarkdownBody } from "../response";

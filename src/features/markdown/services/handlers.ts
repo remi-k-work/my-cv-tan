@@ -7,21 +7,10 @@ import { Markdown } from "./markdown";
 const routeHandler =
   (pick: (markdown: Markdown["Service"]) => (request: Request) => Effect.Effect<Response>) =>
   ({ request }: { request: Request }) =>
-    RuntimeServer.runPromise(
-      Effect.gen(function* () {
-        const markdown = yield* Markdown;
-        return yield* pick(markdown)(request);
-      })
-    );
+    RuntimeServer.runPromise(Effect.flatMap(Markdown, (markdown) => pick(markdown)(request)));
 
 // Bridges request-free static Effect endpoints to TanStack Start server handler signatures
-const staticHandler = (pick: (markdown: Markdown["Service"]) => Effect.Effect<Response>) => () =>
-  RuntimeServer.runPromise(
-    Effect.gen(function* () {
-      const markdown = yield* Markdown;
-      return yield* pick(markdown);
-    })
-  );
+const staticHandler = (pick: (markdown: Markdown["Service"]) => Effect.Effect<Response>) => () => RuntimeServer.runPromise(Effect.flatMap(Markdown, pick));
 
 // Request-aware markdown twin endpoints
 export const homeHandler = routeHandler(({ home }) => home);

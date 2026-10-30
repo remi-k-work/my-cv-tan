@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { Array, Effect, Random, String, pipe } from "effect";
-import { randomLetter } from "./helpers";
+import { charCount, randomLetter } from "./helpers";
 
 // types
 import type { TypewriterOp } from "./models";
@@ -46,33 +46,30 @@ export const planTypo = Effect.fnUntraced(function* (word: string): Effect.fn.Re
   return Array.join(result, "");
 });
 
+// Plans the script for one word: either type it straight away, or type the typo, pause, delete it, then type the correct word
+const planWord = Effect.fnUntraced(function* (word: string, typo: (word: string) => Effect.Effect<string>): Effect.fn.Return<ReadonlyArray<TypewriterOp>> {
+  const typoWord = yield* typo(word);
+  const pauseAfterWord = yield* Random.nextIntBetween(60, 100);
+
+  if (word === typoWord) return [TypeChars({ text: `${word} ` }), Pause({ millis: pauseAfterWord })];
+
+  const pauseAfterTypo = yield* Random.nextIntBetween(60, 250);
+  return [
+    TypeChars({ text: `${typoWord} ` }),
+    Pause({ millis: pauseAfterTypo }),
+    DeleteChars({ count: charCount(typoWord) + 1 }),
+    TypeChars({ text: `${word} ` }),
+    Pause({ millis: pauseAfterWord }),
+  ];
+});
+
 // Plans the full animation script for a text; type each word, and when the typo simulation alters a word, type the typo, pause, delete it
 // then type the correct word; the `typo` step is injectable so tests can force exact scenarios without depending on randomness
-export const planScript = Effect.fnUntraced(function* (
-  fullText: string,
-  typo: (word: string) => Effect.Effect<string> = planTypo
-): Effect.fn.Return<ReadonlyArray<TypewriterOp>> {
-  return yield* pipe(
+export const planScript = (fullText: string, typo: (word: string) => Effect.Effect<string> = planTypo): Effect.Effect<ReadonlyArray<TypewriterOp>> =>
+  pipe(
     fullText,
     String.split(" "),
     Array.filter(String.isNonEmpty),
-    Effect.forEach((word) =>
-      Effect.gen(function* () {
-        const typoWord = yield* typo(word);
-        const pauseAfterWord = yield* Random.nextIntBetween(60, 100);
-
-        if (word === typoWord) return [TypeChars({ text: `${word} ` }), Pause({ millis: pauseAfterWord })];
-
-        const pauseAfterTypo = yield* Random.nextIntBetween(60, 250);
-        return [
-          TypeChars({ text: `${typoWord} ` }),
-          Pause({ millis: pauseAfterTypo }),
-          DeleteChars({ count: typoWord.length + 1 }),
-          TypeChars({ text: `${word} ` }),
-          Pause({ millis: pauseAfterWord }),
-        ];
-      })
-    ),
+    Effect.forEach((word) => planWord(word, typo)),
     Effect.map(Array.flatten)
   );
-});

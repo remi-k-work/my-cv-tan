@@ -1,14 +1,15 @@
 // services, features, and other libraries
-import { Schema } from "effect";
-import { RequiredDataError } from "@/features/data/domain/required";
+import { Predicate } from "effect";
 
 // constants
 import { NOINDEX_FOLLOW, NO_STORE } from "@/features/meta/domain/constants";
 
 const unavailableHtmlRequests = new WeakSet<Request>();
 
+// Only the tag decides the outcome here, so a plain tag check is enough: a full
+// Schema.is would validate a payload none of the callers ever read
 export const markHtmlDataUnavailable = (request: Request, error: unknown) => {
-  if (Schema.is(RequiredDataError)(error)) unavailableHtmlRequests.add(request);
+  if (Predicate.isTagged("RequiredDataError")(error)) unavailableHtmlRequests.add(request);
 };
 
 export const applyHtmlDataUnavailableResponse = (request: Request, response: Response) => {
