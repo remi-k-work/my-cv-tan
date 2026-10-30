@@ -1,6 +1,8 @@
 /.repos
 /_scratchpad
 .env
+loop.ps1
+opencode.json
 
 # dependencies
 /node_modules

@@ -15,7 +15,7 @@ export function ContactAddressCard() {
   return (
     <motion.div className="absolute inset-e-4 top-4" style={style} {...handlers}>
       <div className="animate-float rounded-xl bg-surface-1/90 p-3 text-sm select-none [animation-delay:-3.5s]">
-        <img src={avatar} width={288} height={288} alt={gt("Portrait of Remi")} className="max-h-32 w-full object-cover" loading="lazy" />
+        <img src={avatar} width={288} height={288} alt={gt("Portrait of Remi")} className="aspect-square max-h-32 w-full object-cover" loading="lazy" />
         {/* The owner's contact information: exactly what the address element is for */}
         <address className="not-italic">
           <p className="mt-4">Remi</p>

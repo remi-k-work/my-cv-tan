@@ -35,7 +35,7 @@ export function ScreenShots({ experience: { role, company, imageName, liveLink, 
       {FADE_CYCLE.map(({ suffix, className }, index) => (
         <img
           key={suffix}
-          className={cn("col-span-full row-span-full animate-fade-in-out opacity-0", className)}
+          className={cn("col-span-full row-span-full aspect-video animate-fade-in-out opacity-0", className)}
           src={`/images/${imageName}-${suffix}.webp`}
           width={SCREENSHOT_WIDTH}
           height={SCREENSHOT_HEIGHT}

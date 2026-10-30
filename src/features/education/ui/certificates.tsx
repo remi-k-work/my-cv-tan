@@ -46,7 +46,7 @@ function CertificateSheet({ src, width, height, alt }: CertificateSheetProps) {
         style={style}
         {...handlers}
       >
-        <img src={src} width={width} height={height} alt={alt} loading="lazy" className="h-auto w-full" />
+        <img src={src} width={width} height={height} alt={alt} loading="lazy" className="h-auto w-full" style={{ aspectRatio: width / height }} />
         <motion.div className="pointer-events-none absolute inset-0 rounded-xl" style={glareStyle} aria-hidden="true" />
       </motion.div>
     </div>
