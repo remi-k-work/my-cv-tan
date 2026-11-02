@@ -3,8 +3,8 @@ import { createFileRoute } from "@tanstack/react-router";
 
 // services, features, and other libraries
 import { loaderContact } from "@/loaders/contact";
-import { contactHead } from "@/features/meta/domain/heads";
-import { headLanguage } from "@/features/meta/domain/language";
+import { CONTACT_PATH } from "@/features/meta/domain/static-pages";
+import { contactHead, routeHead } from "@/features/meta/domain/heads";
 
 // components
 import { ContactForm } from "@/features/contact-me/ui/contact-form";
@@ -15,10 +15,11 @@ import { PageTitle } from "@/ui/page-title";
 
 export const Route = createFileRoute("/contact")({
   loader: () => loaderContact(),
-  head: ({ loaderData, matches }) => {
-    if (!loaderData) return {};
-    return contactHead({ pageTitles: loaderData.stablePageTitles, preferredLanguage: headLanguage(matches) });
-  },
+  head: ({ loaderData, matches }) =>
+    routeHead(loaderData, matches, (data, preferredLanguage) =>
+      contactHead({ pageTitles: data.stablePageTitles, preferredLanguage }),
+      { fallbackPath: CONTACT_PATH }
+    ),
   component: ContactPage,
 });
 

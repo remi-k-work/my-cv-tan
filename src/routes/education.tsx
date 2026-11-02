@@ -3,8 +3,8 @@ import { createFileRoute } from "@tanstack/react-router";
 
 // services, features, and other libraries
 import { loaderEducation } from "@/loaders/education";
-import { educationHead } from "@/features/meta/domain/heads";
-import { headLanguage } from "@/features/meta/domain/language";
+import { EDUCATION_PATH } from "@/features/meta/domain/static-pages";
+import { educationHead, routeHead } from "@/features/meta/domain/heads";
 
 // components
 import { Certificates } from "@/features/education/ui/certificates";
@@ -15,10 +15,11 @@ import { PageTitle } from "@/ui/page-title";
 
 export const Route = createFileRoute("/education")({
   loader: () => loaderEducation(),
-  head: ({ loaderData, matches }) => {
-    if (!loaderData) return {};
-    return educationHead({ pageTitles: loaderData.stablePageTitles, educationList: loaderData.educationList, preferredLanguage: headLanguage(matches) });
-  },
+  head: ({ loaderData, matches }) =>
+    routeHead(loaderData, matches, (data, preferredLanguage) =>
+      educationHead({ pageTitles: data.stablePageTitles, educationList: data.educationList, preferredLanguage }),
+      { fallbackPath: EDUCATION_PATH }
+    ),
   component: EducationPage,
 });
 

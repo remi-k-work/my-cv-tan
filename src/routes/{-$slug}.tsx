@@ -5,9 +5,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Option } from "effect";
 import { useGT } from "gt-tanstack-start";
 import { loaderIndex } from "@/loaders/index";
-import { experienceHead, homeHead } from "@/features/meta/domain/heads";
-import { headLanguage } from "@/features/meta/domain/language";
+import { experienceHead, homeHead, routeHead } from "@/features/meta/domain/heads";
 import { partitionExperiences } from "@/features/experience/domain/helpers";
+import { HOME_PATH } from "@/features/meta/domain/static-pages";
+import { experiencePath } from "@/features/meta/domain/url";
 
 // types
 import type { PageTitles } from "@/domain/models";
@@ -22,13 +23,13 @@ import { ExperienceDetailsModal } from "@/features/modals/ui/experience-details-
 
 export const Route = createFileRoute("/{-$slug}")({
   loader: ({ params }) => loaderIndex(Option.fromNullishOr(params.slug)),
-  head: ({ loaderData, matches }) => {
-    if (!loaderData) return {};
-
-    const preferredLanguage = headLanguage(matches);
-    if (loaderData.type === "item") return experienceHead({ experience: loaderData.experience, preferredLanguage });
-    if (loaderData.type === "list") return homeHead({ pageTitles: loaderData.stablePageTitles, experienceList: loaderData.experienceList, preferredLanguage });
-    return {};
+  head: ({ loaderData, matches, params }) => {
+    const fallbackPath = params.slug ? experiencePath(params.slug) : HOME_PATH;
+    return routeHead(loaderData, matches, (data, preferredLanguage) => {
+      // The loader resolves either an item or a list; both branches produce a full head.
+      if (data.type === "item") return experienceHead({ experience: data.experience, preferredLanguage });
+      return homeHead({ pageTitles: data.stablePageTitles, experienceList: data.experienceList, preferredLanguage });
+    }, { fallbackPath });
   },
   component: IndexRoutePage,
 });

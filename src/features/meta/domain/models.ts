@@ -1,99 +1,57 @@
+// The <head> vocabulary: what a route hands a head builder, and the shape the builder hands back.
+//
+// Named shapes rather than TanStack's `Record<string, unknown>` catch-all, so an entry carrying
+// neither `name` nor `property` — a misspelled tag the router then drops silently at render time —
+// is a compile error instead of a page quietly missing its metadata.
+//
+// These are plain TypeScript types because every MetaTag/LinkTag value is constructed internally by
+// the head builders, never parsed from untrusted input. Schema validation lives at the boundaries
+// that actually receive untrusted data: URL decoding (url.ts), language decoding (language.ts), and
+// asset decoding (data layer).
+
 // types
-import type { EducationList } from "@/features/education/domain/models";
-import type { Experience, ExperienceList } from "@/features/experience/domain/models";
-import type { PageTitles, PagePath, PreferredLanguage } from "@/domain/models";
+import type { Experience } from "@/features/experience/domain/models";
+import type { PageTitles, PreferredLanguage } from "@/domain/models";
 
-// A share image with verified facts: scrapers get the real type and dimensions, never guesses
-export interface SocialImage {
-  readonly src: string;
-  readonly mime: "image/jpeg" | "image/webp";
-  readonly width: number;
-  readonly height: number;
+// One <meta> tag entry: either a charset, a title, a name/content pair, or a property/content pair.
+// The union is closed so a misspelled tag is a compile error, not a silent render-time drop.
+export type MetaTag =
+  | { readonly charSet: "utf-8" }
+  | { readonly title: string }
+  | { readonly name: string; readonly content: string }
+  | { readonly property: string; readonly content: string };
+
+// One <link> entry: the attributes links.ts and the icon tags actually emit
+export type LinkTag = { readonly rel: string; readonly href: string; readonly type?: string; readonly title?: string };
+
+// One <script type="application/ld+json"> tag. Required on PageHead, because a page head without
+// one would publish no structured data and no optional type could say so.
+export type JsonLdScript = { readonly type: "application/ld+json"; readonly children: string };
+
+// The three keys TanStack reads off a route's head() result.
+// Arrays are mutable (not `ReadonlyArray`) because TanStack spreads/concats them at render time.
+// The properties themselves are still `readonly` so a route cannot reassign the whole array.
+export interface PageHead {
+  readonly meta: Array<MetaTag>;
+  readonly links: Array<LinkTag>;
+  readonly scripts: Array<JsonLdScript>;
 }
 
-// og:type stays fixed to "website" in social.ts: the site has no article-like pages
-export interface SocialMetaInput {
-  readonly title: string;
-  readonly description: string;
-  readonly path: string;
-  readonly image: SocialImage;
-  readonly preferredLanguage: PreferredLanguage;
-  readonly twitterImage?: SocialImage;
-}
-
-// One <script type="application/ld+json"> tag carrying a schema.org @graph
-export interface JsonLdScript {
-  readonly type: "application/ld+json";
-  readonly children: string;
-}
-
-// Visible page name and summary shared by its JSON-LD node and breadcrumb
-export interface LocalizedCopy {
-  readonly pageName: string;
-  readonly description: string;
-  readonly preferredLanguage: PreferredLanguage;
-}
-
-export type StaticPageType = "overview" | "education" | "contact";
-
-// Resolved static-page copy: visible copy plus authored search metadata. Heads and
-// Markdown twins both consume this, so the HTML and .md documents cannot drift apart.
-export interface StaticPageCopy extends LocalizedCopy {
-  readonly path: PagePath;
-  readonly mdHref: string;
-  readonly type: StaticPageType;
-  // Search and share title is authored separately from the longer body heading
-  readonly seoTitle: string;
-  readonly intro: string;
-  readonly canonical: string;
-}
-
-// Page heads take the locale resolved from the root match (see language.ts)
-export interface PageHeadInput {
-  readonly pageTitles: PageTitles;
-  readonly preferredLanguage: PreferredLanguage;
-}
-
-// pagePath selects the STATIC_PAGES entry (twin href + fallback copy); the page supplies
-// its own JSON-LD builder, which closes over the page-specific data and is fed the resolved copy
-export interface StaticPageHeadInput extends PageHeadInput {
-  readonly pagePath: PagePath;
-  readonly jsonLd: (copy: LocalizedCopy) => JsonLdScript;
-}
-
-export interface HomeHeadInput extends PageHeadInput {
-  readonly experienceList: ExperienceList;
-}
-
-export interface EducationHeadInput extends PageHeadInput {
-  readonly educationList: EducationList;
-}
-
-// The loader matches the URL slug against experience.slug, so the data slug alone drives
-// every canonical, social and JSON-LD URL; the two can never drift apart
+// The loader matches the URL slug against experience.slug, so the data slug alone drives every
+// canonical, social and JSON-LD URL; the two can never drift apart
 export interface ExperienceHeadInput {
   readonly experience: Experience;
   readonly preferredLanguage: PreferredLanguage;
 }
 
-// JSON-LD graph inputs: the localized copy plus the dataset each page renders from
-export interface HomeJsonLdInput extends LocalizedCopy {
-  readonly experienceList: ExperienceList;
+// What a route hands a static page head: the stable copy key it resolves its own text through, and
+// the language that copy resolves in. The resolved result is `StaticPageCopy` in static-pages.ts —
+// this is the input side, so the two are counterparts rather than duplicates.
+export interface StaticPageHeadInput {
+  readonly pageTitles: PageTitles;
+  readonly preferredLanguage: PreferredLanguage;
 }
 
-export interface EducationJsonLdInput extends LocalizedCopy {
-  readonly educationList: EducationList;
-}
-
-interface PageMetadata {
-  readonly title: string;
-  readonly description: string;
-}
-
-export interface StaticPageSettings {
-  readonly mdHref: string;
-  readonly type: StaticPageType;
-  readonly fallbackHeading: string;
-  readonly fallbackIntro: string;
-  readonly metadata: Readonly<Record<PreferredLanguage, PageMetadata>>;
-}
+// Empty head contribution used when a route has no loader data and no fallback path. TanStack
+// ignores an empty object in head() merges, so this is the type-safe way to publish nothing.
+export const emptyHead: PageHead = { meta: [], links: [], scripts: [] };

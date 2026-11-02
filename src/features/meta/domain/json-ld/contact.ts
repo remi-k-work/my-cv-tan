@@ -1,35 +1,33 @@
 // services, features, and other libraries
-import { breadcrumb, jsonLdGraph, webPageNode } from "./core";
+import { pageGraph, personEdge } from "./core";
 import { absoluteUrl } from "../url";
 
 // types
-import type { LocalizedCopy } from "../models";
+import type { JsonLdNodes } from "./core";
+import type { LocalizedCopy } from "../static-pages";
 
 // constants
+import { CONTACT_PATH } from "../static-pages";
 import { PERSON_ID, SITE_LANGUAGES } from "../constants";
 
-// Contact: a ContactPage mirroring the visible content, the contact channel, and its breadcrumb
-export const contactJsonLd = ({ pageName, description, preferredLanguage }: LocalizedCopy) => {
-  const url = absoluteUrl("/contact");
+// Contact: a ContactPage mirroring the visible content, the contact channel, and its breadcrumb.
+// The bilingual contact form is the published ContactPoint channel — no email or phone is exposed,
+// keeping the page crawlable without harvesting contact details.
+export const contactJsonLd = ({ pageName, description, preferredLanguage }: LocalizedCopy): JsonLdNodes => {
+  const url = absoluteUrl(CONTACT_PATH);
   const contactPointId = `${url}#contact-point`;
 
-  return jsonLdGraph([
-    webPageNode({
+  return [
+    ...pageGraph({
       type: "ContactPage",
-      id: url,
-      url,
+      path: CONTACT_PATH,
       name: pageName,
       description,
       preferredLanguage,
-      breadcrumb: true,
       mainEntity: { "@id": PERSON_ID },
     }),
     // Person fragment that merges with the root graph's Person by @id: attaches the contact channel
-    {
-      "@type": "Person",
-      "@id": PERSON_ID,
-      contactPoint: { "@id": contactPointId },
-    },
+    personEdge({ contactPoint: { "@id": contactPointId } }),
     // The bilingual contact form is the channel; no email or phone is published
     {
       "@type": "ContactPoint",
@@ -38,6 +36,5 @@ export const contactJsonLd = ({ pageName, description, preferredLanguage }: Loca
       url,
       availableLanguage: [...SITE_LANGUAGES],
     },
-    breadcrumb(preferredLanguage, "/contact", pageName),
-  ]);
+  ];
 };

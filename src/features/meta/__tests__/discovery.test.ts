@@ -1,0 +1,176 @@
+// services, features, and other libraries
+import { assert, it } from "@effect/vitest";
+import { buildSitemapXml } from "../domain/sitemap";
+import { sitemapResponse, sitemapUnavailableResponse, txtResponse, documentHeaders } from "../domain/response";
+import { ROBOTS_TXT } from "../domain/robots";
+import { robotsHandler } from "@/features/meta/services/discovery";
+
+// constants
+import { CONTENT_SIGNAL, LANGUAGE_VARY } from "../domain/constants";
+
+// types
+import type { Experience } from "@/features/experience/domain/models";
+
+const sampleExperience: Experience = {
+  type: "p",
+  slug: "sample-role",
+  year: "Mar 2026",
+  role: "Full-Stack Developer",
+  company: "Sample Co",
+  txt: "Built things with care.",
+  imageName: "01",
+  skillsUsed: ["TypeScript"],
+};
+
+it("sitemap omits fabricated last-modification dates and leads with the canonical homepage", () => {
+  const xml = buildSitemapXml([{ slug: sampleExperience.slug }]);
+  assert.include(xml, "https://www.remiforge.dev/sample-role");
+  assert.notInclude(xml, "<lastmod>");
+  // Soft crawl signal: static canonicals (homepage first) precede the detail pages
+  assert.isTrue(xml.indexOf("<loc>https://www.remiforge.dev/</loc>") < xml.indexOf("<loc>https://www.remiforge.dev/sample-role</loc>"));
+});
+
+it("sitemap home URL equals the homepage canonical exactly", () => {
+  const xml = buildSitemapXml([]);
+  assert.include(xml, "<loc>https://www.remiforge.dev/</loc>");
+  assert.notInclude(xml, "<loc>https://www.remiforge.dev</loc>");
+});
+
+it("sitemap lists canonical HTML pages only — never the Markdown twins", () => {
+  const xml = buildSitemapXml([{ slug: sampleExperience.slug }]);
+  assert.notInclude(xml, ".md");
+});
+
+it("sitemap percent-encodes unsafe slug characters in generated URLs", () => {
+  const xml = buildSitemapXml([{ slug: `danger<&>"'` }]);
+  assert.include(xml, "https://www.remiforge.dev/danger%3C%26%3E%22&apos;");
+  assert.notInclude(xml, "<loc>https://www.remiforge.dev/danger<&>");
+});
+
+it("sitemap unions every supported language without emitting duplicate URLs", () => {
+  // Both locales resolve the same slug, plus an entry that exists only in a translated list
+  const translatedOnly = { ...sampleExperience, slug: "translated-only" };
+  const xml = buildSitemapXml([{ slug: sampleExperience.slug }, { slug: translatedOnly.slug }]);
+
+  assert.strictEqual((xml.match(/<loc>https:\/\/www\.remiforge\.dev\/sample-role<\/loc>/g) ?? []).length, 1);
+  // Dedupe keeps first-seen order, so a translated-only entry lands after the source list
+  assert.isTrue(xml.indexOf("<loc>https://www.remiforge.dev/translated-only</loc>") > xml.indexOf("<loc>https://www.remiforge.dev/sample-role</loc>"));
+});
+
+it("sitemap success responses carry the XML content type, noindex, and hour-long public caching", () => {
+  const ok = sitemapResponse(buildSitemapXml([{ slug: sampleExperience.slug }]));
+  assert.strictEqual(ok.status, 200);
+  assert.strictEqual(ok.headers.get("Content-Type"), "application/xml; charset=utf-8");
+  assert.strictEqual(ok.headers.get("Cache-Control"), "public, max-age=3600, stale-while-revalidate=86400");
+  // The sitemap itself is not a search result, but must stay crawlable
+  assert.strictEqual(ok.headers.get("X-Robots-Tag"), "noindex, follow");
+});
+
+it("sitemap data failures return non-cacheable noindex XML with status 503", () => {
+  const response = sitemapUnavailableResponse();
+  assert.strictEqual(response.status, 503);
+  assert.strictEqual(response.headers.get("Content-Type"), "application/xml; charset=utf-8");
+  assert.strictEqual(response.headers.get("Cache-Control"), "no-store");
+  assert.strictEqual(response.headers.get("X-Robots-Tag"), "noindex, follow");
+});
+
+// The route handler runs through the shared server runtime, so the test is async: the document
+// effect is executed (and the layer built) exactly the way the sitemap route executes it
+it("robots.txt allows content, disallows API endpoints, and advertises the sitemap", async () => {
+  const robots = ROBOTS_TXT;
+  assert.include(robots, "User-agent: *");
+  assert.include(robots, "Allow: /");
+  // The Markdown twins are the crawlable GEO surface, so they are allowed alongside the HTML
+  assert.include(robots, "Allow: /*.md");
+  // Form/RPC endpoints are not content, so they stay out of crawl budgets
+  assert.include(robots, "Disallow: /api");
+  assert.include(robots, "Sitemap: https://www.remiforge.dev/sitemap.xml");
+  // Content signals state how accessed content may be reused: all three uses allowed site-wide
+  assert.include(robots, "Content-Signal: search=yes, ai-input=yes, ai-train=yes");
+  // Crawl pacing: AI training crawlers get a crawl-delay directive alongside allow/disallow
+  assert.include(robots, "Crawl-delay: 10");
+  // Every named bot group repeats the same directives (RFC 9309 override of '*')
+  for (const bot of [
+    "OAI-SearchBot",
+    "Claude-SearchBot",
+    "PerplexityBot",
+    "ChatGPT-User",
+    "Claude-User",
+    "Perplexity-User",
+    "GPTBot",
+    "ClaudeBot",
+    "CCBot",
+    "Google-Extended",
+    "Applebot-Extended",
+  ]) {
+    assert.include(robots, `User-agent: ${bot}`);
+  }
+  // Named groups override `*` in RFC 9309, so every group must repeat the signal to keep it in force
+  assert.strictEqual((robots.match(/^Content-Signal: /gm) ?? []).length, (robots.match(/^User-agent: /gm) ?? []).length);
+
+  // Every bot record is followed by one blank line: without it two `User-agent` groups merge into a
+  // single record and every bot after the first inherits only the directives of the first. The count
+  // pins the separator, and the placement pins it after the directives rather than before the bot.
+  assert.strictEqual((robots.match(/^User-agent: /gm) ?? []).length, (robots.match(/^Content-Signal: [^\n]*/gm) ?? []).length);
+  assert.isTrue(robots.endsWith("Sitemap: https://www.remiforge.dev/sitemap.xml\n"), "the sitemap directive is the document's last line and the file ends terminated");
+
+  // The route serves the document through the meta service, so the response carries the shared
+  // discovery headers (English, CDN-cacheable) the same way sitemap.xml does
+  const response = await robotsHandler();
+  assert.strictEqual(response.status, 200);
+  assert.strictEqual(response.headers.get("Content-Type"), "text/plain; charset=utf-8");
+  assert.strictEqual(response.headers.get("Content-Language"), "en");
+  // robots.txt is the one document every crawler fetches, so it advertises the AI indexes from the
+  // Link header as well: a parser acts on that, where the `# See /llms.txt` comment is human prose
+  assert.include(response.headers.get("Link") ?? "", "https://www.remiforge.dev/llms.txt");
+  assert.include(response.headers.get("Link") ?? "", "https://www.remiforge.dev/llms-full.txt");
+
+  // A Response body is single-use, so a document held as a constant would hand the same consumed
+  // body to every crawler. robots.txt is the document every bot fetches, so this is the one family
+  // where the regression is guaranteed to be noticed.
+  const first = await robotsHandler();
+  const second = await robotsHandler();
+  assert.notStrictEqual(first, second);
+  assert.strictEqual(await first.text(), await second.text());
+});
+
+it("plain-text discovery responses are always English and CDN-cacheable", () => {
+  const response = txtResponse("# Plain");
+  assert.strictEqual(response.status, 200);
+  assert.strictEqual(response.headers.get("Content-Type"), "text/plain; charset=utf-8");
+  // Plain-text discovery documents are always English
+  assert.strictEqual(response.headers.get("Content-Language"), "en");
+});
+
+// The HTML document carries the same reuse signal and the same AI-index advertisements the twins,
+// the indexes and robots.txt declare, so a crawler reading only the response headers never has to
+// parse a body to learn the site's ingestion policy.
+it("the HTML document names the request inputs it is language-negotiated from", () => {
+  // The HTML language is resolved off the locale cookie and Accept-Language — the same two inputs
+  // the twins' own Vary names — and GT writes that cookie on every response. Without the directive
+  // a shared cache keys the document on the URL alone and hands whichever language it stored first
+  // to every later visitor and every AI crawler, which a canonical tag cannot repair because the
+  // two bodies genuinely differ.
+  //
+  // Content-Language is the HTTP-layer twin of <html lang> and of the JSON-LD inLanguage, so it
+  // follows the negotiated locale rather than being a static constant.
+  const polish = documentHeaders("pl");
+  const english = documentHeaders("en");
+
+  assert.strictEqual(polish.Vary, LANGUAGE_VARY);
+  assert.strictEqual(polish["Content-Signal"], CONTENT_SIGNAL);
+  assert.strictEqual(polish["Content-Language"], "pl");
+  assert.strictEqual(english["Content-Language"], "en");
+  // The AI indexes are advertised from the HTTP layer as well as every <head>
+  assert.include(polish.Link, "https://www.remiforge.dev/llms.txt");
+  assert.include(polish.Link, "https://www.remiforge.dev/llms-full.txt");
+  // The root route is the only match that declares headers, and mergeHeaders sets rather than
+  // appending, so nothing downstream can drop the Vary the negotiation depends on
+  assert.strictEqual(Object.keys(polish).length, 4);
+  // Only the language differs between two negotiations: the reuse signal, the advertisements and
+  // the Vary are the same facts, so a Polish crawler and an English one read one policy
+  assert.deepStrictEqual(
+    Object.keys(polish).filter((key) => key !== "Content-Language"),
+    Object.keys(english).filter((key) => key !== "Content-Language")
+  );
+});

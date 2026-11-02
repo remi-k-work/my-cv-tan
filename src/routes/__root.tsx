@@ -7,6 +7,8 @@ import { Outlet, createRootRoute, HeadContent, Scripts } from "@tanstack/react-r
 import { cn } from "@/lib/utils";
 import { getLocale, getTranslationsSnapshot, useGT } from "gt-tanstack-start";
 import { ROOT_HEAD } from "@/features/meta/domain/root";
+import { documentHeaders } from "@/features/meta/domain/response";
+import { headLanguage } from "@/features/meta/domain/language";
 import { preferredLanguageFromLocale } from "@/domain/helpers";
 
 // components
@@ -27,6 +29,12 @@ import type { ReactNode } from "react";
 
 export const Route = createRootRoute({
   head: () => ROOT_HEAD,
+  // The HTML document carries the same reuse signal and AI-index advertisements as the
+  // Markdown twins, the indexes and robots.txt, so a crawler reading only the response headers
+  // — never the <head> or the discovery documents — still learns the site's ingestion policy.
+  // Content-Language names the locale the root loader just negotiated, so the HTTP signal, the
+  // <html lang> attribute below and the JSON-LD inLanguage fields all resolve to one value.
+  headers: ({ matches }) => documentHeaders(headLanguage(matches)),
   loader: async () => {
     const locale = getLocale();
     return { locale, preferredLanguage: preferredLanguageFromLocale(locale), translations: await getTranslationsSnapshot(locale) } as const;
@@ -60,10 +68,13 @@ function RootComponent() {
 
 // The html document shell; the router streams the route components into it
 function RootDocument({ children }: { children: ReactNode }) {
-  const { locale, translations } = Route.useLoaderData();
+  const { locale, preferredLanguage, translations } = Route.useLoaderData();
 
   return (
-    <html lang={locale} translate="no">
+    // `lang` names the same normalized language the JSON-LD inLanguage fields and the Markdown
+    // twins' frontmatter publish, so a crawler reading either language signal resolves the same
+    // value instead of reconciling the GT locale ("en-US") against the schema.org code ("en")
+    <html lang={preferredLanguage} translate="no">
       <head>
         <HeadContent />
       </head>
