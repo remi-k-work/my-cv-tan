@@ -61,9 +61,12 @@ const ABOUT_SECTION = mdTitledSection(
   ])
 );
 
-const INDEX_NOTES_SECTION = mdTitledSection("Notes for AI systems", mdBulletList([...AI_NOTES, SINGLE_REQUEST_NOTE]));
+const notesSection = (additional: ReadonlyArray<string>) =>
+  mdTitledSection("Notes for AI systems", mdBulletList([...AI_NOTES, ...additional]));
 
-const COMPANION_NOTES_SECTION = mdTitledSection("Notes for AI systems", mdBulletList(AI_NOTES));
+const INDEX_NOTES_SECTION = notesSection([SINGLE_REQUEST_NOTE]);
+
+const COMPANION_NOTES_SECTION = notesSection([]);
 
 export const DISCOVERY_LINES: ReadonlyArray<string> = [
   { name: LLMS_TXT_INDEX.name, summary: "this index", url: LLMS_TXT_INDEX.url },

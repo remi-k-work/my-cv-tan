@@ -30,7 +30,5 @@ const sitemapDocument = Effect.gen(function* () {
   return sitemapResponse(buildSitemapXml(slugs));
 }).pipe(Effect.provide(Datasets.layer), recoverDataFailure("[SITEMAP.XML]", sitemapUnavailableResponse), Effect.withSpan("sitemapDocument"));
 
-const handler = (document: Effect.Effect<Response, never>) => () => RuntimeServer.runPromise(document);
-
-export const robotsHandler = handler(robotsDocument);
-export const sitemapHandler = handler(sitemapDocument);
+export const robotsHandler = () => RuntimeServer.runPromise(robotsDocument);
+export const sitemapHandler = () => RuntimeServer.runPromise(sitemapDocument);

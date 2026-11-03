@@ -11,8 +11,8 @@ export type MetaTag =
   | { readonly name: string; readonly content: string }
   | { readonly property: string; readonly content: string };
 
-// Valid attributes for <link> tags emitted by head builders.
-export type LinkTag = { readonly rel: string; readonly href: string; readonly type?: string; readonly title?: string };
+// Valid attributes for <link> tags emitted by head builders and RFC 8288 Link headers.
+export type LinkTag = { readonly rel: string; readonly href: string; readonly type?: string; readonly title?: string; readonly hreflang?: string };
 
 // Structured data script tag for JSON-LD graphs.
 export type JsonLdScript = { readonly type: "application/ld+json"; readonly children: string };

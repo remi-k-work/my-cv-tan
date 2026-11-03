@@ -1,7 +1,7 @@
 // Site-wide root head configuration: fallback metadata, icons, identity links, and discovery links.
 
 // services, features, and other libraries
-import { authorLink, llmsAlternateLinks, llmsDiscoveryLink, sitemapLink } from "./links";
+import { authorLink, AI_INDEX_LINKS, llmsDiscoveryLink, sitemapLink } from "./links";
 
 // types
 import type { LinkTag, MetaTag } from "./models";
@@ -35,6 +35,6 @@ export const ROOT_HEAD = {
     llmsDiscoveryLink(),
     sitemapLink(),
     ...ME_LINKS,
-    ...llmsAlternateLinks,
+    ...AI_INDEX_LINKS,
   ],
 } satisfies RootHeadContract;

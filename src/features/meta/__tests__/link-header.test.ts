@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-import { AI_INDEX_LINKS, AI_INDEX_LINK_HEADER, joinLinkHeader, languageVariantLinks, llmsAlternateLinks } from "../domain/links";
+import { AI_INDEX_LINKS, AI_INDEX_LINK_HEADER, joinLinkHeader, languageVariantLinks } from "../domain/links";
 import { ROOT_HEAD } from "../domain/root";
 
 // --- The Link header ---
@@ -19,7 +19,7 @@ it("a link serializes as a URI-reference with its parameters in a fixed order", 
 it("the AI indexes project into both the <head> advertisements and the Link header from one record", () => {
   // Same documents, both surfaces: a crawler that only parses response headers sees exactly what a
   // crawler that only parses the <head> sees.
-  assert.deepStrictEqual(llmsAlternateLinks, [
+  assert.deepStrictEqual(AI_INDEX_LINKS, [
     { rel: "alternate", type: "text/plain", title: "llms.txt", href: "https://www.remiforge.dev/llms.txt" },
     { rel: "alternate", type: "text/plain", title: "llms-full.txt", href: "https://www.remiforge.dev/llms-full.txt" },
   ]);
@@ -32,7 +32,7 @@ it("the AI indexes project into both the <head> advertisements and the Link head
   assert.strictEqual(AI_INDEX_LINK_HEADER, joinLinkHeader(AI_INDEX_LINKS));
 
   // The site-wide head carries the <link> projection, so the HTML document advertises the indexes too
-  assert.deepStrictEqual(ROOT_HEAD.links.filter(({ rel }) => rel === "alternate"), [...llmsAlternateLinks]);
+  assert.deepStrictEqual(ROOT_HEAD.links.filter(({ rel }) => rel === "alternate"), [...AI_INDEX_LINKS]);
 });
 
 it("language variants list every supported language and close with the x-default", () => {

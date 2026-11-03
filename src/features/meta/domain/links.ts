@@ -7,23 +7,11 @@ import { absoluteUrl, markdownTwinUrl, withLanguageParam } from "./url";
 import type { PreferredLanguage } from "@/domain/models";
 import type { LinkTag } from "./models";
 
-// RFC 8288 link parameters published by the site.
-interface LinkParameters {
-  readonly type?: string;
-  readonly title?: string;
-  readonly hreflang?: string;
-}
-
-interface LinkValue extends LinkParameters {
-  readonly href: string;
-  readonly rel: string;
-}
-
 // constants
 import { DEFAULT_LANGUAGE, LLMS_FULL_TXT_HREF, LLMS_TXT_HREF, SITE_LANGUAGES, SITEMAP_HREF } from "./constants";
 
 // Formats a single link as an RFC 8288 header value in fixed parameter order (rel, type, title, hreflang).
-const linkHeader = ({ href, rel, type, title, hreflang }: LinkValue) => {
+const linkHeader = ({ href, rel, type, title, hreflang }: LinkTag) => {
   const parts = [`rel="${rel}"`];
   if (type !== undefined) parts.push(`type="${type}"`);
   if (title !== undefined) parts.push(`title="${title}"`);
@@ -31,7 +19,7 @@ const linkHeader = ({ href, rel, type, title, hreflang }: LinkValue) => {
   return `<${href}>; ${parts.join("; ")}`;
 };
 
-export const joinLinkHeader = (links: ReadonlyArray<LinkValue>) => links.map(linkHeader).join(", ");
+export const joinLinkHeader = (links: ReadonlyArray<LinkTag>) => links.map(linkHeader).join(", ");
 export const canonicalLink = (href: string): LinkTag => ({ rel: "canonical", href });
 
 export const markdownAlternateLink = (mdPath: string, preferredLanguage: PreferredLanguage): LinkTag => ({
@@ -48,19 +36,18 @@ export const llmsDiscoveryLink = (): LinkTag => ({ rel: "llms", href: absoluteUr
 export const LLMS_TXT_INDEX = { name: "llms.txt", url: absoluteUrl(LLMS_TXT_HREF) } as const;
 export const LLMS_FULL_TXT_INDEX = { name: "llms-full.txt", url: absoluteUrl(LLMS_FULL_TXT_HREF) } as const;
 export const AI_INDEXES = [LLMS_TXT_INDEX, LLMS_FULL_TXT_INDEX] as const;
-export const AI_INDEX_LINKS: ReadonlyArray<LinkValue> = AI_INDEXES.map(({ name, url }) => ({
+export const AI_INDEX_LINKS: ReadonlyArray<LinkTag> = AI_INDEXES.map(({ name, url }) => ({
   rel: "alternate",
   type: "text/plain",
   title: name,
   href: url,
 }));
 
-export const llmsAlternateLinks: ReadonlyArray<LinkTag> = AI_INDEX_LINKS.map(({ href, rel, type, title }) => ({ rel, href, type, title }));
 export const AI_INDEX_LINK_HEADER = joinLinkHeader(AI_INDEX_LINKS);
 
 // Hreflang alternates for every supported language plus x-default.
-export const languageVariantLinks = (markdownUrl: string): ReadonlyArray<LinkValue> => [
-  ...SITE_LANGUAGES.map((language): LinkValue => ({
+export const languageVariantLinks = (markdownUrl: string): ReadonlyArray<LinkTag> => [
+  ...SITE_LANGUAGES.map((language): LinkTag => ({
     rel: "alternate",
     type: "text/markdown",
     hreflang: language,
