@@ -23,44 +23,44 @@ import {
 import { AI_INDEX_LINK_HEADER, AI_INDEX_LINKS } from "./links";
 
 // Base headers with content reuse policy and AI index links.
-const baseMachineHeaders = (): Readonly<Record<string, string>> => ({ "Content-Signal": CONTENT_SIGNAL, Link: AI_INDEX_LINK_HEADER });
-const cacheableHeaders = (): Readonly<Record<string, string>> => ({ "Cache-Control": CACHE_CONTROL });
-const unavailableHeaders = (): Readonly<Record<string, string>> => ({ "Cache-Control": NO_STORE, "X-Robots-Tag": NOINDEX_FOLLOW });
+const BASE_MACHINE_HEADERS = { "Content-Signal": CONTENT_SIGNAL, Link: AI_INDEX_LINK_HEADER } as const;
+const CACHEABLE_HEADERS = { "Cache-Control": CACHE_CONTROL } as const;
+const UNAVAILABLE_HEADERS = { "Cache-Control": NO_STORE, "X-Robots-Tag": NOINDEX_FOLLOW } as const;
 
 // Plain-text discovery headers (robots.txt, llms.txt, llms-full.txt).
-const txtHeaders = (): Readonly<Record<string, string>> => ({ ...baseMachineHeaders(), "Content-Type": TXT_CONTENT_TYPE, "Content-Language": "en" });
-const sitemapHeaders = (): Readonly<Record<string, string>> => ({ ...baseMachineHeaders(), "Content-Type": XML_CONTENT_TYPE, "X-Robots-Tag": NOINDEX_FOLLOW });
+const TXT_HEADERS = { ...BASE_MACHINE_HEADERS, "Content-Type": TXT_CONTENT_TYPE, "Content-Language": "en" } as const;
+const SITEMAP_HEADERS = { ...BASE_MACHINE_HEADERS, "Content-Type": XML_CONTENT_TYPE, "X-Robots-Tag": NOINDEX_FOLLOW } as const;
 
-export const txtResponse = (body: string) => new Response(body, { status: 200, headers: txtHeaders() });
-export const txtUnavailableResponse = (body: string) => new Response(body, { status: 503, headers: { ...txtHeaders(), ...unavailableHeaders() } });
+export const txtResponse = (body: string) => new Response(body, { status: 200, headers: TXT_HEADERS });
+export const txtUnavailableResponse = (body: string) => new Response(body, { status: 503, headers: { ...TXT_HEADERS, ...UNAVAILABLE_HEADERS } });
 
 export const discoveryTxtResponse = (body: string, contentLocation: string) =>
-  new Response(body, { status: 200, headers: { ...txtHeaders(), ...cacheableHeaders(), "X-Robots-Tag": NOINDEX_FOLLOW, "Content-Location": contentLocation } });
+  new Response(body, { status: 200, headers: { ...TXT_HEADERS, ...CACHEABLE_HEADERS, "X-Robots-Tag": NOINDEX_FOLLOW, "Content-Location": contentLocation } });
 
-export const sitemapResponse = (xml: string) => new Response(xml, { status: 200, headers: { ...sitemapHeaders(), ...cacheableHeaders() } });
+export const sitemapResponse = (xml: string) => new Response(xml, { status: 200, headers: { ...SITEMAP_HEADERS, ...CACHEABLE_HEADERS } });
 export const sitemapUnavailableResponse = () =>
   new Response('<?xml version="1.0" encoding="UTF-8"?><error>Sitemap is temporarily unavailable.</error>', {
     status: 503,
-    headers: { ...sitemapHeaders(), ...unavailableHeaders() },
+    headers: { ...SITEMAP_HEADERS, ...UNAVAILABLE_HEADERS },
   });
 
 // HTML document headers negotiating locale and caching variation.
 export const documentHeaders = (preferredLanguage: string): Readonly<Record<string, string>> => ({
-  ...baseMachineHeaders(),
+  ...BASE_MACHINE_HEADERS,
   "Content-Language": preferredLanguage,
   Vary: LANGUAGE_VARY,
 });
 
 // Markdown twin response headers and builders.
 const mdHeaders = (preferredLanguage: PreferredLanguage): Readonly<Record<string, string>> => ({
-  ...baseMachineHeaders(),
+  ...BASE_MACHINE_HEADERS,
   "Content-Type": MD_CONTENT_TYPE,
-  ...cacheableHeaders(),
+  ...CACHEABLE_HEADERS,
   "Content-Language": preferredLanguage,
   Vary: LANGUAGE_VARY,
   "X-Robots-Tag": INDEXABLE_ROBOTS,
 });
-const mdUnavailableHeaders = (preferredLanguage: PreferredLanguage) => ({ ...mdHeaders(preferredLanguage), ...unavailableHeaders() });
+const mdUnavailableHeaders = (preferredLanguage: PreferredLanguage) => ({ ...mdHeaders(preferredLanguage), ...UNAVAILABLE_HEADERS });
 
 const markdownLinks = (canonical: string, markdownUrl: string) =>
   joinLinkHeader([canonicalLink(canonical), ...AI_INDEX_LINKS, ...languageVariantLinks(markdownUrl)]);

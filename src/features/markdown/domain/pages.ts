@@ -1,7 +1,7 @@
 // Page Markdown twins: home, education, contact, and not-found.
 
 // services, features, and other libraries
-import { Array, Option } from "effect";
+import { Option } from "effect";
 import { msg } from "gt-tanstack-start";
 import { matchPreferredLanguage } from "@/domain/helpers";
 import { escapeMd, escapeMdInline } from "./text";
@@ -56,15 +56,13 @@ const pageOpening = (copy: StaticPageCopy) => [
 const schoolSections = (educationList: EducationList, translate: Translate) =>
   mdTitledSection(
     translate(msg("Education")),
-    Array.match(educationList, {
-      onEmpty: () => mdEmptyMarker(translate),
-      onNonEmpty: (schools) =>
-        mdBody(
-          Array.map(schools, ({ name, year, location, info }) =>
+    educationList.length === 0
+      ? mdEmptyMarker(translate)
+      : mdBody(
+          educationList.map(({ name, year, location, info }) =>
             mdBody([mdHeading(3, name), mdBulletList([mdFact(translate(msg("Years")), year), mdFact(translate(msg("Location")), location)]), escapeMd(info)])
           )
-        ),
-    })
+        )
   );
 
 const documentsSection = (translate: Translate) => mdTitledSection(translate(msg("Documents")), mdDocumentLinks(DOWNLOADABLE_DOCUMENTS, translate));

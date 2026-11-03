@@ -1,7 +1,6 @@
 // Site-wide root head configuration: fallback metadata, icons, identity links, and discovery links.
 
 // services, features, and other libraries
-import { Array } from "effect";
 import { authorLink, llmsAlternateLinks, llmsDiscoveryLink, sitemapLink } from "./links";
 
 // types
@@ -17,7 +16,7 @@ interface RootHeadContract {
 // constants
 import { AUTHOR_URL, AVATAR, BRANDED_TITLE, HOME_TITLE, NOINDEX_FOLLOW, SITE_DESCRIPTION, SITE_NAME, SOCIAL_LINKS } from "./constants";
 
-const ME_LINKS = Array.map(SOCIAL_LINKS, (href) => ({ rel: "me", href }));
+const ME_LINKS = SOCIAL_LINKS.map((href) => ({ rel: "me", href }));
 
 export const ROOT_HEAD = {
   meta: [

@@ -1,8 +1,5 @@
 // OpenGraph and Twitter Card metadata generators.
 
-// services, features, and other libraries
-import { Array } from "effect";
-
 // constants
 import { AUTHOR_URL, GLOBAL_SOCIAL_IMAGE, OPEN_GRAPH_LOCALES, PUBLISHER_URL, SITE_LANGUAGES, SITE_NAME } from "./constants";
 
@@ -36,7 +33,7 @@ export interface SocialMetaInput {
 }
 
 // Supported alternate locales for og:locale:alternate tags.
-const alternateLocales = (preferredLanguage: PreferredLanguage) => Array.filter(SITE_LANGUAGES, (language) => language !== preferredLanguage);
+const alternateLocales = (preferredLanguage: PreferredLanguage) => SITE_LANGUAGES.filter((language) => language !== preferredLanguage);
 
 export const socialMeta = ({
   title,
@@ -49,17 +46,6 @@ export const socialMeta = ({
   articleSection,
 }: SocialMetaInput): ReadonlyArray<MetaTag> => {
   const twitter = twitterImage ?? GLOBAL_SOCIAL_IMAGE;
-
-  // Article pages publish author and publisher profile URLs for authoritative attribution.
-  const attribution: ReadonlyArray<MetaTag> =
-    ogType === "article"
-      ? [
-          { property: "article:author", content: AUTHOR_URL },
-          { property: "article:publisher", content: PUBLISHER_URL },
-        ]
-      : [];
-
-  const section: ReadonlyArray<MetaTag> = ogType === "article" && articleSection ? [{ property: "article:section", content: articleSection }] : [];
 
   return [
     { property: "og:title", content: title },
@@ -75,9 +61,14 @@ export const socialMeta = ({
     { property: "og:url", content: canonical },
     { property: "og:site_name", content: SITE_NAME },
     { property: "og:locale", content: OPEN_GRAPH_LOCALES[preferredLanguage] },
-    ...Array.map(alternateLocales(preferredLanguage), (language) => ({ property: "og:locale:alternate", content: OPEN_GRAPH_LOCALES[language] })),
-    ...attribution,
-    ...section,
+    ...alternateLocales(preferredLanguage).map((language) => ({ property: "og:locale:alternate", content: OPEN_GRAPH_LOCALES[language] })),
+    ...(ogType === "article"
+      ? [
+          { property: "article:author", content: AUTHOR_URL },
+          { property: "article:publisher", content: PUBLISHER_URL },
+        ]
+      : []),
+    ...(ogType === "article" && articleSection ? [{ property: "article:section", content: articleSection }] : []),
     { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:title", content: title },
     { name: "twitter:description", content: description },

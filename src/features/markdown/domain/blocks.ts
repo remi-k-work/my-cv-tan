@@ -1,7 +1,7 @@
 // Markdown block composition, formatting primitives, and document graph cross-links.
 
 // services, features, and other libraries
-import { Array, Option, pipe, Record, String } from "effect";
+import { Option, pipe } from "effect";
 import { msg } from "gt-tanstack-start";
 import { absoluteUrl, decodeUrlOption, encodeParens, markdownTwinUrl } from "@/features/meta/domain/url";
 import { escapeMd, escapeMdInline } from "./text";
@@ -32,7 +32,7 @@ const yamlValue = (value: string) =>
   JSON.stringify(value).replace(YAML_UNSAFE_CHARACTERS, (character) => `\\u${character.charCodeAt(0).toString(16).padStart(4, "0")}`);
 
 export const mdLink = (label: string, href: string) => `[${escapeMdInline(label)}](${href})`;
-export const AI_INDEX_MARKDOWN_LINKS: ReadonlyArray<string> = Array.map(AI_INDEXES, ({ name, url }) => mdLink(name, url));
+export const AI_INDEX_MARKDOWN_LINKS: ReadonlyArray<string> = AI_INDEXES.map(({ name, url }) => mdLink(name, url));
 
 // Formats external web links, omitting non-http/https protocols.
 export const mdExternalLink = (label: string, href: string) =>
@@ -43,14 +43,12 @@ export const mdExternalLink = (label: string, href: string) =>
   );
 
 // Emits a YAML frontmatter block.
-export const frontmatter = (fields: Record.ReadonlyRecord<string, string>) =>
-  pipe(
-    fields,
-    Record.toEntries,
-    Array.map(([key, value]) => `${key}: ${yamlValue(value)}`),
-    Array.join("\n"),
-    (body) => [FRONTMATTER_DELIMITER, body, FRONTMATTER_DELIMITER].join("\n")
-  );
+export const frontmatter = (fields: Readonly<Record<string, string>>) => {
+  const body = Object.entries(fields)
+    .map(([key, value]) => `${key}: ${yamlValue(value)}`)
+    .join("\n");
+  return [FRONTMATTER_DELIMITER, body, FRONTMATTER_DELIMITER].join("\n");
+};
 
 // Shared identity frontmatter fields mirroring HTML <head> metadata.
 export const twinIdentity = (input: TwinIdentityInput) => ({
@@ -64,15 +62,10 @@ export const twinIdentity = (input: TwinIdentityInput) => ({
 export const mdHeading = (level: 1 | 2 | 3, text: string) => `${"#".repeat(level)} ${escapeMdInline(text)}`;
 export const mdQuote = (text: string) => `> ${escapeMdInline(text)}`;
 
-export const mdBulletList = (items: ReadonlyArray<string>) =>
-  pipe(
-    items,
-    Array.map((item) => `- ${item}`),
-    Array.join("\n")
-  );
+export const mdBulletList = (items: ReadonlyArray<string>) => items.map((item) => `- ${item}`).join("\n");
 
 export const mdFact = (label: string, value: string) => `${escapeMdInline(label)}: ${escapeMdInline(value)}`;
-export const mdBody = (blocks: ReadonlyArray<string>) => pipe(blocks, Array.filter(String.isNonEmpty), Array.join("\n\n"));
+export const mdBody = (blocks: ReadonlyArray<string>) => blocks.filter(Boolean).join("\n\n");
 export const mdTitledSection = (title: string, body: string) => mdBody([mdHeading(2, title), body]);
 
 const translatedLink = (label: string, href: string, translate: Translate) => mdLink(translate(msg(label)), href);
@@ -87,10 +80,10 @@ export const mdIndexEntry = (label: string, canonical: string, twinUrl: string, 
 };
 
 export const mdDocumentLinks = (documents: ReadonlyArray<{ readonly label: string; readonly href: string }>, translate: Translate) =>
-  mdBulletList(Array.map(documents, ({ label, href }) => translatedLink(label, absoluteUrl(href), translate)));
+  mdBulletList(documents.map(({ label, href }) => translatedLink(label, absoluteUrl(href), translate)));
 
 export const mdProfileLinks = (profiles: ReadonlyArray<{ readonly name: string; readonly href: string }>) =>
-  Array.map(profiles, ({ name, href }) => mdFact(name, href));
+  profiles.map(({ name, href }) => mdFact(name, href));
 
 // 503 fallback body for Markdown twins.
 export const unavailableMarkdownBody = (translate: Translate) =>
@@ -112,9 +105,8 @@ const homeLink = (preferredLanguage: PreferredLanguage, translate: Translate) =>
 // Sibling twin links excluding the current page, plus AI indexes.
 export const twinIndexLinks = (copy: StaticPageCopy, translate: Translate) =>
   mdBulletList([
-    ...Array.map(
-      Array.filter(STATIC_PATHS, (path) => path !== copy.path),
-      (path) => translatedLink(STATIC_PAGES[path].label, markdownTwinUrl(STATIC_PAGES[path].mdHref, copy.preferredLanguage), translate)
+    ...STATIC_PATHS.filter((path) => path !== copy.path).map((path) =>
+      translatedLink(STATIC_PAGES[path].label, markdownTwinUrl(STATIC_PAGES[path].mdHref, copy.preferredLanguage), translate)
     ),
     ...AI_INDEX_MARKDOWN_LINKS,
   ]);

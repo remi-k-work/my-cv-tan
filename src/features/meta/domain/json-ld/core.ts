@@ -1,7 +1,7 @@
 // Pure schema.org JSON-LD graph construction and node deduplication.
 
 // services, features, and other libraries
-import { Array, Option, Predicate } from "effect";
+import { Predicate } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
 import { absoluteUrl } from "@/features/meta/domain/url";
 
@@ -68,21 +68,17 @@ const jsonLdScript = (data: unknown): JsonLdScript => ({ type: "application/ld+j
 
 const SCHEMA_CONTEXT = "https://schema.org";
 
-const declaredId = (node: JsonLdNode): Option.Option<string> =>
-  Predicate.isString(node["@id"]) && node["@type"] !== undefined ? Option.some(node["@id"]) : Option.none();
-
 // Merges nodes by @id, preserving initial order and overriding overlapping fields.
 export const jsonLdGraph = (nodes: ReadonlyArray<JsonLdNode>): JsonLdScript => {
-  const mergeSlot = (node: JsonLdNode, index: number): MergeSlot => Option.getOrElse(declaredId(node), () => index);
-
-  const merged = Array.reduce(nodes, new Map<MergeSlot, JsonLdNode>(), (slots, node, index) => {
-    const slot = mergeSlot(node, index);
+  const slots = new Map<MergeSlot, JsonLdNode>();
+  for (let index = 0; index < nodes.length; index++) {
+    const node = nodes[index]!;
+    const slot = Predicate.isString(node["@id"]) && node["@type"] !== undefined ? node["@id"] : index;
     const existing = slots.get(slot);
     slots.set(slot, existing === undefined ? node : { ...existing, ...node });
-    return slots;
-  });
+  }
 
-  return jsonLdScript({ "@context": SCHEMA_CONTEXT, "@graph": Array.fromIterable(merged.values()) });
+  return jsonLdScript({ "@context": SCHEMA_CONTEXT, "@graph": Array.from(slots.values()) });
 };
 
 // schema.org Article node for experience detail pages.

@@ -48,14 +48,12 @@ const experienceLine = (experience: Experience, preferredLanguage: PreferredLang
 };
 
 // Builds list lines for an experience type, or an empty marker when no items match.
-export const experienceLines = ({ experienceList, type, translate, preferredLanguage, entry }: ExperienceLinesInput) =>
-  Array.match(
-    Array.filter(experienceList, (experience) => experience.type === type),
-    {
-      onEmpty: () => mdEmptyMarker(translate),
-      onNonEmpty: (experiences) => mdBulletList(Array.map(experiences, (experience) => experienceLine(experience, preferredLanguage, entry))),
-    }
-  );
+export const experienceLines = ({ experienceList, type, translate, preferredLanguage, entry }: ExperienceLinesInput) => {
+  const experiences = experienceList.filter((experience) => experience.type === type);
+  return experiences.length === 0
+    ? mdEmptyMarker(translate)
+    : mdBulletList(experiences.map((experience) => experienceLine(experience, preferredLanguage, entry)));
+};
 
 // Builds the full Markdown twin document for an experience detail page.
 export const buildExperienceMd = ({ experience, preferredLanguage, translate }: ExperienceMdInput) => {
@@ -77,7 +75,7 @@ export const buildExperienceMd = ({ experience, preferredLanguage, translate }: 
       role,
       company,
       datePublished: year,
-      skills: Array.join(skillsUsed, ", "),
+      skills: skillsUsed.join(", "),
     }),
     mdHeading(1, headline),
     mdQuote(description),
@@ -86,7 +84,7 @@ export const buildExperienceMd = ({ experience, preferredLanguage, translate }: 
       translate(msg("Details")),
       mdBulletList([mdFact(translate(msg("Role")), role), mdFact(translate(msg("Company")), company), mdFact(translate(msg("Year")), year)])
     ),
-    mdTitledSection(translate(msg("Skills Used")), mdBulletList(Array.map(skillsUsed, (skill) => escapeMdInline(skill)))),
+    mdTitledSection(translate(msg("Skills Used")), mdBulletList(skillsUsed.map(escapeMdInline))),
     ...(links.length > 0 ? [mdTitledSection(translate(msg("Links")), mdBulletList(links))] : []),
     mdTitledSection(translate(msg("Pages")), detailIndexLinks(preferredLanguage, translate)),
   ]);

@@ -1,7 +1,6 @@
 // <link> tags and RFC 8288 Link-header projections for HTML heads and HTTP responses.
 
 // services, features, and other libraries
-import { Array, pipe } from "effect";
 import { absoluteUrl, markdownTwinUrl, withLanguageParam } from "./url";
 
 // types
@@ -32,7 +31,7 @@ const linkHeader = ({ href, rel, type, title, hreflang }: LinkValue) => {
   return `<${href}>; ${parts.join("; ")}`;
 };
 
-export const joinLinkHeader = (links: ReadonlyArray<LinkValue>) => pipe(links, Array.map(linkHeader), Array.join(", "));
+export const joinLinkHeader = (links: ReadonlyArray<LinkValue>) => links.map(linkHeader).join(", ");
 export const canonicalLink = (href: string): LinkTag => ({ rel: "canonical", href });
 
 export const markdownAlternateLink = (mdPath: string, preferredLanguage: PreferredLanguage): LinkTag => ({
@@ -49,19 +48,19 @@ export const llmsDiscoveryLink = (): LinkTag => ({ rel: "llms", href: absoluteUr
 export const LLMS_TXT_INDEX = { name: "llms.txt", url: absoluteUrl(LLMS_TXT_HREF) } as const;
 export const LLMS_FULL_TXT_INDEX = { name: "llms-full.txt", url: absoluteUrl(LLMS_FULL_TXT_HREF) } as const;
 export const AI_INDEXES = [LLMS_TXT_INDEX, LLMS_FULL_TXT_INDEX] as const;
-export const AI_INDEX_LINKS: ReadonlyArray<LinkValue> = Array.map(AI_INDEXES, ({ name, url }) => ({
+export const AI_INDEX_LINKS: ReadonlyArray<LinkValue> = AI_INDEXES.map(({ name, url }) => ({
   rel: "alternate",
   type: "text/plain",
   title: name,
   href: url,
 }));
 
-export const llmsAlternateLinks: ReadonlyArray<LinkTag> = Array.map(AI_INDEX_LINKS, ({ href, rel, type, title }) => ({ rel, href, type, title }));
+export const llmsAlternateLinks: ReadonlyArray<LinkTag> = AI_INDEX_LINKS.map(({ href, rel, type, title }) => ({ rel, href, type, title }));
 export const AI_INDEX_LINK_HEADER = joinLinkHeader(AI_INDEX_LINKS);
 
 // Hreflang alternates for every supported language plus x-default.
 export const languageVariantLinks = (markdownUrl: string): ReadonlyArray<LinkValue> => [
-  ...Array.map(SITE_LANGUAGES, (language): LinkValue => ({
+  ...SITE_LANGUAGES.map((language): LinkValue => ({
     rel: "alternate",
     type: "text/markdown",
     hreflang: language,

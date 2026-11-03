@@ -1,7 +1,7 @@
 // Route-specific schema.org JSON-LD graph generators for leaf page heads.
 
 // services, features, and other libraries
-import { Array, Option } from "effect";
+import { Option } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
 import { excerpt, experienceHeadline, partitionExperiences } from "@/features/experience/domain/helpers";
 import { articleNode, collectionNode, imageObject, pageGraph, personEdge, webPageNode, type JsonLdNodes } from "./core";
@@ -11,7 +11,7 @@ import { absoluteUrl, experiencePath, experienceScreenshot } from "@/features/me
 import type { PreferredLanguage } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
-import type { ExperienceHeadInput } from "../models";
+import type { ExperienceHeadInput } from "@/features/meta/domain/models";
 import type { LocalizedCopy } from "@/features/meta/domain/static-pages";
 
 interface HomeJsonLdInput extends LocalizedCopy {
@@ -28,21 +28,21 @@ import { META_DESCRIPTION_LENGTH, PERSON_ID, PROFILE_ID, PUBLISHER_ID, SITE_LANG
 
 // --- Home (ProfilePage) ---
 
-const experienceCollection = (input: { id: string; name: string; experiences: ExperienceList; preferredLanguage: PreferredLanguage }): JsonLdNodes =>
-  Array.match(input.experiences, {
-    onEmpty: (): JsonLdNodes => [],
-    onNonEmpty: (experiences) => [
-      collectionNode({
-        id: input.id,
-        name: input.name,
-        preferredLanguage: input.preferredLanguage,
-        parts: Array.map(experiences, (experience) => {
-          const url = absoluteUrl(experiencePath(experience.slug));
-          return { "@type": "WebPage", "@id": url, url, name: experienceHeadline(experience, input.preferredLanguage) };
-        }),
+const experienceCollection = (input: { id: string; name: string; experiences: ExperienceList; preferredLanguage: PreferredLanguage }): JsonLdNodes => {
+  if (input.experiences.length === 0) return [];
+
+  return [
+    collectionNode({
+      id: input.id,
+      name: input.name,
+      preferredLanguage: input.preferredLanguage,
+      parts: input.experiences.map((experience) => {
+        const url = absoluteUrl(experiencePath(experience.slug));
+        return { "@type": "WebPage", "@id": url, url, name: experienceHeadline(experience, input.preferredLanguage) };
       }),
-    ],
-  });
+    }),
+  ];
+};
 
 const experienceCollections = (employment: ExperienceList, projects: ExperienceList, preferredLanguage: PreferredLanguage): JsonLdNodes => [
   ...experienceCollection({
@@ -80,31 +80,29 @@ export const homeJsonLd = ({ pageName, description, experienceList, preferredLan
 
 const educationCollectionId = (url: string) => `${url}#education-list`;
 
-const schoolSubgraph = (url: string, educationList: EducationList, preferredLanguage: LocalizedCopy["preferredLanguage"]): JsonLdNodes =>
-  Array.match(educationList, {
-    onEmpty: (): JsonLdNodes => [],
-    onNonEmpty: (schools) => {
-      const schoolNodes = Array.map(schools, ({ name, info, location }, index) => ({
-        "@type": "EducationalOrganization",
-        "@id": `${url}#school-${index + 1}`,
-        name,
-        description: excerpt(info, META_DESCRIPTION_LENGTH),
-        address: location,
-        alumni: { "@id": PERSON_ID },
-      }));
+const schoolSubgraph = (url: string, educationList: EducationList, preferredLanguage: LocalizedCopy["preferredLanguage"]): JsonLdNodes => {
+  if (educationList.length === 0) return [];
 
-      return [
-        collectionNode({
-          id: educationCollectionId(url),
-          url,
-          name: `${SITE_NAME} — ${matchPreferredLanguage(preferredLanguage, "Education", "Edukacja")}`,
-          preferredLanguage,
-          parts: schoolNodes,
-        }),
-        personEdge({ alumniOf: Array.map(schoolNodes, ({ "@id": id }) => ({ "@id": id })) }),
-      ];
-    },
-  });
+  const schoolNodes = educationList.map(({ name, info, location }, index) => ({
+    "@type": "EducationalOrganization",
+    "@id": `${url}#school-${index + 1}`,
+    name,
+    description: excerpt(info, META_DESCRIPTION_LENGTH),
+    address: location,
+    alumni: { "@id": PERSON_ID },
+  }));
+
+  return [
+    collectionNode({
+      id: educationCollectionId(url),
+      url,
+      name: `${SITE_NAME} — ${matchPreferredLanguage(preferredLanguage, "Education", "Edukacja")}`,
+      preferredLanguage,
+      parts: schoolNodes,
+    }),
+    personEdge({ alumniOf: schoolNodes.map(({ "@id": id }) => ({ "@id": id })) }),
+  ];
+};
 
 export const educationJsonLd = ({ pageName, description, educationList, preferredLanguage }: EducationJsonLdInput): JsonLdNodes => {
   const url = absoluteUrl(EDUCATION_PATH);
@@ -196,7 +194,7 @@ export const experienceJsonLd = ({ experience, preferredLanguage }: ExperienceHe
         inLanguage: preferredLanguage,
         creator: { "@id": PERSON_ID },
         publisher: { "@id": PUBLISHER_ID },
-        keywords: Array.join(skillsUsed, ", "),
+        keywords: skillsUsed.join(", "),
         codeRepository: gitHubLink,
       };
 

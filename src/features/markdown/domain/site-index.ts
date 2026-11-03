@@ -1,10 +1,9 @@
 // Machine-readable discovery indexes for AI systems (llms.txt and llms-full.txt).
 
 // services, features, and other libraries
-import { Array, Record, String } from "effect";
+import { allEntries } from "./catalogue";
 import { experienceLines } from "./experience";
 import { demoteHeadings, escapeMd, translateSource } from "./text";
-import { allEntries } from "./catalogue";
 import { mdBody, mdBulletList, mdDocument, mdDocumentLinks, mdFact, mdHeading, mdIndexEntry, mdLink, mdProfileLinks, mdQuote, mdTitledSection } from "./blocks";
 import { absoluteUrl, markdownTwinUrl } from "@/features/meta/domain/url";
 
@@ -56,8 +55,8 @@ const ABOUT_SECTION = mdTitledSection(
       mdFact("Website", SITE_URL),
       mdFact("Role", `${JOB_TITLE} (self-taught)`),
       mdFact("Based in", `${HOME_LOCALITY}, ${HOME_COUNTRY_NAME} (${HOME_COUNTRY})`),
-      mdFact("Site languages", Array.join(Record.values(SITE_LANGUAGE_NAMES), " and ")),
-      mdFact("Focus", Array.join(KNOWS_ABOUT, ", ")),
+      mdFact("Site languages", Object.values(SITE_LANGUAGE_NAMES).join(" and ")),
+      mdFact("Focus", KNOWS_ABOUT.join(", ")),
     ]),
   ])
 );
@@ -66,15 +65,12 @@ const INDEX_NOTES_SECTION = mdTitledSection("Notes for AI systems", mdBulletList
 
 const COMPANION_NOTES_SECTION = mdTitledSection("Notes for AI systems", mdBulletList(AI_NOTES));
 
-export const DISCOVERY_LINES: ReadonlyArray<string> = Array.map(
-  [
-    { name: LLMS_TXT_INDEX.name, summary: "this index", url: LLMS_TXT_INDEX.url },
-    { name: LLMS_FULL_TXT_INDEX.name, summary: "the complete site in one document", url: LLMS_FULL_TXT_INDEX.url },
-    { name: "robots.txt", summary: "crawl directives", url: absoluteUrl(ROBOTS_TXT_HREF) },
-    { name: "sitemap.xml", summary: "sitemap", url: absoluteUrl(SITEMAP_HREF) },
-  ] as const,
-  ({ name, summary, url }) => `${mdLink(name, url)}: ${summary}.`
-);
+export const DISCOVERY_LINES: ReadonlyArray<string> = [
+  { name: LLMS_TXT_INDEX.name, summary: "this index", url: LLMS_TXT_INDEX.url },
+  { name: LLMS_FULL_TXT_INDEX.name, summary: "the complete site in one document", url: LLMS_FULL_TXT_INDEX.url },
+  { name: "robots.txt", summary: "crawl directives", url: absoluteUrl(ROBOTS_TXT_HREF) },
+  { name: "sitemap.xml", summary: "sitemap", url: absoluteUrl(SITEMAP_HREF) },
+].map(({ name, summary, url }) => `${mdLink(name, url)}: ${summary}.`);
 
 const DISCOVERY_SECTION = mdTitledSection("Discovery", mdBulletList(DISCOVERY_LINES));
 
@@ -85,7 +81,7 @@ export const SITE_OPENING: ReadonlyArray<string> = [mdHeading(1, SITE_NAME), mdQ
 const PAGES_SECTION = mdTitledSection(
   "Pages",
   mdBulletList([
-    ...Array.map(PAGE_ENTRIES, ({ name, canonical, twinUrl, summary }) => mdIndexEntry(name, canonical, twinUrl, summary)),
+    ...PAGE_ENTRIES.map(({ name, canonical, twinUrl, summary }) => mdIndexEntry(name, canonical, twinUrl, summary)),
     `${mdLink("Full site content", LLMS_FULL_TXT_INDEX.url)}: every page above in one document, for single-request ingestion.`,
   ])
 );
@@ -122,14 +118,14 @@ export const buildLlmsFullTxt = ({ pageTitles, experienceList, educationList }: 
     ...SITE_OPENING,
     'Complete Markdown content of every page, concatenated for single-request ingestion. Each section begins with its canonical HTML URL after "Source:", its Markdown twin after "Markdown:", and ends with the twin verbatim. Cite the canonical HTML URL, not this file.',
     ABOUT_SECTION,
-    mdTitledSection("Table of Contents", mdBulletList(Array.map(documents, ({ name, canonical, twinUrl }) => mdIndexEntry(name, canonical, twinUrl)))),
+    mdTitledSection("Table of Contents", mdBulletList(documents.map(({ name, canonical, twinUrl }) => mdIndexEntry(name, canonical, twinUrl)))),
     DISCOVERY_SECTION,
-    ...Array.map(documents, ({ name, canonical, twinUrl, render }) =>
+    ...documents.map(({ name, canonical, twinUrl, render }) =>
       mdBody([
         mdHeading(2, name),
         `Source: ${canonical}`,
         `Markdown: ${twinUrl}`,
-        demoteHeadings(String.trimEnd(render({ pageTitles, experienceList, educationList }))),
+        demoteHeadings(render({ pageTitles, experienceList, educationList }).trimEnd()),
       ])
     ),
     COMPANION_NOTES_SECTION,

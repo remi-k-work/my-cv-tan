@@ -1,14 +1,14 @@
 // Markdown twin catalogue declaring static and dynamic document descriptors.
 
 // services, features, and other libraries
-import { Array, Effect } from "effect";
+import { Effect } from "effect";
 import { absoluteUrl, experienceMarkdownPath, experiencePath, markdownTwinUrl } from "@/features/meta/domain/url";
 import { buildHomeMd, buildEducationMd, buildContactMd } from "./pages";
 import { buildExperienceMd } from "./experience";
 import { experienceHeadline } from "@/features/experience/domain/helpers";
 
 // types
-import type { PagePath, PageTitles } from "@/domain/models";
+import type { PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
 import type { LocalizedMdInput } from "./models";
@@ -37,7 +37,7 @@ export interface PageTwinSpec<Data> {
   readonly mdHref: string;
   readonly name: string;
   readonly summary: string;
-  readonly resolve: (datasets: DatasetsService, preferredLanguage: LocalizedMdInput["preferredLanguage"]) => Effect.Effect<Data, RequiredDataError>;
+  readonly resolve: (datasets: DatasetsService, preferredLanguage: PreferredLanguage) => Effect.Effect<Data, RequiredDataError>;
   readonly body: (pageTitles: PageTitles, data: Data, context: LocalizedMdInput) => string;
 }
 
@@ -88,7 +88,7 @@ export const CONTACT_TWIN: PageTwinSpec<{}> = pageTwin("/contact", {
 export const PAGE_TWINS = [HOME_TWIN, EDUCATION_TWIN, CONTACT_TWIN] as const;
 
 // Static page twin descriptors for AI index publication.
-export const PAGE_ENTRIES: ReadonlyArray<PageEntrySpec> = Array.map(PAGE_TWINS, (twin): PageEntrySpec => ({
+export const PAGE_ENTRIES: ReadonlyArray<PageEntrySpec> = PAGE_TWINS.map((twin): PageEntrySpec => ({
   ...twinEntry({
     name: twin.name,
     canonicalPath: twin.pagePath,
@@ -99,7 +99,7 @@ export const PAGE_ENTRIES: ReadonlyArray<PageEntrySpec> = Array.map(PAGE_TWINS, 
 }));
 
 const experienceEntries = (experienceList: ExperienceList): ReadonlyArray<TwinEntrySpec> =>
-  Array.map(experienceList, (experience) =>
+  experienceList.map((experience) =>
     twinEntry({
       name: experienceHeadline(experience, DEFAULT_LANGUAGE),
       canonicalPath: experiencePath(experience.slug),

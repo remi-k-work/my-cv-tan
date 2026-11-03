@@ -1,20 +1,22 @@
 // Page head builders emitting meta tags, canonical/alternate links, and JSON-LD structured data.
+
+// services, features, and other libraries
 import { Option } from "effect";
-import { experienceHeadline, excerpt } from "@/features/experience/domain/helpers";
-import { authorLink, canonicalLink, llmsDiscoveryLink, markdownAlternateLink } from "./links";
-import { absoluteUrl, experienceMarkdownPath, experiencePath, experienceScreenshot } from "./url";
-import { socialMeta } from "./social";
+import { excerpt, experienceHeadline } from "@/features/experience/domain/helpers";
 import { jsonLdGraph } from "./json-ld/core";
-import { siteNodes } from "./json-ld/site";
 import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd } from "./json-ld/pages";
-import { staticPageCopy } from "./static-pages";
+import { siteNodes } from "./json-ld/site";
 import { headLanguage } from "./language";
+import { authorLink, canonicalLink, llmsDiscoveryLink, markdownAlternateLink } from "./links";
 import { emptyHead } from "./models";
+import { socialMeta } from "./social";
+import { staticPageCopy } from "./static-pages";
+import { absoluteUrl, experienceMarkdownPath, experiencePath, experienceScreenshot } from "./url";
 
 // types
+import type { PagePath, PreferredLanguage } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
-import type { PagePath, PreferredLanguage } from "@/domain/models";
 import type { SocialImage, SocialMetaInput } from "./social";
 import type { JsonLdNodes } from "./json-ld/core";
 import type { StaticPageCopy } from "./static-pages";
@@ -67,12 +69,10 @@ export const routeHead = <TData>(
   build: (loaderData: NonNullable<TData>, preferredLanguage: PreferredLanguage) => PageHead,
   options: { readonly fallbackPath?: string } = {}
 ): PageHead => {
-  const preferredLanguage = headLanguage(matches);
-
-  return Option.match(Option.fromNullishOr(loaderData), {
-    onNone: () => (options.fallbackPath !== undefined ? fallbackHead(options.fallbackPath) : emptyHead),
-    onSome: (data) => build(data, preferredLanguage),
-  });
+  if (loaderData == null) {
+    return options.fallbackPath !== undefined ? fallbackHead(options.fallbackPath) : emptyHead;
+  }
+  return build(loaderData as NonNullable<TData>, headLanguage(matches));
 };
 
 // Shared head builder for static pages aligning copy, canonical links, and structured data.

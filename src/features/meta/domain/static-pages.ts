@@ -1,7 +1,6 @@
 // Shared definitions and localized copy for static pages and their markdown twins.
 
 // services, features, and other libraries
-import { Array, Record } from "effect";
 import { pageField } from "@/domain/helpers";
 import { absoluteUrl } from "./url";
 
@@ -98,12 +97,12 @@ export const STATIC_PAGES = {
   },
 } as const satisfies Record<PagePath, StaticPageSettings>;
 
-// Static page paths for sitemaps and graph cross-links.
-export const STATIC_PATHS: ReadonlyArray<PagePath> = Array.map(Record.keys(STATIC_PAGES), (path) => path as PagePath);
-
 export const HOME_PATH: PagePath = "/";
 export const EDUCATION_PATH: PagePath = "/education";
 export const CONTACT_PATH: PagePath = "/contact";
+
+// Static page paths for sitemaps and graph cross-links.
+export const STATIC_PATHS: ReadonlyArray<PagePath> = [HOME_PATH, EDUCATION_PATH, CONTACT_PATH];
 
 // Resolves localized static page content and SEO summaries.
 export const staticPageCopy = (pageTitles: PageTitles, pagePath: PagePath, preferredLanguage: PreferredLanguage): StaticPageCopy => {
