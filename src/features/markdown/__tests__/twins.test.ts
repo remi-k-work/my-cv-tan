@@ -4,17 +4,15 @@ import { Option } from "effect";
 import { buildExperienceMd } from "../domain/experience";
 import { buildNotFoundMd } from "../domain/not-found";
 import { buildContactMd, buildEducationMd, buildHomeMd } from "../domain/pages";
-import { twinIndexLinks } from "../domain/document-graph";
+import { twinIndexLinks, AI_INDEX_MARKDOWN_LINKS } from "../domain/document-graph";
 import { escapeMd, escapeMdInline } from "../domain/text";
 import { frontmatter, mdEmptyMarker } from "../domain/blocks";
 
-import { STATIC_PAGES } from "@/features/meta/domain/static-pages";
-import { AI_INDEX_URLS } from "@/features/meta/domain/links";
+import { STATIC_PAGES, type StaticPageCopy } from "@/features/meta/domain/static-pages";
 
 // types
 import type { PagePath, PageTitles } from "@/domain/models";
 import type { Experience } from "@/features/experience/domain/models";
-import type { StaticPageCopy } from "@/features/meta/domain/static-pages";
 
 const sampleExperience: Experience = {
   type: "e",
@@ -439,7 +437,9 @@ it("the twin graph enumerates the static pages from the one declaration every su
   for (const path of staticPaths) {
     const links = twinIndexLinks(copyOf(path), translateEn);
     // Every other static page plus the two AI indexes — nothing else, exactly once
-    assert.strictEqual((links.match(/^- \[/gm) ?? []).length, staticPaths.length - 1 + AI_INDEX_URLS.length);
+    assert.strictEqual((links.match(/^- \[/gm) ?? []).length, staticPaths.length - 1 + AI_INDEX_MARKDOWN_LINKS.length);
+    // The two indexes are exactly the advertised links, not a longer or shorter list
+    for (const index of AI_INDEX_MARKDOWN_LINKS) assert.include(links, `- ${index}`);
     // No twin advertises itself, in any location
     assert.notInclude(links, `${STATIC_PAGES[path].mdHref}?lang=en`);
     // Every sibling is pinned to the reader's own language, not a negotiated variant

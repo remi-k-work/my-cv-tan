@@ -115,7 +115,8 @@ it("robots.txt allows content, disallows API endpoints, and advertises the sitem
   assert.isTrue(robots.endsWith("Sitemap: https://www.remiforge.dev/sitemap.xml\n"), "the sitemap directive is the document's last line and the file ends terminated");
 
   // The route serves the document through the meta service, so the response carries the shared
-  // discovery headers (English, CDN-cacheable) the same way sitemap.xml does
+  // discovery headers (English, the reuse signal and the AI-index Link) the same way sitemap.xml
+  // does beside its own content type
   const response = await robotsHandler();
   assert.strictEqual(response.status, 200);
   assert.strictEqual(response.headers.get("Content-Type"), "text/plain; charset=utf-8");
@@ -134,7 +135,7 @@ it("robots.txt allows content, disallows API endpoints, and advertises the sitem
   assert.strictEqual(await first.text(), await second.text());
 });
 
-it("plain-text discovery responses are always English and CDN-cacheable", () => {
+it("plain-text discovery responses are always English and carry the shared reuse signal", () => {
   const response = txtResponse("# Plain");
   assert.strictEqual(response.status, 200);
   assert.strictEqual(response.headers.get("Content-Type"), "text/plain; charset=utf-8");

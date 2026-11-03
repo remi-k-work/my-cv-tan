@@ -1,19 +1,15 @@
-// services, features, and other libraries
+// Request parameter and URL parsing for Markdown endpoints.
 import { Array, flow, Option, Schema, String, pipe } from "effect";
 import { PreferredLanguage } from "@/domain/models";
 import { decodeUrlOption } from "@/features/meta/domain/url";
 
-// --- Request parsing for the .md endpoints ---
-
-// Built once at module scope: both query parameter and slug decode through total parsers, so hostile
-// input becomes None (a clean 404) rather than a throw from the middle of a document build.
 const decodePreferredLanguage = Schema.decodeUnknownOption(PreferredLanguage);
 const decodeUrlComponent = Option.liftThrowable(decodeURIComponent);
 
-const langFrom = (raw: string | null) => pipe(Option.fromNullishOr(raw), Option.map(flow(String.trim, String.toLowerCase)), Option.flatMap(decodePreferredLanguage));
+const langFrom = (raw: string | null) =>
+  pipe(Option.fromNullishOr(raw), Option.map(flow(String.trim, String.toLowerCase)), Option.flatMap(decodePreferredLanguage));
 
-// Extracts explicit ?lang= parameter; None triggers header/cookie language negotiation. The
-// decoder rejects unknown locales so a crawler can never pin an unsupported language variant.
+// Extracts and validates ?lang= parameter from request URL.
 export const parseLangParam = (url: string) =>
   pipe(
     decodeUrlOption(url),
@@ -21,14 +17,7 @@ export const parseLangParam = (url: string) =>
     Option.flatMap(langFrom)
   );
 
-// Extracts and safely decodes the slug from a .md endpoint.
-//
-// Each step is ordered so an unmatched or malformed input is data (None) instead of a throw, and the
-// raw path — including its literal `.md` extension — is what the first two steps reason about. The
-// empty-segment fallback keeps `Array.last` total, the extension check rejects an extensionless path,
-// decoding runs only after the extension is gone so a percent-encoded suffix can never masquerade as
-// one, and the final emptiness check turns `.md` and `%00.md` into clean misses.
-// Malformed percent-encoding becomes None rather than a URIError.
+// Extracts and safely percent-decodes experience slug from a /{slug}.md URL.
 export const slugFromMdPathname = (url: string) =>
   pipe(
     decodeUrlOption(url),

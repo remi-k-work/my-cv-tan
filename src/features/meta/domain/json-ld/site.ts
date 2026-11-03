@@ -19,27 +19,19 @@ import {
   WEBSITE_ID,
 } from "../constants";
 
-// Physical locality shared between Person and Organization for consistent geographical entity grounding
+// Physical locality shared between Person and Organization for entity grounding.
 const POSTAL_ADDRESS = {
   "@type": "PostalAddress",
   addressLocality: HOME_LOCALITY,
   addressCountry: HOME_COUNTRY,
 } as const;
 
-// The square avatar is the one image the site publishes; the two logo-shaped consumers read it
-// instead of the wide OG banner. Shared as one value rather than copied per node: the graph merge
-// (see jsonLdGraph) writes a new object whenever it has to fold two @ids, so nothing mutates this
+// Square headshot used for both Person avatar and Organization logo.
 const AVATAR_IMAGE_OBJECT = imageObject(AVATAR.src, AVATAR.width, AVATAR.height);
 
-// The homepage canonical (trailing slash)
 const HOME_URL = absoluteUrl("/");
 
-// Site-wide nodes declaring the WebSite, Person and Organization entities with stable URI @id
-// references. Exported as a node list rather than a finished script so each page head merges these
-// into its own single @graph: splitting them into a second block is what Google specifically
-// advises against, because a parser would have to reconcile two documents before it could resolve
-// the Person a page's mainEntity points at. All three nodes share the homepage URL and reciprocal
-// edges (author/publisher/member) so the graph triangle closes in one parse pass.
+// Site-wide schema.org entities (WebSite, Person, Organization) merged into each page head.
 export const siteNodes = [
   {
     "@type": "WebSite",
@@ -55,12 +47,9 @@ export const siteNodes = [
     "@type": "Person",
     "@id": PERSON_ID,
     name: SITE_NAME,
-    // alternateName is an alias that helps knowledge-graph disambiguation without fabricating a
-    // second identity.
     alternateName: "Remi Forge",
     description: PERSON_DESCRIPTION,
     url: HOME_URL,
-    // A square ImageObject satisfies Google Knowledge Graph logo/author requirements (>=112x112 px)
     image: AVATAR_IMAGE_OBJECT,
     jobTitle: JOB_TITLE,
     knowsAbout: [...KNOWS_ABOUT],
@@ -77,7 +66,6 @@ export const siteNodes = [
     address: POSTAL_ADDRESS,
     logo: AVATAR_IMAGE_OBJECT,
     sameAs: [...SOCIAL_LINKS],
-    // Reciprocal of the page graphs' publisher edges: the organization claims its person by @id
     member: { "@id": PERSON_ID },
   },
 ] as const;

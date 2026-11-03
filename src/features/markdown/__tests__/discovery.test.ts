@@ -2,19 +2,16 @@
 import { assert, it } from "@effect/vitest";
 import { Effect, Option } from "effect";
 import { recoverDataFailure, requireData } from "@/features/data/domain/required";
-import { discoveryTxtResponse, txtResponse, txtUnavailableResponse } from "@/features/meta/domain/response";
-import { CONTENT_SIGNAL, INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/features/meta/domain/constants";
-import { MARKDOWN_CONTENT_TYPE } from "../domain/constants";
+import { discoveryTxtResponse, mdNotFoundResponse, mdResponse, mdUnavailableResponse, txtResponse, txtUnavailableResponse } from "@/features/meta/domain/response";
+import { CONTENT_SIGNAL, INDEXABLE_ROBOTS, MD_CONTENT_TYPE, NOINDEX_FOLLOW, PERSON_DESCRIPTION } from "@/features/meta/domain/constants";
 import { buildLlmsTxt } from "../domain/site-index";
 import { buildLlmsFullTxt } from "../domain/full-content";
-import { mdNotFoundResponse, mdResponse, mdUnavailableResponse } from "@/features/meta/domain/response";
 import { unavailableIndexBody, unavailableMarkdownBody } from "@/features/markdown/domain/blocks";
 import { parseLangParam, slugFromMdPathname } from "../domain/request";
-import { SITE_OPENING } from "../domain/index-copy";
+import { SITE_OPENING, DISCOVERY_LINES } from "../domain/index-copy";
 import { escapeMd } from "../domain/text";
 import { experienceFromList } from "@/features/experience/domain/helpers";
-import { PERSON_DESCRIPTION } from "@/features/meta/domain/constants";
-import { DISCOVERY_LINES } from "@/features/meta/domain/links";
+import { absoluteUrl } from "@/features/meta/domain/url";
 
 // types
 import type { PageTitles } from "@/domain/models";
@@ -65,6 +62,13 @@ it("buildLlmsTxt indexes pages, about facts, grouped experience and negotiated l
   assert.include(txt, `Append \`?lang=pl\` to any \`.md\` URL to request Polish explicitly`);
   assert.include(txt, "Markdown responses follow the request's language preferences.");
   assert.include(txt, "English is the fallback when no supported preference is present.");
+  // The language-variants line is pinned in full: mdBulletList owns the bullet prefix, and a
+  // caller that hand-prefixed its item as well would publish a nested `- -` bullet an AI parser
+  // reads as a list inside a list
+  assert.include(
+    txt,
+    "- Polish: every page above is also available at its twin URL with `?lang=pl` appended (e.g. https://www.remiforge.dev/index.md?lang=pl). English is the source language."
+  );
   assert.include(txt, `Always cite the clean canonical HTML URL from each document's frontmatter`);
   // The XML sitemap is advertised exactly once, under Discovery: repeating it elsewhere would
   // tell an AI reader two different sections are the retrieval surface
@@ -208,6 +212,9 @@ it("buildLlmsFullTxt concatenates every verbatim twin behind its canonical URL",
   assert.include(txt, `type: "work-experience"`);
   // A table of contents names every document up front, before the verbatim bodies
   assert.include(txt, `## Table of Contents`);
+  // Pinned in full, not by prefix: the three index entry lists render one shape, and the
+  // summary-less table of contents is the variant no other assertion below covers
+  assert.include(txt, `- [Home](https://www.remiforge.dev/): Markdown: https://www.remiforge.dev/index.md?lang=en`);
   assert.include(txt, `- [Home](https://www.remiforge.dev/)`);
   assert.include(txt, `- [Education & Certificates](https://www.remiforge.dev/education)`);
   assert.include(txt, `- [Full-Stack Developer at Sample Co](https://www.remiforge.dev/sample-role)`);
@@ -254,7 +261,7 @@ it("response helpers set content types, indexing, cache, canonical, and language
     markdownPath: "/index.md",
   });
   assert.strictEqual(ok.status, 200);
-  assert.strictEqual(ok.headers.get("Content-Type"), MARKDOWN_CONTENT_TYPE);
+  assert.strictEqual(ok.headers.get("Content-Type"), MD_CONTENT_TYPE);
   assert.strictEqual(ok.headers.get("Content-Language"), "en");
   assert.strictEqual(ok.headers.get("Vary"), "Cookie, Accept-Language");
   // The twins inherit the same indexing directive the HTML heads emit
@@ -279,7 +286,7 @@ it("response helpers set content types, indexing, cache, canonical, and language
   // and Content-Location is the absolute representation a crawler can actually fetch
   const missing = mdNotFoundResponse("# Gone", "pl", Option.some("/gone.md"));
   assert.strictEqual(missing.status, 404);
-  assert.strictEqual(missing.headers.get("Content-Type"), MARKDOWN_CONTENT_TYPE);
+  assert.strictEqual(missing.headers.get("Content-Type"), MD_CONTENT_TYPE);
   assert.strictEqual(missing.headers.get("Content-Location"), "https://www.remiforge.dev/gone.md?lang=pl");
   assert.strictEqual(missing.headers.get("X-Robots-Tag"), "noindex, follow");
   assert.strictEqual(
@@ -295,7 +302,7 @@ it("response helpers set content types, indexing, cache, canonical, and language
 
   const unavailable = mdUnavailableResponse("# Temporarily unavailable", "pl");
   assert.strictEqual(unavailable.status, 503);
-  assert.strictEqual(unavailable.headers.get("Content-Type"), MARKDOWN_CONTENT_TYPE);
+  assert.strictEqual(unavailable.headers.get("Content-Type"), MD_CONTENT_TYPE);
   assert.strictEqual(unavailable.headers.get("Content-Language"), "pl");
   assert.strictEqual(unavailable.headers.get("Cache-Control"), "no-store");
   assert.strictEqual(unavailable.headers.get("X-Robots-Tag"), "noindex, follow");
@@ -323,12 +330,13 @@ it("response helpers set content types, indexing, cache, canonical, and language
   assert.strictEqual(unavailableTxt.headers.get("X-Robots-Tag"), "noindex, follow");
 
   // llms.txt indexes serve AI fetchers, not search results: noindex, but still crawlable
-  const discovery = discoveryTxtResponse("# Index", "/llms.txt");
+  const discovery = discoveryTxtResponse("# Index", absoluteUrl("/llms.txt"));
   assert.strictEqual(discovery.status, 200);
   assert.strictEqual(discovery.headers.get("Content-Type"), "text/plain; charset=utf-8");
   assert.strictEqual(discovery.headers.get("Cache-Control"), "public, max-age=3600, stale-while-revalidate=86400");
   assert.strictEqual(discovery.headers.get("X-Robots-Tag"), NOINDEX_FOLLOW);
-  // Content-Location names the canonical representation
+  // Content-Location is the already-absolute URL the response names, byte-equal to the URL the
+  // <head> and Link header advertise
   assert.strictEqual(discovery.headers.get("Content-Location"), "https://www.remiforge.dev/llms.txt");
   // A fetcher landing on one index learns about the other from the HTTP layer, the same way a
   // Markdown twin does — the discovery indexes were the one document family missing this header

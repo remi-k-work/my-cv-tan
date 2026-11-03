@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-import { escapeMd } from "../domain/text";
-import { mdFact } from "../domain/blocks";
+import { escapeMd, escapeMdInline as escapeInline } from "../domain/text";
+import { mdFact, mdLink } from "../domain/blocks";
 import { buildExperienceMd } from "../domain/experience";
 
 // types
@@ -56,6 +56,13 @@ it("escapeMd never destroys an authored character, whatever the shape it arrives
   assert.strictEqual(escapeMd("roughly ~30% of the time"), "roughly ~30% of the time");
 });
 
+it("mdLink neutralizes a hostile label without the caller pre-escaping it", () => {
+  // Every Markdown link the feature prints is built here, so the escape lives in one place instead
+  // of once per surface — a call site that escaped its own label would double the backslashes above.
+  assert.strictEqual(mdLink("Evil](label", "https://x.test/a"), "[Evil\\](label](https://x.test/a)");
+  assert.strictEqual(mdLink("A *b* _c_", "https://x.test/a"), "[A \\*b\\* \\_c\\_](https://x.test/a)");
+});
+
 it("escapeMd neutralizes a GFM table so authored pipes cannot fabricate one", () => {
   // A delimiter row under a pipe-separated header row opens a GFM table, and the pipe itself is
   // prose punctuation ("the ratio A | B mattered") so it cannot be escaped. The row is escaped
@@ -85,6 +92,3 @@ it("escapeMdInline drops padding through the escape pass's own trim, not a secon
   // Block-level escaping is unchanged: the trim is shared, not duplicated
   assert.strictEqual(escapeMd("# heading\n\n\n\nmore"), "\\# heading\n\nmore");
 });
-
-// Imported separately so the inline helper reads as the behavior under test rather than a fixture
-import { escapeMdInline as escapeInline } from "../domain/text";

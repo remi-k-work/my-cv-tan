@@ -1,18 +1,9 @@
-// services, features, and other libraries
-import { pageGraph, personEdge } from "./core";
+import { pageGraph, personEdge, type JsonLdNodes } from "./core";
 import { absoluteUrl } from "../url";
-
-// types
-import type { JsonLdNodes } from "./core";
-import type { LocalizedCopy } from "../static-pages";
-
-// constants
-import { CONTACT_PATH } from "../static-pages";
+import { CONTACT_PATH, type LocalizedCopy } from "../static-pages";
 import { PERSON_ID, SITE_LANGUAGES } from "../constants";
 
-// Contact: a ContactPage mirroring the visible content, the contact channel, and its breadcrumb.
-// The bilingual contact form is the published ContactPoint channel — no email or phone is exposed,
-// keeping the page crawlable without harvesting contact details.
+// ContactPage structured data with ContactPoint for the contact form.
 export const contactJsonLd = ({ pageName, description, preferredLanguage }: LocalizedCopy): JsonLdNodes => {
   const url = absoluteUrl(CONTACT_PATH);
   const contactPointId = `${url}#contact-point`;
