@@ -1,23 +1,32 @@
 // Route-specific schema.org JSON-LD graph generators for leaf page heads.
+
+// services, features, and other libraries
 import { Array, Option } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
 import { excerpt, experienceHeadline, partitionExperiences } from "@/features/experience/domain/helpers";
 import { articleNode, collectionNode, imageObject, pageGraph, personEdge, webPageNode, type JsonLdNodes } from "./core";
-import { absoluteUrl, experiencePath, experienceScreenshot } from "../url";
-import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH, type LocalizedCopy } from "../static-pages";
-import { META_DESCRIPTION_LENGTH, PERSON_ID, PROFILE_ID, PUBLISHER_ID, SITE_LANGUAGES, SITE_NAME, SITE_URL } from "../constants";
+import { absoluteUrl, experiencePath, experienceScreenshot } from "@/features/meta/domain/url";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
 import type { ExperienceHeadInput } from "../models";
-
-// --- Home (ProfilePage) ---
+import type { LocalizedCopy } from "@/features/meta/domain/static-pages";
 
 interface HomeJsonLdInput extends LocalizedCopy {
   readonly experienceList: ExperienceList;
 }
+
+interface EducationJsonLdInput extends LocalizedCopy {
+  readonly educationList: EducationList;
+}
+
+// constants
+import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/features/meta/domain/static-pages";
+import { META_DESCRIPTION_LENGTH, PERSON_ID, PROFILE_ID, PUBLISHER_ID, SITE_LANGUAGES, SITE_NAME, SITE_URL } from "@/features/meta/domain/constants";
+
+// --- Home (ProfilePage) ---
 
 const experienceCollection = (input: { id: string; name: string; experiences: ExperienceList; preferredLanguage: PreferredLanguage }): JsonLdNodes =>
   Array.match(input.experiences, {
@@ -68,10 +77,6 @@ export const homeJsonLd = ({ pageName, description, experienceList, preferredLan
 };
 
 // --- Education & Certificates (CollectionPage) ---
-
-interface EducationJsonLdInput extends LocalizedCopy {
-  readonly educationList: EducationList;
-}
 
 const educationCollectionId = (url: string) => `${url}#education-list`;
 

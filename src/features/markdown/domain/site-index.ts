@@ -1,12 +1,16 @@
 // Machine-readable discovery indexes for AI systems (llms.txt and llms-full.txt).
+
+// services, features, and other libraries
 import { Array, Record, String } from "effect";
 import { experienceLines } from "./experience";
 import { demoteHeadings, escapeMd, translateSource } from "./text";
-import { allEntries, PAGE_ENTRIES, type TwinData } from "./catalogue";
+import { allEntries } from "./catalogue";
 import { mdBody, mdBulletList, mdDocument, mdDocumentLinks, mdFact, mdHeading, mdIndexEntry, mdLink, mdProfileLinks, mdQuote, mdTitledSection } from "./blocks";
+import { absoluteUrl, markdownTwinUrl } from "@/features/meta/domain/url";
 
 // types
 import type { ExperienceList } from "@/features/experience/domain/models";
+import type { TwinData } from "./catalogue";
 
 // constants
 import { DOWNLOADABLE_DOCUMENTS, SOURCE_COPY } from "./constants";
@@ -28,7 +32,7 @@ import {
   SOCIAL_PROFILES,
 } from "@/features/meta/domain/constants";
 import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/links";
-import { absoluteUrl, markdownTwinUrl } from "@/features/meta/domain/url";
+import { PAGE_ENTRIES } from "./catalogue";
 
 // --- Shared AI Index Sections and Copy ---
 
@@ -100,7 +104,9 @@ export const buildLlmsTxt = (experienceList: ExperienceList) =>
     mdTitledSection("Portfolio Projects", experienceLines({ experienceList, type: "p", ...SOURCE_COPY, entry: "canonical" })),
     mdTitledSection(
       "Language Variants",
-      mdBulletList([`Polish: every page above is also available at its twin URL with \`?lang=pl\` appended (e.g. ${markdownTwinUrl(HOME_MD_HREF, "pl")}). English is the source language.`])
+      mdBulletList([
+        `Polish: every page above is also available at its twin URL with \`?lang=pl\` appended (e.g. ${markdownTwinUrl(HOME_MD_HREF, "pl")}). English is the source language.`,
+      ])
     ),
     PROFILES_SECTION,
     DISCOVERY_SECTION,
@@ -116,13 +122,15 @@ export const buildLlmsFullTxt = ({ pageTitles, experienceList, educationList }: 
     ...SITE_OPENING,
     'Complete Markdown content of every page, concatenated for single-request ingestion. Each section begins with its canonical HTML URL after "Source:", its Markdown twin after "Markdown:", and ends with the twin verbatim. Cite the canonical HTML URL, not this file.',
     ABOUT_SECTION,
-    mdTitledSection(
-      "Table of Contents",
-      mdBulletList(Array.map(documents, ({ name, canonical, twinUrl }) => mdIndexEntry(name, canonical, twinUrl)))
-    ),
+    mdTitledSection("Table of Contents", mdBulletList(Array.map(documents, ({ name, canonical, twinUrl }) => mdIndexEntry(name, canonical, twinUrl)))),
     DISCOVERY_SECTION,
     ...Array.map(documents, ({ name, canonical, twinUrl, render }) =>
-      mdBody([mdHeading(2, name), `Source: ${canonical}`, `Markdown: ${twinUrl}`, demoteHeadings(String.trimEnd(render({ pageTitles, experienceList, educationList })))])
+      mdBody([
+        mdHeading(2, name),
+        `Source: ${canonical}`,
+        `Markdown: ${twinUrl}`,
+        demoteHeadings(String.trimEnd(render({ pageTitles, experienceList, educationList }))),
+      ])
     ),
     COMPANION_NOTES_SECTION,
   ]);

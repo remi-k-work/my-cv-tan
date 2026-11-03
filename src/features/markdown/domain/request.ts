@@ -1,4 +1,6 @@
 // Request parameter and URL parsing for Markdown endpoints.
+
+// services, features, and other libraries
 import { Array, flow, Option, Schema, String, pipe } from "effect";
 import { PreferredLanguage } from "@/domain/models";
 import { decodeUrlOption } from "@/features/meta/domain/url";
@@ -21,7 +23,14 @@ export const parseLangParam = (url: string) =>
 export const slugFromMdPathname = (url: string) =>
   pipe(
     decodeUrlOption(url),
-    Option.map(({ pathname }) => pipe(pathname, String.split("/"), Array.last, Option.getOrElse(() => ""))),
+    Option.map(({ pathname }) =>
+      pipe(
+        pathname,
+        String.split("/"),
+        Array.last,
+        Option.getOrElse(() => "")
+      )
+    ),
     Option.filter(String.endsWith(".md")),
     Option.map(String.slice(0, -".md".length)),
     Option.flatMap(decodeUrlComponent),

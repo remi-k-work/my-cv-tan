@@ -1,4 +1,6 @@
 // OpenGraph and Twitter Card metadata generators.
+
+// services, features, and other libraries
 import { Array } from "effect";
 
 // constants
@@ -34,10 +36,18 @@ export interface SocialMetaInput {
 }
 
 // Supported alternate locales for og:locale:alternate tags.
-const alternateLocales = (preferredLanguage: PreferredLanguage) =>
-  Array.filter(SITE_LANGUAGES, (language) => language !== preferredLanguage);
+const alternateLocales = (preferredLanguage: PreferredLanguage) => Array.filter(SITE_LANGUAGES, (language) => language !== preferredLanguage);
 
-export const socialMeta = ({ title, description, canonical, image, preferredLanguage, twitterImage, ogType = "website", articleSection }: SocialMetaInput): ReadonlyArray<MetaTag> => {
+export const socialMeta = ({
+  title,
+  description,
+  canonical,
+  image,
+  preferredLanguage,
+  twitterImage,
+  ogType = "website",
+  articleSection,
+}: SocialMetaInput): ReadonlyArray<MetaTag> => {
   const twitter = twitterImage ?? GLOBAL_SOCIAL_IMAGE;
 
   // Article pages publish author and publisher profile URLs for authoritative attribution.
@@ -49,10 +59,7 @@ export const socialMeta = ({ title, description, canonical, image, preferredLang
         ]
       : [];
 
-  const section: ReadonlyArray<MetaTag> =
-    ogType === "article" && articleSection
-      ? [{ property: "article:section", content: articleSection }]
-      : [];
+  const section: ReadonlyArray<MetaTag> = ogType === "article" && articleSection ? [{ property: "article:section", content: articleSection }] : [];
 
   return [
     { property: "og:title", content: title },

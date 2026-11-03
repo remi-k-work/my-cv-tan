@@ -1,4 +1,6 @@
 // Rendering context and document inputs for Markdown twins.
+
+// types
 import type { Option } from "effect";
 import type { PageTitles, PreferredLanguage, Translate } from "@/domain/models";
 import type { Experience, ExperienceList } from "@/features/experience/domain/models";

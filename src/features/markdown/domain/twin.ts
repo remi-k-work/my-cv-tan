@@ -1,4 +1,6 @@
 // Markdown twin response pipeline: language negotiation, translation injection, and 503 error recovery.
+
+// services, features, and other libraries
 import { removeResponseHeader } from "@tanstack/react-start/server";
 import { Effect, Option } from "effect";
 import { translateForLanguage } from "@/lib/gt-translations";
@@ -14,7 +16,6 @@ import type { PreferredLanguage } from "@/domain/models";
 import type { LocalizedMdInput } from "./models";
 
 type MachineDocumentBody = (request: Request, context: LocalizedMdInput) => Effect.Effect<Response, RequiredDataError>;
-
 export type MachineDocument = (request: Request) => Effect.Effect<Response, never>;
 
 // Drops session cookies and Vary headers when ?lang= explicitly pins the response language for CDN caching.
@@ -29,11 +30,7 @@ const pinCacheVariant = (response: Response): Response => {
 // Loads translations for language, falling back to source strings on failure.
 const translateFor = (preferredLanguage: PreferredLanguage) =>
   Effect.tryPromise(() => translateForLanguage(preferredLanguage)).pipe(
-    Effect.catch((error) =>
-      Effect.logError(`[MARKDOWN]: translation snapshot unavailable for "${preferredLanguage}"`, error).pipe(
-        Effect.as(translateSource)
-      )
-    )
+    Effect.catch((error) => Effect.logError(`[MARKDOWN]: translation snapshot unavailable for "${preferredLanguage}"`, error).pipe(Effect.as(translateSource)))
   );
 
 // Wraps a markdown document renderer with language resolution, translation, recovery, and caching.

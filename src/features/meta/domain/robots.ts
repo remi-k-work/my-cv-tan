@@ -1,9 +1,9 @@
 // services, features, and other libraries
 import { Array } from "effect";
+import { absoluteUrl } from "./url";
 
 // constants
 import { CONTENT_SIGNAL, CRAWL_DELAY, SITEMAP_HREF } from "./constants";
-import { absoluteUrl } from "./url";
 
 // AI search engines with live web retrieval capabilities
 const AI_SEARCH_CRAWLERS = ["OAI-SearchBot", "Claude-SearchBot", "PerplexityBot", "YouBot", "DuckAssistBot"] as const;
@@ -29,17 +29,10 @@ const AI_DATASET_CRAWLERS = [
 ] as const;
 
 // Crawl directives shared by all bot groups per RFC 9309.
-const CONTENT_DIRECTIVES = [
-  "Allow: /",
-  "Allow: /*.md",
-  "Disallow: /api",
-  `Content-Signal: ${CONTENT_SIGNAL}`,
-  `Crawl-delay: ${CRAWL_DELAY}`,
-] as const;
+const CONTENT_DIRECTIVES = ["Allow: /", "Allow: /*.md", "Disallow: /api", `Content-Signal: ${CONTENT_SIGNAL}`, `Crawl-delay: ${CRAWL_DELAY}`] as const;
 
 // Generates a commented directive block terminated by an empty line per bot.
-const group = (comment: string, bots: ReadonlyArray<string>) =>
-  Array.flatMap(bots, (bot) => [`# ${comment}`, `User-agent: ${bot}`, ...CONTENT_DIRECTIVES, ""]);
+const group = (comment: string, bots: ReadonlyArray<string>) => Array.flatMap(bots, (bot) => [`# ${comment}`, `User-agent: ${bot}`, ...CONTENT_DIRECTIVES, ""]);
 
 // Complete robots.txt file exposing HTML, Markdown twins, and sitemap.
 export const ROBOTS_TXT = Array.join(

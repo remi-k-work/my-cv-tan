@@ -1,4 +1,6 @@
 // Shared constants for Markdown twins and AI discovery indexes.
+
+// services, features, and other libraries
 import { translateSource } from "./text";
 
 // types

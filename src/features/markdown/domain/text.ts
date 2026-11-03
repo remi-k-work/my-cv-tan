@@ -1,4 +1,6 @@
 // Markdown sanitization, inline escaping, and heading depth adjustments.
+
+// services, features, and other libraries
 import { Array, pipe, String } from "effect";
 
 // types
@@ -34,6 +36,7 @@ const WORD_RULES: ReadonlyArray<readonly [RegExp, string]> = [
 ];
 
 const MD_ESCAPE_RULES: ReadonlyArray<readonly [RegExp, string]> = [...NORMALIZE_RULES, ...INLINE_RULES, ...BLOCK_RULES, ...WORD_RULES];
+const DEMOTE_HEADINGS = /^(#{1,4})(?= )/gm;
 
 // Sanitizes authored prose to prevent inadvertent Markdown formatting or HTML injection.
 export const escapeMd = (text: string) =>
@@ -45,8 +48,6 @@ export const escapeMd = (text: string) =>
 
 // Escapes single-line values, collapsing newlines into spaces.
 export const escapeMdInline = (text: string) => escapeMd(pipe(text, String.replace(/\n+/g, " ")));
-
-const DEMOTE_HEADINGS = /^(#{1,4})(?= )/gm;
 
 // Demotes heading levels by two hashes for inclusion in full concatenated indexes.
 export const demoteHeadings = (markdown: string) => markdown.replace(DEMOTE_HEADINGS, (hashes) => `${hashes}##`);

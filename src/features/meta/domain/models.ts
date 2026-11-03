@@ -1,4 +1,6 @@
 // Strongly-typed head metadata and route head contracts.
+
+// types
 import type { Experience } from "@/features/experience/domain/models";
 import type { PageTitles, PreferredLanguage } from "@/domain/models";
 

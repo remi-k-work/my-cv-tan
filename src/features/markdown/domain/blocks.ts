@@ -1,17 +1,31 @@
 // Markdown block composition, formatting primitives, and document graph cross-links.
-import { msg } from "gt-tanstack-start";
+
+// services, features, and other libraries
 import { Array, Option, pipe, Record, String } from "effect";
+import { msg } from "gt-tanstack-start";
 import { absoluteUrl, decodeUrlOption, encodeParens, markdownTwinUrl } from "@/features/meta/domain/url";
-import { HOME_PATH, STATIC_PAGES, STATIC_PATHS, type StaticPageCopy } from "@/features/meta/domain/static-pages";
 import { escapeMd, escapeMdInline } from "./text";
 
 // types
 import type { PreferredLanguage, Translate } from "@/domain/models";
+import type { StaticPageCopy } from "@/features/meta/domain/static-pages";
+
+interface TwinIdentityInput {
+  readonly title: string;
+  readonly description: string;
+  readonly canonical: string;
+  readonly preferredLanguage: PreferredLanguage;
+}
 
 // constants
 import { BRANDED_TITLE, SITE_NAME } from "@/features/meta/domain/constants";
 import { AI_INDEXES, LLMS_TXT_INDEX } from "@/features/meta/domain/links";
 import { FRONTMATTER_DELIMITER } from "./constants";
+import { HOME_PATH, STATIC_PAGES, STATIC_PATHS } from "@/features/meta/domain/static-pages";
+
+export const AI_INDEX_MARKDOWN_LINKS: ReadonlyArray<string> = Array.map(AI_INDEXES, ({ name, url }) => mdLink(name, url));
+
+const HOME_LABEL = STATIC_PAGES[HOME_PATH].label;
 
 // Escapes control characters rejected by YAML 1.2 double-quoted scalars.
 const YAML_UNSAFE_CHARACTERS = /[\u007f-\u009f\u2028\u2029]/g;
@@ -40,12 +54,7 @@ export const frontmatter = (fields: Record.ReadonlyRecord<string, string>) =>
   );
 
 // Shared identity frontmatter fields mirroring HTML <head> metadata.
-export const twinIdentity = (input: {
-  readonly title: string;
-  readonly description: string;
-  readonly canonical: string;
-  readonly preferredLanguage: PreferredLanguage;
-}) => ({
+export const twinIdentity = (input: TwinIdentityInput) => ({
   title: BRANDED_TITLE(input.title),
   description: input.description,
   author: SITE_NAME,
@@ -54,21 +63,21 @@ export const twinIdentity = (input: {
 });
 
 export const mdHeading = (level: 1 | 2 | 3, text: string) => `${"#".repeat(level)} ${escapeMdInline(text)}`;
-
 export const mdQuote = (text: string) => `> ${escapeMdInline(text)}`;
 
-export const mdBulletList = (items: ReadonlyArray<string>) => pipe(items, Array.map((item) => `- ${item}`), Array.join("\n"));
+export const mdBulletList = (items: ReadonlyArray<string>) =>
+  pipe(
+    items,
+    Array.map((item) => `- ${item}`),
+    Array.join("\n")
+  );
 
 export const mdFact = (label: string, value: string) => `${escapeMdInline(label)}: ${escapeMdInline(value)}`;
-
 export const mdBody = (blocks: ReadonlyArray<string>) => pipe(blocks, Array.filter(String.isNonEmpty), Array.join("\n\n"));
-
 export const mdTitledSection = (title: string, body: string) => mdBody([mdHeading(2, title), body]);
 
 const translatedLink = (label: string, href: string, translate: Translate) => mdLink(translate(msg(label)), href);
-
 export const mdDocument = (blocks: ReadonlyArray<string>) => `${mdBody(blocks)}\n`;
-
 export const mdEmptyMarker = (translate: Translate) => `_${escapeMdInline(translate(msg("No entries.")))}_`;
 
 // Formats a machine-readable entry line with canonical URL and twin URL.
@@ -96,10 +105,6 @@ export const unavailableIndexBody = (name: string) =>
   `${name} is temporarily unavailable because required portfolio content could not be loaded. Please try again shortly.\n`;
 
 // --- Twin Document Graph Cross-Links ---
-
-export const AI_INDEX_MARKDOWN_LINKS: ReadonlyArray<string> = Array.map(AI_INDEXES, ({ name, url }) => mdLink(name, url));
-
-const HOME_LABEL = STATIC_PAGES[HOME_PATH].label;
 
 // Language-pinned link to the home page twin.
 const homeLink = (preferredLanguage: PreferredLanguage, translate: Translate) =>

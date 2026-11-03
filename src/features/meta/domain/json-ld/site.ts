@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { imageObject } from "./core";
-import { absoluteUrl } from "../url";
+import { absoluteUrl } from "@/features/meta/domain/url";
 
 // constants
 import {
@@ -17,14 +17,10 @@ import {
   SITE_NAME,
   SOCIAL_LINKS,
   WEBSITE_ID,
-} from "../constants";
+} from "@/features/meta/domain/constants";
 
 // Physical locality shared between Person and Organization for entity grounding.
-const POSTAL_ADDRESS = {
-  "@type": "PostalAddress",
-  addressLocality: HOME_LOCALITY,
-  addressCountry: HOME_COUNTRY,
-} as const;
+const POSTAL_ADDRESS = { "@type": "PostalAddress", addressLocality: HOME_LOCALITY, addressCountry: HOME_COUNTRY } as const;
 
 // Square headshot used for both Person avatar and Organization logo.
 const AVATAR_IMAGE_OBJECT = imageObject(AVATAR.src, AVATAR.width, AVATAR.height);

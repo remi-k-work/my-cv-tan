@@ -1,13 +1,12 @@
 // Shared definitions and localized copy for static pages and their markdown twins.
+
+// services, features, and other libraries
 import { Array, Record } from "effect";
 import { pageField } from "@/domain/helpers";
+import { absoluteUrl } from "./url";
 
 // types
 import type { PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
-
-// constants
-import { CONTACT_MD_HREF, EDUCATION_MD_HREF, HOME_MD_HREF, HOME_TITLE, PERSON_DESCRIPTION, SITE_DESCRIPTION } from "./constants";
-import { absoluteUrl } from "./url";
 
 type StaticPageType = "overview" | "education" | "contact";
 
@@ -40,6 +39,9 @@ interface StaticPageSettings {
   readonly copy: Readonly<Record<PreferredLanguage, StaticPageCopySource>>;
 }
 
+// constants
+import { CONTACT_MD_HREF, EDUCATION_MD_HREF, HOME_MD_HREF, HOME_TITLE, PERSON_DESCRIPTION, SITE_DESCRIPTION } from "./constants";
+
 // Static page definitions shared between HTML heads and Markdown frontmatter.
 export const STATIC_PAGES = {
   "/": {
@@ -50,7 +52,7 @@ export const STATIC_PAGES = {
       en: { heading: HOME_TITLE, intro: PERSON_DESCRIPTION, title: HOME_TITLE, description: SITE_DESCRIPTION },
       pl: {
         heading: "Programista stron internetowych w Rzeszowie",
-        intro: "Ambitny, samoukiem programista stron internetowych. Tworzę nowoczesne aplikacje internetowe i ciągle się rozwijam.",
+        intro: "Ambitny samouk i programista stron internetowych. Tworzę nowoczesne aplikacje internetowe i ciągle się rozwijam.",
         title: "Programista stron internetowych w Rzeszowie",
         description: "Remi Forge to programista stron internetowych z Rzeszowa, który tworzy aplikacje z użyciem React, TypeScript i nowoczesnych technologii.",
       },

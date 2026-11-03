@@ -1,9 +1,8 @@
 // Markdown twin catalogue declaring static and dynamic document descriptors.
+
+// services, features, and other libraries
 import { Array, Effect } from "effect";
 import { absoluteUrl, experienceMarkdownPath, experiencePath, markdownTwinUrl } from "@/features/meta/domain/url";
-import { STATIC_PAGES } from "@/features/meta/domain/static-pages";
-import { DEFAULT_LANGUAGE } from "@/features/meta/domain/constants";
-import { SOURCE_COPY } from "@/features/markdown/domain/constants";
 import { buildHomeMd, buildEducationMd, buildContactMd } from "./pages";
 import { buildExperienceMd } from "./experience";
 import { experienceHeadline } from "@/features/experience/domain/helpers";
@@ -42,10 +41,16 @@ export interface PageTwinSpec<Data> {
   readonly body: (pageTitles: PageTitles, data: Data, context: LocalizedMdInput) => string;
 }
 
-const pageTwin = <Data>(
-  pagePath: PagePath,
-  spec: Omit<PageTwinSpec<Data>, "pagePath" | "mdHref">
-): PageTwinSpec<Data> => ({ ...spec, pagePath, mdHref: STATIC_PAGES[pagePath].mdHref });
+// constants
+import { STATIC_PAGES } from "@/features/meta/domain/static-pages";
+import { DEFAULT_LANGUAGE } from "@/features/meta/domain/constants";
+import { SOURCE_COPY } from "@/features/markdown/domain/constants";
+
+const pageTwin = <Data>(pagePath: PagePath, spec: Omit<PageTwinSpec<Data>, "pagePath" | "mdHref">): PageTwinSpec<Data> => ({
+  ...spec,
+  pagePath,
+  mdHref: STATIC_PAGES[pagePath].mdHref,
+});
 
 const twinEntry = (input: {
   readonly name: string;

@@ -1,7 +1,8 @@
 // URL formatting and asset resolution for meta tags and machine-readable twins.
+
+// services, features, and other libraries
 import { Option, Schema, String, pipe } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
-import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain/constants";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
@@ -9,6 +10,7 @@ import type { SocialImageFacts } from "./social";
 
 // constants
 import { CV_EN_HREF, CV_PL_HREF, SITE_URL } from "./constants";
+import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain/constants";
 
 // Validates and parses URLs safely into an Option.
 export const decodeUrlOption = Schema.decodeUnknownOption(Schema.URLFromString);

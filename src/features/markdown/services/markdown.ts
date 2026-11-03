@@ -1,8 +1,8 @@
 // Markdown service providing finished pipelines for twins and AI discovery indexes.
+
+// services, features, and other libraries
 import { Context, Effect, Layer, Option } from "effect";
-import { Datasets, type DatasetsService, type LocalizedAccessor } from "@/features/meta/services/datasets";
-import { DEFAULT_LANGUAGE } from "@/features/meta/domain/constants";
-import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/links";
+import { Datasets } from "@/features/meta/services/datasets";
 import { absoluteUrl, experienceMarkdownPath, experiencePath } from "@/features/meta/domain/url";
 import { discoveryTxtResponse, mdNotFoundResponse, mdResponse, txtUnavailableResponse } from "@/features/meta/domain/response";
 import { recoverDataFailure, type RequiredDataError } from "@/features/data/domain/required";
@@ -13,21 +13,17 @@ import { documentResponse, type MachineDocument } from "@/features/markdown/doma
 import { slugFromMdPathname } from "@/features/markdown/domain/request";
 import { unavailableIndexBody } from "@/features/markdown/domain/blocks";
 import { buildLlmsFullTxt, buildLlmsTxt } from "@/features/markdown/domain/site-index";
-import { CONTACT_TWIN, EDUCATION_TWIN, HOME_TWIN, type PageTwinSpec } from "@/features/markdown/domain/catalogue";
 
 // types
 import type { LocalizedMdInput } from "@/features/markdown/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
+import type { DatasetsService, LocalizedAccessor } from "@/features/meta/services/datasets";
+import type { PageTwinSpec } from "@/features/markdown/domain/catalogue";
 
-// Service contract for route handlers serving machine-readable endpoints.
-interface MarkdownService {
-  readonly home: MachineDocument;
-  readonly education: MachineDocument;
-  readonly contact: MachineDocument;
-  readonly experience: MachineDocument;
-  readonly siteIndex: MachineDocument;
-  readonly siteIndexFull: MachineDocument;
-}
+// constants
+import { DEFAULT_LANGUAGE } from "@/features/meta/domain/constants";
+import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/links";
+import { CONTACT_TWIN, EDUCATION_TWIN, HOME_TWIN } from "@/features/markdown/domain/catalogue";
 
 // Builds a markdown HTTP response with canonical and twin route headers.
 const respond = (context: LocalizedMdInput, body: string, canonicalPath: string, markdownPath: string) =>
@@ -71,29 +67,23 @@ const experienceTwin = (experienceList: LocalizedAccessor<ExperienceList>): Mach
       }
 
       const experience = found.value;
-      return respond(
-        context,
-        buildExperienceMd({ experience, ...context }),
-        experiencePath(experience.slug),
-        experienceMarkdownPath(experience.slug)
-      );
+      return respond(context, buildExperienceMd({ experience, ...context }), experiencePath(experience.slug), experienceMarkdownPath(experience.slug));
     })
   );
 
 // English-only plain-text index pipeline with 503 recovery.
-const discoveryDocument = (
-  index: { readonly name: string; readonly url: string },
-  content: () => Effect.Effect<string, RequiredDataError>
-): MachineDocument =>
+const discoveryDocument =
+  (index: { readonly name: string; readonly url: string }, content: () => Effect.Effect<string, RequiredDataError>): MachineDocument =>
   (_request: Request) =>
     Effect.suspend(content).pipe(
       Effect.map((body) => discoveryTxtResponse(body, index.url)),
       recoverDataFailure(`[${index.name.toUpperCase()}]`, () => txtUnavailableResponse(unavailableIndexBody(index.name)))
     );
 
-export class Markdown extends Context.Service<Markdown, MarkdownService>()("Markdown", {
-  make: Effect.fn("Markdown.make")(function* () {
+export class Markdown extends Context.Service<Markdown>()("Markdown", {
+  make: Effect.gen(function* () {
     const datasets = yield* Datasets;
+
     return {
       home: pageTwinDocument(HOME_TWIN, datasets),
       education: pageTwinDocument(EDUCATION_TWIN, datasets),
@@ -108,9 +98,9 @@ export class Markdown extends Context.Service<Markdown, MarkdownService>()("Mark
           educationList: datasets.educationList(DEFAULT_LANGUAGE),
         }).pipe(Effect.map(buildLlmsFullTxt))
       ),
-    };
+    } as const;
   }),
 }) {
   // Layer resolves dataset dependencies internally so endpoints remain requirement-free.
-  static readonly layer = Layer.effect(this, this.make()).pipe(Layer.provide(Datasets.layer));
+  static readonly layer = Layer.effect(this, this.make).pipe(Layer.provide(Datasets.layer));
 }

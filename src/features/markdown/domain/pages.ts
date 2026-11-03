@@ -1,4 +1,6 @@
 // Page Markdown twins: home, education, contact, and not-found.
+
+// services, features, and other libraries
 import { Array, Option } from "effect";
 import { msg } from "gt-tanstack-start";
 import { matchPreferredLanguage } from "@/domain/helpers";
@@ -20,22 +22,21 @@ import {
   twinIndexLinks,
 } from "./blocks";
 import { experienceLines } from "./experience";
-import { staticPageCopy, CONTACT_PATH, EDUCATION_PATH, HOME_PATH, type StaticPageCopy } from "@/features/meta/domain/static-pages";
+import { staticPageCopy } from "@/features/meta/domain/static-pages";
 import { absoluteUrl, experiencePath } from "@/features/meta/domain/url";
 
 // types
 import type { PagePath, PageTitles, PreferredLanguage, Translate } from "@/domain/models";
 import type { BuildNotFoundMdInput, ContactMdInput, EducationMdInput, HomeMdInput } from "./models";
 import type { EducationList } from "@/features/education/domain/models";
+import type { StaticPageCopy } from "@/features/meta/domain/static-pages";
 
 // constants
 import { SITE_NAME, SOCIAL_PROFILES } from "@/features/meta/domain/constants";
 import { DOWNLOADABLE_DOCUMENTS } from "./constants";
+import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/features/meta/domain/static-pages";
 
-const profileLinks = (translate: Translate) => [
-  ...mdProfileLinks(SOCIAL_PROFILES),
-  mdFact(translate(msg("Base")), translate(msg("Rzeszów, Poland"))),
-];
+const profileLinks = (translate: Translate) => [...mdProfileLinks(SOCIAL_PROFILES), mdFact(translate(msg("Base")), translate(msg("Rzeszów, Poland")))];
 
 // Shared identity header and pull quote for static page twins.
 const pageOpening = (copy: StaticPageCopy) => [
@@ -80,7 +81,13 @@ const contactChannels = (canonical: string, translate: Translate) =>
 const pagesSection = (copy: StaticPageCopy, translate: Translate) => mdTitledSection(translate(msg("Pages")), twinIndexLinks(copy, translate));
 
 // Shared document spine for static twins.
-const staticTwinDocument = (pageTitles: PageTitles, pagePath: PagePath, preferredLanguage: PreferredLanguage, translate: Translate, sections: ReadonlyArray<string>) => {
+const staticTwinDocument = (
+  pageTitles: PageTitles,
+  pagePath: PagePath,
+  preferredLanguage: PreferredLanguage,
+  translate: Translate,
+  sections: ReadonlyArray<string>
+) => {
   const copy = staticPageCopy(pageTitles, pagePath, preferredLanguage);
 
   return mdDocument([...pageOpening(copy), escapeMd(copy.intro), ...sections, pagesSection(copy, translate)]);
@@ -98,8 +105,7 @@ export const buildEducationMd = ({ pageTitles, educationList, preferredLanguage,
 export const buildContactMd = ({ pageTitles, preferredLanguage, translate }: ContactMdInput) =>
   staticTwinDocument(pageTitles, CONTACT_PATH, preferredLanguage, translate, [contactChannels(absoluteUrl(CONTACT_PATH), translate)]);
 
-const detailOf = (slug: Option.Option<string>) =>
-  Option.map(slug, (value) => ({ slug: escapeMdInline(value), path: escapeMdInline(experiencePath(value)) }));
+const detailOf = (slug: Option.Option<string>) => Option.map(slug, (value) => ({ slug: escapeMdInline(value), path: escapeMdInline(experiencePath(value)) }));
 
 // Builds a structured Markdown 404 document with graph escape links.
 export const buildNotFoundMd = ({ slug, preferredLanguage, translate }: BuildNotFoundMdInput) => {
@@ -113,7 +119,8 @@ export const buildNotFoundMd = ({ slug, preferredLanguage, translate }: BuildNot
 
   const missing = Option.match(detail, {
     onNone: () => matchPreferredLanguage(preferredLanguage, "No Markdown document exists for this address.", "Dokument Markdown dla tego adresu nie istnieje."),
-    onSome: ({ path }) => matchPreferredLanguage(preferredLanguage, `No Markdown document exists for ${path}.`, `Dokument Markdown dla adresu ${path} nie istnieje.`),
+    onSome: ({ path }) =>
+      matchPreferredLanguage(preferredLanguage, `No Markdown document exists for ${path}.`, `Dokument Markdown dla adresu ${path} nie istnieje.`),
   });
 
   return mdDocument([

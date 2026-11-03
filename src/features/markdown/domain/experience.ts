@@ -1,4 +1,6 @@
 // Markdown twin renderer and index line generator for experience entries.
+
+// services, features, and other libraries
 import { Array, Option, pipe } from "effect";
 import { msg } from "gt-tanstack-start";
 import { experienceHeadline, excerpt } from "@/features/experience/domain/helpers";
@@ -42,9 +44,7 @@ const experienceLine = (experience: Experience, preferredLanguage: PreferredLang
   const summary = `${escapeMdInline(excerpt(experience.txt, LIST_EXCERPT_LENGTH))} (${escapeMdInline(experience.year)})`;
   const twin = markdownTwinUrl(experienceMarkdownPath(experience.slug), preferredLanguage);
 
-  return entry === "twin"
-    ? `${mdLink(headline, twin)}: ${summary}`
-    : mdIndexEntry(headline, absoluteUrl(experiencePath(experience.slug)), twin, summary);
+  return entry === "twin" ? `${mdLink(headline, twin)}: ${summary}` : mdIndexEntry(headline, absoluteUrl(experiencePath(experience.slug)), twin, summary);
 };
 
 // Builds list lines for an experience type, or an empty marker when no items match.

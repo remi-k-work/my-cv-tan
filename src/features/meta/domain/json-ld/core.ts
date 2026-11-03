@@ -1,19 +1,13 @@
 // Pure schema.org JSON-LD graph construction and node deduplication.
+
+// services, features, and other libraries
 import { Array, Option, Predicate } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
-import { absoluteUrl } from "../url";
+import { absoluteUrl } from "@/features/meta/domain/url";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
-import type { JsonLdScript } from "../models";
-
-// constants
-import { PERSON_ID, PUBLISHER_ID, WEBSITE_ID } from "../constants";
-
-// Escapes '<' as unicode to prevent breaking out of script tags when serialized.
-const jsonLdScript = (data: unknown): JsonLdScript => ({ type: "application/ld+json", children: JSON.stringify(data).replace(/</g, "\\u003C") });
-
-const SCHEMA_CONTEXT = "https://schema.org";
+import type { JsonLdScript } from "@/features/meta/domain/models";
 
 interface JsonLdNode {
   readonly "@type"?: string;
@@ -22,11 +16,60 @@ interface JsonLdNode {
 }
 
 export type JsonLdNodes = ReadonlyArray<JsonLdNode>;
+type MergeSlot = number | string;
+type PageNodeType = "WebPage" | "ContactPage" | "CollectionPage" | "ProfilePage";
+
+interface ArticleNodeInput {
+  readonly id: string;
+  readonly headline: string;
+  readonly description: string;
+  readonly preferredLanguage: PreferredLanguage;
+  readonly datePublished?: string;
+  readonly mainEntityOfPage?: string;
+}
+
+interface WebPageNodeInput {
+  readonly type: PageNodeType;
+  readonly id: string;
+  readonly url?: string;
+  readonly name: string;
+  readonly description: string;
+  readonly preferredLanguage: PreferredLanguage;
+  readonly breadcrumb?: boolean;
+  readonly mainEntity?: unknown;
+  readonly primaryImageOfPage?: unknown;
+  readonly datePublished?: string;
+}
+
+interface CollectionNodeInput {
+  readonly id: string;
+  readonly name: string;
+  readonly preferredLanguage: PreferredLanguage;
+  readonly parts: ReadonlyArray<unknown>;
+  readonly url?: string;
+}
+
+interface SubPageInput {
+  readonly type: PageNodeType;
+  readonly path: string;
+  readonly name: string;
+  readonly description: string;
+  readonly preferredLanguage: PreferredLanguage;
+  readonly mainEntity?: unknown;
+  readonly primaryImageOfPage?: unknown;
+  readonly datePublished?: string;
+}
+
+// constants
+import { PERSON_ID, PUBLISHER_ID, WEBSITE_ID } from "@/features/meta/domain/constants";
+
+// Escapes '<' as unicode to prevent breaking out of script tags when serialized.
+const jsonLdScript = (data: unknown): JsonLdScript => ({ type: "application/ld+json", children: JSON.stringify(data).replace(/</g, "\\u003C") });
+
+const SCHEMA_CONTEXT = "https://schema.org";
 
 const declaredId = (node: JsonLdNode): Option.Option<string> =>
   Predicate.isString(node["@id"]) && node["@type"] !== undefined ? Option.some(node["@id"]) : Option.none();
-
-type MergeSlot = number | string;
 
 // Merges nodes by @id, preserving initial order and overriding overlapping fields.
 export const jsonLdGraph = (nodes: ReadonlyArray<JsonLdNode>): JsonLdScript => {
@@ -42,17 +85,8 @@ export const jsonLdGraph = (nodes: ReadonlyArray<JsonLdNode>): JsonLdScript => {
   return jsonLdScript({ "@context": SCHEMA_CONTEXT, "@graph": Array.fromIterable(merged.values()) });
 };
 
-type PageNodeType = "WebPage" | "ContactPage" | "CollectionPage" | "ProfilePage";
-
 // schema.org Article node for experience detail pages.
-export const articleNode = (input: {
-  readonly id: string;
-  readonly headline: string;
-  readonly description: string;
-  readonly preferredLanguage: PreferredLanguage;
-  readonly datePublished?: string;
-  readonly mainEntityOfPage?: string;
-}): JsonLdNode =>
+export const articleNode = (input: ArticleNodeInput): JsonLdNode =>
   ({
     "@type": "Article",
     "@id": input.id,
@@ -66,18 +100,7 @@ export const articleNode = (input: {
   }) as JsonLdNode;
 
 // Shared schema.org WebPage node builder.
-export const webPageNode = (input: {
-  readonly type: PageNodeType;
-  readonly id: string;
-  readonly url?: string;
-  readonly name: string;
-  readonly description: string;
-  readonly preferredLanguage: PreferredLanguage;
-  readonly breadcrumb?: boolean;
-  readonly mainEntity?: unknown;
-  readonly primaryImageOfPage?: unknown;
-  readonly datePublished?: string;
-}) => ({
+export const webPageNode = (input: WebPageNodeInput) => ({
   "@type": input.type,
   "@id": input.id,
   url: input.url,
@@ -91,17 +114,6 @@ export const webPageNode = (input: {
   datePublished: input.datePublished,
 });
 
-interface SubPageInput {
-  readonly type: PageNodeType;
-  readonly path: string;
-  readonly name: string;
-  readonly description: string;
-  readonly preferredLanguage: PreferredLanguage;
-  readonly mainEntity?: unknown;
-  readonly primaryImageOfPage?: unknown;
-  readonly datePublished?: string;
-}
-
 // Emits a WebPage node paired with its two-level breadcrumb list.
 export const pageGraph = ({ type, path, name, description, preferredLanguage, mainEntity, primaryImageOfPage, datePublished }: SubPageInput): JsonLdNodes => {
   const id = absoluteUrl(path);
@@ -113,13 +125,7 @@ export const pageGraph = ({ type, path, name, description, preferredLanguage, ma
 };
 
 // Grouped collection node for grouped links or entities.
-export const collectionNode = (input: {
-  readonly id: string;
-  readonly name: string;
-  readonly preferredLanguage: PreferredLanguage;
-  readonly parts: ReadonlyArray<unknown>;
-  readonly url?: string;
-}) => ({
+export const collectionNode = (input: CollectionNodeInput) => ({
   "@type": "Collection",
   "@id": input.id,
   url: input.url,
@@ -143,8 +149,4 @@ const breadcrumb = (preferredLanguage: PreferredLanguage, path: string, name: st
   }) as const;
 
 // Extends the site Person entity with an additional edge during graph merging.
-export const personEdge = <Fields extends Readonly<Record<string, unknown>>>(fields: Fields) => ({
-  "@type": "Person",
-  "@id": PERSON_ID,
-  ...fields,
-});
+export const personEdge = <Fields extends Readonly<Record<string, unknown>>>(fields: Fields) => ({ "@type": "Person", "@id": PERSON_ID, ...fields });

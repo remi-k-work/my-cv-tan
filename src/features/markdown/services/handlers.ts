@@ -4,8 +4,15 @@ import { RuntimeServer } from "@/lib/runtime-server";
 import { Markdown } from "./markdown";
 
 // Bridges machine-readable document routes to TanStack server route handlers.
-const handler = <K extends keyof Markdown["Service"]>(name: K) => ({ request }: { request: Request }) =>
-  RuntimeServer.runPromise(pipe(Markdown, Effect.flatMap((markdown) => markdown[name](request))));
+const handler =
+  <K extends keyof Markdown["Service"]>(name: K) =>
+  ({ request }: { request: Request }) =>
+    RuntimeServer.runPromise(
+      pipe(
+        Markdown,
+        Effect.flatMap((markdown) => markdown[name](request))
+      )
+    );
 
 // Request-aware markdown twin endpoints.
 export const homeHandler = handler("home");

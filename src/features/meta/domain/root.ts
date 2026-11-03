@@ -1,7 +1,10 @@
 // Site-wide root head configuration: fallback metadata, icons, identity links, and discovery links.
+
+// services, features, and other libraries
 import { Array } from "effect";
 import { authorLink, llmsAlternateLinks, llmsDiscoveryLink, sitemapLink } from "./links";
-import { AUTHOR_URL, AVATAR, BRANDED_TITLE, HOME_TITLE, NOINDEX_FOLLOW, SITE_DESCRIPTION, SITE_NAME, SOCIAL_LINKS } from "./constants";
+
+// types
 import type { LinkTag, MetaTag } from "./models";
 
 // Root head excludes scripts; JSON-LD structured data is owned by leaf page heads.
@@ -10,6 +13,9 @@ interface RootHeadContract {
   readonly links: ReadonlyArray<LinkTag>;
   readonly scripts?: undefined;
 }
+
+// constants
+import { AUTHOR_URL, AVATAR, BRANDED_TITLE, HOME_TITLE, NOINDEX_FOLLOW, SITE_DESCRIPTION, SITE_NAME, SOCIAL_LINKS } from "./constants";
 
 const ME_LINKS = Array.map(SOCIAL_LINKS, (href) => ({ rel: "me", href }));
 
