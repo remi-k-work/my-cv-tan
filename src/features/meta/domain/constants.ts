@@ -114,5 +114,4 @@ export const INDEXABLE_ROBOTS = "index, follow, max-snippet:-1, max-image-previe
 export const CRAWL_DELAY = "10";
 
 export const TXT_CONTENT_TYPE = "text/plain; charset=utf-8";
-export const MD_CONTENT_TYPE = "text/markdown; charset=utf-8";
 export const XML_CONTENT_TYPE = "application/xml; charset=utf-8";

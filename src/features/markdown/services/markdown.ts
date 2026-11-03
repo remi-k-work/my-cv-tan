@@ -4,21 +4,23 @@
 import { Context, Effect, Layer, Option } from "effect";
 import { Datasets } from "@/features/meta/services/datasets";
 import { absoluteUrl, experienceMarkdownPath, experiencePath } from "@/features/meta/domain/url";
-import { discoveryTxtResponse, mdNotFoundResponse, mdResponse, txtUnavailableResponse } from "@/features/meta/domain/response";
-import { recoverDataFailure, type RequiredDataError } from "@/features/data/domain/required";
+import { discoveryTxtResponse, txtUnavailableResponse } from "@/features/meta/domain/response";
+import { mdNotFoundResponse, mdResponse } from "@/features/markdown/domain/response";
+import { recoverDataFailure } from "@/features/data/domain/required";
 import { experienceFromList } from "@/features/experience/domain/helpers";
 import { buildExperienceMd } from "@/features/markdown/domain/experience";
 import { buildNotFoundMd } from "@/features/markdown/domain/pages";
-import { documentResponse, type MachineDocument } from "@/features/markdown/domain/twin";
+import { documentResponse } from "@/features/markdown/domain/twin";
 import { slugFromMdPathname } from "@/features/markdown/domain/request";
-import { unavailableIndexBody } from "@/features/markdown/domain/blocks";
-import { buildLlmsFullTxt, buildLlmsTxt } from "@/features/markdown/domain/site-index";
+import { buildLlmsFullTxt, buildLlmsTxt, unavailableIndexBody } from "@/features/markdown/domain/site-index";
 
 // types
 import type { LocalizedMdInput } from "@/features/markdown/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
 import type { DatasetsService, LocalizedAccessor } from "@/features/meta/services/datasets";
 import type { PageTwinSpec } from "@/features/markdown/domain/catalogue";
+import type { RequiredDataError } from "@/features/data/domain/required";
+import type { MachineDocument } from "@/features/markdown/domain/twin";
 
 // constants
 import { DEFAULT_LANGUAGE } from "@/features/meta/domain/constants";

@@ -61,8 +61,7 @@ const ABOUT_SECTION = mdTitledSection(
   ])
 );
 
-const notesSection = (additional: ReadonlyArray<string>) =>
-  mdTitledSection("Notes for AI systems", mdBulletList([...AI_NOTES, ...additional]));
+const notesSection = (additional: ReadonlyArray<string>) => mdTitledSection("Notes for AI systems", mdBulletList([...AI_NOTES, ...additional]));
 
 const INDEX_NOTES_SECTION = notesSection([SINGLE_REQUEST_NOTE]);
 
@@ -134,3 +133,7 @@ export const buildLlmsFullTxt = ({ pageTitles, experienceList, educationList }: 
     COMPANION_NOTES_SECTION,
   ]);
 };
+
+// Plain-text 503 fallback body for AI index files.
+export const unavailableIndexBody = (name: string) =>
+  `${name} is temporarily unavailable because required portfolio content could not be loaded. Please try again shortly.\n`;

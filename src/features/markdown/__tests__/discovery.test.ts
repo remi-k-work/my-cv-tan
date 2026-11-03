@@ -2,10 +2,12 @@
 import { assert, it } from "@effect/vitest";
 import { Effect, Option } from "effect";
 import { recoverDataFailure, requireData } from "@/features/data/domain/required";
-import { discoveryTxtResponse, mdNotFoundResponse, mdResponse, mdUnavailableResponse, txtResponse, txtUnavailableResponse } from "@/features/meta/domain/response";
-import { CONTENT_SIGNAL, INDEXABLE_ROBOTS, MD_CONTENT_TYPE, NOINDEX_FOLLOW, PERSON_DESCRIPTION } from "@/features/meta/domain/constants";
-import { buildLlmsTxt, buildLlmsFullTxt, SITE_OPENING, DISCOVERY_LINES } from "../domain/site-index";
-import { unavailableIndexBody, unavailableMarkdownBody } from "@/features/markdown/domain/blocks";
+import { discoveryTxtResponse, txtResponse, txtUnavailableResponse } from "@/features/meta/domain/response";
+import { mdNotFoundResponse, mdResponse, mdUnavailableResponse } from "@/features/markdown/domain/response";
+import { CONTENT_SIGNAL, INDEXABLE_ROBOTS, NOINDEX_FOLLOW, PERSON_DESCRIPTION } from "@/features/meta/domain/constants";
+import { MD_CONTENT_TYPE } from "@/features/markdown/domain/constants";
+import { buildLlmsTxt, buildLlmsFullTxt, SITE_OPENING, DISCOVERY_LINES, unavailableIndexBody } from "../domain/site-index";
+import { unavailableMarkdownBody } from "../domain/pages";
 import { parseLangParam, slugFromMdPathname } from "../domain/request";
 import { escapeMd } from "../domain/text";
 import { experienceFromList } from "@/features/experience/domain/helpers";

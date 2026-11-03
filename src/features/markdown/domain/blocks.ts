@@ -4,7 +4,7 @@
 import { Option, pipe } from "effect";
 import { msg } from "gt-tanstack-start";
 import { absoluteUrl, decodeUrlOption, encodeParens, markdownTwinUrl } from "@/features/meta/domain/url";
-import { escapeMd, escapeMdInline } from "./text";
+import { escapeMdInline } from "./text";
 
 // types
 import type { PreferredLanguage, Translate } from "@/domain/models";
@@ -84,17 +84,6 @@ export const mdDocumentLinks = (documents: ReadonlyArray<{ readonly label: strin
 
 export const mdProfileLinks = (profiles: ReadonlyArray<{ readonly name: string; readonly href: string }>) =>
   profiles.map(({ name, href }) => mdFact(name, href));
-
-// 503 fallback body for Markdown twins.
-export const unavailableMarkdownBody = (translate: Translate) =>
-  mdDocument([
-    mdHeading(1, translate(msg("Content temporarily unavailable"))),
-    escapeMd(translate(msg("The required portfolio content could not be loaded. Please try again shortly."))),
-  ]);
-
-// Plain-text 503 fallback body for AI index files.
-export const unavailableIndexBody = (name: string) =>
-  `${name} is temporarily unavailable because required portfolio content could not be loaded. Please try again shortly.\n`;
 
 // --- Twin Document Graph Cross-Links ---
 

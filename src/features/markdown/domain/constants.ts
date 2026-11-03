@@ -14,6 +14,7 @@ export const LIST_EXCERPT_LENGTH = 140;
 
 // Frontmatter delimiters mirroring document metadata for crawlers.
 export const FRONTMATTER_DELIMITER = "---";
+export const MD_CONTENT_TYPE = "text/markdown; charset=utf-8";
 
 // Rendering context for unlocalized, English-only index documents.
 export const SOURCE_COPY: LocalizedMdInput = { preferredLanguage: DEFAULT_LANGUAGE, translate: translateSource };

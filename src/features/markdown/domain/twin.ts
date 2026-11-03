@@ -6,8 +6,8 @@ import { Effect, Option } from "effect";
 import { translateForLanguage } from "@/lib/gt-translations";
 import { requestPreferredLanguage } from "@/features/data/domain/helpers";
 import { recoverDataFailure, type RequiredDataError } from "@/features/data/domain/required";
-import { mdUnavailableResponse } from "@/features/meta/domain/response";
-import { unavailableMarkdownBody } from "@/features/markdown/domain/blocks";
+import { mdUnavailableResponse } from "./response";
+import { unavailableMarkdownBody } from "./pages";
 import { parseLangParam } from "./request";
 import { translateSource } from "./text";
 
