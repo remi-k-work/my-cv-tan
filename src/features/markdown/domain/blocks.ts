@@ -1,7 +1,8 @@
-// Markdown block composition and formatting primitives.
+// Markdown block composition, formatting primitives, and document graph cross-links.
 import { msg } from "gt-tanstack-start";
 import { Array, Option, pipe, Record, String } from "effect";
-import { absoluteUrl, decodeUrlOption, encodeParens } from "@/features/meta/domain/url";
+import { absoluteUrl, decodeUrlOption, encodeParens, markdownTwinUrl } from "@/features/meta/domain/url";
+import { HOME_PATH, STATIC_PAGES, STATIC_PATHS, type StaticPageCopy } from "@/features/meta/domain/static-pages";
 import { escapeMd, escapeMdInline } from "./text";
 
 // types
@@ -9,6 +10,7 @@ import type { PreferredLanguage, Translate } from "@/domain/models";
 
 // constants
 import { BRANDED_TITLE, SITE_NAME } from "@/features/meta/domain/constants";
+import { AI_INDEXES, LLMS_TXT_INDEX } from "@/features/meta/domain/links";
 import { FRONTMATTER_DELIMITER } from "./constants";
 
 // Escapes control characters rejected by YAML 1.2 double-quoted scalars.
@@ -63,7 +65,7 @@ export const mdBody = (blocks: ReadonlyArray<string>) => pipe(blocks, Array.filt
 
 export const mdTitledSection = (title: string, body: string) => mdBody([mdHeading(2, title), body]);
 
-export const translatedLink = (label: string, href: string, translate: Translate) => mdLink(translate(msg(label)), href);
+const translatedLink = (label: string, href: string, translate: Translate) => mdLink(translate(msg(label)), href);
 
 export const mdDocument = (blocks: ReadonlyArray<string>) => `${mdBody(blocks)}\n`;
 
@@ -92,3 +94,34 @@ export const unavailableMarkdownBody = (translate: Translate) =>
 // Plain-text 503 fallback body for AI index files.
 export const unavailableIndexBody = (name: string) =>
   `${name} is temporarily unavailable because required portfolio content could not be loaded. Please try again shortly.\n`;
+
+// --- Twin Document Graph Cross-Links ---
+
+export const AI_INDEX_MARKDOWN_LINKS: ReadonlyArray<string> = Array.map(AI_INDEXES, ({ name, url }) => mdLink(name, url));
+
+const HOME_LABEL = STATIC_PAGES[HOME_PATH].label;
+
+// Language-pinned link to the home page twin.
+const homeLink = (preferredLanguage: PreferredLanguage, translate: Translate) =>
+  translatedLink(HOME_LABEL, markdownTwinUrl(STATIC_PAGES[HOME_PATH].mdHref, preferredLanguage), translate);
+
+// Sibling twin links excluding the current page, plus AI indexes.
+export const twinIndexLinks = (copy: StaticPageCopy, translate: Translate) =>
+  mdBulletList([
+    ...Array.map(
+      Array.filter(STATIC_PATHS, (path) => path !== copy.path),
+      (path) => translatedLink(STATIC_PAGES[path].label, markdownTwinUrl(STATIC_PAGES[path].mdHref, copy.preferredLanguage), translate)
+    ),
+    ...AI_INDEX_MARKDOWN_LINKS,
+  ]);
+
+// Detail twin navigation links pointing back to home and AI discovery indexes.
+export const detailIndexLinks = (preferredLanguage: PreferredLanguage, translate: Translate) =>
+  mdBulletList([homeLink(preferredLanguage, translate), ...AI_INDEX_MARKDOWN_LINKS]);
+
+// Escape hatch line for 404 responses directing crawlers to valid index documents.
+export const deadEndEscapeLine = (preferredLanguage: PreferredLanguage, translate: Translate) => {
+  const indexLink = mdLink(LLMS_TXT_INDEX.name, LLMS_TXT_INDEX.url);
+
+  return `${escapeMdInline(translate(msg("See")))} ${homeLink(preferredLanguage, translate)} ${escapeMdInline(translate(msg("or")))} ${indexLink}.`;
+};

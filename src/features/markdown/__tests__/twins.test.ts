@@ -2,11 +2,9 @@
 import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
 import { buildExperienceMd } from "../domain/experience";
-import { buildNotFoundMd } from "../domain/not-found";
-import { buildContactMd, buildEducationMd, buildHomeMd } from "../domain/pages";
-import { twinIndexLinks, AI_INDEX_MARKDOWN_LINKS } from "../domain/document-graph";
+import { buildContactMd, buildEducationMd, buildHomeMd, buildNotFoundMd } from "../domain/pages";
 import { escapeMd, escapeMdInline } from "../domain/text";
-import { frontmatter, mdEmptyMarker } from "../domain/blocks";
+import { AI_INDEX_MARKDOWN_LINKS, frontmatter, mdEmptyMarker, twinIndexLinks } from "../domain/blocks";
 
 import { STATIC_PAGES, type StaticPageCopy } from "@/features/meta/domain/static-pages";
 

@@ -10,7 +10,7 @@ import { parseLangParam } from "./request";
 import { translateSource } from "./text";
 
 // types
-import type { PreferredLanguage, Translate } from "@/domain/models";
+import type { PreferredLanguage } from "@/domain/models";
 import type { LocalizedMdInput } from "./models";
 
 type MachineDocumentBody = (request: Request, context: LocalizedMdInput) => Effect.Effect<Response, RequiredDataError>;
@@ -27,11 +27,14 @@ const pinCacheVariant = (response: Response): Response => {
 };
 
 // Loads translations for language, falling back to source strings on failure.
-const translateFor = Effect.fnUntraced(function* (preferredLanguage: PreferredLanguage): Effect.fn.Return<Translate> {
-  return yield* Effect.tryPromise(() => translateForLanguage(preferredLanguage)).pipe(
-    Effect.catch((error) => Effect.logError(`[MARKDOWN]: translation snapshot unavailable for "${preferredLanguage}"`, error).pipe(Effect.as(translateSource)))
+const translateFor = (preferredLanguage: PreferredLanguage) =>
+  Effect.tryPromise(() => translateForLanguage(preferredLanguage)).pipe(
+    Effect.catch((error) =>
+      Effect.logError(`[MARKDOWN]: translation snapshot unavailable for "${preferredLanguage}"`, error).pipe(
+        Effect.as(translateSource)
+      )
+    )
   );
-});
 
 // Wraps a markdown document renderer with language resolution, translation, recovery, and caching.
 export const documentResponse = (render: MachineDocumentBody): MachineDocument =>
@@ -40,14 +43,9 @@ export const documentResponse = (render: MachineDocumentBody): MachineDocument =
     const preferredLanguage = requestPreferredLanguage(langOverride);
     const translate = yield* translateFor(preferredLanguage);
 
-    const document = render(request, { preferredLanguage, translate });
-
-    const response = yield* document.pipe(
+    const response = yield* render(request, { preferredLanguage, translate }).pipe(
       recoverDataFailure("[MARKDOWN]", () => mdUnavailableResponse(unavailableMarkdownBody(translate), preferredLanguage))
     );
 
-    return yield* Option.match(langOverride, {
-      onNone: () => Effect.succeed(response),
-      onSome: () => Effect.sync(() => pinCacheVariant(response)),
-    });
+    return Option.isSome(langOverride) ? pinCacheVariant(response) : response;
   });

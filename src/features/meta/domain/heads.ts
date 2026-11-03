@@ -6,10 +6,7 @@ import { absoluteUrl, experienceMarkdownPath, experiencePath, experienceScreensh
 import { socialMeta, type SocialImage, type SocialMetaInput } from "./social";
 import { jsonLdGraph, type JsonLdNodes } from "./json-ld/core";
 import { siteNodes } from "./json-ld/site";
-import { contactJsonLd } from "./json-ld/contact";
-import { educationJsonLd } from "./json-ld/education";
-import { experienceJsonLd } from "./json-ld/experience";
-import { homeJsonLd } from "./json-ld/home";
+import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd } from "./json-ld/pages";
 import { staticPageCopy, CONTACT_PATH, EDUCATION_PATH, HOME_PATH, type StaticPageCopy } from "./static-pages";
 import { headLanguage, type MatchChain } from "./language";
 import { emptyHead, type ExperienceHeadInput, type PageHead, type StaticPageHeadInput } from "./models";

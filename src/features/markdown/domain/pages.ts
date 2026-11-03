@@ -1,20 +1,35 @@
-// Static page Markdown twins: home, education, and contact.
-import { Array } from "effect";
+// Page Markdown twins: home, education, contact, and not-found.
+import { Array, Option } from "effect";
 import { msg } from "gt-tanstack-start";
+import { matchPreferredLanguage } from "@/domain/helpers";
 import { escapeMd, escapeMdInline } from "./text";
-import { frontmatter, mdBody, mdBulletList, mdDocument, mdDocumentLinks, mdEmptyMarker, mdFact, mdHeading, mdProfileLinks, mdQuote, mdTitledSection, twinIdentity } from "./blocks";
+import {
+  deadEndEscapeLine,
+  frontmatter,
+  mdBody,
+  mdBulletList,
+  mdDocument,
+  mdDocumentLinks,
+  mdEmptyMarker,
+  mdFact,
+  mdHeading,
+  mdProfileLinks,
+  mdQuote,
+  mdTitledSection,
+  twinIdentity,
+  twinIndexLinks,
+} from "./blocks";
 import { experienceLines } from "./experience";
-import { twinIndexLinks } from "./document-graph";
 import { staticPageCopy, CONTACT_PATH, EDUCATION_PATH, HOME_PATH, type StaticPageCopy } from "@/features/meta/domain/static-pages";
-import { absoluteUrl } from "@/features/meta/domain/url";
+import { absoluteUrl, experiencePath } from "@/features/meta/domain/url";
 
 // types
 import type { PagePath, PageTitles, PreferredLanguage, Translate } from "@/domain/models";
-import type { ContactMdInput, EducationMdInput, HomeMdInput } from "./models";
+import type { BuildNotFoundMdInput, ContactMdInput, EducationMdInput, HomeMdInput } from "./models";
 import type { EducationList } from "@/features/education/domain/models";
 
 // constants
-import { SOCIAL_PROFILES } from "@/features/meta/domain/constants";
+import { SITE_NAME, SOCIAL_PROFILES } from "@/features/meta/domain/constants";
 import { DOWNLOADABLE_DOCUMENTS } from "./constants";
 
 const profileLinks = (translate: Translate) => [
@@ -82,3 +97,29 @@ export const buildEducationMd = ({ pageTitles, educationList, preferredLanguage,
 
 export const buildContactMd = ({ pageTitles, preferredLanguage, translate }: ContactMdInput) =>
   staticTwinDocument(pageTitles, CONTACT_PATH, preferredLanguage, translate, [contactChannels(absoluteUrl(CONTACT_PATH), translate)]);
+
+const detailOf = (slug: Option.Option<string>) =>
+  Option.map(slug, (value) => ({ slug: escapeMdInline(value), path: escapeMdInline(experiencePath(value)) }));
+
+// Builds a structured Markdown 404 document with graph escape links.
+export const buildNotFoundMd = ({ slug, preferredLanguage, translate }: BuildNotFoundMdInput) => {
+  const title = translate(msg("Not Found"));
+  const detail = detailOf(slug);
+
+  const description = Option.match(detail, {
+    onNone: () => matchPreferredLanguage(preferredLanguage, "No page for this address.", "Nie znaleziono strony dla tego adresu."),
+    onSome: ({ slug }) => matchPreferredLanguage(preferredLanguage, `No page for slug "${slug}".`, `Nie znaleziono strony dla identyfikatora "${slug}".`),
+  });
+
+  const missing = Option.match(detail, {
+    onNone: () => matchPreferredLanguage(preferredLanguage, "No Markdown document exists for this address.", "Dokument Markdown dla tego adresu nie istnieje."),
+    onSome: ({ path }) => matchPreferredLanguage(preferredLanguage, `No Markdown document exists for ${path}.`, `Dokument Markdown dla adresu ${path} nie istnieje.`),
+  });
+
+  return mdDocument([
+    frontmatter({ title, description, lang: preferredLanguage, author: SITE_NAME }),
+    mdHeading(1, title),
+    missing,
+    deadEndEscapeLine(preferredLanguage, translate),
+  ]);
+};

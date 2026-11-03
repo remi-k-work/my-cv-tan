@@ -4,8 +4,21 @@ import { msg } from "gt-tanstack-start";
 import { experienceHeadline, excerpt } from "@/features/experience/domain/helpers";
 import { absoluteUrl, experienceMarkdownPath, experiencePath, markdownTwinUrl } from "@/features/meta/domain/url";
 import { escapeMd, escapeMdInline } from "./text";
-import { frontmatter, mdBulletList, mdDocument, mdEmptyMarker, mdExternalLink, mdFact, mdHeading, mdIndexEntry, mdLink, mdQuote, mdTitledSection, twinIdentity } from "./blocks";
-import { detailIndexLinks } from "./document-graph";
+import {
+  detailIndexLinks,
+  frontmatter,
+  mdBulletList,
+  mdDocument,
+  mdEmptyMarker,
+  mdExternalLink,
+  mdFact,
+  mdHeading,
+  mdIndexEntry,
+  mdLink,
+  mdQuote,
+  mdTitledSection,
+  twinIdentity,
+} from "./blocks";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
