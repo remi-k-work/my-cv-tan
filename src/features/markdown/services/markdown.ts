@@ -73,9 +73,9 @@ const experienceTwin = (experienceList: LocalizedAccessor<ExperienceList>): Mach
 
 // English-only plain-text index pipeline with 503 recovery.
 const discoveryDocument =
-  (index: { readonly name: string; readonly url: string }, content: () => Effect.Effect<string, RequiredDataError>): MachineDocument =>
+  (index: { readonly name: string; readonly url: string }, content: Effect.Effect<string, RequiredDataError>): MachineDocument =>
   (_request: Request) =>
-    Effect.suspend(content).pipe(
+    content.pipe(
       Effect.map((body) => discoveryTxtResponse(body, index.url)),
       recoverDataFailure(`[${index.name.toUpperCase()}]`, () => txtUnavailableResponse(unavailableIndexBody(index.name)))
     );
@@ -90,13 +90,17 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
       contact: pageTwinDocument(CONTACT_TWIN, datasets),
       experience: experienceTwin(datasets.experienceList),
       // AI discovery indexes describe fixed English documents resolved per request.
-      siteIndex: discoveryDocument(LLMS_TXT_INDEX, () => datasets.experienceList(DEFAULT_LANGUAGE).pipe(Effect.map(buildLlmsTxt))),
-      siteIndexFull: discoveryDocument(LLMS_FULL_TXT_INDEX, () =>
-        Effect.all({
-          pageTitles: datasets.pageTitles(DEFAULT_LANGUAGE),
-          experienceList: datasets.experienceList(DEFAULT_LANGUAGE),
-          educationList: datasets.educationList(DEFAULT_LANGUAGE),
-        }).pipe(Effect.map(buildLlmsFullTxt))
+      siteIndex: discoveryDocument(LLMS_TXT_INDEX, Effect.map(datasets.experienceList(DEFAULT_LANGUAGE), buildLlmsTxt)),
+      siteIndexFull: discoveryDocument(
+        LLMS_FULL_TXT_INDEX,
+        Effect.map(
+          Effect.all({
+            pageTitles: datasets.pageTitles(DEFAULT_LANGUAGE),
+            experienceList: datasets.experienceList(DEFAULT_LANGUAGE),
+            educationList: datasets.educationList(DEFAULT_LANGUAGE),
+          }),
+          buildLlmsFullTxt
+        )
       ),
     } as const;
   }),

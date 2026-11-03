@@ -23,8 +23,7 @@ const sitemapDocument = Effect.gen(function* () {
   const slugs = pipe(
     lists,
     Array.flatMap((list) => list.map(({ slug }) => slug)),
-    Array.dedupe,
-    Array.map((slug) => ({ slug }) as const)
+    Array.dedupe
   );
 
   return sitemapResponse(buildSitemapXml(slugs));

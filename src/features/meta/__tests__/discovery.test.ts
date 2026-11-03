@@ -23,7 +23,7 @@ const sampleExperience: Experience = {
 };
 
 it("sitemap omits fabricated last-modification dates and leads with the canonical homepage", () => {
-  const xml = buildSitemapXml([{ slug: sampleExperience.slug }]);
+  const xml = buildSitemapXml([sampleExperience.slug]);
   assert.include(xml, "https://www.remiforge.dev/sample-role");
   assert.notInclude(xml, "<lastmod>");
   // Soft crawl signal: static canonicals (homepage first) precede the detail pages
@@ -37,12 +37,12 @@ it("sitemap home URL equals the homepage canonical exactly", () => {
 });
 
 it("sitemap lists canonical HTML pages only — never the Markdown twins", () => {
-  const xml = buildSitemapXml([{ slug: sampleExperience.slug }]);
+  const xml = buildSitemapXml([sampleExperience.slug]);
   assert.notInclude(xml, ".md");
 });
 
 it("sitemap percent-encodes unsafe slug characters in generated URLs", () => {
-  const xml = buildSitemapXml([{ slug: `danger<&>"'` }]);
+  const xml = buildSitemapXml([`danger<&>"'`]);
   assert.include(xml, "https://www.remiforge.dev/danger%3C%26%3E%22&apos;");
   assert.notInclude(xml, "<loc>https://www.remiforge.dev/danger<&>");
 });
@@ -50,7 +50,7 @@ it("sitemap percent-encodes unsafe slug characters in generated URLs", () => {
 it("sitemap unions every supported language without emitting duplicate URLs", () => {
   // Both locales resolve the same slug, plus an entry that exists only in a translated list
   const translatedOnly = { ...sampleExperience, slug: "translated-only" };
-  const xml = buildSitemapXml([{ slug: sampleExperience.slug }, { slug: translatedOnly.slug }]);
+  const xml = buildSitemapXml([sampleExperience.slug, translatedOnly.slug]);
 
   assert.strictEqual((xml.match(/<loc>https:\/\/www\.remiforge\.dev\/sample-role<\/loc>/g) ?? []).length, 1);
   // Dedupe keeps first-seen order, so a translated-only entry lands after the source list
@@ -58,7 +58,7 @@ it("sitemap unions every supported language without emitting duplicate URLs", ()
 });
 
 it("sitemap success responses carry the XML content type, noindex, and hour-long public caching", () => {
-  const ok = sitemapResponse(buildSitemapXml([{ slug: sampleExperience.slug }]));
+  const ok = sitemapResponse(buildSitemapXml([sampleExperience.slug]));
   assert.strictEqual(ok.status, 200);
   assert.strictEqual(ok.headers.get("Content-Type"), "application/xml; charset=utf-8");
   assert.strictEqual(ok.headers.get("Cache-Control"), "public, max-age=3600, stale-while-revalidate=86400");
