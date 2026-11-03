@@ -23,8 +23,6 @@ import { AI_INDEXES, LLMS_TXT_INDEX } from "@/features/meta/domain/links";
 import { FRONTMATTER_DELIMITER } from "./constants";
 import { HOME_PATH, STATIC_PAGES, STATIC_PATHS } from "@/features/meta/domain/static-pages";
 
-export const AI_INDEX_MARKDOWN_LINKS: ReadonlyArray<string> = Array.map(AI_INDEXES, ({ name, url }) => mdLink(name, url));
-
 const HOME_LABEL = STATIC_PAGES[HOME_PATH].label;
 
 // Escapes control characters rejected by YAML 1.2 double-quoted scalars.
@@ -34,6 +32,7 @@ const yamlValue = (value: string) =>
   JSON.stringify(value).replace(YAML_UNSAFE_CHARACTERS, (character) => `\\u${character.charCodeAt(0).toString(16).padStart(4, "0")}`);
 
 export const mdLink = (label: string, href: string) => `[${escapeMdInline(label)}](${href})`;
+export const AI_INDEX_MARKDOWN_LINKS: ReadonlyArray<string> = Array.map(AI_INDEXES, ({ name, url }) => mdLink(name, url));
 
 // Formats external web links, omitting non-http/https protocols.
 export const mdExternalLink = (label: string, href: string) =>
