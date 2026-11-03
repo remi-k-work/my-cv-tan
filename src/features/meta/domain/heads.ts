@@ -1,26 +1,25 @@
-// Page head builders emitting meta tags, canonical/alternate links, and JSON-LD structured data.
+// HTML head configuration and builders for root and leaf routes.
 
 // services, features, and other libraries
-import { Option } from "effect";
+import { Array, Option, Schema, pipe } from "effect";
 import { excerpt, experienceHeadline } from "@/features/experience/domain/helpers";
+import { PreferredLanguage } from "@/domain/models";
 import { jsonLdGraph } from "./json-ld/core";
 import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd } from "./json-ld/pages";
 import { siteNodes } from "./json-ld/site";
-import { headLanguage } from "./language";
-import { authorLink, canonicalLink, llmsDiscoveryLink, markdownAlternateLink } from "./links";
+import { authorLink, canonicalLink, llmsDiscoveryLink, markdownAlternateLink, sitemapLink } from "./links";
 import { socialMeta } from "./social";
 import { staticPageCopy } from "./static-pages";
 import { absoluteUrl, experienceMarkdownPath, experiencePath, experienceScreenshot } from "./url";
 
 // types
-import type { PagePath, PreferredLanguage } from "@/domain/models";
+import type { PagePath } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
 import type { SocialImage, SocialMetaInput } from "./social";
 import type { JsonLdNodes } from "./json-ld/core";
 import type { StaticPageCopy } from "./static-pages";
-import type { MatchChain } from "./language";
-import type { ExperienceHeadInput, PageHead, StaticPageHeadInput } from "./models";
+import type { ExperienceHeadInput, LinkTag, MetaTag, PageHead, StaticPageHeadInput } from "./models";
 
 interface PageHeadSpec extends SocialMetaInput {
   readonly markdownPath: string;
@@ -29,8 +28,65 @@ interface PageHeadSpec extends SocialMetaInput {
 }
 
 // constants
-import { AUTHOR_URL, BRANDED_TITLE, GLOBAL_SOCIAL_IMAGE, INDEXABLE_ROBOTS, META_DESCRIPTION_LENGTH, NOINDEX_FOLLOW, SITE_DESCRIPTION } from "./constants";
+import {
+  AUTHOR_URL,
+  AVATAR,
+  BRANDED_TITLE,
+  DEFAULT_LANGUAGE,
+  GLOBAL_SOCIAL_IMAGE,
+  HOME_TITLE,
+  INDEXABLE_ROBOTS,
+  META_DESCRIPTION_LENGTH,
+  NOINDEX_FOLLOW,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SOCIAL_LINKS,
+} from "./constants";
 import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "./static-pages";
+import { AI_INDEX_LINKS } from "./links";
+
+// TanStack's route head chain provides the root loader data first.
+export type MatchChain = ReadonlyArray<{ readonly loaderData?: unknown }>;
+
+const decodeRootLoaderData = Schema.decodeUnknownOption(Schema.Struct({ preferredLanguage: PreferredLanguage }));
+
+export const headLanguage = (matches: MatchChain): PreferredLanguage =>
+  pipe(
+    Array.head(matches),
+    Option.flatMap(({ loaderData }) => decodeRootLoaderData(loaderData)),
+    Option.map(({ preferredLanguage }) => preferredLanguage),
+    Option.getOrElse(() => DEFAULT_LANGUAGE)
+  );
+
+interface RootHeadContract {
+  readonly meta: ReadonlyArray<MetaTag>;
+  readonly links: ReadonlyArray<LinkTag>;
+  readonly scripts?: undefined;
+}
+
+const ME_LINKS = SOCIAL_LINKS.map((href) => ({ rel: "me", href }));
+
+// The root owns fallbacks and discovery links; leaf routes add their canonical and JSON-LD.
+export const ROOT_HEAD = {
+  meta: [
+    { charSet: "utf-8" },
+    { name: "viewport", content: "width=device-width, initial-scale=1" },
+    { name: "theme-color", content: "#1d2549" },
+    { title: BRANDED_TITLE(HOME_TITLE) },
+    { name: "description", content: SITE_DESCRIPTION },
+    { name: "author", content: SITE_NAME },
+    { name: "robots", content: NOINDEX_FOLLOW },
+  ],
+  links: [
+    { rel: "icon", href: "/icon.svg", type: "image/svg+xml" },
+    { rel: "apple-touch-icon", href: AVATAR.src },
+    authorLink(AUTHOR_URL),
+    llmsDiscoveryLink(),
+    sitemapLink(),
+    ...ME_LINKS,
+    ...AI_INDEX_LINKS,
+  ],
+} satisfies RootHeadContract;
 
 const EMPTY_HEAD: PageHead = { meta: [], links: [], scripts: [] };
 

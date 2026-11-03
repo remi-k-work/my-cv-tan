@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { AI_INDEX_LINKS, AI_INDEX_LINK_HEADER, joinLinkHeader, languageVariantLinks } from "../domain/links";
-import { ROOT_HEAD } from "../domain/root";
+import { ROOT_HEAD } from "../domain/heads";
 
 // --- The Link header ---
 // The HTML <head> and the HTTP Link header are two projections of one declaration. These tests pin

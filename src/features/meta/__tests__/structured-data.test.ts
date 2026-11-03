@@ -1,8 +1,7 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { Option, Schema, pipe } from "effect";
-import { contactHead, educationHead, experienceHead, homeHead } from "../domain/heads";
-import { ROOT_HEAD } from "../domain/root";
+import { contactHead, educationHead, experienceHead, homeHead, ROOT_HEAD } from "../domain/heads";
 import { siteNodes } from "../domain/json-ld/site";
 import { jsonLdGraph } from "../domain/json-ld/core";
 

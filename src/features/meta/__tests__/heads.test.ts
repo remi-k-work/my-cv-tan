@@ -1,9 +1,7 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-import { contactHead, educationHead, experienceHead, homeHead } from "../domain/heads";
-import { ROOT_HEAD } from "../domain/root";
+import { contactHead, educationHead, experienceHead, headLanguage, homeHead, ROOT_HEAD } from "../domain/heads";
 import { canonicalLink } from "../domain/links";
-import { headLanguage } from "../domain/language";
 import { STATIC_PAGES } from "../domain/static-pages";
 import { withLanguageParam } from "../domain/url";
 
@@ -31,7 +29,7 @@ const stablePageTitles: PageTitles = {
   "/contact": { eyebrow: "Contact", heading: "Stable contact title", intro: "Stable contact description." },
 };
 
-// The loader payload shapes headLanguage/languageFromMatches see: a valid locale, an unsupported
+// The loader payload shapes headLanguage sees: a valid locale, an unsupported
 // one, and a missing match entry (404 / SSR shell renders before the root loader resolves)
 const rootLoaderData = [
   { loaderData: { preferredLanguage: "pl" } },

@@ -18,7 +18,7 @@ const robotsDocument = Effect.sync(() => txtResponse(ROBOTS_TXT));
 // Sitemap unions unique slugs across all supported languages.
 const sitemapDocument = Effect.gen(function* () {
   const { experienceList } = yield* Datasets;
-  const lists = yield* Effect.all(SITE_LANGUAGES.map(experienceList));
+  const lists = yield* Effect.all(SITE_LANGUAGES.map(experienceList), { concurrency: "unbounded" });
 
   const slugs = pipe(
     lists,
