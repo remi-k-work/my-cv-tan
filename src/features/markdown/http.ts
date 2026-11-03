@@ -1,19 +1,38 @@
-// HTTP responses for localized Markdown twins.
+// URL parsing and HTTP responses for Markdown document routes.
 
 // services, features, and other libraries
-import { Option } from "effect";
-import { markdownTwinUrl } from "@/features/meta/domain/url";
+import { flow, Option, Schema, String, pipe } from "effect";
+import { PreferredLanguage } from "@/domain/models";
+import { decodeUrlOption, markdownTwinUrl } from "@/features/meta/domain/url";
 import { canonicalLink, joinLinkHeader, languageVariantLinks } from "@/features/meta/domain/links";
-
-// types
-import type { PreferredLanguage } from "@/domain/models";
 
 // constants
 import { AI_INDEX_LINKS } from "@/features/meta/domain/links";
 import { INDEXABLE_ROBOTS, LANGUAGE_VARY } from "@/features/meta/domain/constants";
-import { CACHEABLE_HEADERS, MACHINE_HEADERS, UNAVAILABLE_HEADERS } from "@/features/meta/domain/response";
+import { CACHEABLE_HEADERS, MACHINE_HEADERS, UNAVAILABLE_HEADERS } from "@/features/meta/http";
 
 const MD_CONTENT_TYPE = "text/markdown; charset=utf-8";
+
+const decodePreferredLanguage = Schema.decodeUnknownOption(PreferredLanguage);
+const decodeUrlComponent = Option.liftThrowable(decodeURIComponent);
+
+export const parseLangParam = (url: string) =>
+  pipe(
+    decodeUrlOption(url),
+    Option.flatMap(({ searchParams }) => Option.fromNullishOr(searchParams.get("lang"))),
+    Option.map(flow(String.trim, String.toLowerCase)),
+    Option.flatMap(decodePreferredLanguage)
+  );
+
+export const slugFromMdPathname = (url: string) =>
+  pipe(
+    decodeUrlOption(url),
+    Option.map(({ pathname }) => pathname.slice(pathname.lastIndexOf("/") + 1)),
+    Option.filter((segment) => segment.endsWith(".md")),
+    Option.map((segment) => segment.slice(0, -".md".length)),
+    Option.flatMap(decodeUrlComponent),
+    Option.filter(String.isNonEmpty)
+  );
 
 const headersFor = (preferredLanguage: PreferredLanguage) => ({
   ...MACHINE_HEADERS,

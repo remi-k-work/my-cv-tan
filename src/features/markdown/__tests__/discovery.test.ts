@@ -2,12 +2,11 @@
 import { assert, it } from "@effect/vitest";
 import { Effect, Option } from "effect";
 import { recoverDataFailure, requireData } from "@/features/data/domain/required";
-import { discoveryTxtResponse, txtResponse, txtUnavailableResponse } from "@/features/meta/domain/response";
-import { mdNotFoundResponse, mdResponse, mdUnavailableResponse } from "@/features/markdown/domain/response";
+import { discoveryTxtResponse, txtResponse, txtUnavailableResponse } from "@/features/meta/http";
+import { mdNotFoundResponse, mdResponse, mdUnavailableResponse, parseLangParam, slugFromMdPathname } from "@/features/markdown/http";
 import { CONTENT_SIGNAL, INDEXABLE_ROBOTS, NOINDEX_FOLLOW, PERSON_DESCRIPTION } from "@/features/meta/domain/constants";
 import { buildLlmsTxt, buildLlmsFullTxt, SITE_OPENING, DISCOVERY_LINES, unavailableIndexBody } from "../domain/site-index";
 import { unavailableMarkdownBody } from "../domain/pages";
-import { parseLangParam, slugFromMdPathname } from "../domain/request";
 import { escapeMd } from "../domain/formatting";
 import { experienceFromList } from "@/features/experience/domain/helpers";
 import { absoluteUrl } from "@/features/meta/domain/url";

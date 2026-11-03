@@ -1,18 +1,16 @@
-// HTTP response builders for discovery and machine-readable surfaces.
+// Shared headers and responses for HTML and machine-readable routes.
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
 
 // constants
-import { CACHE_CONTROL, CONTENT_SIGNAL, LANGUAGE_VARY, NOINDEX_FOLLOW, NO_STORE, TXT_CONTENT_TYPE, XML_CONTENT_TYPE } from "./constants";
-import { AI_INDEX_LINK_HEADER } from "./links";
+import { CACHE_CONTROL, CONTENT_SIGNAL, LANGUAGE_VARY, NOINDEX_FOLLOW, NO_STORE, TXT_CONTENT_TYPE, XML_CONTENT_TYPE } from "./domain/constants";
+import { AI_INDEX_LINK_HEADER } from "./domain/links";
 
-// Shared policy headers used by every machine-readable response surface.
 export const MACHINE_HEADERS = { "Content-Signal": CONTENT_SIGNAL, Link: AI_INDEX_LINK_HEADER } as const;
 export const CACHEABLE_HEADERS = { "Cache-Control": CACHE_CONTROL } as const;
 export const UNAVAILABLE_HEADERS = { "Cache-Control": NO_STORE, "X-Robots-Tag": NOINDEX_FOLLOW } as const;
 
-// Plain-text discovery headers (robots.txt, llms.txt, llms-full.txt).
 const TXT_HEADERS = { ...MACHINE_HEADERS, "Content-Type": TXT_CONTENT_TYPE, "Content-Language": "en" } as const;
 const SITEMAP_HEADERS = { ...MACHINE_HEADERS, "Content-Type": XML_CONTENT_TYPE, "X-Robots-Tag": NOINDEX_FOLLOW } as const;
 
@@ -29,7 +27,6 @@ export const sitemapUnavailableResponse = () =>
     headers: { ...SITEMAP_HEADERS, ...UNAVAILABLE_HEADERS },
   });
 
-// HTML document headers negotiating locale and caching variation.
 export const documentHeaders = (preferredLanguage: PreferredLanguage): Readonly<Record<string, string>> => ({
   ...MACHINE_HEADERS,
   "Content-Language": preferredLanguage,

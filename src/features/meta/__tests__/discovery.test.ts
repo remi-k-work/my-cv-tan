@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { buildSitemapXml, ROBOTS_TXT } from "../domain/discovery-documents";
-import { sitemapResponse, sitemapUnavailableResponse, txtResponse, documentHeaders } from "../domain/response";
+import { sitemapResponse, sitemapUnavailableResponse, txtResponse, documentHeaders } from "../http";
 import { robotsHandler } from "@/features/meta/services/discovery";
 
 // constants
@@ -54,6 +54,14 @@ it("sitemap unions every supported language without emitting duplicate URLs", ()
   assert.strictEqual((xml.match(/<loc>https:\/\/www\.remiforge\.dev\/sample-role<\/loc>/g) ?? []).length, 1);
   // Dedupe keeps first-seen order, so a translated-only entry lands after the source list
   assert.isTrue(xml.indexOf("<loc>https://www.remiforge.dev/translated-only</loc>") > xml.indexOf("<loc>https://www.remiforge.dev/sample-role</loc>"));
+});
+
+it("sitemap builder removes duplicate locations regardless of its caller", () => {
+  const xml = buildSitemapXml([sampleExperience.slug, sampleExperience.slug, "education"]);
+
+  assert.strictEqual((xml.match(/<loc>https:\/\/www\.remiforge\.dev\/sample-role<\/loc>/g) ?? []).length, 1);
+  // Experience slugs can resolve to an existing static path; the sitemap still publishes one canonical URL.
+  assert.strictEqual((xml.match(/<loc>https:\/\/www\.remiforge\.dev\/education<\/loc>/g) ?? []).length, 1);
 });
 
 it("sitemap success responses carry the XML content type, noindex, and hour-long public caching", () => {
