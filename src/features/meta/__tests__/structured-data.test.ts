@@ -176,6 +176,21 @@ it("the @graph merge folds every repeated @id into one node, first declaration f
   assert.strictEqual(graph.findIndex((node) => node["@type"] === "Person") < graph.findIndex((node) => node["@type"] === "WebPage"), true);
 });
 
+it("the @graph merge treats @id as identity even when a node has no @type", () => {
+  const graph = graphOf(
+    jsonLdGraph([
+      { "@id": "https://www.remiforge.dev/#about", name: "First" },
+      { "@id": "https://www.remiforge.dev/#contact", url: "https://www.remiforge.dev/contact" },
+      { "@id": "https://www.remiforge.dev/#about", description: "About the site." },
+    ]).children
+  );
+
+  assert.deepStrictEqual(graph, [
+    { "@id": "https://www.remiforge.dev/#about", name: "First", description: "About the site." },
+    { "@id": "https://www.remiforge.dev/#contact", url: "https://www.remiforge.dev/contact" },
+  ]);
+});
+
 it("the @graph merge publishes a node without an @id exactly as written", () => {
   // A cross-reference or an embedded value object has no stable identity, so it must never be
   // absorbed into — or collide with — an identified neighbour

@@ -16,7 +16,6 @@ interface JsonLdNode {
 }
 
 export type JsonLdNodes = ReadonlyArray<JsonLdNode>;
-type MergeSlot = number | string;
 type PageNodeType = "WebPage" | "ContactPage" | "CollectionPage" | "ProfilePage";
 
 interface ArticleNodeInput {
@@ -70,15 +69,26 @@ const SCHEMA_CONTEXT = "https://schema.org";
 
 // Merges nodes by @id, preserving initial order and overriding overlapping fields.
 export const jsonLdGraph = (nodes: ReadonlyArray<JsonLdNode>): JsonLdScript => {
-  const slots = new Map<MergeSlot, JsonLdNode>();
-  for (let index = 0; index < nodes.length; index++) {
-    const node = nodes[index]!;
-    const slot = Predicate.isString(node["@id"]) && node["@type"] !== undefined ? node["@id"] : index;
-    const existing = slots.get(slot);
-    slots.set(slot, existing === undefined ? node : { ...existing, ...node });
+  const graph: Array<JsonLdNode> = [];
+  const indexById = new Map<string, number>();
+
+  for (const node of nodes) {
+    const id = node["@id"];
+    if (!Predicate.isString(id)) {
+      graph.push(node);
+      continue;
+    }
+
+    const existingIndex = indexById.get(id);
+    if (existingIndex === undefined) {
+      indexById.set(id, graph.length);
+      graph.push(node);
+    } else {
+      graph[existingIndex] = { ...graph[existingIndex]!, ...node };
+    }
   }
 
-  return jsonLdScript({ "@context": SCHEMA_CONTEXT, "@graph": Array.from(slots.values()) });
+  return jsonLdScript({ "@context": SCHEMA_CONTEXT, "@graph": graph });
 };
 
 // schema.org Article node for experience detail pages.
