@@ -121,6 +121,7 @@ it("robots.txt allows content, disallows API endpoints, and advertises the sitem
   assert.strictEqual(response.status, 200);
   assert.strictEqual(response.headers.get("Content-Type"), "text/plain; charset=utf-8");
   assert.strictEqual(response.headers.get("Content-Language"), "en");
+  assert.strictEqual(response.headers.get("Cache-Control"), "public, max-age=3600, stale-while-revalidate=86400");
   // robots.txt is the one document every crawler fetches, so it advertises the AI indexes from the
   // Link header as well: a parser acts on that, where the `# See /llms.txt` comment is human prose
   assert.include(response.headers.get("Link") ?? "", "https://www.remiforge.dev/llms.txt");

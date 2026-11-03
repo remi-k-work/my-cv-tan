@@ -9,13 +9,6 @@ import type { LocalizedMdInput } from "./models";
 // constants
 import { CERTIFICATES_HREF, CV_EN_HREF, CV_PL_HREF, DEFAULT_LANGUAGE } from "@/features/meta/domain/constants";
 
-// Compact summary cap for AI index entries.
-export const LIST_EXCERPT_LENGTH = 140;
-
-// Frontmatter delimiters mirroring document metadata for crawlers.
-export const FRONTMATTER_DELIMITER = "---";
-export const MD_CONTENT_TYPE = "text/markdown; charset=utf-8";
-
 // Rendering context for unlocalized, English-only index documents.
 export const SOURCE_COPY: LocalizedMdInput = { preferredLanguage: DEFAULT_LANGUAGE, translate: translateSource };
 

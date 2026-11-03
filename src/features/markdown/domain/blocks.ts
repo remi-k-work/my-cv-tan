@@ -20,10 +20,10 @@ interface TwinIdentityInput {
 // constants
 import { BRANDED_TITLE, SITE_NAME } from "@/features/meta/domain/constants";
 import { AI_INDEXES, LLMS_TXT_INDEX } from "@/features/meta/domain/links";
-import { FRONTMATTER_DELIMITER } from "./constants";
 import { HOME_PATH, STATIC_PAGES, STATIC_PATHS } from "@/features/meta/domain/static-pages";
 
 const HOME_LABEL = STATIC_PAGES[HOME_PATH].label;
+const FRONTMATTER_DELIMITER = "---";
 
 // Escapes control characters rejected by YAML 1.2 double-quoted scalars.
 const YAML_UNSAFE_CHARACTERS = /[\u007f-\u009f\u2028\u2029]/g;

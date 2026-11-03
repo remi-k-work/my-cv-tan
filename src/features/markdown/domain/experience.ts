@@ -29,7 +29,8 @@ import type { ExperienceEntryLink, ExperienceLinesInput, ExperienceMdInput } fro
 
 // constants
 import { META_DESCRIPTION_LENGTH } from "@/features/meta/domain/constants";
-import { LIST_EXCERPT_LENGTH } from "./constants";
+
+const LIST_EXCERPT_LENGTH = 140;
 
 // Formats an optional web link as a bullet item; non-http/https URLs are omitted.
 const optionalBulletLink = (label: string, href: string | undefined) =>

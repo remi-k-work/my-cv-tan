@@ -12,7 +12,8 @@ import type { PreferredLanguage } from "@/domain/models";
 import { AI_INDEX_LINKS } from "@/features/meta/domain/links";
 import { INDEXABLE_ROBOTS, LANGUAGE_VARY } from "@/features/meta/domain/constants";
 import { CACHEABLE_HEADERS, MACHINE_HEADERS, UNAVAILABLE_HEADERS } from "@/features/meta/domain/response";
-import { MD_CONTENT_TYPE } from "./constants";
+
+const MD_CONTENT_TYPE = "text/markdown; charset=utf-8";
 
 const headersFor = (preferredLanguage: PreferredLanguage) => ({
   ...MACHINE_HEADERS,

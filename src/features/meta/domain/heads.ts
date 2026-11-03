@@ -8,7 +8,6 @@ import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd } from "./
 import { siteNodes } from "./json-ld/site";
 import { headLanguage } from "./language";
 import { authorLink, canonicalLink, llmsDiscoveryLink, markdownAlternateLink } from "./links";
-import { emptyHead } from "./models";
 import { socialMeta } from "./social";
 import { staticPageCopy } from "./static-pages";
 import { absoluteUrl, experienceMarkdownPath, experiencePath, experienceScreenshot } from "./url";
@@ -32,6 +31,8 @@ interface PageHeadSpec extends SocialMetaInput {
 // constants
 import { AUTHOR_URL, BRANDED_TITLE, GLOBAL_SOCIAL_IMAGE, INDEXABLE_ROBOTS, META_DESCRIPTION_LENGTH, NOINDEX_FOLLOW, SITE_DESCRIPTION } from "./constants";
 import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "./static-pages";
+
+const EMPTY_HEAD: PageHead = { meta: [], links: [], scripts: [] };
 
 // Shared page head layout merging branded title, indexing directives, social cards, links and graph.
 const pageHead = ({ markdownPath, graph, authorLink: authorLinkValue, ...social }: PageHeadSpec): PageHead => {
@@ -70,9 +71,9 @@ export const routeHead = <TData>(
   options: { readonly fallbackPath?: string } = {}
 ): PageHead => {
   if (loaderData == null) {
-    return options.fallbackPath !== undefined ? fallbackHead(options.fallbackPath) : emptyHead;
+    return options.fallbackPath !== undefined ? fallbackHead(options.fallbackPath) : EMPTY_HEAD;
   }
-  return build(loaderData as NonNullable<TData>, headLanguage(matches));
+  return build(loaderData, headLanguage(matches));
 };
 
 // Shared head builder for static pages aligning copy, canonical links, and structured data.

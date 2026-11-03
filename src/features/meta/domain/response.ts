@@ -16,7 +16,7 @@ export const UNAVAILABLE_HEADERS = { "Cache-Control": NO_STORE, "X-Robots-Tag": 
 const TXT_HEADERS = { ...MACHINE_HEADERS, "Content-Type": TXT_CONTENT_TYPE, "Content-Language": "en" } as const;
 const SITEMAP_HEADERS = { ...MACHINE_HEADERS, "Content-Type": XML_CONTENT_TYPE, "X-Robots-Tag": NOINDEX_FOLLOW } as const;
 
-export const txtResponse = (body: string) => new Response(body, { status: 200, headers: TXT_HEADERS });
+export const txtResponse = (body: string) => new Response(body, { status: 200, headers: { ...TXT_HEADERS, ...CACHEABLE_HEADERS } });
 export const txtUnavailableResponse = (body: string) => new Response(body, { status: 503, headers: { ...TXT_HEADERS, ...UNAVAILABLE_HEADERS } });
 
 export const discoveryTxtResponse = (body: string, contentLocation: string) =>

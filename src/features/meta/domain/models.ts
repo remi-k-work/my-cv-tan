@@ -35,6 +35,3 @@ export interface StaticPageHeadInput {
   readonly pageTitles: PageTitles;
   readonly preferredLanguage: PreferredLanguage;
 }
-
-// Empty head structure for unmatched routes or missing loader data.
-export const emptyHead: PageHead = { meta: [], links: [], scripts: [] };

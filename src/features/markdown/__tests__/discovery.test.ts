@@ -5,7 +5,6 @@ import { recoverDataFailure, requireData } from "@/features/data/domain/required
 import { discoveryTxtResponse, txtResponse, txtUnavailableResponse } from "@/features/meta/domain/response";
 import { mdNotFoundResponse, mdResponse, mdUnavailableResponse } from "@/features/markdown/domain/response";
 import { CONTENT_SIGNAL, INDEXABLE_ROBOTS, NOINDEX_FOLLOW, PERSON_DESCRIPTION } from "@/features/meta/domain/constants";
-import { MD_CONTENT_TYPE } from "@/features/markdown/domain/constants";
 import { buildLlmsTxt, buildLlmsFullTxt, SITE_OPENING, DISCOVERY_LINES, unavailableIndexBody } from "../domain/site-index";
 import { unavailableMarkdownBody } from "../domain/pages";
 import { parseLangParam, slugFromMdPathname } from "../domain/request";
@@ -261,7 +260,7 @@ it("response helpers set content types, indexing, cache, canonical, and language
     markdownPath: "/index.md",
   });
   assert.strictEqual(ok.status, 200);
-  assert.strictEqual(ok.headers.get("Content-Type"), MD_CONTENT_TYPE);
+  assert.strictEqual(ok.headers.get("Content-Type"), "text/markdown; charset=utf-8");
   assert.strictEqual(ok.headers.get("Content-Language"), "en");
   assert.strictEqual(ok.headers.get("Vary"), "Cookie, Accept-Language");
   // The twins inherit the same indexing directive the HTML heads emit
@@ -286,7 +285,7 @@ it("response helpers set content types, indexing, cache, canonical, and language
   // and Content-Location is the absolute representation a crawler can actually fetch
   const missing = mdNotFoundResponse("# Gone", "pl", Option.some("/gone.md"));
   assert.strictEqual(missing.status, 404);
-  assert.strictEqual(missing.headers.get("Content-Type"), MD_CONTENT_TYPE);
+  assert.strictEqual(missing.headers.get("Content-Type"), "text/markdown; charset=utf-8");
   assert.strictEqual(missing.headers.get("Content-Location"), "https://www.remiforge.dev/gone.md?lang=pl");
   assert.strictEqual(missing.headers.get("X-Robots-Tag"), "noindex, follow");
   assert.strictEqual(
@@ -302,7 +301,7 @@ it("response helpers set content types, indexing, cache, canonical, and language
 
   const unavailable = mdUnavailableResponse("# Temporarily unavailable", "pl");
   assert.strictEqual(unavailable.status, 503);
-  assert.strictEqual(unavailable.headers.get("Content-Type"), MD_CONTENT_TYPE);
+  assert.strictEqual(unavailable.headers.get("Content-Type"), "text/markdown; charset=utf-8");
   assert.strictEqual(unavailable.headers.get("Content-Language"), "pl");
   assert.strictEqual(unavailable.headers.get("Cache-Control"), "no-store");
   assert.strictEqual(unavailable.headers.get("X-Robots-Tag"), "noindex, follow");
