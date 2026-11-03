@@ -12,7 +12,7 @@ import type { PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
 import type { LocalizedMdInput } from "./models";
-import type { DatasetsService } from "@/features/meta/services/datasets";
+import type { DatasetsService } from "@/features/data/services/datasets";
 import type { RequiredDataError } from "@/features/data/domain/required";
 
 export interface TwinData {

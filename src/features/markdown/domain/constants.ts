@@ -1,7 +1,7 @@
 // Shared constants for Markdown twins and AI discovery indexes.
 
 // services, features, and other libraries
-import { translateSource } from "./text";
+import { translateSource } from "./formatting";
 
 // types
 import type { LocalizedMdInput } from "./models";

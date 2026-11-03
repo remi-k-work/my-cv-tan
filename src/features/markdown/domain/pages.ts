@@ -4,8 +4,9 @@
 import { Option } from "effect";
 import { msg } from "gt-tanstack-start";
 import { matchPreferredLanguage } from "@/domain/helpers";
-import { escapeMd, escapeMdInline } from "./text";
 import {
+  escapeMd,
+  escapeMdInline,
   deadEndEscapeLine,
   frontmatter,
   mdBody,
@@ -20,7 +21,7 @@ import {
   mdTitledSection,
   twinIdentity,
   twinIndexLinks,
-} from "./blocks";
+} from "./formatting";
 import { experienceLines } from "./experience";
 import { staticPageCopy } from "@/features/meta/domain/static-pages";
 import { absoluteUrl, experiencePath } from "@/features/meta/domain/url";

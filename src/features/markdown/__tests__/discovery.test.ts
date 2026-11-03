@@ -8,7 +8,7 @@ import { CONTENT_SIGNAL, INDEXABLE_ROBOTS, NOINDEX_FOLLOW, PERSON_DESCRIPTION } 
 import { buildLlmsTxt, buildLlmsFullTxt, SITE_OPENING, DISCOVERY_LINES, unavailableIndexBody } from "../domain/site-index";
 import { unavailableMarkdownBody } from "../domain/pages";
 import { parseLangParam, slugFromMdPathname } from "../domain/request";
-import { escapeMd } from "../domain/text";
+import { escapeMd } from "../domain/formatting";
 import { experienceFromList } from "@/features/experience/domain/helpers";
 import { absoluteUrl } from "@/features/meta/domain/url";
 

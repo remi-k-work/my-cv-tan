@@ -1,10 +1,9 @@
-// Markdown block composition, formatting primitives, and document graph cross-links.
+// Markdown escaping, formatting primitives, and document cross-links.
 
 // services, features, and other libraries
 import { Option, pipe } from "effect";
 import { msg } from "gt-tanstack-start";
 import { absoluteUrl, decodeUrlOption, encodeParens, markdownTwinUrl } from "@/features/meta/domain/url";
-import { escapeMdInline } from "./text";
 
 // types
 import type { PreferredLanguage, Translate } from "@/domain/models";
@@ -22,10 +21,48 @@ import { BRANDED_TITLE, SITE_NAME } from "@/features/meta/domain/constants";
 import { AI_INDEXES, LLMS_TXT_INDEX } from "@/features/meta/domain/links";
 import { HOME_PATH, STATIC_PAGES, STATIC_PATHS } from "@/features/meta/domain/static-pages";
 
+const NORMALIZE_RULES: ReadonlyArray<readonly [RegExp, string]> = [
+  [/\r\n?/g, "\n"],
+  [/\\/g, "\\\\"],
+];
+
+const INLINE_RULES: ReadonlyArray<readonly [RegExp, string]> = [
+  [/!(?=\[)/g, "\\!"],
+  [/([`*[\]<])/g, "\\$1"],
+];
+
+const BLOCK_RULES: ReadonlyArray<readonly [RegExp, string]> = [
+  [/^(\s*)([#>])/gm, "$1\\$2"],
+  [/^(\s*)([-+])(?=\s|$)/gm, "$1\\$2"],
+  [/^(\s*)(\d+)([.)])(?=\s|$)/gm, "$1$2\\$3"],
+  [/^(\s{0,3})([-_])(?=(?:\s*\2){2,}\s*$)/gm, "$1\\$2"],
+  [/^(\s{0,3})([-=])(?=\2*\s*$)/gm, "$1\\$2"],
+  [/^([\s|:]*?)(-)/gm, "$1\\$2"],
+];
+
+const WORD_RULES: ReadonlyArray<readonly [RegExp, string]> = [
+  [/(?<![\p{L}\p{N}])_|_(?![\p{L}\p{N}])/gu, "\\$&"],
+  [/~~/g, "\\~\\~"],
+  [/\n{3,}/g, "\n\n"],
+];
+
+const MD_ESCAPE_RULES = [...NORMALIZE_RULES, ...INLINE_RULES, ...BLOCK_RULES, ...WORD_RULES];
+const DEMOTE_HEADINGS = /^(#{1,4})(?= )/gm;
+
+export const escapeMd = (text: string) => {
+  let result = text;
+  for (const [pattern, replacement] of MD_ESCAPE_RULES) {
+    result = result.replace(pattern, replacement);
+  }
+  return result.trim();
+};
+
+export const escapeMdInline = (text: string) => escapeMd(text.replace(/\n+/g, " "));
+export const demoteHeadings = (markdown: string) => markdown.replace(DEMOTE_HEADINGS, (hashes) => `${hashes}##`);
+export const translateSource: Translate = (source) => source;
+
 const HOME_LABEL = STATIC_PAGES[HOME_PATH].label;
 const FRONTMATTER_DELIMITER = "---";
-
-// Escapes control characters rejected by YAML 1.2 double-quoted scalars.
 const YAML_UNSAFE_CHARACTERS = /[\u007f-\u009f\u2028\u2029]/g;
 
 const yamlValue = (value: string) =>
@@ -34,7 +71,6 @@ const yamlValue = (value: string) =>
 export const mdLink = (label: string, href: string) => `[${escapeMdInline(label)}](${href})`;
 export const AI_INDEX_MARKDOWN_LINKS: ReadonlyArray<string> = AI_INDEXES.map(({ name, url }) => mdLink(name, url));
 
-// Formats external web links, omitting non-http/https protocols.
 export const mdExternalLink = (label: string, href: string) =>
   pipe(
     decodeUrlOption(href),
@@ -42,7 +78,6 @@ export const mdExternalLink = (label: string, href: string) =>
     Option.map((url) => mdLink(label, encodeParens(url.href)))
   );
 
-// Emits a YAML frontmatter block.
 export const frontmatter = (fields: Readonly<Record<string, string>>) => {
   const body = Object.entries(fields)
     .map(([key, value]) => `${key}: ${yamlValue(value)}`)
@@ -50,7 +85,6 @@ export const frontmatter = (fields: Readonly<Record<string, string>>) => {
   return [FRONTMATTER_DELIMITER, body, FRONTMATTER_DELIMITER].join("\n");
 };
 
-// Shared identity frontmatter fields mirroring HTML <head> metadata.
 export const twinIdentity = (input: TwinIdentityInput) => ({
   title: BRANDED_TITLE(input.title),
   description: input.description,
@@ -61,9 +95,7 @@ export const twinIdentity = (input: TwinIdentityInput) => ({
 
 export const mdHeading = (level: 1 | 2 | 3, text: string) => `${"#".repeat(level)} ${escapeMdInline(text)}`;
 export const mdQuote = (text: string) => `> ${escapeMdInline(text)}`;
-
 export const mdBulletList = (items: ReadonlyArray<string>) => items.map((item) => `- ${item}`).join("\n");
-
 export const mdFact = (label: string, value: string) => `${escapeMdInline(label)}: ${escapeMdInline(value)}`;
 export const mdBody = (blocks: ReadonlyArray<string>) => blocks.filter(Boolean).join("\n\n");
 export const mdTitledSection = (title: string, body: string) => mdBody([mdHeading(2, title), body]);
@@ -72,10 +104,8 @@ const translatedLink = (label: string, href: string, translate: Translate) => md
 export const mdDocument = (blocks: ReadonlyArray<string>) => `${mdBody(blocks)}\n`;
 export const mdEmptyMarker = (translate: Translate) => `_${escapeMdInline(translate(msg("No entries.")))}_`;
 
-// Formats a machine-readable entry line with canonical URL and twin URL.
 export const mdIndexEntry = (label: string, canonical: string, twinUrl: string, summary?: string) => {
   const beforeTwin = summary === undefined ? "" : `${summary} `;
-
   return `${mdLink(label, canonical)}: ${beforeTwin}Markdown: ${twinUrl}`;
 };
 
@@ -85,13 +115,9 @@ export const mdDocumentLinks = (documents: ReadonlyArray<{ readonly label: strin
 export const mdProfileLinks = (profiles: ReadonlyArray<{ readonly name: string; readonly href: string }>) =>
   profiles.map(({ name, href }) => mdFact(name, href));
 
-// --- Twin Document Graph Cross-Links ---
-
-// Language-pinned link to the home page twin.
 const homeLink = (preferredLanguage: PreferredLanguage, translate: Translate) =>
   translatedLink(HOME_LABEL, markdownTwinUrl(STATIC_PAGES[HOME_PATH].mdHref, preferredLanguage), translate);
 
-// Sibling twin links excluding the current page, plus AI indexes.
 export const twinIndexLinks = (copy: StaticPageCopy, translate: Translate) =>
   mdBulletList([
     ...STATIC_PATHS.filter((path) => path !== copy.path).map((path) =>
@@ -100,13 +126,10 @@ export const twinIndexLinks = (copy: StaticPageCopy, translate: Translate) =>
     ...AI_INDEX_MARKDOWN_LINKS,
   ]);
 
-// Detail twin navigation links pointing back to home and AI discovery indexes.
 export const detailIndexLinks = (preferredLanguage: PreferredLanguage, translate: Translate) =>
   mdBulletList([homeLink(preferredLanguage, translate), ...AI_INDEX_MARKDOWN_LINKS]);
 
-// Escape hatch line for 404 responses directing crawlers to valid index documents.
 export const deadEndEscapeLine = (preferredLanguage: PreferredLanguage, translate: Translate) => {
   const indexLink = mdLink(LLMS_TXT_INDEX.name, LLMS_TXT_INDEX.url);
-
   return `${escapeMdInline(translate(msg("See")))} ${homeLink(preferredLanguage, translate)} ${escapeMdInline(translate(msg("or")))} ${indexLink}.`;
 };

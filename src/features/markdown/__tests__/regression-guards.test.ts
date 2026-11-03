@@ -1,7 +1,6 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-import { escapeMd, escapeMdInline as escapeInline } from "../domain/text";
-import { mdFact, mdLink } from "../domain/blocks";
+import { escapeMd, escapeMdInline as escapeInline, mdFact, mdLink } from "../domain/formatting";
 import { buildExperienceMd } from "../domain/experience";
 
 // types

@@ -2,7 +2,7 @@
 
 // services, features, and other libraries
 import { Context, Effect, Layer, Option } from "effect";
-import { Datasets } from "@/features/meta/services/datasets";
+import { Datasets } from "@/features/data/services/datasets";
 import { absoluteUrl, experienceMarkdownPath, experiencePath } from "@/features/meta/domain/url";
 import { discoveryTxtResponse, txtUnavailableResponse } from "@/features/meta/domain/response";
 import { mdNotFoundResponse, mdResponse } from "@/features/markdown/domain/response";
@@ -17,7 +17,7 @@ import { buildLlmsFullTxt, buildLlmsTxt, unavailableIndexBody } from "@/features
 // types
 import type { LocalizedMdInput } from "@/features/markdown/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
-import type { DatasetsService, LocalizedAccessor } from "@/features/meta/services/datasets";
+import type { DatasetsService, LocalizedAccessor } from "@/features/data/services/datasets";
 import type { PageTwinSpec } from "@/features/markdown/domain/catalogue";
 import type { RequiredDataError } from "@/features/data/domain/required";
 import type { MachineDocument } from "@/features/markdown/domain/twin";

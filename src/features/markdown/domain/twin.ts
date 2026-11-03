@@ -9,7 +9,7 @@ import { recoverDataFailure, type RequiredDataError } from "@/features/data/doma
 import { mdUnavailableResponse } from "./response";
 import { unavailableMarkdownBody } from "./pages";
 import { parseLangParam } from "./request";
-import { translateSource } from "./text";
+import { translateSource } from "./formatting";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";

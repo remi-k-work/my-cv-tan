@@ -1,8 +1,7 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-import { buildSitemapXml } from "../domain/sitemap";
+import { buildSitemapXml, ROBOTS_TXT } from "../domain/discovery-documents";
 import { sitemapResponse, sitemapUnavailableResponse, txtResponse, documentHeaders } from "../domain/response";
-import { ROBOTS_TXT } from "../domain/robots";
 import { robotsHandler } from "@/features/meta/services/discovery";
 
 // constants

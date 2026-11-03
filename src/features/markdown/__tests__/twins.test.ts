@@ -3,8 +3,7 @@ import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
 import { buildExperienceMd } from "../domain/experience";
 import { buildContactMd, buildEducationMd, buildHomeMd, buildNotFoundMd } from "../domain/pages";
-import { escapeMd, escapeMdInline } from "../domain/text";
-import { AI_INDEX_MARKDOWN_LINKS, frontmatter, mdEmptyMarker, twinIndexLinks } from "../domain/blocks";
+import { AI_INDEX_MARKDOWN_LINKS, escapeMd, escapeMdInline, frontmatter, mdEmptyMarker, twinIndexLinks } from "../domain/formatting";
 
 import { STATIC_PAGES, type StaticPageCopy } from "@/features/meta/domain/static-pages";
 

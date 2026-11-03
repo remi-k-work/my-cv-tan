@@ -5,8 +5,9 @@ import { Array, Option, pipe } from "effect";
 import { msg } from "gt-tanstack-start";
 import { experienceHeadline, excerpt } from "@/features/experience/domain/helpers";
 import { absoluteUrl, experienceMarkdownPath, experiencePath, markdownTwinUrl } from "@/features/meta/domain/url";
-import { escapeMd, escapeMdInline } from "./text";
 import {
+  escapeMd,
+  escapeMdInline,
   detailIndexLinks,
   frontmatter,
   mdBulletList,
@@ -20,7 +21,7 @@ import {
   mdQuote,
   mdTitledSection,
   twinIdentity,
-} from "./blocks";
+} from "./formatting";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";

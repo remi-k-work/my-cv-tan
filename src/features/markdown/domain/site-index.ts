@@ -3,8 +3,22 @@
 // services, features, and other libraries
 import { allEntries } from "./catalogue";
 import { experienceLines } from "./experience";
-import { demoteHeadings, escapeMd, translateSource } from "./text";
-import { mdBody, mdBulletList, mdDocument, mdDocumentLinks, mdFact, mdHeading, mdIndexEntry, mdLink, mdProfileLinks, mdQuote, mdTitledSection } from "./blocks";
+import {
+  demoteHeadings,
+  escapeMd,
+  mdBody,
+  mdBulletList,
+  mdDocument,
+  mdDocumentLinks,
+  mdFact,
+  mdHeading,
+  mdIndexEntry,
+  mdLink,
+  mdProfileLinks,
+  mdQuote,
+  mdTitledSection,
+  translateSource,
+} from "./formatting";
 import { absoluteUrl, markdownTwinUrl } from "@/features/meta/domain/url";
 
 // types
