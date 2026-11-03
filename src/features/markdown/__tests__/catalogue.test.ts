@@ -3,7 +3,7 @@ import { assert, it } from "@effect/vitest";
 import { Effect } from "effect";
 import { Datasets } from "@/features/data/services/datasets";
 import { CONTACT_TWIN, EDUCATION_TWIN, HOME_TWIN, PAGE_TWINS, PAGE_ENTRIES, allEntries } from "../domain/catalogue";
-import { SOURCE_COPY } from "../domain/constants";
+import { SOURCE_COPY } from "../domain/formatting";
 
 // types
 import type { ExperienceList } from "@/features/experience/domain/models";

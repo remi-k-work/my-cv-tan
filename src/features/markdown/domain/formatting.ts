@@ -8,6 +8,7 @@ import { absoluteUrl, decodeUrlOption, encodeParens, markdownTwinUrl } from "@/f
 // types
 import type { PreferredLanguage, Translate } from "@/domain/models";
 import type { StaticPageCopy } from "@/features/meta/domain/static-pages";
+import type { LocalizedMdInput } from "./models";
 
 interface TwinIdentityInput {
   readonly title: string;
@@ -17,7 +18,7 @@ interface TwinIdentityInput {
 }
 
 // constants
-import { BRANDED_TITLE, SITE_NAME } from "@/features/meta/domain/constants";
+import { BRANDED_TITLE, DEFAULT_LANGUAGE, SITE_NAME } from "@/features/meta/domain/constants";
 import { AI_INDEXES, LLMS_TXT_INDEX } from "@/features/meta/domain/links";
 import { HOME_PATH, STATIC_PAGES, STATIC_PATHS } from "@/features/meta/domain/static-pages";
 
@@ -60,6 +61,7 @@ export const escapeMd = (text: string) => {
 export const escapeMdInline = (text: string) => escapeMd(text.replace(/\n+/g, " "));
 export const demoteHeadings = (markdown: string) => markdown.replace(DEMOTE_HEADINGS, (hashes) => `${hashes}##`);
 export const translateSource: Translate = (source) => source;
+export const SOURCE_COPY: LocalizedMdInput = { preferredLanguage: DEFAULT_LANGUAGE, translate: translateSource };
 
 const HOME_LABEL = STATIC_PAGES[HOME_PATH].label;
 const FRONTMATTER_DELIMITER = "---";

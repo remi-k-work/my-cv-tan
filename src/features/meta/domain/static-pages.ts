@@ -41,9 +41,13 @@ interface StaticPageSettings {
 // constants
 import { CONTACT_MD_HREF, EDUCATION_MD_HREF, HOME_MD_HREF, HOME_TITLE, PERSON_DESCRIPTION, SITE_DESCRIPTION } from "./constants";
 
+export const HOME_PATH = "/" as const satisfies PagePath;
+export const EDUCATION_PATH = "/education" as const satisfies PagePath;
+export const CONTACT_PATH = "/contact" as const satisfies PagePath;
+
 // Static page definitions shared between HTML heads and Markdown frontmatter.
 export const STATIC_PAGES = {
-  "/": {
+  [HOME_PATH]: {
     mdHref: HOME_MD_HREF,
     label: "Home page",
     type: "overview",
@@ -57,7 +61,7 @@ export const STATIC_PAGES = {
       },
     },
   },
-  "/education": {
+  [EDUCATION_PATH]: {
     mdHref: EDUCATION_MD_HREF,
     label: "Education & Certificates",
     type: "education",
@@ -76,7 +80,7 @@ export const STATIC_PAGES = {
       },
     },
   },
-  "/contact": {
+  [CONTACT_PATH]: {
     mdHref: CONTACT_MD_HREF,
     label: "Contact",
     type: "contact",
@@ -96,10 +100,6 @@ export const STATIC_PAGES = {
     },
   },
 } as const satisfies Record<PagePath, StaticPageSettings>;
-
-export const HOME_PATH: PagePath = "/";
-export const EDUCATION_PATH: PagePath = "/education";
-export const CONTACT_PATH: PagePath = "/contact";
 
 // Static page paths for sitemaps and graph cross-links, derived from the page declarations.
 export const STATIC_PATHS: ReadonlyArray<PagePath> = Object.keys(STATIC_PAGES) as ReadonlyArray<PagePath>;

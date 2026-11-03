@@ -1,16 +1,7 @@
-// Shared constants for Markdown twins and AI discovery indexes.
-
-// services, features, and other libraries
-import { translateSource } from "./formatting";
-
-// types
-import type { LocalizedMdInput } from "./models";
+// Downloadable files advertised by Markdown pages and discovery indexes.
 
 // constants
-import { CERTIFICATES_HREF, CV_EN_HREF, CV_PL_HREF, DEFAULT_LANGUAGE } from "@/features/meta/domain/constants";
-
-// Rendering context for unlocalized, English-only index documents.
-export const SOURCE_COPY: LocalizedMdInput = { preferredLanguage: DEFAULT_LANGUAGE, translate: translateSource };
+import { CERTIFICATES_HREF, CV_EN_HREF, CV_PL_HREF } from "@/features/meta/domain/constants";
 
 // Static download assets advertised across twins and machine indexes.
 export const DOWNLOADABLE_DOCUMENTS = [

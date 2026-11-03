@@ -26,7 +26,7 @@ import type { ExperienceList } from "@/features/experience/domain/models";
 import type { TwinData } from "./catalogue";
 
 // constants
-import { DOWNLOADABLE_DOCUMENTS, SOURCE_COPY } from "./constants";
+import { DOWNLOADABLE_DOCUMENTS } from "./constants";
 import {
   CONTENT_SIGNAL,
   HOME_COUNTRY,
@@ -46,6 +46,7 @@ import {
 } from "@/features/meta/domain/constants";
 import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/links";
 import { PAGE_ENTRIES } from "./catalogue";
+import { SOURCE_COPY } from "./formatting";
 
 // --- Shared AI Index Sections and Copy ---
 

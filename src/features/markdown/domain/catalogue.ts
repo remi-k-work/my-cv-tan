@@ -3,7 +3,7 @@
 // services, features, and other libraries
 import { Effect } from "effect";
 import { absoluteUrl, experienceMarkdownPath, experiencePath, markdownTwinUrl } from "@/features/meta/domain/url";
-import { buildHomeMd, buildEducationMd, buildContactMd } from "./pages";
+import { buildContactMd, buildEducationMd, buildHomeMd } from "./pages";
 import { buildExperienceMd } from "./experience";
 import { experienceHeadline } from "@/features/experience/domain/helpers";
 
@@ -44,7 +44,7 @@ export interface PageTwinSpec<Data> {
 // constants
 import { STATIC_PAGES } from "@/features/meta/domain/static-pages";
 import { DEFAULT_LANGUAGE } from "@/features/meta/domain/constants";
-import { SOURCE_COPY } from "@/features/markdown/domain/constants";
+import { SOURCE_COPY } from "./formatting";
 
 const pageTwin = <Data>(pagePath: PagePath, spec: Omit<PageTwinSpec<Data>, "pagePath" | "mdHref">): PageTwinSpec<Data> => ({
   ...spec,
