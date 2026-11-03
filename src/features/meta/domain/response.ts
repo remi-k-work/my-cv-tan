@@ -1,5 +1,8 @@
 // HTTP response builders for discovery and machine-readable surfaces.
 
+// types
+import type { PreferredLanguage } from "@/domain/models";
+
 // constants
 import { CACHE_CONTROL, CONTENT_SIGNAL, LANGUAGE_VARY, NOINDEX_FOLLOW, NO_STORE, TXT_CONTENT_TYPE, XML_CONTENT_TYPE } from "./constants";
 import { AI_INDEX_LINK_HEADER } from "./links";
@@ -27,7 +30,7 @@ export const sitemapUnavailableResponse = () =>
   });
 
 // HTML document headers negotiating locale and caching variation.
-export const documentHeaders = (preferredLanguage: string): Readonly<Record<string, string>> => ({
+export const documentHeaders = (preferredLanguage: PreferredLanguage): Readonly<Record<string, string>> => ({
   ...MACHINE_HEADERS,
   "Content-Language": preferredLanguage,
   Vary: LANGUAGE_VARY,

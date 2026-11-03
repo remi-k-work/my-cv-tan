@@ -27,7 +27,6 @@ export interface SocialMetaInput {
   readonly canonical: string;
   readonly image: SocialImage;
   readonly preferredLanguage: PreferredLanguage;
-  readonly twitterImage?: SocialImage;
   readonly ogType?: "website" | "article";
   readonly articleSection?: "employment" | "portfolio";
 }
@@ -41,12 +40,9 @@ export const socialMeta = ({
   canonical,
   image,
   preferredLanguage,
-  twitterImage,
   ogType = "website",
   articleSection,
 }: SocialMetaInput): ReadonlyArray<MetaTag> => {
-  const twitter = twitterImage ?? GLOBAL_SOCIAL_IMAGE;
-
   return [
     { property: "og:title", content: title },
     { property: "og:description", content: description },
@@ -72,7 +68,7 @@ export const socialMeta = ({
     { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:title", content: title },
     { name: "twitter:description", content: description },
-    { name: "twitter:image", content: twitter.src },
-    { name: "twitter:image:alt", content: twitter.alt },
+    { name: "twitter:image", content: GLOBAL_SOCIAL_IMAGE.src },
+    { name: "twitter:image:alt", content: GLOBAL_SOCIAL_IMAGE.alt },
   ];
 };
