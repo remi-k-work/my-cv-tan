@@ -1,11 +1,18 @@
 // Robots directives and sitemap XML for crawler discovery.
 
 // services, features, and other libraries
-import { absoluteUrl, experiencePath } from "./url";
+import { absoluteUrl, experiencePath } from "./helpers";
 
 // constants
-import { CERTIFICATES_HREF, CONTENT_SIGNAL, CRAWL_DELAY, CV_EN_HREF, CV_PL_HREF, SITEMAP_HREF } from "./constants";
-import { STATIC_PATHS } from "./static-pages";
+import {
+  CERTIFICATES_HREF,
+  CONTENT_SIGNAL,
+  CRAWL_DELAY,
+  CV_EN_HREF,
+  CV_PL_HREF,
+  SITEMAP_HREF,
+  STATIC_PATHS,
+} from "./constants";
 
 const AI_SEARCH_CRAWLERS = ["OAI-SearchBot", "Claude-SearchBot", "PerplexityBot", "YouBot", "DuckAssistBot"] as const;
 const AI_USER_CRAWLERS = ["ChatGPT-User", "Claude-User", "Perplexity-User", "Meta-ExternalFetcher", "MistralAI-User"] as const;
@@ -25,8 +32,16 @@ const AI_DATASET_CRAWLERS = [
   "ImagesiftBot",
 ] as const;
 
-const CONTENT_DIRECTIVES = ["Allow: /", "Allow: /*.md", "Disallow: /api", `Content-Signal: ${CONTENT_SIGNAL}`, `Crawl-delay: ${CRAWL_DELAY}`] as const;
-const crawlerGroup = (comment: string, bots: ReadonlyArray<string>) => bots.flatMap((bot) => [`# ${comment}`, `User-agent: ${bot}`, ...CONTENT_DIRECTIVES, ""]);
+const CONTENT_DIRECTIVES = [
+  "Allow: /",
+  "Allow: /*.md",
+  "Disallow: /api",
+  `Content-Signal: ${CONTENT_SIGNAL}`,
+  `Crawl-delay: ${CRAWL_DELAY}`,
+] as const;
+
+const crawlerGroup = (comment: string, bots: ReadonlyArray<string>) =>
+  bots.flatMap((bot) => [`# ${comment}`, `User-agent: ${bot}`, ...CONTENT_DIRECTIVES, ""]);
 
 export const ROBOTS_TXT = [
   ...crawlerGroup("Every crawler: the HTML pages and their Markdown twins", ["*"]),

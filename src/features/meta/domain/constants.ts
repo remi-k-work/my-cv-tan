@@ -1,7 +1,7 @@
 // Shared constants for metadata, discovery documents, and structured data.
 
 // types
-import type { PreferredLanguage } from "@/domain/models";
+import type { PagePath, PreferredLanguage } from "@/domain/models";
 
 // --- Site identity ---
 
@@ -32,7 +32,15 @@ export const BRANDED_TITLE = (title: string) => `${SITE_NAME} ● ${title}`;
 // --- Author identity ---
 
 export const JOB_TITLE = "Web Developer";
-export const KNOWS_ABOUT = ["Web Development", "TypeScript", "React", "Next.js", "Effect", "Front-End Development", "Full-Stack Development"] as const;
+export const KNOWS_ABOUT = [
+  "Web Development",
+  "TypeScript",
+  "React",
+  "Next.js",
+  "Effect",
+  "Front-End Development",
+  "Full-Stack Development",
+] as const;
 
 // Social profiles declared once for JSON-LD sameAs, rel="me", and markdown twins.
 export const SOCIAL_PROFILES = [
@@ -67,9 +75,22 @@ export const DEFAULT_LANGUAGE = "en" as const;
 // Content languages supported across metadata and discovery documents.
 export const SITE_LANGUAGES = ["en", "pl"] as const;
 
-export const SITE_LANGUAGE_NAMES = { en: "English", pl: "Polish" } as const satisfies Readonly<Record<PreferredLanguage, string>>;
+export const SITE_LANGUAGE_NAMES = {
+  en: "English",
+  pl: "Polish",
+} as const satisfies Readonly<Record<PreferredLanguage, string>>;
 
-export const OPEN_GRAPH_LOCALES = { en: "en_US", pl: "pl_PL" } as const satisfies Record<PreferredLanguage, string>;
+export const OPEN_GRAPH_LOCALES = {
+  en: "en_US",
+  pl: "pl_PL",
+} as const satisfies Record<PreferredLanguage, string>;
+
+// --- Route paths ---
+
+export const HOME_PATH = "/" as const satisfies PagePath;
+export const EDUCATION_PATH = "/education" as const satisfies PagePath;
+export const CONTACT_PATH = "/contact" as const satisfies PagePath;
+export const STATIC_PATHS: ReadonlyArray<PagePath> = [HOME_PATH, EDUCATION_PATH, CONTACT_PATH];
 
 // --- JSON-LD node ids ---
 

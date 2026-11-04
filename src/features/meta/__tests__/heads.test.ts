@@ -1,9 +1,9 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { contactHead, educationHead, experienceHead, headLanguage, homeHead, routeHead, ROOT_HEAD } from "../domain/heads";
-import { canonicalLink } from "../domain/links";
+import { canonicalLink } from "../domain/helpers";
 import { STATIC_PAGES } from "../domain/static-pages";
-import { withLanguageParam } from "../domain/url";
+import { withLanguageParam } from "../domain/helpers";
 
 import { HOME_TITLE, INDEXABLE_ROBOTS, NOINDEX_FOLLOW, PERSON_DESCRIPTION, SITE_DESCRIPTION, SITE_NAME, AUTHOR_URL } from "../domain/constants";
 
@@ -31,10 +31,7 @@ const stablePageTitles: PageTitles = {
 
 // The loader payload shapes headLanguage sees: a valid locale, an unsupported
 // one, and a missing match entry (404 / SSR shell renders before the root loader resolves)
-const rootLoaderData = [
-  { loaderData: { preferredLanguage: "pl" } },
-  { loaderData: { preferredLanguage: "de" } },
-] as const;
+const rootLoaderData = [{ loaderData: { preferredLanguage: "pl" } }, { loaderData: { preferredLanguage: "de" } }] as const;
 
 it("root metadata defaults to noindex and complete page heads explicitly allow indexing", () => {
   assert.include(JSON.stringify(ROOT_HEAD.meta), `"content":"${NOINDEX_FOLLOW}"`);
@@ -309,9 +306,10 @@ it("language-pinned Markdown URLs attach ?lang= and survive values the URL parse
 it("routeHead keeps a canonical noindex fallback when loader data is missing", () => {
   const fallback = routeHead(undefined, [], () => homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" }), "/contact");
 
-  assert.deepStrictEqual(fallback.links?.map(({ rel, href }) => ({ rel, href })), [
-    { rel: "canonical", href: "https://www.remiforge.dev/contact" },
-  ]);
+  assert.deepStrictEqual(
+    fallback.links?.map(({ rel, href }) => ({ rel, href })),
+    [{ rel: "canonical", href: "https://www.remiforge.dev/contact" }]
+  );
   assert.include(JSON.stringify(fallback.meta), NOINDEX_FOLLOW);
   assert.include(JSON.stringify(fallback.meta), SITE_DESCRIPTION);
   // The fallback still publishes the site entities, just not the page's own graph.

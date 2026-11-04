@@ -3,11 +3,16 @@
 // services, features, and other libraries
 import { flow, Option, Schema, String, pipe } from "effect";
 import { PreferredLanguage } from "@/domain/models";
-import { decodeUrlOption, markdownTwinUrl } from "@/features/meta/domain/url";
-import { canonicalLink, joinLinkHeader, languageVariantLinks } from "@/features/meta/domain/links";
+import {
+  AI_INDEX_LINKS,
+  canonicalLink,
+  decodeUrlOption,
+  joinLinkHeader,
+  languageVariantLinks,
+  markdownTwinUrl,
+} from "@/features/meta/domain/helpers";
 
 // constants
-import { AI_INDEX_LINKS } from "@/features/meta/domain/links";
 import { INDEXABLE_ROBOTS, LANGUAGE_VARY } from "@/features/meta/domain/constants";
 import { CACHEABLE_HEADERS, MACHINE_HEADERS, UNAVAILABLE_HEADERS } from "@/features/meta/http";
 
@@ -43,7 +48,10 @@ const headersFor = (preferredLanguage: PreferredLanguage) => ({
   "X-Robots-Tag": INDEXABLE_ROBOTS,
 });
 
-const unavailableHeadersFor = (preferredLanguage: PreferredLanguage) => ({ ...headersFor(preferredLanguage), ...UNAVAILABLE_HEADERS });
+const unavailableHeadersFor = (preferredLanguage: PreferredLanguage) => ({
+  ...headersFor(preferredLanguage),
+  ...UNAVAILABLE_HEADERS,
+});
 
 const markdownLinks = (canonical: string, markdownUrl: string) =>
   joinLinkHeader([canonicalLink(canonical), ...AI_INDEX_LINKS, ...languageVariantLinks(markdownUrl)]);

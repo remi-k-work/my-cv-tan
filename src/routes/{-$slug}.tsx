@@ -7,12 +7,7 @@ import { useGT } from "gt-tanstack-start";
 import { loaderIndex } from "@/loaders/index";
 import { experienceHead, homeHead, routeHead } from "@/features/meta/domain/heads";
 import { partitionExperiences } from "@/features/experience/domain/helpers";
-import { HOME_PATH } from "@/features/meta/domain/static-pages";
-import { experiencePath } from "@/features/meta/domain/url";
-
-// types
-import type { PageTitles } from "@/domain/models";
-import type { Experience, ExperienceList } from "@/features/experience/domain/models";
+import { experiencePath } from "@/features/meta/domain/helpers";
 
 // components
 import { PageTitle } from "@/ui/page-title";
@@ -20,6 +15,13 @@ import { PageGrid } from "@/ui/page-grid";
 import { SliderPanel } from "@/features/experience/ui/slider-panel";
 import { ExperienceDetails } from "@/features/experience/ui/experience-details";
 import { ExperienceDetailsModal } from "@/features/modals/ui/experience-details-modal";
+
+// types
+import type { PageTitles } from "@/domain/models";
+import type { Experience, ExperienceList } from "@/features/experience/domain/models";
+
+// constants
+import { HOME_PATH } from "@/features/meta/domain/constants";
 
 export const Route = createFileRoute("/{-$slug}")({
   loader: ({ params }) => loaderIndex(Option.fromNullishOr(params.slug)),

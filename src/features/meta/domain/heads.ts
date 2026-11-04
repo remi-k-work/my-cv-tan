@@ -4,31 +4,38 @@
 import { Array, Option, Schema, pipe } from "effect";
 import { excerpt, experienceHeadline } from "@/features/experience/domain/helpers";
 import { PreferredLanguage } from "@/domain/models";
-import { authorLink, canonicalLink, markdownAlternateLink } from "./links";
+import {
+  absoluteUrl,
+  AI_INDEX_LINKS,
+  authorLink,
+  canonicalLink,
+  experienceMarkdownPath,
+  experiencePath,
+  experienceScreenshot,
+  LLMS_DISCOVERY_LINK,
+  markdownAlternateLink,
+  SITEMAP_LINK,
+} from "./helpers";
 import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd, jsonLdGraph, siteNodes } from "./structured-data";
 import { staticPageCopy } from "./static-pages";
-import { absoluteUrl, experienceMarkdownPath, experiencePath, experienceScreenshot } from "./url";
 
 // types
 import type { PagePath } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
-import type { ExperienceHeadInput, LinkTag, MetaTag, PageHead, SocialImage, StaticPageHeadInput } from "./models";
-import type { JsonLdNodes } from "./structured-data";
-import type { StaticPageCopy } from "./static-pages";
-
-interface SocialMetaInput {
-  readonly title: string;
-  readonly description: string;
-  readonly canonical: string;
-  readonly image: SocialImage;
-  readonly preferredLanguage: PreferredLanguage;
-  readonly ogType?: "website" | "article";
-  readonly articleSection?: "employment" | "portfolio";
-}
-
-// TanStack's route head chain provides the root loader data first.
-export type MatchChain = ReadonlyArray<{ readonly loaderData?: unknown }>;
+import type {
+  ExperienceHeadInput,
+  JsonLdNodes,
+  LinkTag,
+  MatchChain,
+  MetaTag,
+  PageHead,
+  PageHeadSpec,
+  SocialImage,
+  SocialMetaInput,
+  StaticPageCopy,
+  StaticPageHeadInput,
+} from "./models";
 
 interface RootHeadContract {
   readonly meta: ReadonlyArray<MetaTag>;
@@ -36,19 +43,16 @@ interface RootHeadContract {
   readonly scripts?: undefined;
 }
 
-interface PageHeadSpec extends SocialMetaInput {
-  readonly markdownPath: string;
-  readonly graph: JsonLdNodes;
-  readonly authorHref?: string;
-}
-
 // constants
 import {
   AUTHOR_URL,
   AVATAR,
   BRANDED_TITLE,
+  CONTACT_PATH,
   DEFAULT_LANGUAGE,
+  EDUCATION_PATH,
   GLOBAL_SOCIAL_IMAGE,
+  HOME_PATH,
   HOME_TITLE,
   INDEXABLE_ROBOTS,
   META_DESCRIPTION_LENGTH,
@@ -60,8 +64,6 @@ import {
   SITE_NAME,
   SOCIAL_LINKS,
 } from "./constants";
-import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "./static-pages";
-import { AI_INDEX_LINKS, LLMS_DISCOVERY_LINK, SITEMAP_LINK } from "./links";
 
 const ME_LINKS: ReadonlyArray<LinkTag> = SOCIAL_LINKS.map((href) => ({ rel: "me", href }));
 

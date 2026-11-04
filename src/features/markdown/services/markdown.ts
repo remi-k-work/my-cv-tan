@@ -5,31 +5,42 @@ import { Context, Effect, Layer, Option } from "effect";
 import { removeResponseHeader } from "@tanstack/react-start/server";
 import { Datasets } from "@/features/data/services/datasets";
 import { requestPreferredLanguage } from "@/features/data/domain/helpers";
-import { absoluteUrl, experienceMarkdownPath, experiencePath } from "@/features/meta/domain/url";
-import { discoveryTxtResponse, txtUnavailableResponse } from "@/features/meta/http";
-import { mdNotFoundResponse, mdResponse, mdUnavailableResponse, parseLangParam, slugFromMdPathname } from "@/features/markdown/http";
 import { recoverDataFailure } from "@/features/data/domain/required";
 import { experienceFromList } from "@/features/experience/domain/helpers";
-import { buildExperienceMd, buildNotFoundMd, unavailableMarkdownBody } from "@/features/markdown/domain/documents";
+import {
+  absoluteUrl,
+  experienceMarkdownPath,
+  experiencePath,
+  LLMS_FULL_TXT_INDEX,
+  LLMS_TXT_INDEX,
+} from "@/features/meta/domain/helpers";
+import { DEFAULT_LANGUAGE } from "@/features/meta/domain/constants";
+import { discoveryTxtResponse, txtUnavailableResponse } from "@/features/meta/http";
+import {
+  mdNotFoundResponse,
+  mdResponse,
+  mdUnavailableResponse,
+  parseLangParam,
+  slugFromMdPathname,
+} from "@/features/markdown/http";
+import {
+  buildExperienceMd,
+  buildNotFoundMd,
+  CONTACT_TWIN,
+  EDUCATION_TWIN,
+  HOME_TWIN,
+  unavailableMarkdownBody,
+} from "@/features/markdown/domain/documents";
 import { buildLlmsFullTxt, buildLlmsTxt, unavailableIndexBody } from "@/features/markdown/domain/site-index";
 import { translateSource } from "@/features/markdown/domain/formatting";
 import { translateForLanguage } from "@/lib/gt-translations";
 
 // types
-import type { LocalizedMdInput } from "@/features/markdown/domain/formatting";
-import type { ExperienceList } from "@/features/experience/domain/models";
+import type { LocalizedMdInput, MachineDocument, MachineDocumentBody, PageTwin } from "@/features/markdown/domain/models";
 import type { DatasetsService, LocalizedAccessor } from "@/features/data/services/datasets";
-import type { PageTwin } from "@/features/markdown/domain/documents";
+import type { ExperienceList } from "@/features/experience/domain/models";
 import type { RequiredDataError } from "@/features/data/domain/required";
 import type { PreferredLanguage } from "@/domain/models";
-
-// constants
-import { DEFAULT_LANGUAGE } from "@/features/meta/domain/constants";
-import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/links";
-import { CONTACT_TWIN, EDUCATION_TWIN, HOME_TWIN } from "@/features/markdown/domain/documents";
-
-type MachineDocumentBody = (request: Request, context: LocalizedMdInput) => Effect.Effect<Response, RequiredDataError>;
-type MachineDocument = (request: Request) => Effect.Effect<Response, never>;
 
 // Explicit language pins are safe to cache as a single variant, independent of visitor cookies.
 const pinCacheVariant = (response: Response): Response => {
@@ -42,7 +53,11 @@ const pinCacheVariant = (response: Response): Response => {
 
 const translateFor = (preferredLanguage: PreferredLanguage) =>
   Effect.tryPromise(() => translateForLanguage(preferredLanguage)).pipe(
-    Effect.catch((error) => Effect.logError(`[MARKDOWN]: translation snapshot unavailable for "${preferredLanguage}"`, error).pipe(Effect.as(translateSource)))
+    Effect.catch((error) =>
+      Effect.logError(`[MARKDOWN]: translation snapshot unavailable for "${preferredLanguage}"`, error).pipe(
+        Effect.as(translateSource)
+      )
+    )
   );
 
 const documentResponse = (render: MachineDocumentBody): MachineDocument =>
@@ -105,7 +120,12 @@ const experienceTwin = (experienceList: LocalizedAccessor<ExperienceList>): Mach
       }
 
       const experience = found.value;
-      return respond(context, buildExperienceMd({ experience, ...context }), experiencePath(experience.slug), experienceMarkdownPath(experience.slug));
+      return respond(
+        context,
+        buildExperienceMd({ experience, ...context }),
+        experiencePath(experience.slug),
+        experienceMarkdownPath(experience.slug)
+      );
     })
   );
 

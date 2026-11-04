@@ -2,48 +2,24 @@
 
 // services, features, and other libraries
 import { pageField } from "@/domain/helpers";
-import { absoluteUrl } from "./url";
+import { absoluteUrl } from "./helpers";
 
 // types
 import type { PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
-
-type StaticPageType = "overview" | "education" | "contact";
-
-export interface LocalizedCopy {
-  readonly pageName: string;
-  readonly description: string;
-  readonly preferredLanguage: PreferredLanguage;
-}
-
-interface StaticPageCopySource {
-  readonly heading: string;
-  readonly intro: string;
-  readonly title: string;
-  readonly description: string;
-}
-
-export interface StaticPageCopy extends LocalizedCopy {
-  readonly path: PagePath;
-  readonly mdHref: string;
-  readonly type: StaticPageType;
-  readonly seoTitle: string;
-  readonly intro: string;
-  readonly canonical: string;
-}
-
-interface StaticPageSettings {
-  readonly mdHref: string;
-  readonly label: string;
-  readonly type: StaticPageType;
-  readonly copy: Readonly<Record<PreferredLanguage, StaticPageCopySource>>;
-}
+import type { StaticPageCopy, StaticPageSettings } from "./models";
 
 // constants
-import { CONTACT_MD_HREF, EDUCATION_MD_HREF, HOME_MD_HREF, HOME_TITLE, PERSON_DESCRIPTION, SITE_DESCRIPTION } from "./constants";
-
-export const HOME_PATH = "/" as const satisfies PagePath;
-export const EDUCATION_PATH = "/education" as const satisfies PagePath;
-export const CONTACT_PATH = "/contact" as const satisfies PagePath;
+import {
+  CONTACT_MD_HREF,
+  CONTACT_PATH,
+  EDUCATION_MD_HREF,
+  EDUCATION_PATH,
+  HOME_MD_HREF,
+  HOME_PATH,
+  HOME_TITLE,
+  PERSON_DESCRIPTION,
+  SITE_DESCRIPTION,
+} from "./constants";
 
 // Static page definitions shared between HTML heads and Markdown frontmatter.
 export const STATIC_PAGES = {
@@ -100,9 +76,6 @@ export const STATIC_PAGES = {
     },
   },
 } as const satisfies Record<PagePath, StaticPageSettings>;
-
-// Static page paths for sitemaps and graph cross-links, derived from the page declarations.
-export const STATIC_PATHS: ReadonlyArray<PagePath> = Object.keys(STATIC_PAGES) as ReadonlyArray<PagePath>;
 
 // Resolves localized static page content and SEO summaries.
 export const staticPageCopy = (pageTitles: PageTitles, pagePath: PagePath, preferredLanguage: PreferredLanguage): StaticPageCopy => {

@@ -4,21 +4,34 @@
 import { Option, Predicate } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
 import { excerpt, experienceHeadline, partitionExperiences } from "@/features/experience/domain/helpers";
-import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "./static-pages";
-import { absoluteUrl, experiencePath, experienceScreenshot } from "./url";
+import { absoluteUrl, experiencePath, experienceScreenshot } from "./helpers";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
-import type { ExperienceHeadInput, JsonLdScript } from "./models";
-import type { LocalizedCopy } from "./static-pages";
+import type {
+  ArticleNodeInput,
+  CollectionNodeInput,
+  EducationJsonLdInput,
+  ExperienceHeadInput,
+  HomeJsonLdInput,
+  JsonLdNode,
+  JsonLdNodes,
+  JsonLdScript,
+  LocalizedCopy,
+  SubPageInput,
+  WebPageNodeInput,
+} from "./models";
 
 // constants
 import {
   AVATAR,
+  CONTACT_PATH,
+  EDUCATION_PATH,
   HOME_COUNTRY,
   HOME_LOCALITY,
+  HOME_PATH,
   JOB_TITLE,
   KNOWS_ABOUT,
   META_DESCRIPTION_LENGTH,
@@ -34,53 +47,17 @@ import {
   WEBSITE_ID,
 } from "./constants";
 
+export type { JsonLdNode, JsonLdNodes };
+
 // --- Graph primitives ---
-
-interface JsonLdNode {
-  readonly "@type"?: string;
-  readonly "@id"?: string;
-  readonly [property: string]: unknown;
-}
-
-export type JsonLdNodes = ReadonlyArray<JsonLdNode>;
-type PageNodeType = "WebPage" | "ContactPage" | "CollectionPage" | "ProfilePage";
-
-interface ArticleNodeInput {
-  readonly id: string;
-  readonly headline: string;
-  readonly description: string;
-  readonly preferredLanguage: PreferredLanguage;
-  readonly datePublished?: string;
-  readonly mainEntityOfPage?: string;
-}
-
-interface WebPageNodeInput {
-  readonly type: PageNodeType;
-  readonly id: string;
-  readonly url?: string;
-  readonly name: string;
-  readonly description: string;
-  readonly preferredLanguage: PreferredLanguage;
-  readonly breadcrumb?: boolean;
-  readonly mainEntity?: unknown;
-  readonly primaryImageOfPage?: unknown;
-  readonly datePublished?: string;
-}
-
-interface CollectionNodeInput {
-  readonly id: string;
-  readonly name: string;
-  readonly preferredLanguage: PreferredLanguage;
-  readonly parts: ReadonlyArray<unknown>;
-  readonly url?: string;
-}
-
-type SubPageInput = Omit<WebPageNodeInput, "id" | "url" | "breadcrumb"> & { readonly path: string };
 
 const SCHEMA_CONTEXT = "https://schema.org";
 
 // Escapes '<' so serialized content can never close the script tag.
-const jsonLdScript = (data: unknown): JsonLdScript => ({ type: "application/ld+json", children: JSON.stringify(data).replace(/</g, "\\u003C") });
+const jsonLdScript = (data: unknown): JsonLdScript => ({
+  type: "application/ld+json",
+  children: JSON.stringify(data).replace(/</g, "\\u003C"),
+});
 
 // Merges nodes by @id, preserving initial order and overriding overlapping fields.
 export const jsonLdGraph = (nodes: ReadonlyArray<JsonLdNode>): JsonLdScript => {
@@ -108,20 +85,19 @@ export const jsonLdGraph = (nodes: ReadonlyArray<JsonLdNode>): JsonLdScript => {
 
 // --- Node builders ---
 
-const articleNode = (input: ArticleNodeInput): JsonLdNode =>
-  ({
-    "@type": "Article",
-    "@id": input.id,
-    headline: input.headline,
-    description: input.description,
-    inLanguage: input.preferredLanguage,
-    author: { "@id": PERSON_ID },
-    publisher: { "@id": PUBLISHER_ID },
-    ...(input.datePublished ? { datePublished: input.datePublished } : {}),
-    ...(input.mainEntityOfPage ? { mainEntityOfPage: { "@id": input.mainEntityOfPage } } : {}),
-  }) as JsonLdNode;
+const articleNode = (input: ArticleNodeInput): JsonLdNode => ({
+  "@type": "Article",
+  "@id": input.id,
+  headline: input.headline,
+  description: input.description,
+  inLanguage: input.preferredLanguage,
+  author: { "@id": PERSON_ID },
+  publisher: { "@id": PUBLISHER_ID },
+  ...(input.datePublished ? { datePublished: input.datePublished } : {}),
+  ...(input.mainEntityOfPage ? { mainEntityOfPage: { "@id": input.mainEntityOfPage } } : {}),
+});
 
-const webPageNode = (input: WebPageNodeInput) => ({
+const webPageNode = (input: WebPageNodeInput): JsonLdNode => ({
   "@type": input.type,
   "@id": input.id,
   url: input.url,
@@ -135,17 +111,7 @@ const webPageNode = (input: WebPageNodeInput) => ({
   datePublished: input.datePublished,
 });
 
-// Emits a WebPage node paired with its two-level breadcrumb list.
-export const pageGraph = ({ type, path, name, description, preferredLanguage, mainEntity, primaryImageOfPage, datePublished }: SubPageInput): JsonLdNodes => {
-  const id = absoluteUrl(path);
-
-  return [
-    webPageNode({ type, id, url: id, name, description, preferredLanguage, breadcrumb: true, mainEntity, primaryImageOfPage, datePublished }),
-    breadcrumb(preferredLanguage, path, name),
-  ];
-};
-
-const collectionNode = (input: CollectionNodeInput) => ({
+const collectionNode = (input: CollectionNodeInput): JsonLdNode => ({
   "@type": "Collection",
   "@id": input.id,
   url: input.url,
@@ -167,7 +133,21 @@ const breadcrumb = (preferredLanguage: PreferredLanguage, path: string, name: st
   }) as const;
 
 // Extends the site Person entity with an additional edge during graph merging.
-const personEdge = <Fields extends Readonly<Record<string, unknown>>>(fields: Fields) => ({ "@type": "Person", "@id": PERSON_ID, ...fields });
+const personEdge = <Fields extends Readonly<Record<string, unknown>>>(fields: Fields): JsonLdNode => ({
+  "@type": "Person",
+  "@id": PERSON_ID,
+  ...fields,
+});
+
+// Emits a WebPage node paired with its two-level breadcrumb list.
+export const pageGraph = ({ type, path, name, description, preferredLanguage, mainEntity, primaryImageOfPage, datePublished }: SubPageInput): JsonLdNodes => {
+  const id = absoluteUrl(path);
+
+  return [
+    webPageNode({ type, id, url: id, name, description, preferredLanguage, breadcrumb: true, mainEntity, primaryImageOfPage, datePublished }),
+    breadcrumb(preferredLanguage, path, name),
+  ];
+};
 
 // --- Site entities ---
 
@@ -176,7 +156,7 @@ const AVATAR_IMAGE_OBJECT = imageObject(AVATAR.src, AVATAR.width, AVATAR.height)
 const HOME_URL = absoluteUrl(HOME_PATH);
 
 // Site-wide entities merged into every page head.
-export const siteNodes = [
+export const siteNodes: JsonLdNodes = [
   {
     "@type": "WebSite",
     "@id": WEBSITE_ID,
@@ -212,17 +192,9 @@ export const siteNodes = [
     sameAs: [...SOCIAL_LINKS],
     member: { "@id": PERSON_ID },
   },
-] as const;
+];
 
 // --- Page graphs ---
-
-interface HomeJsonLdInput extends LocalizedCopy {
-  readonly experienceList: ExperienceList;
-}
-
-interface EducationJsonLdInput extends LocalizedCopy {
-  readonly educationList: EducationList;
-}
 
 const experienceCollection = (input: { id: string; name: string; experiences: ExperienceList; preferredLanguage: PreferredLanguage }): JsonLdNodes => {
   if (input.experiences.length === 0) return [];
@@ -364,7 +336,7 @@ export const experienceJsonLd = ({ experience, preferredLanguage }: ExperienceHe
     datePublished: year,
   });
 
-  const item = employment
+  const item: JsonLdNode = employment
     ? {
         "@type": "OrganizationRole",
         "@id": itemId,
@@ -388,7 +360,7 @@ export const experienceJsonLd = ({ experience, preferredLanguage }: ExperienceHe
         codeRepository: gitHubLink,
       };
 
-  const employmentNodes = employment
+  const employmentNodes: JsonLdNodes = employment
     ? [
         {
           "@type": "Organization",

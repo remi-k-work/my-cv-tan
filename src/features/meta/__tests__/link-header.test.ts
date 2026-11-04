@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-import { AI_INDEX_LINKS, AI_INDEX_LINK_HEADER, joinLinkHeader, languageVariantLinks } from "../domain/links";
+import { AI_INDEX_LINKS, AI_INDEX_LINK_HEADER, joinLinkHeader, languageVariantLinks } from "../domain/helpers";
 import { ROOT_HEAD } from "../domain/heads";
 
 // --- The Link header ---
@@ -12,8 +12,14 @@ it("a link serializes as a URI-reference with its parameters in a fixed order", 
   assert.strictEqual(joinLinkHeader([{ rel: "canonical", href: "https://www.remiforge.dev/" }]), '<https://www.remiforge.dev/>; rel="canonical"');
   // The order is rel, type, title, hreflang whether or not the declaring literal listed them in it,
   // so two responses advertising the same links are byte-equal regardless of how each was written
-  assert.strictEqual(joinLinkHeader([{ rel: "alternate", hreflang: "en", type: "text/markdown", href: "https://www.remiforge.dev/index.md" }]), '<https://www.remiforge.dev/index.md>; rel="alternate"; type="text/markdown"; hreflang="en"');
-  assert.strictEqual(joinLinkHeader([{ rel: "alternate", type: "text/plain", title: "llms.txt", href: "https://www.remiforge.dev/llms.txt" }]), '<https://www.remiforge.dev/llms.txt>; rel="alternate"; type="text/plain"; title="llms.txt"');
+  assert.strictEqual(
+    joinLinkHeader([{ rel: "alternate", hreflang: "en", type: "text/markdown", href: "https://www.remiforge.dev/index.md" }]),
+    '<https://www.remiforge.dev/index.md>; rel="alternate"; type="text/markdown"; hreflang="en"'
+  );
+  assert.strictEqual(
+    joinLinkHeader([{ rel: "alternate", type: "text/plain", title: "llms.txt", href: "https://www.remiforge.dev/llms.txt" }]),
+    '<https://www.remiforge.dev/llms.txt>; rel="alternate"; type="text/plain"; title="llms.txt"'
+  );
 });
 
 it("the AI indexes project into both the <head> advertisements and the Link header from one record", () => {
@@ -32,7 +38,10 @@ it("the AI indexes project into both the <head> advertisements and the Link head
   assert.strictEqual(AI_INDEX_LINK_HEADER, joinLinkHeader(AI_INDEX_LINKS));
 
   // The site-wide head carries the <link> projection, so the HTML document advertises the indexes too
-  assert.deepStrictEqual(ROOT_HEAD.links.filter(({ rel }) => rel === "alternate"), [...AI_INDEX_LINKS]);
+  assert.deepStrictEqual(
+    ROOT_HEAD.links.filter(({ rel }) => rel === "alternate"),
+    [...AI_INDEX_LINKS]
+  );
 });
 
 it("language variants list every supported language and close with the x-default", () => {

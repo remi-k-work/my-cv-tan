@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-import { buildSitemapXml, ROBOTS_TXT } from "../domain/discovery-documents";
+import { buildSitemapXml, ROBOTS_TXT } from "../domain/discovery";
 import { sitemapResponse, sitemapUnavailableResponse, txtResponse, documentHeaders } from "../http";
 import { robotsHandler } from "@/features/meta/services/discovery";
 
@@ -119,7 +119,10 @@ it("robots.txt allows content, disallows API endpoints, and advertises the sitem
   // single record and every bot after the first inherits only the directives of the first. The count
   // pins the separator, and the placement pins it after the directives rather than before the bot.
   assert.strictEqual((robots.match(/^User-agent: /gm) ?? []).length, (robots.match(/^Content-Signal: [^\n]*/gm) ?? []).length);
-  assert.isTrue(robots.endsWith("Sitemap: https://www.remiforge.dev/sitemap.xml\n"), "the sitemap directive is the document's last line and the file ends terminated");
+  assert.isTrue(
+    robots.endsWith("Sitemap: https://www.remiforge.dev/sitemap.xml\n"),
+    "the sitemap directive is the document's last line and the file ends terminated"
+  );
 
   // The route serves the document through the meta service, so the response carries the shared
   // discovery headers (English, the reuse signal and the AI-index Link) the same way sitemap.xml

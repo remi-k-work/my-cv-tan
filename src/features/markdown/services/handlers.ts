@@ -1,18 +1,14 @@
+// Bridges machine-readable document routes to TanStack server route handlers.
+
 // services, features, and other libraries
-import { Effect, pipe } from "effect";
+import { Effect } from "effect";
 import { RuntimeServer } from "@/lib/runtime-server";
 import { Markdown } from "./markdown";
 
-// Bridges machine-readable document routes to TanStack server route handlers.
 const handler =
-  <K extends keyof Markdown["Service"]>(name: K) =>
+  (name: keyof Markdown["Service"]) =>
   ({ request }: { request: Request }) =>
-    RuntimeServer.runPromise(
-      pipe(
-        Markdown,
-        Effect.flatMap((markdown) => markdown[name](request))
-      )
-    );
+    RuntimeServer.runPromise(Effect.flatMap(Markdown, (markdown) => markdown[name](request)));
 
 // Request-aware markdown twin endpoints.
 export const homeHandler = handler("home");

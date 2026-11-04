@@ -3,19 +3,19 @@
 // services, features, and other libraries
 import { Option, pipe } from "effect";
 import { msg } from "gt-tanstack-start";
-import { absoluteUrl, decodeUrlOption, encodeParens } from "@/features/meta/domain/url";
+import { absoluteUrl, decodeUrlOption, encodeParens } from "@/features/meta/domain/helpers";
 
 // types
-import type { PreferredLanguage, Translate } from "@/domain/models";
+import type { Translate } from "@/domain/models";
+import type { LocalizedMdInput } from "./models";
 
-// Rendering context shared by every Markdown twin builder.
-export interface LocalizedMdInput {
-  readonly preferredLanguage: PreferredLanguage;
-  readonly translate: Translate;
-}
+// Re-export for backward compatibility
+export type { LocalizedMdInput };
 
 // constants
 import { BRANDED_TITLE, DEFAULT_LANGUAGE, SITE_NAME } from "@/features/meta/domain/constants";
+
+// --- CommonMark & GFM Escaping Rules ---
 
 const NORMALIZE_RULES: ReadonlyArray<readonly [RegExp, string]> = [
   [/\r\n?/g, "\n"],
@@ -55,23 +55,17 @@ export const escapeMd = (text: string) => {
 
 export const escapeMdInline = (text: string) => escapeMd(text.replace(/\n+/g, " "));
 export const demoteHeadings = (markdown: string) => markdown.replace(DEMOTE_HEADINGS, (hashes) => `${hashes}##`);
+
 export const translateSource: Translate = (source) => source;
 export const SOURCE_COPY: LocalizedMdInput = { preferredLanguage: DEFAULT_LANGUAGE, translate: translateSource };
+
+// --- Frontmatter & Document Primitives ---
 
 const FRONTMATTER_DELIMITER = "---";
 const YAML_UNSAFE_CHARACTERS = /[\u007f-\u009f\u2028\u2029]/g;
 
 const yamlValue = (value: string) =>
-  JSON.stringify(value).replace(YAML_UNSAFE_CHARACTERS, (character) => `\\u${character.charCodeAt(0).toString(16).padStart(4, "0")}`);
-
-export const mdLink = (label: string, href: string) => `[${escapeMdInline(label)}](${href})`;
-
-export const mdExternalLink = (label: string, href: string) =>
-  pipe(
-    decodeUrlOption(href),
-    Option.filter((url) => url.protocol === "http:" || url.protocol === "https:"),
-    Option.map((url) => mdLink(label, encodeParens(url.href)))
-  );
+  JSON.stringify(value).replace(YAML_UNSAFE_CHARACTERS, (char) => `\\u${char.charCodeAt(0).toString(16).padStart(4, "0")}`);
 
 export const frontmatter = (fields: Readonly<Record<string, string>>) => {
   const body = Object.entries(fields)
@@ -84,7 +78,7 @@ export const twinIdentity = (input: {
   readonly title: string;
   readonly description: string;
   readonly canonical: string;
-  readonly preferredLanguage: PreferredLanguage;
+  readonly preferredLanguage: string;
 }) => ({
   title: BRANDED_TITLE(input.title),
   description: input.description,
@@ -99,10 +93,19 @@ export const mdBulletList = (items: ReadonlyArray<string>) => items.map((item) =
 export const mdFact = (label: string, value: string) => `${escapeMdInline(label)}: ${escapeMdInline(value)}`;
 export const mdBody = (blocks: ReadonlyArray<string>) => blocks.filter(Boolean).join("\n\n");
 export const mdTitledSection = (title: string, body: string) => mdBody([mdHeading(2, title), body]);
-
-export const translatedLink = (label: string, href: string, translate: Translate) => mdLink(translate(msg(label)), href);
 export const mdDocument = (blocks: ReadonlyArray<string>) => `${mdBody(blocks)}\n`;
 export const mdEmptyMarker = (translate: Translate) => `_${escapeMdInline(translate(msg("No entries.")))}_`;
+
+export const mdLink = (label: string, href: string) => `[${escapeMdInline(label)}](${href})`;
+
+export const mdExternalLink = (label: string, href: string) =>
+  pipe(
+    decodeUrlOption(href),
+    Option.filter((url) => url.protocol === "http:" || url.protocol === "https:"),
+    Option.map((url) => mdLink(label, encodeParens(url.href)))
+  );
+
+export const translatedLink = (label: string, href: string, translate: Translate) => mdLink(translate(msg(label)), href);
 
 export const mdIndexEntry = (label: string, canonical: string, twinUrl: string, summary?: string) => {
   const beforeTwin = summary === undefined ? "" : `${summary} `;

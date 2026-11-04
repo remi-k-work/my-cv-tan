@@ -5,8 +5,8 @@ import { Array, Effect, Option, pipe } from "effect";
 import { msg } from "gt-tanstack-start";
 import { matchPreferredLanguage } from "@/domain/helpers";
 import { excerpt, experienceHeadline } from "@/features/experience/domain/helpers";
-import { staticPageCopy } from "@/features/meta/domain/static-pages";
-import { absoluteUrl, experienceMarkdownPath, experiencePath, markdownTwinUrl } from "@/features/meta/domain/url";
+import { staticPageCopy, STATIC_PAGES } from "@/features/meta/domain/static-pages";
+import { absoluteUrl, AI_INDEXES, experienceMarkdownPath, experiencePath, LLMS_TXT_INDEX, markdownTwinUrl } from "@/features/meta/domain/helpers";
 import {
   escapeMd,
   escapeMdInline,
@@ -31,17 +31,24 @@ import {
 
 // types
 import type { PagePath, PageTitles, PreferredLanguage, Translate } from "@/domain/models";
-import type { DatasetsService } from "@/features/data/services/datasets";
-import type { RequiredDataError } from "@/features/data/domain/required";
 import type { EducationList } from "@/features/education/domain/models";
 import type { Experience, ExperienceList } from "@/features/experience/domain/models";
-import type { StaticPageCopy } from "@/features/meta/domain/static-pages";
-import type { LocalizedMdInput } from "./formatting";
+import type { StaticPageCopy } from "@/features/meta/domain/models";
+import type {
+  ContactMdInput,
+  EducationMdInput,
+  ExperienceLinesInput,
+  ExperienceMdInput,
+  HomeMdInput,
+  NotFoundMdInput,
+  PageTwin,
+  TwinData,
+  TwinEntry,
+} from "./models";
 
 // constants
-import { DEFAULT_LANGUAGE, DOWNLOADABLE_DOCUMENTS, META_DESCRIPTION_LENGTH, SITE_NAME, SOCIAL_PROFILES } from "@/features/meta/domain/constants";
-import { AI_INDEXES, LLMS_TXT_INDEX } from "@/features/meta/domain/links";
-import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH, STATIC_PAGES, STATIC_PATHS } from "@/features/meta/domain/static-pages";
+import { DEFAULT_LANGUAGE, DOWNLOADABLE_DOCUMENTS, META_DESCRIPTION_LENGTH, SITE_NAME, SOCIAL_PROFILES, STATIC_PATHS } from "@/features/meta/domain/constants";
+import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/features/meta/domain/constants";
 
 // --- Twin navigation ---
 
@@ -69,30 +76,17 @@ const deadEndEscapeLine = (preferredLanguage: PreferredLanguage, translate: Tran
 
 // --- Experience documents ---
 
-// URL lead style for experience listings: twin endpoint or canonical HTML URL.
-type ExperienceEntryLink = "twin" | "canonical";
-
-interface ExperienceMdInput extends LocalizedMdInput {
-  readonly experience: Experience;
-}
-
-interface ExperienceLinesInput extends LocalizedMdInput {
-  readonly experienceList: ExperienceList;
-  readonly type: Experience["type"];
-  readonly entry: ExperienceEntryLink;
-}
-
 const LIST_EXCERPT_LENGTH = 140;
 
 // Formats an optional web link as a bullet item; non-http/https URLs are omitted.
 const optionalBulletLink = (label: string, href: string | undefined) =>
   pipe(
     Option.fromNullishOr(href),
-    Option.flatMap((href) => mdExternalLink(label, href))
+    Option.flatMap((validHref) => mdExternalLink(label, validHref))
   );
 
 // Builds a list line for a twin page or a canonical HTML index entry.
-const experienceLine = (experience: Experience, preferredLanguage: PreferredLanguage, entry: ExperienceEntryLink) => {
+const experienceLine = (experience: Experience, preferredLanguage: PreferredLanguage, entry: "twin" | "canonical") => {
   const headline = experienceHeadline(experience, preferredLanguage);
   const summary = `${escapeMdInline(excerpt(experience.txt, LIST_EXCERPT_LENGTH))} (${escapeMdInline(experience.year)})`;
   const twin = markdownTwinUrl(experienceMarkdownPath(experience.slug), preferredLanguage);
@@ -144,25 +138,6 @@ export const buildExperienceMd = ({ experience, preferredLanguage, translate }: 
 };
 
 // --- Static page documents ---
-
-interface HomeMdInput extends LocalizedMdInput {
-  readonly pageTitles: PageTitles;
-  readonly experienceList: ExperienceList;
-}
-
-interface EducationMdInput extends LocalizedMdInput {
-  readonly pageTitles: PageTitles;
-  readonly educationList: EducationList;
-}
-
-interface ContactMdInput extends LocalizedMdInput {
-  readonly pageTitles: PageTitles;
-}
-
-// A missing twin carries no slug when the URL had no decodable identifier.
-interface NotFoundMdInput extends LocalizedMdInput {
-  readonly slug: Option.Option<string>;
-}
 
 const profileLinks = (translate: Translate) => [...mdProfileLinks(SOCIAL_PROFILES), mdFact(translate(msg("Base")), translate(msg("Rzeszów, Poland")))];
 
@@ -240,7 +215,7 @@ export const buildNotFoundMd = ({ slug, preferredLanguage, translate }: NotFound
 
   const description = Option.match(detail, {
     onNone: () => matchPreferredLanguage(preferredLanguage, "No page for this address.", "Nie znaleziono strony dla tego adresu."),
-    onSome: ({ slug }) => matchPreferredLanguage(preferredLanguage, `No page for slug "${slug}".`, `Nie znaleziono strony dla identyfikatora "${slug}".`),
+    onSome: ({ slug: s }) => matchPreferredLanguage(preferredLanguage, `No page for slug "${s}".`, `Nie znaleziono strony dla identyfikatora "${s}".`),
   });
 
   const missing = Option.match(detail, {
@@ -249,7 +224,12 @@ export const buildNotFoundMd = ({ slug, preferredLanguage, translate }: NotFound
       matchPreferredLanguage(preferredLanguage, `No Markdown document exists for ${path}.`, `Dokument Markdown dla adresu ${path} nie istnieje.`),
   });
 
-  return mdDocument([frontmatter({ title, description, lang: preferredLanguage, author: SITE_NAME }), mdHeading(1, title), missing, deadEndEscapeLine(preferredLanguage, translate)]);
+  return mdDocument([
+    frontmatter({ title, description, lang: preferredLanguage, author: SITE_NAME }),
+    mdHeading(1, title),
+    missing,
+    deadEndEscapeLine(preferredLanguage, translate),
+  ]);
 };
 
 // 503 fallback body for Markdown twins when required portfolio data is unavailable.
@@ -260,29 +240,6 @@ export const unavailableMarkdownBody = (translate: Translate) =>
   ]);
 
 // --- Twin catalogue ---
-
-export interface TwinData {
-  readonly pageTitles: PageTitles;
-  readonly experienceList: ExperienceList;
-  readonly educationList: EducationList;
-}
-
-export interface PageTwin<Data> {
-  readonly pagePath: PagePath;
-  readonly mdHref: string;
-  readonly name: string;
-  readonly summary: string;
-  readonly resolve: (datasets: DatasetsService, preferredLanguage: PreferredLanguage) => Effect.Effect<Data, RequiredDataError>;
-  readonly render: (pageTitles: PageTitles, data: Data, context: LocalizedMdInput) => string;
-}
-
-interface TwinEntry {
-  readonly name: string;
-  readonly canonical: string;
-  readonly twinUrl: string;
-  readonly summary?: string;
-  readonly render: (data: TwinData) => string;
-}
 
 const staticTwin = <Data>(pagePath: PagePath, spec: Omit<PageTwin<Data>, "pagePath" | "mdHref">): PageTwin<Data> => ({
   ...spec,

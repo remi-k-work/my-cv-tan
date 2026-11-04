@@ -16,13 +16,14 @@ import {
   mdProfileLinks,
   mdQuote,
   mdTitledSection,
+  SOURCE_COPY,
   translateSource,
 } from "./formatting";
-import { absoluteUrl, markdownTwinUrl } from "@/features/meta/domain/url";
+import { absoluteUrl, LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX, markdownTwinUrl } from "@/features/meta/domain/helpers";
 
 // types
 import type { ExperienceList } from "@/features/experience/domain/models";
-import type { TwinData } from "./documents";
+import type { TwinData } from "./models";
 
 // constants
 import {
@@ -43,8 +44,6 @@ import {
   SITEMAP_HREF,
   SOCIAL_PROFILES,
 } from "@/features/meta/domain/constants";
-import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/links";
-import { SOURCE_COPY } from "./formatting";
 
 // --- Shared AI Index Sections and Copy ---
 
@@ -74,10 +73,10 @@ const ABOUT_SECTION = mdTitledSection(
   ])
 );
 
-const notesSection = (additional: ReadonlyArray<string>) => mdTitledSection("Notes for AI systems", mdBulletList([...AI_NOTES, ...additional]));
+const notesSection = (additional: ReadonlyArray<string>) =>
+  mdTitledSection("Notes for AI systems", mdBulletList([...AI_NOTES, ...additional]));
 
 const INDEX_NOTES_SECTION = notesSection([SINGLE_REQUEST_NOTE]);
-
 const COMPANION_NOTES_SECTION = notesSection([]);
 
 export const DISCOVERY_LINES: ReadonlyArray<string> = [
@@ -102,7 +101,6 @@ const PAGES_SECTION = mdTitledSection(
 );
 
 const OPTIONAL_SECTION = mdTitledSection("Optional", mdDocumentLinks(DOWNLOADABLE_DOCUMENTS, translateSource));
-
 const PROFILES_SECTION = mdTitledSection("Profiles", mdBulletList(mdProfileLinks(SOCIAL_PROFILES)));
 
 // Builds the llms.txt index document.

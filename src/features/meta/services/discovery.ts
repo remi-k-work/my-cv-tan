@@ -5,7 +5,7 @@ import { Effect } from "effect";
 import { RuntimeServer } from "@/lib/runtime-server";
 import { recoverDataFailure } from "@/features/data/domain/required";
 import { Datasets } from "@/features/data/services/datasets";
-import { buildSitemapXml, ROBOTS_TXT } from "@/features/meta/domain/discovery-documents";
+import { buildSitemapXml, ROBOTS_TXT } from "@/features/meta/domain/discovery";
 import { sitemapResponse, sitemapUnavailableResponse, txtResponse } from "@/features/meta/http";
 
 // constants
@@ -22,7 +22,11 @@ const sitemapDocument = Effect.gen(function* () {
   const slugs = lists.flatMap((list) => list.map(({ slug }) => slug));
 
   return sitemapResponse(buildSitemapXml(slugs));
-}).pipe(Effect.provide(Datasets.layer), recoverDataFailure("[SITEMAP.XML]", sitemapUnavailableResponse), Effect.withSpan("sitemapDocument"));
+}).pipe(
+  Effect.provide(Datasets.layer),
+  recoverDataFailure("[SITEMAP.XML]", sitemapUnavailableResponse),
+  Effect.withSpan("sitemapDocument")
+);
 
 export const robotsHandler = () => RuntimeServer.runPromise(robotsDocument);
 export const sitemapHandler = () => RuntimeServer.runPromise(sitemapDocument);

@@ -3,7 +3,6 @@ import { createFileRoute } from "@tanstack/react-router";
 
 // services, features, and other libraries
 import { loaderEducation } from "@/loaders/education";
-import { EDUCATION_PATH } from "@/features/meta/domain/static-pages";
 import { educationHead, routeHead } from "@/features/meta/domain/heads";
 
 // components
@@ -12,6 +11,9 @@ import { Education } from "@/features/education/ui/education";
 import { PageGrid } from "@/ui/page-grid";
 import { PagePanel } from "@/ui/page-panel";
 import { PageTitle } from "@/ui/page-title";
+
+// constants
+import { EDUCATION_PATH } from "@/features/meta/domain/constants";
 
 export const Route = createFileRoute("/education")({
   loader: () => loaderEducation(),

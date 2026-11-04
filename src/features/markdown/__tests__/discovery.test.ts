@@ -9,7 +9,7 @@ import { buildLlmsTxt, buildLlmsFullTxt, SITE_OPENING, DISCOVERY_LINES, unavaila
 import { unavailableMarkdownBody } from "../domain/documents";
 import { escapeMd } from "../domain/formatting";
 import { experienceFromList } from "@/features/experience/domain/helpers";
-import { absoluteUrl } from "@/features/meta/domain/url";
+import { absoluteUrl } from "@/features/meta/domain/helpers";
 
 // types
 import type { PageTitles } from "@/domain/models";
@@ -52,7 +52,10 @@ it("buildLlmsTxt indexes pages, about facts, grouped experience and negotiated l
   // Every entry leads with the clean canonical HTML URL the notes name as the citation target, and
   // states the deterministic ?lang-pinned twin beside it — the same two spellings the Pages section
   // above prints, so one document never advertises two different entry shapes.
-  assert.include(txt, `- [Full-Stack Developer at Sample Co](https://www.remiforge.dev/my%20project): Built things with \\*\\*care\\*\\* and #hashtags. (Mar 2026) Markdown: https://www.remiforge.dev/my%20project.md?lang=en`);
+  assert.include(
+    txt,
+    `- [Full-Stack Developer at Sample Co](https://www.remiforge.dev/my%20project): Built things with \\*\\*care\\*\\* and #hashtags. (Mar 2026) Markdown: https://www.remiforge.dev/my%20project.md?lang=en`
+  );
   assert.include(txt, `## Notes for AI systems`);
   // The single-fetch document is surfaced in Pages, not only in the trailing notes
   assert.include(txt, `- [Full site content](https://www.remiforge.dev/llms-full.txt): every page above in one document, for single-request ingestion.`);
@@ -102,8 +105,14 @@ it("buildLlmsTxt indexes pages, about facts, grouped experience and negotiated l
   }
   // Each page entry links the canonical HTML URL — the citation target the notes name — and states
   // its Markdown twin beside it, so a fetcher learns both documents from a single entry
-  assert.include(txt, `- [Home](https://www.remiforge.dev/): portfolio overview with experience and project lists. Markdown: https://www.remiforge.dev/index.md?lang=en`);
-  assert.include(txt, `- [Education & Certificates](https://www.remiforge.dev/education): schools, courses and certificates. Markdown: https://www.remiforge.dev/education.md?lang=en`);
+  assert.include(
+    txt,
+    `- [Home](https://www.remiforge.dev/): portfolio overview with experience and project lists. Markdown: https://www.remiforge.dev/index.md?lang=en`
+  );
+  assert.include(
+    txt,
+    `- [Education & Certificates](https://www.remiforge.dev/education): schools, courses and certificates. Markdown: https://www.remiforge.dev/education.md?lang=en`
+  );
   // Summaries are authored sentences: the entry adds no second full stop
   assert.notInclude(txt, ".. Markdown:");
   assert.notInclude(txt, ".md)");
@@ -371,7 +380,9 @@ it.effect("required-content failures map to non-cacheable 503s and valid missing
     assert.include(unavailableMarkdownBody(translateEn), "portfolio");
 
     // The discovery documents recover through the same shared recovery, with a plain-text 503
-    const unavailableIndex = yield* recoverDataFailure("[LLMS.TXT]", () => txtUnavailableResponse(unavailableIndexBody("llms.txt")))(requireData(Option.none(), "experience list"));
+    const unavailableIndex = yield* recoverDataFailure("[LLMS.TXT]", () => txtUnavailableResponse(unavailableIndexBody("llms.txt")))(
+      requireData(Option.none(), "experience list")
+    );
     assert.strictEqual(unavailableIndex.status, 503);
     assert.strictEqual(unavailableIndex.headers.get("Content-Type"), "text/plain; charset=utf-8");
 
@@ -387,7 +398,8 @@ it.effect("required-content failures map to non-cacheable 503s and valid missing
 it("the unavailable twin escapes its prose the way every other body string does", () => {
   // Dictionary copy is authored data: an escaped value starting with "#" or "-" would fabricate
   // structure in the one document an indexer reads while the site is degraded.
-  const hostile = (source: string): string => (source === "The required portfolio content could not be loaded. Please try again shortly." ? "- not really" : source);
+  const hostile = (source: string): string =>
+    source === "The required portfolio content could not be loaded. Please try again shortly." ? "- not really" : source;
 
   assert.include(unavailableMarkdownBody(hostile), "\\- not really");
   // The escape is transparent for the copy the site ships today, so no reachable prose changed
