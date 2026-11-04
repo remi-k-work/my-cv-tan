@@ -143,9 +143,11 @@ it("robots.txt allows content, disallows API endpoints, and advertises the sitem
   // Named groups override `*` in RFC 9309, so every group must repeat the signal to keep it in force
   assert.strictEqual((robots.match(/^Content-Signal: /gm) ?? []).length, (robots.match(/^User-agent: /gm) ?? []).length);
   // Every bot record is followed by one blank line: without it two `User-agent` groups merge into a
-  // single record and every bot after the first inherits only the directives of the first. The count
-  // pins the separator, and the placement pins it after the directives rather than before the bot.
-  assert.strictEqual((robots.match(/^User-agent: /gm) ?? []).length, (robots.match(/^Content-Signal: [^\n]*/gm) ?? []).length);
+  // single record and every bot after the first inherits only the directives of the first. Each
+  // comment and its `User-agent` line stay adjacent, and every record ends with the blank separator.
+  const userAgents = robots.match(/^User-agent: /gm) ?? [];
+  assert.strictEqual((robots.match(/^# [^\n]*\nUser-agent: /gm) ?? []).length, userAgents.length);
+  assert.strictEqual((robots.match(/\n\n# /g) ?? []).length, userAgents.length);
   assert.isTrue(
     robots.endsWith("Sitemap: https://www.remiforge.dev/sitemap.xml\n"),
     "the sitemap directive is the document's last line and the file ends terminated"

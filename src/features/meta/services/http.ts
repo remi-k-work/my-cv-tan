@@ -23,12 +23,16 @@ const MD_CONTENT_TYPE = "text/markdown; charset=utf-8";
 // Language-negotiated documents must vary on both inputs.
 export const LANGUAGE_VARY = "Cookie, Accept-Language";
 
+// The reuse signal and AI-index advertisements every response repeats.
 const MACHINE_HEADERS = { "Content-Signal": CONTENT_SIGNAL, Link: AI_INDEX_LINK_HEADER } as const;
+// A successful representation may be cached; a failure never is.
 const CACHEABLE_HEADERS = { "Cache-Control": CACHE_CONTROL } as const;
 const UNAVAILABLE_HEADERS = { "Cache-Control": NO_STORE, "X-Robots-Tag": NOINDEX_FOLLOW } as const;
+// Indexable documents opt into full snippets and large previews.
+const INDEXABLE_HEADERS = { "X-Robots-Tag": INDEXABLE_ROBOTS } as const;
 
 const TXT_HEADERS = { ...MACHINE_HEADERS, "Content-Type": TXT_CONTENT_TYPE, "Content-Language": "en" } as const;
-const SITEMAP_HEADERS = { ...MACHINE_HEADERS, "Content-Type": XML_CONTENT_TYPE, "X-Robots-Tag": NOINDEX_FOLLOW } as const;
+const SITEMAP_HEADERS = { ...MACHINE_HEADERS, "Content-Type": XML_CONTENT_TYPE } as const;
 
 export const txtResponse = (body: string) => new Response(body, { status: 200, headers: { ...TXT_HEADERS, ...CACHEABLE_HEADERS } });
 
@@ -40,13 +44,11 @@ export const discoveryTxtResponse = (body: string, contentLocation: string) =>
     headers: { ...TXT_HEADERS, ...CACHEABLE_HEADERS, "X-Robots-Tag": NOINDEX_FOLLOW, "Content-Location": contentLocation },
   });
 
-export const sitemapResponse = (xml: string) => new Response(xml, { status: 200, headers: { ...SITEMAP_HEADERS, ...CACHEABLE_HEADERS } });
+export const sitemapResponse = (xml: string) =>
+  new Response(xml, { status: 200, headers: { ...SITEMAP_HEADERS, ...CACHEABLE_HEADERS, "X-Robots-Tag": NOINDEX_FOLLOW } });
 
 export const sitemapUnavailableResponse = () =>
-  new Response(SITEMAP_UNAVAILABLE_XML, {
-    status: 503,
-    headers: { ...SITEMAP_HEADERS, ...UNAVAILABLE_HEADERS },
-  });
+  new Response(SITEMAP_UNAVAILABLE_XML, { status: 503, headers: { ...SITEMAP_HEADERS, ...UNAVAILABLE_HEADERS } });
 
 export const documentHeaders = (preferredLanguage: PreferredLanguage): Readonly<Record<string, string>> => ({
   ...MACHINE_HEADERS,
@@ -54,14 +56,12 @@ export const documentHeaders = (preferredLanguage: PreferredLanguage): Readonly<
   Vary: LANGUAGE_VARY,
 });
 
-const headersFor = (preferredLanguage: PreferredLanguage, unavailable = false) => ({
+// Body headers every Markdown response shares, before its outcome is layered on.
+const markdownHeaders = (preferredLanguage: PreferredLanguage) => ({
   ...MACHINE_HEADERS,
   "Content-Type": MD_CONTENT_TYPE,
-  ...CACHEABLE_HEADERS,
   "Content-Language": preferredLanguage,
   Vary: LANGUAGE_VARY,
-  "X-Robots-Tag": INDEXABLE_ROBOTS,
-  ...(unavailable ? UNAVAILABLE_HEADERS : {}),
 });
 
 const markdownLinks = (canonical: string, markdownUrl: string) =>
@@ -77,18 +77,24 @@ export const mdResponse = (input: {
 
   return new Response(input.body, {
     status: 200,
-    headers: { ...headersFor(input.preferredLanguage), "Content-Location": markdownUrl, Link: markdownLinks(input.canonical, markdownUrl) },
+    headers: {
+      ...markdownHeaders(input.preferredLanguage),
+      ...CACHEABLE_HEADERS,
+      ...INDEXABLE_HEADERS,
+      "Content-Location": markdownUrl,
+      Link: markdownLinks(input.canonical, markdownUrl),
+    },
   });
 };
 
 export const mdNotFoundResponse = (body: string, preferredLanguage: PreferredLanguage, markdownPath: Option.Option<string>) => {
   const location = Option.isSome(markdownPath) ? { "Content-Location": markdownTwinUrl(markdownPath.value, preferredLanguage) } : undefined;
 
-  return new Response(body, { status: 404, headers: { ...headersFor(preferredLanguage, true), ...location } });
+  return new Response(body, { status: 404, headers: { ...markdownHeaders(preferredLanguage), ...UNAVAILABLE_HEADERS, ...location } });
 };
 
 export const mdUnavailableResponse = (body: string, preferredLanguage: PreferredLanguage) =>
-  new Response(body, { status: 503, headers: headersFor(preferredLanguage, true) });
+  new Response(body, { status: 503, headers: { ...markdownHeaders(preferredLanguage), ...UNAVAILABLE_HEADERS } });
 
 // --- Route handlers ---
 
