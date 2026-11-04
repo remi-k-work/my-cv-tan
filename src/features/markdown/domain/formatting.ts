@@ -9,9 +9,6 @@ import { absoluteUrl, decodeUrlOption, encodeParens } from "@/features/meta/doma
 import type { Translate } from "@/domain/models";
 import type { LocalizedMdInput } from "./models";
 
-// Re-export for backward compatibility
-export type { LocalizedMdInput };
-
 // constants
 import { BRANDED_TITLE, DEFAULT_LANGUAGE, SITE_NAME } from "@/features/meta/domain/constants";
 

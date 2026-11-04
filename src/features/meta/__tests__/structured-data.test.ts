@@ -190,6 +190,19 @@ it("the @graph merge treats @id as identity even when a node has no @type", () =
   ]);
 });
 
+it("the @graph merge ignores undefined fields instead of erasing known values", () => {
+  const graph = graphOf(
+    jsonLdGraph([
+      { "@type": "Person", "@id": "https://www.remiforge.dev/#person", name: "Remi Forge" },
+      { "@type": "Person", "@id": "https://www.remiforge.dev/#person", name: undefined, jobTitle: "Web Developer" },
+    ]).children
+  );
+
+  assert.deepStrictEqual(graph, [
+    { "@type": "Person", "@id": "https://www.remiforge.dev/#person", name: "Remi Forge", jobTitle: "Web Developer" },
+  ]);
+});
+
 it("the @graph merge publishes a node without an @id exactly as written", () => {
   // A cross-reference or an embedded value object has no stable identity, so it must never be
   // absorbed into — or collide with — an identified neighbour

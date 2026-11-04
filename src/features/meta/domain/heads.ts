@@ -30,12 +30,26 @@ import type {
   MatchChain,
   MetaTag,
   PageHead,
-  PageHeadSpec,
   SocialImage,
-  SocialMetaInput,
   StaticPageCopy,
   StaticPageHeadInput,
 } from "./models";
+
+interface SocialMetaInput {
+  readonly title: string;
+  readonly description: string;
+  readonly canonical: string;
+  readonly image: SocialImage;
+  readonly preferredLanguage: PreferredLanguage;
+  readonly ogType?: "website" | "article";
+  readonly articleSection?: "employment" | "portfolio";
+}
+
+interface PageHeadSpec extends SocialMetaInput {
+  readonly markdownPath: string;
+  readonly graph: JsonLdNodes;
+  readonly authorHref?: string;
+}
 
 interface RootHeadContract {
   readonly meta: ReadonlyArray<MetaTag>;

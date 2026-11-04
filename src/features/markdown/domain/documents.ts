@@ -47,8 +47,17 @@ import type {
 } from "./models";
 
 // constants
-import { DEFAULT_LANGUAGE, DOWNLOADABLE_DOCUMENTS, META_DESCRIPTION_LENGTH, SITE_NAME, SOCIAL_PROFILES, STATIC_PATHS } from "@/features/meta/domain/constants";
-import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/features/meta/domain/constants";
+import {
+  CONTACT_PATH,
+  DEFAULT_LANGUAGE,
+  DOWNLOADABLE_DOCUMENTS,
+  EDUCATION_PATH,
+  HOME_PATH,
+  META_DESCRIPTION_LENGTH,
+  SITE_NAME,
+  SOCIAL_PROFILES,
+  STATIC_PATHS,
+} from "@/features/meta/domain/constants";
 
 // --- Twin navigation ---
 

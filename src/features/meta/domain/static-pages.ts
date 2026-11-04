@@ -6,7 +6,7 @@ import { absoluteUrl } from "./helpers";
 
 // types
 import type { PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
-import type { StaticPageCopy, StaticPageSettings } from "./models";
+import type { StaticPageCopy, StaticPageType } from "./models";
 
 // constants
 import {
@@ -20,6 +20,20 @@ import {
   PERSON_DESCRIPTION,
   SITE_DESCRIPTION,
 } from "./constants";
+
+interface StaticPageCopySource {
+  readonly heading: string;
+  readonly intro: string;
+  readonly title: string;
+  readonly description: string;
+}
+
+interface StaticPageSettings {
+  readonly mdHref: string;
+  readonly label: string;
+  readonly type: StaticPageType;
+  readonly copy: Readonly<Record<PreferredLanguage, StaticPageCopySource>>;
+}
 
 // Static page definitions shared between HTML heads and Markdown frontmatter.
 export const STATIC_PAGES = {

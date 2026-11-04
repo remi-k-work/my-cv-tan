@@ -10,19 +10,7 @@ import { absoluteUrl, experiencePath, experienceScreenshot } from "./helpers";
 import type { PreferredLanguage } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
-import type {
-  ArticleNodeInput,
-  CollectionNodeInput,
-  EducationJsonLdInput,
-  ExperienceHeadInput,
-  HomeJsonLdInput,
-  JsonLdNode,
-  JsonLdNodes,
-  JsonLdScript,
-  LocalizedCopy,
-  SubPageInput,
-  WebPageNodeInput,
-} from "./models";
+import type { ExperienceHeadInput, JsonLdNode, JsonLdNodes, JsonLdScript, LocalizedCopy } from "./models";
 
 // constants
 import {
@@ -47,7 +35,47 @@ import {
   WEBSITE_ID,
 } from "./constants";
 
-export type { JsonLdNode, JsonLdNodes };
+type PageNodeType = "WebPage" | "ContactPage" | "CollectionPage" | "ProfilePage";
+
+interface ArticleNodeInput {
+  readonly id: string;
+  readonly headline: string;
+  readonly description: string;
+  readonly preferredLanguage: PreferredLanguage;
+  readonly datePublished?: string;
+  readonly mainEntityOfPage?: string;
+}
+
+interface WebPageNodeInput {
+  readonly type: PageNodeType;
+  readonly id: string;
+  readonly url?: string;
+  readonly name: string;
+  readonly description: string;
+  readonly preferredLanguage: PreferredLanguage;
+  readonly breadcrumb?: boolean;
+  readonly mainEntity?: unknown;
+  readonly primaryImageOfPage?: unknown;
+  readonly datePublished?: string;
+}
+
+interface CollectionNodeInput {
+  readonly id: string;
+  readonly name: string;
+  readonly preferredLanguage: PreferredLanguage;
+  readonly parts: ReadonlyArray<unknown>;
+  readonly url?: string;
+}
+
+type SubPageInput = Omit<WebPageNodeInput, "id" | "url" | "breadcrumb"> & { readonly path: string };
+
+interface HomeJsonLdInput extends LocalizedCopy {
+  readonly experienceList: ExperienceList;
+}
+
+interface EducationJsonLdInput extends LocalizedCopy {
+  readonly educationList: EducationList;
+}
 
 // --- Graph primitives ---
 
@@ -59,24 +87,25 @@ const jsonLdScript = (data: unknown): JsonLdScript => ({
   children: JSON.stringify(data).replace(/</g, "\\u003C"),
 });
 
-// Merges nodes by @id, preserving initial order and overriding overlapping fields.
+// Merges nodes by @id, preserving order and letting defined fields override.
 export const jsonLdGraph = (nodes: ReadonlyArray<JsonLdNode>): JsonLdScript => {
   const graph: Array<JsonLdNode> = [];
   const indexById = new Map<string, number>();
 
   for (const node of nodes) {
-    const id = node["@id"];
+    const definedNode = Object.fromEntries(Object.entries(node).filter(([, value]) => value !== undefined)) as JsonLdNode;
+    const id = definedNode["@id"];
     if (!Predicate.isString(id)) {
-      graph.push(node);
+      graph.push(definedNode);
       continue;
     }
 
     const existingIndex = indexById.get(id);
     if (existingIndex === undefined) {
       indexById.set(id, graph.length);
-      graph.push(node);
+      graph.push(definedNode);
     } else {
-      graph[existingIndex] = { ...graph[existingIndex]!, ...node };
+      graph[existingIndex] = { ...graph[existingIndex]!, ...definedNode };
     }
   }
 
@@ -100,21 +129,21 @@ const articleNode = (input: ArticleNodeInput): JsonLdNode => ({
 const webPageNode = (input: WebPageNodeInput): JsonLdNode => ({
   "@type": input.type,
   "@id": input.id,
-  url: input.url,
+  ...(input.url !== undefined ? { url: input.url } : {}),
   name: input.name,
   description: input.description,
   inLanguage: input.preferredLanguage,
   isPartOf: { "@id": WEBSITE_ID },
-  breadcrumb: input.breadcrumb ? { "@id": `${input.id}#breadcrumb` } : undefined,
-  mainEntity: input.mainEntity,
-  primaryImageOfPage: input.primaryImageOfPage,
-  datePublished: input.datePublished,
+  ...(input.breadcrumb ? { breadcrumb: { "@id": `${input.id}#breadcrumb` } } : {}),
+  ...(input.mainEntity !== undefined ? { mainEntity: input.mainEntity } : {}),
+  ...(input.primaryImageOfPage !== undefined ? { primaryImageOfPage: input.primaryImageOfPage } : {}),
+  ...(input.datePublished !== undefined ? { datePublished: input.datePublished } : {}),
 });
 
 const collectionNode = (input: CollectionNodeInput): JsonLdNode => ({
   "@type": "Collection",
   "@id": input.id,
-  url: input.url,
+  ...(input.url !== undefined ? { url: input.url } : {}),
   name: input.name,
   inLanguage: input.preferredLanguage,
   hasPart: input.parts,
@@ -350,14 +379,14 @@ export const experienceJsonLd = ({ experience, preferredLanguage }: ExperienceHe
         "@id": itemId,
         name: role,
         description,
-        image: Option.getOrUndefined(screenshot),
+        ...(Option.isSome(screenshot) ? { image: screenshot.value } : {}),
         url,
         mainEntityOfPage: { "@id": url },
         inLanguage: preferredLanguage,
         creator: { "@id": PERSON_ID },
         publisher: { "@id": PUBLISHER_ID },
         keywords: skillsUsed.join(", "),
-        codeRepository: gitHubLink,
+        ...(gitHubLink !== undefined ? { codeRepository: gitHubLink } : {}),
       };
 
   const employmentNodes: JsonLdNodes = employment
