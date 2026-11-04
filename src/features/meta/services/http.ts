@@ -10,15 +10,13 @@ import { Datasets } from "@/features/data/services/datasets";
 import { PreferredLanguage } from "@/domain/models";
 
 // constants
+import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW, NO_STORE } from "@/domain/http";
 import {
   CONTENT_SIGNAL,
   CRAWL_DELAY,
   CV_EN_HREF,
   CV_PL_HREF,
   CERTIFICATES_HREF,
-  INDEXABLE_ROBOTS,
-  NOINDEX_FOLLOW,
-  NO_STORE,
   SITE_LANGUAGES,
   SITEMAP_HREF,
 } from "../domain/constants";
@@ -28,6 +26,7 @@ import {
   AI_INDEX_LINKS,
   absoluteUrl,
   canonicalLink,
+  experiencePath,
   joinLinkHeader,
   languageVariantLinks,
   markdownTwinUrl,
@@ -83,7 +82,7 @@ const escapeXml = (value: string) => value.replace(/[&<>"']/g, (character) => XM
 
 // No lastmod is emitted: authored dates are display strings, not trustworthy modification times.
 export const buildSitemapXml = (slugs: ReadonlyArray<string>) => {
-  const locs = new Set([...STATIC_URLS, ...slugs.map((slug) => absoluteUrl(`/${encodeURIComponent(slug)}`))]);
+  const locs = new Set([...STATIC_URLS, ...slugs.map((slug) => absoluteUrl(experiencePath(slug)))]);
 
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',

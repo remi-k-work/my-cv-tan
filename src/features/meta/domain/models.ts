@@ -2,7 +2,7 @@
 
 // types
 import type { Experience } from "@/features/experience/domain/models";
-import type { PageTitles, PreferredLanguage } from "@/domain/models";
+import type { PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
 
 // --- HTML Head & Link Tags ---
 
@@ -70,6 +70,27 @@ export interface ExperienceHeadInput {
 export interface StaticPageHeadInput {
   readonly pageTitles: PageTitles;
   readonly preferredLanguage: PreferredLanguage;
+}
+
+// --- Static page copy ---
+
+export type StaticPageType = "overview" | "education" | "contact";
+
+// Localized identity shared by every static page surface (head, twin, JSON-LD).
+export interface LocalizedCopy {
+  readonly pageName: string;
+  readonly description: string;
+  readonly preferredLanguage: PreferredLanguage;
+}
+
+// Fully resolved copy for one static page in one language.
+export interface StaticPageCopy extends LocalizedCopy {
+  readonly path: PagePath;
+  readonly mdHref: string;
+  readonly type: StaticPageType;
+  readonly seoTitle: string;
+  readonly intro: string;
+  readonly canonical: string;
 }
 
 

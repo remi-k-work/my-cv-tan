@@ -51,9 +51,12 @@ export const markdownTwinUrl = (mdPath: string, preferredLanguage: PreferredLang
 export const cvPdfHref = (preferredLanguage: PreferredLanguage) =>
   preferredLanguage === "pl" ? CV_PL_HREF : CV_EN_HREF;
 
+// encodeURIComponent leaves parentheses untouched, but they terminate a Markdown link
+// destination, so they are percent-encoded wherever a path may be embedded in Markdown.
+export const encodeParens = (value: string) => value.replace(/\(/g, "%28").replace(/\)/g, "%29");
+
 // Resolves experience route and markdown twin path from slug.
-// encodeURIComponent already percent-encodes parentheses, so no second pass is needed.
-export const experiencePath = (slug: string) => `/${encodeURIComponent(slug)}`;
+export const experiencePath = (slug: string) => `/${encodeParens(encodeURIComponent(slug))}`;
 export const experienceMarkdownPath = (slug: string) => `${experiencePath(slug)}.md`;
 
 // Resolves screenshot dimensions and absolute URL when an image name is provided.
@@ -82,7 +85,8 @@ export const parseLangParam = (url: string) =>
   );
 
 // Extracts a markdown twin slug from a request URL pathname (e.g. /my-page.md -> "my-page").
-// Returns None for extensionless, nested, or undecodable paths.
+// The twin route is one path segment, so literal nested paths and extensionless paths return
+// None; an encoded slash inside the segment still decodes into the slug.
 export const slugFromMdPathname = (url: string) =>
   pipe(
     decodeUrlOption(url),
@@ -129,13 +133,13 @@ export const languageVariantLinks = (markdownUrl: string): ReadonlyArray<LinkTag
 
 // --- Discovery link declarations ---
 
-export const SITEMAP_LINK: LinkTag = { rel: "sitemap", href: absoluteUrl(SITEMAP_HREF) };
-export const LLMS_DISCOVERY_LINK: LinkTag = { rel: "llms", href: absoluteUrl(LLMS_TXT_HREF) };
-
 // The AI index documents, declared once and projected into both the <head> and the Link header.
 export const LLMS_TXT_INDEX = { name: "llms.txt", url: absoluteUrl(LLMS_TXT_HREF) } as const;
 export const LLMS_FULL_TXT_INDEX = { name: "llms-full.txt", url: absoluteUrl(LLMS_FULL_TXT_HREF) } as const;
 export const AI_INDEXES = [LLMS_TXT_INDEX, LLMS_FULL_TXT_INDEX] as const;
+
+export const SITEMAP_LINK: LinkTag = { rel: "sitemap", href: absoluteUrl(SITEMAP_HREF) };
+export const LLMS_DISCOVERY_LINK: LinkTag = { rel: "llms", href: LLMS_TXT_INDEX.url };
 
 export const AI_INDEX_LINKS: ReadonlyArray<LinkTag> = AI_INDEXES.map(({ name, url }) => ({
   rel: "alternate",

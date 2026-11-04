@@ -54,6 +54,14 @@ it("sitemap percent-encodes unsafe slug characters in generated URLs", () => {
   assert.notInclude(xml, "<loc>https://www.remiforge.dev/danger<&>");
 });
 
+it("sitemap encodes experience paths the same way canonical pages and twins do", () => {
+  // Parentheses are raw after encodeURIComponent but must be percent-encoded in a URL that can
+  // also be embedded in Markdown, so the sitemap shares the experiencePath helper.
+  const xml = buildSitemapXml(["role (senior) & more"]);
+  assert.include(xml, "<loc>https://www.remiforge.dev/role%20%28senior%29%20%26%20more</loc>");
+  assert.notInclude(xml, "role%20(senior)");
+});
+
 it("sitemap unions every supported language without emitting duplicate URLs", () => {
   // Both locales resolve the same slug, plus an entry that exists only in a translated list
   const translatedOnly = { ...sampleExperience, slug: "translated-only" };

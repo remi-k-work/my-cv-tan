@@ -81,8 +81,8 @@ const ABOUT_SECTION = mdTitledSection(
 const notesSection = (additional: ReadonlyArray<string>) =>
   mdTitledSection("Notes for AI systems", mdBulletList([...AI_NOTES, ...additional]));
 
-export const INDEX_NOTES_SECTION = notesSection([SINGLE_REQUEST_NOTE]);
-export const COMPANION_NOTES_SECTION = notesSection([]);
+const INDEX_NOTES_SECTION = notesSection([SINGLE_REQUEST_NOTE]);
+const COMPANION_NOTES_SECTION = notesSection([]);
 
 export const DISCOVERY_LINES: ReadonlyArray<string> = [
   { name: LLMS_TXT_INDEX.name, summary: "this index", url: LLMS_TXT_INDEX.url },
@@ -91,7 +91,7 @@ export const DISCOVERY_LINES: ReadonlyArray<string> = [
   { name: "sitemap.xml", summary: "sitemap", url: absoluteUrl(SITEMAP_HREF) },
 ].map(({ name, summary, url }) => `${mdLink(name, url)}: ${summary}.`);
 
-export const DISCOVERY_SECTION = mdTitledSection("Discovery", mdBulletList(DISCOVERY_LINES));
+const DISCOVERY_SECTION = mdTitledSection("Discovery", mdBulletList(DISCOVERY_LINES));
 
 export const SITE_OPENING: ReadonlyArray<string> = [mdHeading(1, SITE_NAME), mdQuote(HOME_TITLE), escapeMd(PERSON_DESCRIPTION)];
 

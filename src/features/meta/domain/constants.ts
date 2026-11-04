@@ -19,9 +19,10 @@ export const PERSON_DESCRIPTION =
 export const SITE_DESCRIPTION =
   "Remi Forge is a web developer in Rzeszów, Poland, building modern web applications with React, TypeScript, and full-stack tools.";
 
-// Authoritative author profile and publisher URLs.
-export const AUTHOR_URL = `${SITE_URL}/`;
-export const PUBLISHER_URL = `${SITE_URL}/`;
+// Authoritative homepage, author profile, and publisher URLs.
+export const HOME_URL = `${SITE_URL}/`;
+export const AUTHOR_URL = HOME_URL;
+export const PUBLISHER_URL = HOME_URL;
 
 // Upper bound for search engine snippet lengths.
 export const META_DESCRIPTION_LENGTH = 160;
@@ -93,10 +94,14 @@ export const CONTACT_PATH = "/contact" as const satisfies PagePath;
 
 // --- JSON-LD node ids ---
 
-export const WEBSITE_ID = `${SITE_URL}/#website`;
-export const PERSON_ID = `${SITE_URL}/#person`;
-export const PUBLISHER_ID = `${SITE_URL}/#publisher`;
-export const PROFILE_ID = `${SITE_URL}/#profile`;
+export const WEBSITE_ID = `${HOME_URL}#website`;
+export const PERSON_ID = `${HOME_URL}#person`;
+export const PUBLISHER_ID = `${HOME_URL}#publisher`;
+export const PROFILE_ID = `${HOME_URL}#profile`;
+
+// Site-level content collections merged into page graphs.
+export const EXPERIENCE_LIST_ID = `${HOME_URL}#experience-list`;
+export const PORTFOLIO_LIST_ID = `${HOME_URL}#portfolio-list`;
 
 // --- Machine-readable discovery documents (GEO) ---
 
@@ -120,13 +125,7 @@ export const DOWNLOADABLE_DOCUMENTS = [
   { label: "Certificates", href: CERTIFICATES_HREF },
 ] as const;
 
-// --- HTTP directives ---
+// --- Crawl pacing ---
 
-export const NO_STORE = "no-store";
-export const NOINDEX_FOLLOW = "noindex, follow";
-
-// Robots directive permitting full snippets and large previews for indexable pages.
-export const INDEXABLE_ROBOTS = "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1";
-
-// Crawl pacing request delay for training bots.
+// Request delay for training bots.
 export const CRAWL_DELAY = "10";

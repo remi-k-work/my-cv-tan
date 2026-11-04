@@ -24,18 +24,19 @@ import {
 import {
   AI_INDEXES,
   absoluteUrl,
+  decodeUrlOption,
+  encodeParens,
   experienceMarkdownPath,
   experiencePath,
   LLMS_TXT_INDEX,
   markdownTwinUrl,
-  decodeUrlOption,
 } from "@/features/meta/domain/links";
 
 // types
 import type { PagePath, PageTitles, PreferredLanguage, Translate } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { Experience, ExperienceList } from "@/features/experience/domain/models";
-import type { StaticPageCopy } from "@/features/meta/domain/pages";
+import type { StaticPageCopy } from "@/features/meta/domain/models";
 import type {
   ContactMdInput,
   EducationMdInput,
@@ -111,9 +112,9 @@ export const mdTitledSection = (title: string, body: string) => mdBody([mdHeadin
 export const mdDocument = (blocks: ReadonlyArray<string>) => `${mdBody(blocks)}\n`;
 export const mdEmptyMarker = (translate: Translate) => `_${escapeMdInline(translate("No entries."))}_`;
 
-export const mdLink = (label: string, href: string) => `[${escapeMdInline(label)}](${href})`;
+export const mdLink = (label: string, href: string) => `[${escapeMdInline(label)}](${encodeParens(href)})`;
 
-export const translatedLink = (label: string, href: string, translate: Translate) => mdLink(translate(label), href);
+const translatedLink = (label: string, href: string, translate: Translate) => mdLink(translate(label), href);
 
 export const mdIndexEntry = (label: string, canonical: string, twinUrl: string, summary?: string) => {
   const beforeTwin = summary === undefined ? "" : `${escapeMdInline(summary)} `;
@@ -130,7 +131,7 @@ export const SOURCE_COPY = { preferredLanguage: DEFAULT_LANGUAGE, translate: tra
 
 // --- SEO / GEO identity helpers ---
 
-export const twinIdentity = ({
+const twinIdentity = ({
   title,
   description,
   canonical,
@@ -395,7 +396,8 @@ export const buildEducationMd = ({ pageTitles, educationList, preferredLanguage,
 export const buildContactMd = ({ pageTitles, preferredLanguage, translate }: ContactMdInput) =>
   staticTwinDocument(pageTitles, CONTACT_PATH, preferredLanguage, translate, [contactChannels(absoluteUrl(CONTACT_PATH), translate)]);
 
-const detailOf = (slug: Option.Option<string>) => Option.map(slug, (value) => ({ slug: escapeMdInline(value), path: escapeMdInline(experiencePath(value)) }));
+// The raw slug is quoted inside YAML frontmatter; the path is escaped for the Markdown body.
+const detailOf = (slug: Option.Option<string>) => Option.map(slug, (value) => ({ slug: value, path: escapeMdInline(experiencePath(value)) }));
 
 // Builds a structured Markdown 404 document with graph escape links.
 export const buildNotFoundMd = ({ slug, preferredLanguage, translate }: NotFoundMdInput) => {

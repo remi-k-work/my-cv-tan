@@ -6,6 +6,7 @@ import { pageField } from "@/domain/helpers";
 
 // types
 import type { PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
+import type { StaticPageCopy, StaticPageType } from "./models";
 
 // constants
 import {
@@ -17,25 +18,6 @@ import {
   SITE_DESCRIPTION,
 } from "./constants";
 import { absoluteUrl } from "./links";
-
-// --- Static Page Copy types ---
-
-export type StaticPageType = "overview" | "education" | "contact";
-
-export interface LocalizedCopy {
-  readonly pageName: string;
-  readonly description: string;
-  readonly preferredLanguage: PreferredLanguage;
-}
-
-export interface StaticPageCopy extends LocalizedCopy {
-  readonly path: PagePath;
-  readonly mdHref: string;
-  readonly type: StaticPageType;
-  readonly seoTitle: string;
-  readonly intro: string;
-  readonly canonical: string;
-}
 
 interface StaticPageCopySource {
   readonly heading: string;

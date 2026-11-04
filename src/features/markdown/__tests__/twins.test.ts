@@ -2,7 +2,7 @@
 import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
 import { buildContactMd, buildEducationMd, buildExperienceMd, buildHomeMd, buildNotFoundMd, twinIndexLinks, AI_INDEX_MARKDOWN_LINKS } from "../domain/twins";
-import { escapeMd, escapeMdInline, frontmatter, mdEmptyMarker } from "../domain/twins";
+import { escapeMd, escapeMdInline, frontmatter, mdEmptyMarker, mdLink } from "../domain/twins";
 
 import { STATIC_PAGES } from "@/features/meta/domain/pages";
 
@@ -348,6 +348,32 @@ it("buildEducationMd stays localized and a missing document has no canonical", (
   // fetcher that lands on a Polish 404 is sent to the Polish home twin, not a negotiated variant
   assert.include(missing, "[Home page](https://www.remiforge.dev/index.md?lang=en)");
   assert.include(missingPl, "[Strona główna](https://www.remiforge.dev/index.md?lang=pl)");
+});
+
+it("a 404 keeps the raw slug in frontmatter and escapes only the prose path", () => {
+  // The slug reaches two different documents: YAML frontmatter, where it must stay raw between
+  // JSON quotes, and the Markdown body, where its significant characters must be escaped so the
+  // prose path cannot fabricate emphasis or structure.
+  const md = buildNotFoundMd({ slug: Option.some("*draft*"), preferredLanguage: "en", translate: translateEn });
+  const frontmatterBlock = md.split("\n\n")[0] ?? "";
+
+  assert.include(frontmatterBlock, '\\"*draft*\\"');
+  assert.notInclude(frontmatterBlock, "\\*draft");
+  assert.include(md, "No Markdown document exists for /\\*draft\\*.");
+});
+
+it("experience twin links percent-encode parentheses that would otherwise close a Markdown destination", () => {
+  // encodeURIComponent leaves "(" and ")" raw, but Markdown reads ")" as the end of a link
+  // destination, so every slug-derived path is percent-encoded before it is embedded.
+  assert.strictEqual(mdLink("Label", "https://x.test/a(b)"), "[Label](https://x.test/a%28b%29)");
+
+  const experience = { ...sampleExperience, slug: "role (senior)" };
+  const detail = buildExperienceMd({ experience, preferredLanguage: "en", translate: translateEn });
+  assert.include(detail, "https://www.remiforge.dev/role%20%28senior%29");
+  assert.notInclude(detail, "/role%20(senior)");
+
+  const home = buildHomeMd({ pageTitles: stablePageTitles, experienceList: [experience], preferredLanguage: "en", translate: translateEn });
+  assert.include(home, "(https://www.remiforge.dev/role%20%28senior%29.md?lang=en)");
 });
 
 it("a translated document label cannot fabricate a Markdown link destination", () => {

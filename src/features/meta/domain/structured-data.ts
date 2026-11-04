@@ -10,28 +10,28 @@ import { absoluteUrl, experiencePath, experienceScreenshot } from "./links";
 import type { PreferredLanguage } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
-import type { ExperienceHeadInput, JsonLdNode, JsonLdNodes, JsonLdScript } from "./models";
-import type { LocalizedCopy } from "./pages";
+import type { ExperienceHeadInput, JsonLdNode, JsonLdNodes, JsonLdScript, LocalizedCopy } from "./models";
 
 // constants
 import {
   AVATAR,
   CONTACT_PATH,
   EDUCATION_PATH,
+  EXPERIENCE_LIST_ID,
   HOME_COUNTRY,
   HOME_LOCALITY,
-  HOME_PATH,
+  HOME_URL,
   JOB_TITLE,
   KNOWS_ABOUT,
   META_DESCRIPTION_LENGTH,
   PERSON_DESCRIPTION,
   PERSON_ID,
+  PORTFOLIO_LIST_ID,
   PROFILE_ID,
   PUBLISHER_ID,
   SITE_DESCRIPTION,
   SITE_LANGUAGES,
   SITE_NAME,
-  SITE_URL,
   SOCIAL_LINKS,
   WEBSITE_ID,
 } from "./constants";
@@ -130,13 +130,13 @@ const collectionNode = ({ id, name, preferredLanguage, parts, url }: CollectionN
 
 const imageObject = (url: string, width: number, height: number) => ({ "@type": "ImageObject", url, width, height }) as const;
 
-const breadcrumb = (preferredLanguage: PreferredLanguage, path: string, name: string) =>
+const breadcrumb = (preferredLanguage: PreferredLanguage, url: string, name: string) =>
   ({
     "@type": "BreadcrumbList",
-    "@id": `${absoluteUrl(path)}#breadcrumb`,
+    "@id": `${url}#breadcrumb`,
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: matchPreferredLanguage(preferredLanguage, "Home", "Strona główna"), item: absoluteUrl("/") },
-      { "@type": "ListItem", position: 2, name, item: absoluteUrl(path) },
+      { "@type": "ListItem", position: 1, name: matchPreferredLanguage(preferredLanguage, "Home", "Strona główna"), item: HOME_URL },
+      { "@type": "ListItem", position: 2, name, item: url },
     ],
   }) as const;
 
@@ -153,7 +153,7 @@ export const pageGraph = ({ type, path, name, description, preferredLanguage, ma
 
   return [
     webPageNode({ type, id, url: id, name, description, preferredLanguage, breadcrumb: true, mainEntity, primaryImageOfPage, datePublished }),
-    breadcrumb(preferredLanguage, path, name),
+    breadcrumb(preferredLanguage, id, name),
   ];
 };
 
@@ -161,7 +161,6 @@ export const pageGraph = ({ type, path, name, description, preferredLanguage, ma
 
 const POSTAL_ADDRESS = { "@type": "PostalAddress", addressLocality: HOME_LOCALITY, addressCountry: HOME_COUNTRY } as const;
 const AVATAR_IMAGE_OBJECT = imageObject(AVATAR.src, AVATAR.width, AVATAR.height);
-const HOME_URL = absoluteUrl(HOME_PATH);
 
 // Site-wide entities merged into every page head.
 export const siteNodes: JsonLdNodes = [
@@ -232,13 +231,13 @@ const experienceCollection = ({
 
 const experienceCollections = (employment: ExperienceList, projects: ExperienceList, preferredLanguage: PreferredLanguage): JsonLdNodes => [
   ...experienceCollection({
-    id: `${SITE_URL}/#experience-list`,
+    id: EXPERIENCE_LIST_ID,
     name: matchPreferredLanguage(preferredLanguage, "Experience", "Doświadczenie"),
     experiences: employment,
     preferredLanguage,
   }),
   ...experienceCollection({
-    id: `${SITE_URL}/#portfolio-list`,
+    id: PORTFOLIO_LIST_ID,
     name: matchPreferredLanguage(preferredLanguage, "Portfolio Projects", "Projekty do Portfolio"),
     experiences: projects,
     preferredLanguage,
@@ -252,7 +251,7 @@ export const homeJsonLd = ({ pageName, description, experienceList, preferredLan
     webPageNode({
       type: "ProfilePage",
       id: PROFILE_ID,
-      url: absoluteUrl(HOME_PATH),
+      url: HOME_URL,
       name: pageName,
       description,
       preferredLanguage,

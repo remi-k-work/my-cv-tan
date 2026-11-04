@@ -5,7 +5,8 @@ import { canonicalLink } from "../domain/links";
 import { withLanguageParam } from "../domain/links";
 import { STATIC_PAGES } from "../domain/pages";
 
-import { HOME_TITLE, INDEXABLE_ROBOTS, NOINDEX_FOLLOW, PERSON_DESCRIPTION, SITE_DESCRIPTION, SITE_NAME, AUTHOR_URL } from "../domain/constants";
+import { HOME_TITLE, PERSON_DESCRIPTION, SITE_DESCRIPTION, SITE_NAME, AUTHOR_URL } from "../domain/constants";
+import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 
 // types
 import type { PageTitles } from "@/domain/models";
@@ -291,6 +292,13 @@ it("experience URL construction percent-encodes one slug consistently in canonic
   // The alternate twin is pinned to the page's language, matching what the twin Link header serves
   assert.strictEqual(head.links?.[1]?.href, `https://www.remiforge.dev${encodedPath}.md?lang=en`);
   assert.include(html, `"property":"og:url","content":"https://www.remiforge.dev${encodedPath}"`);
+});
+
+it("experience URLs percent-encode parentheses so the path survives as a Markdown destination", () => {
+  const head = experienceHead({ experience: { ...sampleExperience, slug: "role (senior)" }, preferredLanguage: "en" });
+
+  assert.strictEqual(head.links?.[0]?.href, "https://www.remiforge.dev/role%20%28senior%29");
+  assert.strictEqual(head.links?.[1]?.href, "https://www.remiforge.dev/role%20%28senior%29.md?lang=en");
 });
 
 it("language-pinned Markdown URLs attach ?lang= and survive values the URL parser rejects", () => {

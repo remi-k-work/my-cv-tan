@@ -2,7 +2,7 @@
 import { Predicate } from "effect";
 
 // constants
-import { NOINDEX_FOLLOW, NO_STORE } from "@/features/meta/domain/constants";
+import { NOINDEX_FOLLOW, NO_STORE } from "@/domain/http";
 
 const unavailableHtmlRequests = new WeakSet<Request>();
 

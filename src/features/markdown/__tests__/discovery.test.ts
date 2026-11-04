@@ -4,7 +4,8 @@ import { Effect, Option } from "effect";
 import { recoverDataFailure, requireData } from "@/features/data/domain/required";
 import { discoveryTxtResponse, txtResponse, txtUnavailableResponse, mdNotFoundResponse, mdResponse, mdUnavailableResponse } from "@/features/meta/services/http";
 import { parseLangParam, slugFromMdPathname, absoluteUrl } from "@/features/meta/domain/links";
-import { CONTENT_SIGNAL, INDEXABLE_ROBOTS, NOINDEX_FOLLOW, PERSON_DESCRIPTION } from "@/features/meta/domain/constants";
+import { CONTENT_SIGNAL, PERSON_DESCRIPTION } from "@/features/meta/domain/constants";
+import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 import { buildLlmsTxt, buildLlmsFullTxt, SITE_OPENING, DISCOVERY_LINES, unavailableIndexBody } from "../domain/indexes";
 import { escapeMd } from "../domain/twins";
 import { unavailableMarkdownBody } from "../domain/twins";
@@ -163,7 +164,7 @@ it("the companion carries the retrieval-surface map, so a direct entry does not 
   // llms-full.txt is the single-request document a fetcher loads once and stops. Without the
   // Discovery section it was the only AI-facing surface that could not be entered directly and
   // still walked away knowing robots.txt and sitemap.xml exist, forcing a backtrack through the
-  // index for two URLs that are already declared once in geo.ts.
+  // index for two URLs that are already declared once in the shared constants.
   const full = buildLlmsFullTxt({ pageTitles: stablePageTitles, experienceList: [], educationList: [] });
   const index = buildLlmsTxt([]);
 

@@ -4,6 +4,7 @@
 import { Array, Option, Schema, pipe } from "effect";
 import { excerpt, experienceHeadline } from "@/features/experience/domain/helpers";
 import { PreferredLanguage } from "@/domain/models";
+import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 import {
   absoluteUrl,
   experienceMarkdownPath,
@@ -29,9 +30,9 @@ import type {
   MetaTag,
   PageHead,
   SocialImage,
+  StaticPageCopy,
   StaticPageHeadInput,
 } from "./models";
-import type { StaticPageCopy } from "./pages";
 
 // constants
 import {
@@ -44,9 +45,7 @@ import {
   GLOBAL_SOCIAL_IMAGE,
   HOME_PATH,
   HOME_TITLE,
-  INDEXABLE_ROBOTS,
   META_DESCRIPTION_LENGTH,
-  NOINDEX_FOLLOW,
   OPEN_GRAPH_LOCALES,
   PUBLISHER_URL,
   SITE_DESCRIPTION,
