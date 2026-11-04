@@ -2,6 +2,7 @@
 import { assert, it } from "@effect/vitest";
 import { buildSitemapXml, ROBOTS_TXT } from "../domain/discovery";
 import { sitemapResponse, sitemapUnavailableResponse, txtResponse, documentHeaders } from "../http";
+import { STATIC_PAGE_PATHS } from "../domain/static-pages";
 import { robotsHandler } from "@/features/meta/services/discovery";
 
 // constants
@@ -33,6 +34,14 @@ it("sitemap home URL equals the homepage canonical exactly", () => {
   const xml = buildSitemapXml([]);
   assert.include(xml, "<loc>https://www.remiforge.dev/</loc>");
   assert.notInclude(xml, "<loc>https://www.remiforge.dev</loc>");
+});
+
+it("sitemap includes every static page from the shared page catalogue", () => {
+  const xml = buildSitemapXml([]);
+
+  for (const path of STATIC_PAGE_PATHS) {
+    assert.include(xml, `<loc>https://www.remiforge.dev${path}</loc>`);
+  }
 });
 
 it("sitemap lists canonical HTML pages only — never the Markdown twins", () => {

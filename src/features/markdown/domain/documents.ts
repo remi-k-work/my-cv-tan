@@ -5,7 +5,7 @@ import { Array, Effect, Option, pipe } from "effect";
 import { msg } from "gt-tanstack-start";
 import { matchPreferredLanguage } from "@/domain/helpers";
 import { excerpt, experienceHeadline } from "@/features/experience/domain/helpers";
-import { staticPageCopy, STATIC_PAGES } from "@/features/meta/domain/static-pages";
+import { staticPageCopy, STATIC_PAGE_PATHS, STATIC_PAGES } from "@/features/meta/domain/static-pages";
 import { absoluteUrl, AI_INDEXES, experienceMarkdownPath, experiencePath, LLMS_TXT_INDEX, markdownTwinUrl } from "@/features/meta/domain/helpers";
 import {
   escapeMd,
@@ -56,7 +56,6 @@ import {
   META_DESCRIPTION_LENGTH,
   SITE_NAME,
   SOCIAL_PROFILES,
-  STATIC_PATHS,
 } from "@/features/meta/domain/constants";
 
 // --- Twin navigation ---
@@ -69,7 +68,7 @@ const homeLink = (preferredLanguage: PreferredLanguage, translate: Translate) =>
 // Sibling twins for a static page, plus the two AI indexes; a page never links itself.
 export const twinIndexLinks = (pagePath: PagePath, preferredLanguage: PreferredLanguage, translate: Translate) =>
   mdBulletList([
-    ...STATIC_PATHS.filter((path) => path !== pagePath).map((path) =>
+    ...STATIC_PAGE_PATHS.filter((path) => path !== pagePath).map((path) =>
       translatedLink(STATIC_PAGES[path].label, markdownTwinUrl(STATIC_PAGES[path].mdHref, preferredLanguage), translate)
     ),
     ...AI_INDEX_MARKDOWN_LINKS,
@@ -95,12 +94,14 @@ const optionalBulletLink = (label: string, href: string | undefined) =>
   );
 
 // Builds a list line for a twin page or a canonical HTML index entry.
-const experienceLine = (experience: Experience, preferredLanguage: PreferredLanguage, entry: "twin" | "canonical") => {
+const experienceLine = (experience: Experience, preferredLanguage: PreferredLanguage, entry: ExperienceLinesInput["entry"]) => {
   const headline = experienceHeadline(experience, preferredLanguage);
-  const summary = `${escapeMdInline(excerpt(experience.txt, LIST_EXCERPT_LENGTH))} (${escapeMdInline(experience.year)})`;
+  const summary = `${excerpt(experience.txt, LIST_EXCERPT_LENGTH)} (${experience.year})`;
   const twin = markdownTwinUrl(experienceMarkdownPath(experience.slug), preferredLanguage);
 
-  return entry === "twin" ? `${mdLink(headline, twin)}: ${summary}` : mdIndexEntry(headline, absoluteUrl(experiencePath(experience.slug)), twin, summary);
+  return entry === "twin"
+    ? `${mdLink(headline, twin)}: ${escapeMdInline(summary)}`
+    : mdIndexEntry(headline, absoluteUrl(experiencePath(experience.slug)), twin, summary);
 };
 
 // Builds list lines for an experience type, or an empty marker when no items match.

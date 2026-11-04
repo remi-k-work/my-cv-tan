@@ -234,6 +234,7 @@ it("project details use SoftwareSourceCode linked to the canonical WebPage, pers
   assert.deepStrictEqual(page?.breadcrumb, { "@id": "https://www.remiforge.dev/sample-role#breadcrumb" });
   assert.strictEqual(nodeOf(parsed, "BreadcrumbList")?.["@id"], "https://www.remiforge.dev/sample-role#breadcrumb");
   assert.deepStrictEqual(project?.mainEntityOfPage, { "@id": "https://www.remiforge.dev/sample-role" });
+  assert.deepStrictEqual(article?.about, { "@id": "https://www.remiforge.dev/sample-role#project" });
   // The Article carries the author and publisher edges for authoritative attribution
   assert.deepStrictEqual(article?.author, { "@id": "https://www.remiforge.dev/#person" });
   assert.deepStrictEqual(article?.publisher, { "@id": "https://www.remiforge.dev/#publisher" });
@@ -270,6 +271,7 @@ it("employment details use OrganizationRole linked to the person and canonical W
   // The page's mainEntity is the Article node; the Article references the role as its subject
   assert.deepStrictEqual(page?.mainEntity, { "@id": "https://www.remiforge.dev/sample-job#article" });
   assert.deepStrictEqual(article?.mainEntityOfPage, { "@id": "https://www.remiforge.dev/sample-job" });
+  assert.deepStrictEqual(article?.about, { "@id": "https://www.remiforge.dev/sample-job#organization-role" });
   assert.deepStrictEqual(role?.member, { "@id": "https://www.remiforge.dev/#person" });
   assert.deepStrictEqual(role?.mainEntityOfPage, { "@id": "https://www.remiforge.dev/sample-job" });
   assert.strictEqual(organization?.name, "Sample Co");

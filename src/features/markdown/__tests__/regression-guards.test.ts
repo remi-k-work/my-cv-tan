@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-import { escapeMd, escapeMdInline as escapeInline, mdFact, mdLink } from "../domain/formatting";
+import { escapeMd, escapeMdInline as escapeInline, mdFact, mdIndexEntry, mdLink } from "../domain/formatting";
 import { buildExperienceMd } from "../domain/documents";
 
 // types
@@ -60,6 +60,13 @@ it("mdLink neutralizes a hostile label without the caller pre-escaping it", () =
   // of once per surface — a call site that escaped its own label would double the backslashes above.
   assert.strictEqual(mdLink("Evil](label", "https://x.test/a"), "[Evil\\](label](https://x.test/a)");
   assert.strictEqual(mdLink("A *b* _c_", "https://x.test/a"), "[A \\*b\\* \\_c\\_](https://x.test/a)");
+});
+
+it("mdIndexEntry keeps summaries inline and escapes their authored formatting", () => {
+  const entry = mdIndexEntry("Role", "https://site.test/role", "https://site.test/role.md", "A *bold* summary\n- hidden item");
+
+  assert.include(entry, "A \\*bold\\* summary - hidden item");
+  assert.notInclude(entry, "\n- hidden item");
 });
 
 it("escapeMd neutralizes a GFM table so authored pipes cannot fabricate one", () => {

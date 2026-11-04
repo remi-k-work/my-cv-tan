@@ -42,8 +42,9 @@ interface ArticleNodeInput {
   readonly headline: string;
   readonly description: string;
   readonly preferredLanguage: PreferredLanguage;
+  readonly about: string;
+  readonly mainEntityOfPage: string;
   readonly datePublished?: string;
-  readonly mainEntityOfPage?: string;
 }
 
 interface WebPageNodeInput {
@@ -122,8 +123,9 @@ const articleNode = (input: ArticleNodeInput): JsonLdNode => ({
   inLanguage: input.preferredLanguage,
   author: { "@id": PERSON_ID },
   publisher: { "@id": PUBLISHER_ID },
-  ...(input.datePublished ? { datePublished: input.datePublished } : {}),
-  ...(input.mainEntityOfPage ? { mainEntityOfPage: { "@id": input.mainEntityOfPage } } : {}),
+  about: { "@id": input.about },
+  ...(input.datePublished !== undefined ? { datePublished: input.datePublished } : {}),
+  mainEntityOfPage: { "@id": input.mainEntityOfPage },
 });
 
 const webPageNode = (input: WebPageNodeInput): JsonLdNode => ({
@@ -407,6 +409,7 @@ export const experienceJsonLd = ({ experience, preferredLanguage }: ExperienceHe
     headline,
     description,
     preferredLanguage,
+    about: itemId,
     datePublished: year,
     mainEntityOfPage: url,
   });

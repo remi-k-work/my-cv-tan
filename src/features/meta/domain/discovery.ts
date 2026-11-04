@@ -2,6 +2,7 @@
 
 // services, features, and other libraries
 import { absoluteUrl, experiencePath } from "./helpers";
+import { STATIC_PAGE_PATHS } from "./static-pages";
 
 // constants
 import {
@@ -11,7 +12,6 @@ import {
   CV_EN_HREF,
   CV_PL_HREF,
   SITEMAP_HREF,
-  STATIC_PATHS,
 } from "./constants";
 
 const AI_SEARCH_CRAWLERS = ["OAI-SearchBot", "Claude-SearchBot", "PerplexityBot", "YouBot", "DuckAssistBot"] as const;
@@ -53,7 +53,7 @@ export const ROBOTS_TXT = [
   "",
 ].join("\n");
 
-const STATIC_URLS = [...STATIC_PATHS, CV_EN_HREF, CV_PL_HREF, CERTIFICATES_HREF].map(absoluteUrl);
+const STATIC_URLS = [...STATIC_PAGE_PATHS, CV_EN_HREF, CV_PL_HREF, CERTIFICATES_HREF].map(absoluteUrl);
 const XML_ENTITIES: Readonly<Record<string, string>> = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" };
 const escapeXml = (value: string) => value.replace(/[&<>"']/g, (character) => XML_ENTITIES[character] ?? character);
 

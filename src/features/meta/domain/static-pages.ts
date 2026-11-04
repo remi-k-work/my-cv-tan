@@ -91,6 +91,8 @@ export const STATIC_PAGES = {
   },
 } as const satisfies Record<PagePath, StaticPageSettings>;
 
+export const STATIC_PAGE_PATHS = Object.keys(STATIC_PAGES) as ReadonlyArray<keyof typeof STATIC_PAGES>;
+
 // Resolves localized static page content and SEO summaries.
 export const staticPageCopy = (pageTitles: PageTitles, pagePath: PagePath, preferredLanguage: PreferredLanguage): StaticPageCopy => {
   const { mdHref, type, copy } = STATIC_PAGES[pagePath];

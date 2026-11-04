@@ -90,7 +90,6 @@ export const OPEN_GRAPH_LOCALES = {
 export const HOME_PATH = "/" as const satisfies PagePath;
 export const EDUCATION_PATH = "/education" as const satisfies PagePath;
 export const CONTACT_PATH = "/contact" as const satisfies PagePath;
-export const STATIC_PATHS: ReadonlyArray<PagePath> = [HOME_PATH, EDUCATION_PATH, CONTACT_PATH];
 
 // --- JSON-LD node ids ---
 

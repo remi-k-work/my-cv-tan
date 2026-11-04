@@ -105,7 +105,7 @@ export const mdExternalLink = (label: string, href: string) =>
 export const translatedLink = (label: string, href: string, translate: Translate) => mdLink(translate(msg(label)), href);
 
 export const mdIndexEntry = (label: string, canonical: string, twinUrl: string, summary?: string) => {
-  const beforeTwin = summary === undefined ? "" : `${summary} `;
+  const beforeTwin = summary === undefined ? "" : `${escapeMdInline(summary)} `;
   return `${mdLink(label, canonical)}: ${beforeTwin}Markdown: ${twinUrl}`;
 };
 
