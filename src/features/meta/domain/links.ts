@@ -21,6 +21,7 @@ const linkHeader = ({ href, rel, type, title, hreflang }: LinkTag) => {
 
 export const joinLinkHeader = (links: ReadonlyArray<LinkTag>) => links.map(linkHeader).join(", ");
 export const canonicalLink = (href: string): LinkTag => ({ rel: "canonical", href });
+export const authorLink = (href: string): LinkTag => ({ rel: "author", href });
 
 export const markdownAlternateLink = (mdPath: string, preferredLanguage: PreferredLanguage): LinkTag => ({
   rel: "alternate",
@@ -28,12 +29,11 @@ export const markdownAlternateLink = (mdPath: string, preferredLanguage: Preferr
   href: markdownTwinUrl(mdPath, preferredLanguage),
 });
 
-export const sitemapLink = (): LinkTag => ({ rel: "sitemap", href: absoluteUrl(SITEMAP_HREF) });
-export const authorLink = (href: string): LinkTag => ({ rel: "author", href });
-export const llmsDiscoveryLink = (): LinkTag => ({ rel: "llms", href: absoluteUrl(LLMS_TXT_HREF) });
+export const SITEMAP_LINK: LinkTag = { rel: "sitemap", href: absoluteUrl(SITEMAP_HREF) };
+export const LLMS_DISCOVERY_LINK: LinkTag = { rel: "llms", href: absoluteUrl(LLMS_TXT_HREF) };
 
 // Discovery document declarations for GEO index surfaces.
-export const LLMS_TXT_INDEX = { name: "llms.txt", url: absoluteUrl(LLMS_TXT_HREF) } as const;
+export const LLMS_TXT_INDEX = { name: "llms.txt", url: LLMS_DISCOVERY_LINK.href } as const;
 export const LLMS_FULL_TXT_INDEX = { name: "llms-full.txt", url: absoluteUrl(LLMS_FULL_TXT_HREF) } as const;
 export const AI_INDEXES = [LLMS_TXT_INDEX, LLMS_FULL_TXT_INDEX] as const;
 export const AI_INDEX_LINKS: ReadonlyArray<LinkTag> = AI_INDEXES.map(({ name, url }) => ({

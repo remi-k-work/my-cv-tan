@@ -25,8 +25,20 @@ import {
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
-import type { Experience } from "@/features/experience/domain/models";
-import type { ExperienceEntryLink, ExperienceLinesInput, ExperienceMdInput } from "./models";
+import type { Experience, ExperienceList } from "@/features/experience/domain/models";
+import type { LocalizedMdInput } from "./formatting";
+
+// URL lead style for experience listings: twin endpoint or canonical HTML URL.
+export type ExperienceEntryLink = "twin" | "canonical";
+
+export type ExperienceMdInput = LocalizedMdInput & { readonly experience: Experience };
+
+// Input for experience section generators in index documents.
+export type ExperienceLinesInput = LocalizedMdInput & {
+  readonly experienceList: ExperienceList;
+  readonly type: Experience["type"];
+  readonly entry: ExperienceEntryLink;
+};
 
 // constants
 import { META_DESCRIPTION_LENGTH } from "@/features/meta/domain/constants";

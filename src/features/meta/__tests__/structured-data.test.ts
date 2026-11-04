@@ -2,8 +2,7 @@
 import { assert, it } from "@effect/vitest";
 import { Option, Schema, pipe } from "effect";
 import { contactHead, educationHead, experienceHead, homeHead, ROOT_HEAD } from "../domain/heads";
-import { siteNodes } from "../domain/json-ld/site";
-import { jsonLdGraph } from "../domain/json-ld/core";
+import { jsonLdGraph, siteNodes } from "../domain/structured-data";
 
 import { PERSON_DESCRIPTION, SITE_DESCRIPTION, PERSON_ID } from "../domain/constants";
 

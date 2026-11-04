@@ -24,6 +24,19 @@ export interface PageHead {
   readonly scripts: Array<JsonLdScript>;
 }
 
+// Verified facts about a published image file.
+export interface SocialImageFacts {
+  readonly src: string;
+  readonly mime: "image/jpeg" | "image/webp";
+  readonly width: number;
+  readonly height: number;
+}
+
+// Image facts paired with alt text describing the specific card picture.
+export interface SocialImage extends SocialImageFacts {
+  readonly alt: string;
+}
+
 // Input for experience detail page head builder.
 export interface ExperienceHeadInput {
   readonly experience: Experience;

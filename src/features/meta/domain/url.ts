@@ -6,7 +6,7 @@ import { matchPreferredLanguage } from "@/domain/helpers";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
-import type { SocialImageFacts } from "./social";
+import type { SocialImageFacts } from "./models";
 
 // constants
 import { CV_EN_HREF, CV_PL_HREF, SITE_URL } from "./constants";

@@ -96,6 +96,13 @@ export const CV_EN_HREF = "/my-cv.pdf";
 export const CV_PL_HREF = "/my-cv-pl.pdf";
 export const CERTIFICATES_HREF = "/my-certificates.pdf";
 
+// Downloadable files advertised by Markdown pages and discovery indexes.
+export const DOWNLOADABLE_DOCUMENTS = [
+  { label: "CV (English)", href: CV_EN_HREF },
+  { label: "CV (Polish)", href: CV_PL_HREF },
+  { label: "Certificates", href: CERTIFICATES_HREF },
+] as const;
+
 // --- HTTP responses ---
 
 // Shared CDN cache policy for machine-readable discovery assets.

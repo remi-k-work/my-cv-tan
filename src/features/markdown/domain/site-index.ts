@@ -26,9 +26,9 @@ import type { ExperienceList } from "@/features/experience/domain/models";
 import type { TwinData } from "./catalogue";
 
 // constants
-import { DOWNLOADABLE_DOCUMENTS } from "./constants";
 import {
   CONTENT_SIGNAL,
+  DOWNLOADABLE_DOCUMENTS,
   HOME_COUNTRY,
   HOME_COUNTRY_NAME,
   HOME_LOCALITY,

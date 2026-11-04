@@ -4,11 +4,8 @@
 import { Array, Option, Schema, pipe } from "effect";
 import { excerpt, experienceHeadline } from "@/features/experience/domain/helpers";
 import { PreferredLanguage } from "@/domain/models";
-import { jsonLdGraph } from "./json-ld/core";
-import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd } from "./json-ld/pages";
-import { siteNodes } from "./json-ld/site";
-import { authorLink, canonicalLink, llmsDiscoveryLink, markdownAlternateLink, sitemapLink } from "./links";
-import { socialMeta } from "./social";
+import { authorLink, canonicalLink, markdownAlternateLink } from "./links";
+import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd, jsonLdGraph, siteNodes } from "./structured-data";
 import { staticPageCopy } from "./static-pages";
 import { absoluteUrl, experienceMarkdownPath, experiencePath, experienceScreenshot } from "./url";
 
@@ -16,10 +13,28 @@ import { absoluteUrl, experienceMarkdownPath, experiencePath, experienceScreensh
 import type { PagePath } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
-import type { SocialImage, SocialMetaInput } from "./social";
-import type { JsonLdNodes } from "./json-ld/core";
+import type { ExperienceHeadInput, LinkTag, MetaTag, PageHead, SocialImage, StaticPageHeadInput } from "./models";
+import type { JsonLdNodes } from "./structured-data";
 import type { StaticPageCopy } from "./static-pages";
-import type { ExperienceHeadInput, LinkTag, MetaTag, PageHead, StaticPageHeadInput } from "./models";
+
+interface SocialMetaInput {
+  readonly title: string;
+  readonly description: string;
+  readonly canonical: string;
+  readonly image: SocialImage;
+  readonly preferredLanguage: PreferredLanguage;
+  readonly ogType?: "website" | "article";
+  readonly articleSection?: "employment" | "portfolio";
+}
+
+// TanStack's route head chain provides the root loader data first.
+export type MatchChain = ReadonlyArray<{ readonly loaderData?: unknown }>;
+
+interface RootHeadContract {
+  readonly meta: ReadonlyArray<MetaTag>;
+  readonly links: ReadonlyArray<LinkTag>;
+  readonly scripts?: undefined;
+}
 
 interface PageHeadSpec extends SocialMetaInput {
   readonly markdownPath: string;
@@ -38,15 +53,62 @@ import {
   INDEXABLE_ROBOTS,
   META_DESCRIPTION_LENGTH,
   NOINDEX_FOLLOW,
+  OPEN_GRAPH_LOCALES,
+  PUBLISHER_URL,
   SITE_DESCRIPTION,
+  SITE_LANGUAGES,
   SITE_NAME,
   SOCIAL_LINKS,
 } from "./constants";
 import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "./static-pages";
-import { AI_INDEX_LINKS } from "./links";
+import { AI_INDEX_LINKS, LLMS_DISCOVERY_LINK, SITEMAP_LINK } from "./links";
 
-// TanStack's route head chain provides the root loader data first.
-export type MatchChain = ReadonlyArray<{ readonly loaderData?: unknown }>;
+const EMPTY_HEAD: PageHead = { meta: [], links: [], scripts: [] };
+const ME_LINKS: ReadonlyArray<LinkTag> = SOCIAL_LINKS.map((href) => ({ rel: "me", href }));
+
+// --- Social cards ---
+
+// Supported alternate locales for og:locale:alternate tags.
+const alternateLocales = (preferredLanguage: PreferredLanguage) => SITE_LANGUAGES.filter((language) => language !== preferredLanguage);
+
+const socialMeta = ({
+  title,
+  description,
+  canonical,
+  image,
+  preferredLanguage,
+  ogType = "website",
+  articleSection,
+}: SocialMetaInput): ReadonlyArray<MetaTag> => [
+  { property: "og:title", content: title },
+  { property: "og:description", content: description },
+  { property: "og:image", content: image.src },
+  { property: "og:image:url", content: image.src },
+  { property: "og:image:alt", content: image.alt },
+  { property: "og:image:type", content: image.mime },
+  { property: "og:image:width", content: `${image.width}` },
+  { property: "og:image:height", content: `${image.height}` },
+  { property: "og:image:secure_url", content: image.src },
+  { property: "og:type", content: ogType },
+  { property: "og:url", content: canonical },
+  { property: "og:site_name", content: SITE_NAME },
+  { property: "og:locale", content: OPEN_GRAPH_LOCALES[preferredLanguage] },
+  ...alternateLocales(preferredLanguage).map((language) => ({ property: "og:locale:alternate", content: OPEN_GRAPH_LOCALES[language] })),
+  ...(ogType === "article"
+    ? [
+        { property: "article:author", content: AUTHOR_URL },
+        { property: "article:publisher", content: PUBLISHER_URL },
+      ]
+    : []),
+  ...(ogType === "article" && articleSection ? [{ property: "article:section", content: articleSection }] : []),
+  { name: "twitter:card", content: "summary_large_image" },
+  { name: "twitter:title", content: title },
+  { name: "twitter:description", content: description },
+  { name: "twitter:image", content: GLOBAL_SOCIAL_IMAGE.src },
+  { name: "twitter:image:alt", content: GLOBAL_SOCIAL_IMAGE.alt },
+];
+
+// --- Route heads ---
 
 const decodeRootLoaderData = Schema.decodeUnknownOption(Schema.Struct({ preferredLanguage: PreferredLanguage }));
 
@@ -57,14 +119,6 @@ export const headLanguage = (matches: MatchChain): PreferredLanguage =>
     Option.map(({ preferredLanguage }) => preferredLanguage),
     Option.getOrElse(() => DEFAULT_LANGUAGE)
   );
-
-interface RootHeadContract {
-  readonly meta: ReadonlyArray<MetaTag>;
-  readonly links: ReadonlyArray<LinkTag>;
-  readonly scripts?: undefined;
-}
-
-const ME_LINKS = SOCIAL_LINKS.map((href) => ({ rel: "me", href }));
 
 // The root owns fallbacks and discovery links; leaf routes add their canonical and JSON-LD.
 export const ROOT_HEAD = {
@@ -81,35 +135,31 @@ export const ROOT_HEAD = {
     { rel: "icon", href: "/icon.svg", type: "image/svg+xml" },
     { rel: "apple-touch-icon", href: AVATAR.src },
     authorLink(AUTHOR_URL),
-    llmsDiscoveryLink(),
-    sitemapLink(),
+    LLMS_DISCOVERY_LINK,
+    SITEMAP_LINK,
     ...ME_LINKS,
     ...AI_INDEX_LINKS,
   ],
 } satisfies RootHeadContract;
 
-const EMPTY_HEAD: PageHead = { meta: [], links: [], scripts: [] };
-
-// Shared page head layout merging branded title, indexing directives, social cards, links and graph.
-const pageHead = ({ markdownPath, graph, authorLink: authorLinkValue, ...social }: PageHeadSpec): PageHead => {
-  const meta = [
+// Shared page head layout merging title, indexing directives, social cards, links and graph.
+const pageHead = ({ markdownPath, graph, authorLink: authorHref, ...social }: PageHeadSpec): PageHead => ({
+  meta: [
     { title: BRANDED_TITLE(social.title) },
     { name: "description", content: social.description },
     { name: "robots", content: INDEXABLE_ROBOTS },
     ...socialMeta(social),
-  ];
-
-  const links = [
+  ],
+  links: [
     canonicalLink(social.canonical),
     markdownAlternateLink(markdownPath, social.preferredLanguage),
-    ...(authorLinkValue ? [authorLink(authorLinkValue)] : []),
-    llmsDiscoveryLink(),
-  ];
+    ...(authorHref ? [authorLink(authorHref)] : []),
+    LLMS_DISCOVERY_LINK,
+  ],
+  scripts: [jsonLdGraph([...siteNodes, ...graph])],
+});
 
-  return { meta, links, scripts: [jsonLdGraph([...siteNodes, ...graph])] };
-};
-
-// Fallback head when loader data is missing: maintains canonical and noindex while preserving site entities.
+// Fallback head when loader data is missing: keeps canonical and noindex while preserving site entities.
 const fallbackHead = (pagePath: string): PageHead => ({
   meta: [
     { name: "robots", content: NOINDEX_FOLLOW },
@@ -132,6 +182,8 @@ export const routeHead = <TData>(
   return build(loaderData, headLanguage(matches));
 };
 
+// --- Page head builders ---
+
 // Shared head builder for static pages aligning copy, canonical links, and structured data.
 const staticPageHead = (input: StaticPageHeadInput, pagePath: PagePath, graph: (copy: StaticPageCopy) => JsonLdNodes): PageHead => {
   const copy = staticPageCopy(input.pageTitles, pagePath, input.preferredLanguage);
@@ -152,12 +204,18 @@ export const homeHead = (input: StaticPageHeadInput & { readonly experienceList:
 export const educationHead = (input: StaticPageHeadInput & { readonly educationList: EducationList }): PageHead =>
   staticPageHead(input, EDUCATION_PATH, (copy) => educationJsonLd({ ...copy, educationList: input.educationList }));
 
-export const contactHead = (input: StaticPageHeadInput): PageHead => staticPageHead(input, CONTACT_PATH, (copy) => contactJsonLd(copy));
+export const contactHead = (input: StaticPageHeadInput): PageHead => staticPageHead(input, CONTACT_PATH, contactJsonLd);
+
+// Screenshot image when available, otherwise the global social banner.
+const experienceCardImage = (headline: string, imageName: string): SocialImage =>
+  Option.match(experienceScreenshot(imageName), {
+    onNone: () => GLOBAL_SOCIAL_IMAGE,
+    onSome: (screenshot) => ({ ...screenshot, alt: `Screenshot of ${headline}` }),
+  });
 
 // Detail page head for an experience or portfolio project.
 export const experienceHead = ({ experience, preferredLanguage }: ExperienceHeadInput): PageHead => {
   const { slug, txt, imageName, type } = experience;
-  const employment = type === "e";
   const headline = experienceHeadline(experience, preferredLanguage);
 
   return pageHead({
@@ -167,16 +225,9 @@ export const experienceHead = ({ experience, preferredLanguage }: ExperienceHead
     markdownPath: experienceMarkdownPath(slug),
     image: experienceCardImage(headline, imageName),
     ogType: "article",
-    articleSection: employment ? "employment" : "portfolio",
+    articleSection: type === "e" ? "employment" : "portfolio",
     authorLink: AUTHOR_URL,
     preferredLanguage,
     graph: experienceJsonLd({ experience, preferredLanguage }),
   });
 };
-
-// Screenshot image when available, otherwise the global social banner.
-const experienceCardImage = (headline: string, imageName: string): SocialImage =>
-  Option.match(experienceScreenshot(imageName), {
-    onNone: () => GLOBAL_SOCIAL_IMAGE,
-    onSome: (screenshot) => ({ ...screenshot, alt: `Screenshot of ${headline}` }),
-  });

@@ -17,7 +17,7 @@ import { translateSource } from "@/features/markdown/domain/formatting";
 import { translateForLanguage } from "@/lib/gt-translations";
 
 // types
-import type { LocalizedMdInput } from "@/features/markdown/domain/models";
+import type { LocalizedMdInput } from "@/features/markdown/domain/formatting";
 import type { ExperienceList } from "@/features/experience/domain/models";
 import type { DatasetsService, LocalizedAccessor } from "@/features/data/services/datasets";
 import type { PageTwinSpec } from "@/features/markdown/domain/catalogue";

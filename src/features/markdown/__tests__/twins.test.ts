@@ -5,7 +5,7 @@ import { buildExperienceMd } from "../domain/experience";
 import { buildContactMd, buildEducationMd, buildHomeMd, buildNotFoundMd } from "../domain/pages";
 import { AI_INDEX_MARKDOWN_LINKS, escapeMd, escapeMdInline, frontmatter, mdEmptyMarker, twinIndexLinks } from "../domain/formatting";
 
-import { STATIC_PAGES, type StaticPageCopy } from "@/features/meta/domain/static-pages";
+import { STATIC_PAGES } from "@/features/meta/domain/static-pages";
 
 // types
 import type { PagePath, PageTitles } from "@/domain/models";
@@ -404,10 +404,7 @@ it("every static twin links its siblings and both AI indexes (the GEO crawl grap
 });
 
 it("twinIndexLinks excludes the linking page itself", () => {
-  const links = twinIndexLinks(
-    { path: "/", mdHref: "/index.md", preferredLanguage: "en" } as unknown as Parameters<typeof twinIndexLinks>[0],
-    translateEn
-  );
+  const links = twinIndexLinks("/", "en", translateEn);
   assert.notInclude(links, "index.md");
   assert.include(links, "education.md?lang=en");
   assert.include(links, "contact.md?lang=en");
@@ -417,22 +414,10 @@ it("the twin graph enumerates the static pages from the one declaration every su
   // The sibling set is derived from STATIC_PAGES — the same table the HTML head, the sitemap and
   // the twin routes walk — rather than from a second path table that has to agree by hand. A page
   // declared there is picked up by the graph, and a page that never was cannot appear in it.
-  const copyOf = (path: PagePath): StaticPageCopy => ({
-    path,
-    mdHref: STATIC_PAGES[path].mdHref,
-    type: STATIC_PAGES[path].type,
-    pageName: "Page",
-    description: "Summary.",
-    seoTitle: "Title",
-    intro: "Intro.",
-    canonical: `https://www.remiforge.dev${path}`,
-    preferredLanguage: "en",
-  });
-
   const staticPaths = Object.keys(STATIC_PAGES) as ReadonlyArray<PagePath>;
 
   for (const path of staticPaths) {
-    const links = twinIndexLinks(copyOf(path), translateEn);
+    const links = twinIndexLinks(path, "en", translateEn);
     // Every other static page plus the two AI indexes — nothing else, exactly once
     assert.strictEqual((links.match(/^- \[/gm) ?? []).length, staticPaths.length - 1 + AI_INDEX_MARKDOWN_LINKS.length);
     // The two indexes are exactly the advertised links, not a longer or shorter list

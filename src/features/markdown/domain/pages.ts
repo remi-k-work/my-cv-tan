@@ -28,13 +28,28 @@ import { absoluteUrl, experiencePath } from "@/features/meta/domain/url";
 
 // types
 import type { PagePath, PageTitles, PreferredLanguage, Translate } from "@/domain/models";
-import type { BuildNotFoundMdInput, ContactMdInput, EducationMdInput, HomeMdInput } from "./models";
 import type { EducationList } from "@/features/education/domain/models";
+import type { ExperienceList } from "@/features/experience/domain/models";
+import type { LocalizedMdInput } from "./formatting";
 import type { StaticPageCopy } from "@/features/meta/domain/static-pages";
 
+type HomeMdInput = LocalizedMdInput & {
+  readonly pageTitles: PageTitles;
+  readonly experienceList: ExperienceList;
+};
+
+type EducationMdInput = LocalizedMdInput & {
+  readonly pageTitles: PageTitles;
+  readonly educationList: EducationList;
+};
+
+type ContactMdInput = LocalizedMdInput & { readonly pageTitles: PageTitles };
+
+// Input for 404 twin renderer; slug is none when URL contained no valid identifier.
+type BuildNotFoundMdInput = LocalizedMdInput & { readonly slug: Option.Option<string> };
+
 // constants
-import { SITE_NAME, SOCIAL_PROFILES } from "@/features/meta/domain/constants";
-import { DOWNLOADABLE_DOCUMENTS } from "./constants";
+import { DOWNLOADABLE_DOCUMENTS, SITE_NAME, SOCIAL_PROFILES } from "@/features/meta/domain/constants";
 import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/features/meta/domain/static-pages";
 
 const profileLinks = (translate: Translate) => [...mdProfileLinks(SOCIAL_PROFILES), mdFact(translate(msg("Base")), translate(msg("Rzeszów, Poland")))];
@@ -77,7 +92,8 @@ const contactChannels = (canonical: string, translate: Translate) =>
     ])
   );
 
-const pagesSection = (copy: StaticPageCopy, translate: Translate) => mdTitledSection(translate(msg("Pages")), twinIndexLinks(copy, translate));
+const pagesSection = (copy: StaticPageCopy, translate: Translate) =>
+  mdTitledSection(translate(msg("Pages")), twinIndexLinks(copy.path, copy.preferredLanguage, translate));
 
 // Shared document spine for static twins.
 const staticTwinDocument = (

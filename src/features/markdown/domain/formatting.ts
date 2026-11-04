@@ -6,15 +6,12 @@ import { msg } from "gt-tanstack-start";
 import { absoluteUrl, decodeUrlOption, encodeParens, markdownTwinUrl } from "@/features/meta/domain/url";
 
 // types
-import type { PreferredLanguage, Translate } from "@/domain/models";
-import type { StaticPageCopy } from "@/features/meta/domain/static-pages";
-import type { LocalizedMdInput } from "./models";
+import type { PagePath, PreferredLanguage, Translate } from "@/domain/models";
 
-interface TwinIdentityInput {
-  readonly title: string;
-  readonly description: string;
-  readonly canonical: string;
+// Rendering context shared by every Markdown twin builder.
+export interface LocalizedMdInput {
   readonly preferredLanguage: PreferredLanguage;
+  readonly translate: Translate;
 }
 
 // constants
@@ -87,7 +84,12 @@ export const frontmatter = (fields: Readonly<Record<string, string>>) => {
   return [FRONTMATTER_DELIMITER, body, FRONTMATTER_DELIMITER].join("\n");
 };
 
-export const twinIdentity = (input: TwinIdentityInput) => ({
+export const twinIdentity = (input: {
+  readonly title: string;
+  readonly description: string;
+  readonly canonical: string;
+  readonly preferredLanguage: PreferredLanguage;
+}) => ({
   title: BRANDED_TITLE(input.title),
   description: input.description,
   author: SITE_NAME,
@@ -120,10 +122,10 @@ export const mdProfileLinks = (profiles: ReadonlyArray<{ readonly name: string; 
 const homeLink = (preferredLanguage: PreferredLanguage, translate: Translate) =>
   translatedLink(HOME_LABEL, markdownTwinUrl(STATIC_PAGES[HOME_PATH].mdHref, preferredLanguage), translate);
 
-export const twinIndexLinks = (copy: StaticPageCopy, translate: Translate) =>
+export const twinIndexLinks = (pagePath: PagePath, preferredLanguage: PreferredLanguage, translate: Translate) =>
   mdBulletList([
-    ...STATIC_PATHS.filter((path) => path !== copy.path).map((path) =>
-      translatedLink(STATIC_PAGES[path].label, markdownTwinUrl(STATIC_PAGES[path].mdHref, copy.preferredLanguage), translate)
+    ...STATIC_PATHS.filter((path) => path !== pagePath).map((path) =>
+      translatedLink(STATIC_PAGES[path].label, markdownTwinUrl(STATIC_PAGES[path].mdHref, preferredLanguage), translate)
     ),
     ...AI_INDEX_MARKDOWN_LINKS,
   ]);
