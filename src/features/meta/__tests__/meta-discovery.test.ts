@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-import { buildSitemapXml, ROBOTS_TXT } from "../services/http";
+import { buildSitemapXml, ROBOTS_TXT } from "../domain/discovery";
 import { LANGUAGE_VARY, sitemapResponse, sitemapUnavailableResponse, txtResponse, documentHeaders, robotsHandler } from "../services/http";
 import { STATIC_PAGE_PATHS } from "../domain/pages";
 
@@ -99,12 +99,14 @@ it("sitemap success responses carry the XML content type, noindex, and hour-long
   assert.strictEqual(ok.headers.get("X-Robots-Tag"), "noindex, follow");
 });
 
-it("sitemap data failures return non-cacheable noindex XML with status 503", () => {
+it("sitemap data failures return non-cacheable noindex XML with status 503", async () => {
   const response = sitemapUnavailableResponse();
   assert.strictEqual(response.status, 503);
   assert.strictEqual(response.headers.get("Content-Type"), "application/xml; charset=utf-8");
   assert.strictEqual(response.headers.get("Cache-Control"), "no-store");
   assert.strictEqual(response.headers.get("X-Robots-Tag"), "noindex, follow");
+  // A crawler that reaches the failure still receives a well-formed XML document, not an empty body
+  assert.include(await response.text(), "<error>Sitemap is temporarily unavailable.</error>");
 });
 
 // robots.txt is a static document, so its handler serves it synchronously; only the response body
