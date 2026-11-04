@@ -25,7 +25,8 @@ export const parseLangParam = (url: string) =>
 export const slugFromMdPathname = (url: string) =>
   pipe(
     decodeUrlOption(url),
-    Option.map(({ pathname }) => pathname.slice(pathname.lastIndexOf("/") + 1)),
+    Option.map(({ pathname }) => pathname.slice(1)),
+    Option.filter((path) => !path.includes("/")),
     Option.filter((segment) => segment.endsWith(".md")),
     Option.map((segment) => segment.slice(0, -".md".length)),
     Option.flatMap(decodeUrlComponent),

@@ -422,6 +422,10 @@ it("slugFromMdPathname extracts slugs and never throws on hostile input", () => 
   assert.deepStrictEqual(slugFromMdPathname("https://x.test/%E0%A4%A.md"), Option.none());
   assert.deepStrictEqual(slugFromMdPathname("https://x.test/"), Option.none());
   assert.deepStrictEqual(slugFromMdPathname("https://x.test/.md"), Option.none());
+  // The dynamic twin route represents one encoded slug segment. A nested path must not resolve
+  // its final segment as an unrelated top-level experience.
+  assert.deepStrictEqual(slugFromMdPathname("https://x.test/parent/benefit-finance.md"), Option.none());
+  assert.deepStrictEqual(slugFromMdPathname("https://x.test/parent%2Fbenefit-finance.md"), Option.some("parent/benefit-finance"));
 });
 
 it("a content-derived index label cannot fabricate a Markdown link destination", () => {
