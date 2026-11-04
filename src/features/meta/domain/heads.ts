@@ -2,14 +2,10 @@
 
 // services, features, and other libraries
 import { Array, Option, Schema, pipe } from "effect";
-import { excerpt, experienceHeadline } from "@/features/experience/domain/helpers";
 import { PreferredLanguage } from "@/domain/models";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 import {
   absoluteUrl,
-  experienceMarkdownPath,
-  experiencePath,
-  experienceScreenshot,
   canonicalLink,
   authorLink,
   markdownAlternateLink,
@@ -17,6 +13,7 @@ import {
   SITEMAP_LINK,
   AI_INDEX_LINKS,
 } from "./links";
+import { experienceSeo } from "./experience-seo";
 import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd, jsonLdGraph, siteGraphScript, siteNodes } from "./structured-data";
 
 // types
@@ -30,6 +27,7 @@ import type {
   MetaTag,
   PageHead,
   SocialImage,
+  SocialImageFacts,
   StaticPageCopy,
   StaticPageHeadInput,
 } from "./models";
@@ -45,7 +43,6 @@ import {
   GLOBAL_SOCIAL_IMAGE,
   HOME_PATH,
   HOME_TITLE,
-  META_DESCRIPTION_LENGTH,
   OPEN_GRAPH_LOCALES,
   PUBLISHER_URL,
   SITE_DESCRIPTION,
@@ -223,26 +220,25 @@ export const contactHead = (input: StaticPageHeadInput): PageHead => {
   return staticPageHead(copy, contactJsonLd(copy));
 };
 
-const experienceCardImage = (headline: string, imageName: string): SocialImage =>
-  Option.match(experienceScreenshot(imageName), {
+const experienceCardImage = (headline: string, image: Option.Option<SocialImageFacts>): SocialImage =>
+  Option.match(image, {
     onNone: () => GLOBAL_SOCIAL_IMAGE,
     onSome: (screenshot) => ({ ...screenshot, alt: `Screenshot of ${headline}` }),
   });
 
-export const experienceHead = ({ experience, preferredLanguage }: ExperienceHeadInput): PageHead => {
-  const { slug, txt, imageName, type } = experience;
-  const headline = experienceHeadline(experience, preferredLanguage);
+export const experienceHead = (input: ExperienceHeadInput): PageHead => {
+  const seo = experienceSeo(input);
 
   return pageHead({
-    title: headline,
-    description: excerpt(txt, META_DESCRIPTION_LENGTH),
-    canonical: absoluteUrl(experiencePath(slug)),
-    markdownPath: experienceMarkdownPath(slug),
-    image: experienceCardImage(headline, imageName),
+    title: seo.headline,
+    description: seo.description,
+    canonical: seo.canonical,
+    markdownPath: seo.markdownPath,
+    image: experienceCardImage(seo.headline, seo.screenshot),
     ogType: "article",
-    articleSection: type === "e" ? "employment" : "portfolio",
+    articleSection: seo.experience.type === "e" ? "employment" : "portfolio",
     authorHref: AUTHOR_URL,
-    preferredLanguage,
-    graph: experienceJsonLd({ experience, preferredLanguage }),
+    preferredLanguage: seo.preferredLanguage,
+    graph: experienceJsonLd(seo),
   });
 };

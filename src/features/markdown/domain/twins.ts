@@ -17,10 +17,10 @@ import {
   HOME_COUNTRY_NAME,
   HOME_LOCALITY,
   HOME_PATH,
-  META_DESCRIPTION_LENGTH,
   SITE_NAME,
   SOCIAL_PROFILES,
 } from "@/features/meta/domain/constants";
+import { experienceSeo } from "@/features/meta/domain/experience-seo";
 import {
   absoluteUrl,
   decodeUrlOption,
@@ -201,7 +201,7 @@ const detailIndexLinks = (preferredLanguage: PreferredLanguage, translate: Trans
   mdBulletList([homeLink(preferredLanguage, translate), ...AI_INDEX_MARKDOWN_LINKS]);
 
 const deadEndEscapeLine = (preferredLanguage: PreferredLanguage, translate: Translate) => {
-  const indexLink = mdLink("llms.txt", LLMS_TXT_INDEX.url);
+  const indexLink = mdLink(LLMS_TXT_INDEX.name, LLMS_TXT_INDEX.url);
   return `${escapeMdInline(translate("See"))} ${homeLink(preferredLanguage, translate)} ${escapeMdInline(translate("or"))} ${indexLink}.`;
 };
 
@@ -230,10 +230,8 @@ export const experienceLines = ({ experienceList, type, translate, preferredLang
 
 // Builds the full Markdown twin document for an experience detail page.
 export const buildExperienceMd = ({ experience, preferredLanguage, translate }: ExperienceMdInput) => {
-  const { role, company, txt, skillsUsed, year, slug } = experience;
-  const canonical = absoluteUrl(experiencePath(slug));
-  const headline = experienceHeadline(experience, preferredLanguage);
-  const description = excerpt(txt, META_DESCRIPTION_LENGTH);
+  const { role, company, txt, skillsUsed, year } = experience;
+  const { canonical, headline, description } = experienceSeo({ experience, preferredLanguage });
 
   const links = Array.getSomes([
     optionalBulletLink(translate("GitHub Repo"), experience.gitHubLink),

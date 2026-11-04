@@ -4,13 +4,14 @@
 import { Option, Predicate } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
 import { excerpt, experienceHeadline, partitionExperiences } from "@/features/experience/domain/helpers";
-import { absoluteUrl, experiencePath, experienceScreenshot } from "./links";
+import { absoluteUrl, experiencePath } from "./links";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
-import type { ExperienceHeadInput, JsonLdNode, JsonLdNodes, JsonLdScript, LocalizedCopy } from "./models";
+import type { ExperienceSeo } from "./experience-seo";
+import type { JsonLdNode, JsonLdNodes, JsonLdScript, LocalizedCopy } from "./models";
 
 // constants
 import {
@@ -328,19 +329,15 @@ export const contactJsonLd = ({ pageName, description, preferredLanguage }: Loca
   ];
 };
 
-export const experienceJsonLd = ({ experience, preferredLanguage }: ExperienceHeadInput): JsonLdNodes => {
-  const { type, slug, role, company, txt, year, imageName, skillsUsed, gitHubLink } = experience;
+export const experienceJsonLd = ({ experience, preferredLanguage, path, canonical: url, headline, description, screenshot }: ExperienceSeo): JsonLdNodes => {
+  const { type, role, company, year, skillsUsed, gitHubLink } = experience;
 
   const employment = type === "e";
-  const path = experiencePath(slug);
-  const url = absoluteUrl(path);
-  const headline = experienceHeadline(experience, preferredLanguage);
 
   const itemId = `${url}#${employment ? "organization-role" : "project"}`;
   const articleId = `${url}#article`;
-  const description = excerpt(txt, META_DESCRIPTION_LENGTH);
 
-  const screenshot = Option.match(experienceScreenshot(imageName), {
+  const image = Option.match(screenshot, {
     onNone: () => undefined,
     onSome: ({ src, width, height }) => imageObject(src, width, height),
   });
@@ -352,7 +349,7 @@ export const experienceJsonLd = ({ experience, preferredLanguage }: ExperienceHe
     description,
     preferredLanguage,
     mainEntity: { "@id": articleId },
-    primaryImageOfPage: screenshot,
+    primaryImageOfPage: image,
     datePublished: year,
   });
 
@@ -370,7 +367,7 @@ export const experienceJsonLd = ({ experience, preferredLanguage }: ExperienceHe
         "@id": itemId,
         name: role,
         description,
-        ...(screenshot !== undefined ? { image: screenshot } : {}),
+        ...(image !== undefined ? { image } : {}),
         url,
         mainEntityOfPage: { "@id": url },
         inLanguage: preferredLanguage,
