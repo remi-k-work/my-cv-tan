@@ -1,10 +1,10 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
-import { AI_INDEX_MARKDOWN_LINKS, buildContactMd, buildEducationMd, buildExperienceMd, buildHomeMd, buildNotFoundMd, twinIndexLinks } from "../domain/documents";
-import { escapeMd, escapeMdInline, frontmatter, mdEmptyMarker } from "../domain/formatting";
+import { buildContactMd, buildEducationMd, buildExperienceMd, buildHomeMd, buildNotFoundMd, twinIndexLinks, AI_INDEX_MARKDOWN_LINKS } from "../domain/twins";
+import { escapeMd, escapeMdInline, frontmatter, mdEmptyMarker } from "../domain/twins";
 
-import { STATIC_PAGES } from "@/features/meta/domain/static-pages";
+import { STATIC_PAGES } from "@/features/meta/domain/pages";
 
 // types
 import type { PagePath, PageTitles } from "@/domain/models";
@@ -86,14 +86,15 @@ it("frontmatter escapes the characters YAML double-quoted scalars reject, which 
 it("mdEmptyMarker keeps translated copy inside the emphasis span", () => {
   // A dictionary value ending in "_" would close the italic span early and leave stray markup
   // behind, so the marker escapes the translated text the same way every other content string
-  const marker = mdEmptyMarker((source) => (source === "No entries." ? "Brak wpisów_" : source));
+  // does.
+  const marker = mdEmptyMarker((source: string) => (source === "No entries." ? "Brak wpisów_" : source));
   assert.strictEqual(marker, "_Brak wpisów\\__");
 });
 
 it("a fact label or value cannot fabricate markup from inside a bullet", () => {
-  // Every `Label: value` line runs through mdFact, so a translated label and a content value are the
-  // two halves that must both stay inline text: an unescaped "]" would close a link label early and
-  // hand a parser structure the site never authored
+  // Every `Label: value` line runs through mdFact, so a translated label and a content value are
+  // the two halves that must both stay inline text: an unescaped "]" would close a link label early
+  // and hand a parser structure the site never authored
   const md = buildEducationMd({
     pageTitles: stablePageTitles,
     educationList: [{ name: "Example School", year: "2020", location: "Poland", info: "Studied interaction design." }],
@@ -150,7 +151,7 @@ it("escapeMd neutralizes list markers at line end, not only before inline conten
   // An ordered marker escapes at its trailing punctuation, never at the digit: a digit is not
   // ASCII punctuation, so "\1." would print a literal backslash instead of the authored text
   assert.strictEqual(escapeMd("1. item one"), "1\\. item one");
-  // Thematic-break runs and setext underlines stay escaped by their own rules, not the bullet rule
+  // Thematic-break runs and setext underlines are claimed by their own rules, not the bullet rule
   assert.strictEqual(escapeMd("---"), "\\---");
   assert.strictEqual(escapeMd("Sub\n--"), "Sub\n\\--");
   // A number followed by inline content is prose, not a marker: only "." / ")" + space-or-EOL binds

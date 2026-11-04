@@ -1,25 +1,41 @@
-// Shared definitions and localized copy for static pages and their markdown twins.
+// Static page catalogue: the single source of truth for the site's three static pages
+// (home, education, contact). Shared by HTML heads, Markdown twins, and the sitemap.
 
 // services, features, and other libraries
 import { pageField } from "@/domain/helpers";
-import { absoluteUrl } from "./helpers";
 
 // types
 import type { PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
-import type { StaticPageCopy, StaticPageType } from "./models";
 
 // constants
 import {
-  CONTACT_MD_HREF,
   CONTACT_PATH,
-  EDUCATION_MD_HREF,
   EDUCATION_PATH,
-  HOME_MD_HREF,
   HOME_PATH,
   HOME_TITLE,
   PERSON_DESCRIPTION,
   SITE_DESCRIPTION,
 } from "./constants";
+import { absoluteUrl } from "./links";
+
+// --- Static Page Copy types ---
+
+export type StaticPageType = "overview" | "education" | "contact";
+
+export interface LocalizedCopy {
+  readonly pageName: string;
+  readonly description: string;
+  readonly preferredLanguage: PreferredLanguage;
+}
+
+export interface StaticPageCopy extends LocalizedCopy {
+  readonly path: PagePath;
+  readonly mdHref: string;
+  readonly type: StaticPageType;
+  readonly seoTitle: string;
+  readonly intro: string;
+  readonly canonical: string;
+}
 
 interface StaticPageCopySource {
   readonly heading: string;
@@ -38,7 +54,7 @@ interface StaticPageSettings {
 // Static page definitions shared between HTML heads and Markdown frontmatter.
 export const STATIC_PAGES = {
   [HOME_PATH]: {
-    mdHref: HOME_MD_HREF,
+    mdHref: "/index.md",
     label: "Home page",
     type: "overview",
     copy: {
@@ -52,7 +68,7 @@ export const STATIC_PAGES = {
     },
   },
   [EDUCATION_PATH]: {
-    mdHref: EDUCATION_MD_HREF,
+    mdHref: "/education.md",
     label: "Education & Certificates",
     type: "education",
     copy: {
@@ -71,7 +87,7 @@ export const STATIC_PAGES = {
     },
   },
   [CONTACT_PATH]: {
-    mdHref: CONTACT_MD_HREF,
+    mdHref: "/contact.md",
     label: "Contact",
     type: "contact",
     copy: {

@@ -86,7 +86,7 @@ it("the root head carries no JSON-LD, so a page's single block is not duplicated
   // TanStack concatenates the scripts of every match in the chain rather than replacing them, so a
   // root-level graph would render beside a page's own. Asserting the root declares none is what
   // keeps the "exactly one block per page" invariant below from silently regressing (the compile
-  // guard for it lives on RootHeadContract in root.ts).
+  // guard for it lives on RootHeadContract in heads.ts).
   assert.notInclude(JSON.stringify(ROOT_HEAD), "ld+json");
   // The root still declares the site-wide facts every page shares: icons, identity links, and the
   // AI discovery documents an unmatched route needs to point AI fetchers at the document graph
@@ -232,7 +232,7 @@ it("project details use SoftwareSourceCode linked to the canonical WebPage, pers
   // article-shaped entry point they can cite without parsing body prose.
   assert.deepStrictEqual(page?.mainEntity, { "@id": "https://www.remiforge.dev/sample-role#article" });
   assert.deepStrictEqual(page?.breadcrumb, { "@id": "https://www.remiforge.dev/sample-role#breadcrumb" });
-  assert.strictEqual(nodeOf(parsed, "BreadcrumbList")?.["@id"], "https://www.remiforge.dev/sample-role#breadcrumb");
+  assert.deepStrictEqual(nodeOf(parsed, "BreadcrumbList")?.["@id"], "https://www.remiforge.dev/sample-role#breadcrumb");
   assert.deepStrictEqual(project?.mainEntityOfPage, { "@id": "https://www.remiforge.dev/sample-role" });
   assert.deepStrictEqual(article?.about, { "@id": "https://www.remiforge.dev/sample-role#project" });
   // The Article carries the author and publisher edges for authoritative attribution

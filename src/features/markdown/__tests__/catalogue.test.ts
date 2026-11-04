@@ -2,8 +2,7 @@
 import { assert, it } from "@effect/vitest";
 import { Effect } from "effect";
 import { Datasets } from "@/features/data/services/datasets";
-import { CONTACT_TWIN, EDUCATION_TWIN, HOME_TWIN, PAGE_TWINS, PAGE_ENTRIES, allEntries } from "../domain/documents";
-import { SOURCE_COPY } from "../domain/formatting";
+import { CONTACT_TWIN, EDUCATION_TWIN, HOME_TWIN, PAGE_TWINS, PAGE_ENTRIES, allEntries, SOURCE_COPY } from "../domain/twins";
 
 // types
 import type { ExperienceList } from "@/features/experience/domain/models";

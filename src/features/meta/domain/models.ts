@@ -1,8 +1,8 @@
-// Strongly-typed head metadata, structured data, and route head contracts.
+// Strongly-typed head metadata and structured data models.
 
 // types
 import type { Experience } from "@/features/experience/domain/models";
-import type { PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
+import type { PageTitles, PreferredLanguage } from "@/domain/models";
 
 // --- HTML Head & Link Tags ---
 
@@ -27,6 +27,15 @@ export interface JsonLdScript {
   readonly type: "application/ld+json";
   readonly children: string;
 }
+
+// Open-ended schema.org node; `@id` is what makes it mergeable in a graph.
+export interface JsonLdNode {
+  readonly "@type"?: string;
+  readonly "@id"?: string;
+  readonly [property: string]: unknown;
+}
+
+export type JsonLdNodes = ReadonlyArray<JsonLdNode>;
 
 // Head elements consumed by TanStack Router route head() functions.
 export interface PageHead {
@@ -63,31 +72,4 @@ export interface StaticPageHeadInput {
   readonly preferredLanguage: PreferredLanguage;
 }
 
-// --- Static Page Copy ---
 
-export type StaticPageType = "overview" | "education" | "contact";
-
-export interface LocalizedCopy {
-  readonly pageName: string;
-  readonly description: string;
-  readonly preferredLanguage: PreferredLanguage;
-}
-
-export interface StaticPageCopy extends LocalizedCopy {
-  readonly path: PagePath;
-  readonly mdHref: string;
-  readonly type: StaticPageType;
-  readonly seoTitle: string;
-  readonly intro: string;
-  readonly canonical: string;
-}
-
-// --- JSON-LD Structured Data ---
-
-export interface JsonLdNode {
-  readonly "@type"?: string;
-  readonly "@id"?: string;
-  readonly [property: string]: unknown;
-}
-
-export type JsonLdNodes = ReadonlyArray<JsonLdNode>;

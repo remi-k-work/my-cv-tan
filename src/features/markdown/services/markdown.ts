@@ -3,35 +3,38 @@
 // services, features, and other libraries
 import { Context, Effect, Layer, Option } from "effect";
 import { removeResponseHeader } from "@tanstack/react-start/server";
+import { RuntimeServer } from "@/lib/runtime-server";
 import { Datasets } from "@/features/data/services/datasets";
 import { requestPreferredLanguage } from "@/features/data/domain/helpers";
 import { recoverDataFailure } from "@/features/data/domain/required";
 import { experienceFromList } from "@/features/experience/domain/helpers";
-import { absoluteUrl, experienceMarkdownPath, experiencePath } from "@/features/meta/domain/helpers";
-import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/discovery";
 import { DEFAULT_LANGUAGE } from "@/features/meta/domain/constants";
-import { discoveryTxtResponse, txtUnavailableResponse } from "@/features/meta/http";
 import {
-  mdNotFoundResponse,
-  mdResponse,
-  mdUnavailableResponse,
+  absoluteUrl,
+  experienceMarkdownPath,
+  experiencePath,
+  LLMS_FULL_TXT_INDEX,
+  LLMS_TXT_INDEX,
   parseLangParam,
   slugFromMdPathname,
-} from "@/features/markdown/http";
+} from "@/features/meta/domain/links";
+import { discoveryTxtResponse, txtUnavailableResponse, mdNotFoundResponse, mdResponse, mdUnavailableResponse } from "@/features/meta/services/http";
+
+// domain
 import {
   buildExperienceMd,
   buildNotFoundMd,
+  unavailableMarkdownBody,
   CONTACT_TWIN,
   EDUCATION_TWIN,
   HOME_TWIN,
-  unavailableMarkdownBody,
-} from "@/features/markdown/domain/documents";
-import { buildLlmsFullTxt, buildLlmsTxt, unavailableIndexBody } from "@/features/markdown/domain/site-index";
-import { translateSource } from "@/features/markdown/domain/formatting";
+  translateSource,
+} from "../domain/twins";
+import { buildLlmsFullTxt, buildLlmsTxt, unavailableIndexBody } from "../domain/indexes";
 import { translateForLanguage } from "@/lib/gt-translations";
 
 // types
-import type { LocalizedMdInput, PageTwin } from "@/features/markdown/domain/models";
+import type { LocalizedMdInput, PageTwin } from "../domain/models";
 import type { DatasetsService, LocalizedAccessor } from "@/features/data/services/datasets";
 import type { ExperienceList } from "@/features/experience/domain/models";
 import type { RequiredDataError } from "@/features/data/domain/required";
@@ -167,3 +170,19 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
   // Layer resolves dataset dependencies internally so endpoints remain requirement-free.
   static readonly layer = Layer.effect(this, this.make).pipe(Layer.provide(Datasets.layer));
 }
+
+// Bridges machine-readable document routes to TanStack server route handlers.
+const handler =
+  (name: keyof Markdown["Service"]) =>
+  ({ request }: { request: Request }) =>
+    RuntimeServer.runPromise(Effect.flatMap(Markdown, (markdown) => markdown[name](request)));
+
+// Request-aware markdown twin endpoints.
+export const homeHandler = handler("home");
+export const educationHandler = handler("education");
+export const contactHandler = handler("contact");
+export const experienceHandler = handler("experience");
+
+// Request-independent GEO indexes for AI ingestion.
+export const llmsTxtHandler = handler("siteIndex");
+export const llmsFullTxtHandler = handler("siteIndexFull");

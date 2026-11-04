@@ -1,14 +1,16 @@
-// Strongly-typed contracts and data models for Markdown twins and AI discovery documents.
+// Twin model types shared by every Markdown twin builder.
 
 // services, features, and other libraries
-import type { Effect, Option } from "effect";
+import { Effect, Option } from "effect";
 
 // types
 import type { PagePath, PageTitles, PreferredLanguage, Translate } from "@/domain/models";
-import type { DatasetsService } from "@/features/data/services/datasets";
-import type { RequiredDataError } from "@/features/data/domain/required";
 import type { EducationList } from "@/features/education/domain/models";
 import type { Experience, ExperienceList } from "@/features/experience/domain/models";
+import type { DatasetsService } from "@/features/data/services/datasets";
+import type { RequiredDataError } from "@/features/data/domain/required";
+
+// --- Twin models ---
 
 // Rendering context shared by every Markdown twin builder.
 export interface LocalizedMdInput {

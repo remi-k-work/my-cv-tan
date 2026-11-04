@@ -1,9 +1,8 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-import { buildSitemapXml, ROBOTS_TXT } from "../domain/discovery";
-import { LANGUAGE_VARY, sitemapResponse, sitemapUnavailableResponse, txtResponse, documentHeaders } from "../http";
-import { STATIC_PAGE_PATHS } from "../domain/static-pages";
-import { robotsHandler } from "@/features/meta/services/discovery";
+import { buildSitemapXml, ROBOTS_TXT } from "../services/http";
+import { LANGUAGE_VARY, sitemapResponse, sitemapUnavailableResponse, txtResponse, documentHeaders, robotsHandler } from "../services/http";
+import { STATIC_PAGE_PATHS } from "../domain/pages";
 
 // constants
 import { CONTENT_SIGNAL } from "../domain/constants";
@@ -70,7 +69,7 @@ it("sitemap builder removes duplicate locations regardless of its caller", () =>
 
   assert.strictEqual((xml.match(/<loc>https:\/\/www\.remiforge\.dev\/sample-role<\/loc>/g) ?? []).length, 1);
   // Experience slugs can resolve to an existing static path; the sitemap still publishes one canonical URL.
-  assert.strictEqual((xml.match(/<loc>https:\/\/www\.remiforge\.dev\/education<\/loc>/g) ?? []).length, 1);
+  assert.strictEqual((xml.match(/<loc>https:\/\/www.remiforge\.dev\/education<\/loc>/g) ?? []).length, 1);
 });
 
 it("sitemap success responses carry the XML content type, noindex, and hour-long public caching", () => {
@@ -90,8 +89,8 @@ it("sitemap data failures return non-cacheable noindex XML with status 503", () 
   assert.strictEqual(response.headers.get("X-Robots-Tag"), "noindex, follow");
 });
 
-// The route handler runs through the shared server runtime, so the test is async: the document
-// effect is executed (and the layer built) exactly the way the sitemap route executes it
+// robots.txt is a static document, so its handler serves it synchronously; only the response body
+// read at the end of this test is genuinely asynchronous
 it("robots.txt allows content, disallows API endpoints, and advertises the sitemap", async () => {
   const robots = ROBOTS_TXT;
   assert.include(robots, "User-agent: *");
@@ -123,7 +122,6 @@ it("robots.txt allows content, disallows API endpoints, and advertises the sitem
   }
   // Named groups override `*` in RFC 9309, so every group must repeat the signal to keep it in force
   assert.strictEqual((robots.match(/^Content-Signal: /gm) ?? []).length, (robots.match(/^User-agent: /gm) ?? []).length);
-
   // Every bot record is followed by one blank line: without it two `User-agent` groups merge into a
   // single record and every bot after the first inherits only the directives of the first. The count
   // pins the separator, and the placement pins it after the directives rather than before the bot.
@@ -136,7 +134,7 @@ it("robots.txt allows content, disallows API endpoints, and advertises the sitem
   // The route serves the document through the meta service, so the response carries the shared
   // discovery headers (English, the reuse signal and the AI-index Link) the same way sitemap.xml
   // does beside its own content type
-  const response = await robotsHandler();
+  const response = robotsHandler();
   assert.strictEqual(response.status, 200);
   assert.strictEqual(response.headers.get("Content-Type"), "text/plain; charset=utf-8");
   assert.strictEqual(response.headers.get("Content-Language"), "en");
@@ -149,8 +147,8 @@ it("robots.txt allows content, disallows API endpoints, and advertises the sitem
   // A Response body is single-use, so a document held as a constant would hand the same consumed
   // body to every crawler. robots.txt is the document every bot fetches, so this is the one family
   // where the regression is guaranteed to be noticed.
-  const first = await robotsHandler();
-  const second = await robotsHandler();
+  const first = robotsHandler();
+  const second = robotsHandler();
   assert.notStrictEqual(first, second);
   assert.strictEqual(await first.text(), await second.text());
 });

@@ -1,21 +1,33 @@
-// URL formatting, Link serialization, and asset resolution for metadata.
+// URL addressing and RFC 8288 link tags shared by HTML heads, Markdown twins,
+// discovery documents and HTTP responses.
 
 // services, features, and other libraries
-import { Option, Schema, String, pipe } from "effect";
-import { matchPreferredLanguage } from "@/domain/helpers";
+import { flow, Option, Schema, String, pipe } from "effect";
+import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain/constants";
 
 // types
-import type { PreferredLanguage } from "@/domain/models";
+import { PreferredLanguage } from "@/domain/models";
 import type { LinkTag, SocialImageFacts } from "./models";
 
 // constants
-import { CV_EN_HREF, CV_PL_HREF, DEFAULT_LANGUAGE, SITE_LANGUAGES, SITE_URL } from "./constants";
-import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain/constants";
+import {
+  CV_EN_HREF,
+  CV_PL_HREF,
+  DEFAULT_LANGUAGE,
+  LLMS_FULL_TXT_HREF,
+  LLMS_TXT_HREF,
+  SITE_LANGUAGES,
+  SITEMAP_HREF,
+  SITE_URL,
+} from "./constants";
 
-// --- URL Helpers ---
+// --- URL helpers ---
 
 // Validates and parses URLs safely into an Option.
 export const decodeUrlOption = Schema.decodeUnknownOption(Schema.URLFromString);
+
+const decodePreferredLanguage = Schema.decodeUnknownOption(PreferredLanguage);
+const decodeUrlComponent = Option.liftThrowable(decodeURIComponent);
 
 // Canonical absolute URL for a site path.
 export const absoluteUrl = (path: string) => `${SITE_URL}${path}`;
@@ -37,13 +49,11 @@ export const markdownTwinUrl = (mdPath: string, preferredLanguage: PreferredLang
 
 // Resolves CV download link based on visitor language.
 export const cvPdfHref = (preferredLanguage: PreferredLanguage) =>
-  matchPreferredLanguage(preferredLanguage, CV_EN_HREF, CV_PL_HREF);
-
-// Encodes parentheses to keep markdown links well-formed.
-export const encodeParens = (value: string) => value.replace(/[()]/g, (char) => encodeURIComponent(char));
+  preferredLanguage === "pl" ? CV_PL_HREF : CV_EN_HREF;
 
 // Resolves experience route and markdown twin path from slug.
-export const experiencePath = (slug: string) => `/${encodeParens(encodeURIComponent(slug))}`;
+// encodeURIComponent already percent-encodes parentheses, so no second pass is needed.
+export const experiencePath = (slug: string) => `/${encodeURIComponent(slug)}`;
 export const experienceMarkdownPath = (slug: string) => `${experiencePath(slug)}.md`;
 
 // Resolves screenshot dimensions and absolute URL when an image name is provided.
@@ -60,7 +70,31 @@ export const experienceScreenshot = (imageName: string): Option.Option<SocialIma
     : Option.none();
 };
 
-// --- RFC 8288 Link Formatting ---
+// --- URL parsing ---
+
+// Extracts the ?lang= override from a request URL, validating it against supported languages.
+export const parseLangParam = (url: string) =>
+  pipe(
+    decodeUrlOption(url),
+    Option.flatMap(({ searchParams }) => Option.fromNullishOr(searchParams.get("lang"))),
+    Option.map(flow(String.trim, String.toLowerCase)),
+    Option.flatMap(decodePreferredLanguage)
+  );
+
+// Extracts a markdown twin slug from a request URL pathname (e.g. /my-page.md -> "my-page").
+// Returns None for extensionless, nested, or undecodable paths.
+export const slugFromMdPathname = (url: string) =>
+  pipe(
+    decodeUrlOption(url),
+    Option.map(({ pathname }) => pathname.slice(1)),
+    Option.filter((path) => !path.includes("/")),
+    Option.filter((segment) => segment.endsWith(".md")),
+    Option.map((segment) => segment.slice(0, -".md".length)),
+    Option.flatMap(decodeUrlComponent),
+    Option.filter(String.isNonEmpty)
+  );
+
+// --- RFC 8288 Link formatting ---
 
 // Formats a single link as an RFC 8288 header value in fixed parameter order (rel, type, title, hreflang).
 const linkHeader = ({ href, rel, type, title, hreflang }: LinkTag) => {
@@ -72,6 +106,7 @@ const linkHeader = ({ href, rel, type, title, hreflang }: LinkTag) => {
 };
 
 export const joinLinkHeader = (links: ReadonlyArray<LinkTag>) => links.map(linkHeader).join(", ");
+
 export const canonicalLink = (href: string): LinkTag => ({ rel: "canonical", href });
 export const authorLink = (href: string): LinkTag => ({ rel: "author", href });
 
@@ -91,3 +126,22 @@ export const languageVariantLinks = (markdownUrl: string): ReadonlyArray<LinkTag
   ...SITE_LANGUAGES.map((language) => markdownLink(withLanguageParam(markdownUrl, language), language)),
   markdownLink(withLanguageParam(markdownUrl, DEFAULT_LANGUAGE), "x-default"),
 ];
+
+// --- Discovery link declarations ---
+
+export const SITEMAP_LINK: LinkTag = { rel: "sitemap", href: absoluteUrl(SITEMAP_HREF) };
+export const LLMS_DISCOVERY_LINK: LinkTag = { rel: "llms", href: absoluteUrl(LLMS_TXT_HREF) };
+
+// The AI index documents, declared once and projected into both the <head> and the Link header.
+export const LLMS_TXT_INDEX = { name: "llms.txt", url: absoluteUrl(LLMS_TXT_HREF) } as const;
+export const LLMS_FULL_TXT_INDEX = { name: "llms-full.txt", url: absoluteUrl(LLMS_FULL_TXT_HREF) } as const;
+export const AI_INDEXES = [LLMS_TXT_INDEX, LLMS_FULL_TXT_INDEX] as const;
+
+export const AI_INDEX_LINKS: ReadonlyArray<LinkTag> = AI_INDEXES.map(({ name, url }) => ({
+  rel: "alternate",
+  type: "text/plain",
+  title: name,
+  href: url,
+}));
+
+export const AI_INDEX_LINK_HEADER = joinLinkHeader(AI_INDEX_LINKS);

@@ -4,13 +4,14 @@
 import { Option, Predicate } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
 import { excerpt, experienceHeadline, partitionExperiences } from "@/features/experience/domain/helpers";
-import { absoluteUrl, experiencePath, experienceScreenshot } from "./helpers";
+import { absoluteUrl, experiencePath, experienceScreenshot } from "./links";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
-import type { ExperienceHeadInput, JsonLdNode, JsonLdNodes, JsonLdScript, LocalizedCopy } from "./models";
+import type { ExperienceHeadInput, JsonLdNode, JsonLdNodes, JsonLdScript } from "./models";
+import type { LocalizedCopy } from "./pages";
 
 // constants
 import {
@@ -50,7 +51,7 @@ interface ArticleNodeInput {
 interface WebPageNodeInput {
   readonly type: PageNodeType;
   readonly id: string;
-  readonly url?: string;
+  readonly url: string;
   readonly name: string;
   readonly description: string;
   readonly preferredLanguage: PreferredLanguage;
@@ -77,41 +78,6 @@ interface HomeJsonLdInput extends LocalizedCopy {
 interface EducationJsonLdInput extends LocalizedCopy {
   readonly educationList: EducationList;
 }
-
-// --- Graph primitives ---
-
-const SCHEMA_CONTEXT = "https://schema.org";
-
-// Escapes '<' so serialized content can never close the script tag.
-const jsonLdScript = (data: unknown): JsonLdScript => ({
-  type: "application/ld+json",
-  children: JSON.stringify(data).replace(/</g, "\\u003C"),
-});
-
-// Merges nodes by @id, preserving order and letting defined fields override.
-export const jsonLdGraph = (nodes: ReadonlyArray<JsonLdNode>): JsonLdScript => {
-  const graph: Array<JsonLdNode> = [];
-  const indexById = new Map<string, number>();
-
-  for (const node of nodes) {
-    const definedNode = Object.fromEntries(Object.entries(node).filter(([, value]) => value !== undefined)) as JsonLdNode;
-    const id = definedNode["@id"];
-    if (!Predicate.isString(id)) {
-      graph.push(definedNode);
-      continue;
-    }
-
-    const existingIndex = indexById.get(id);
-    if (existingIndex === undefined) {
-      indexById.set(id, graph.length);
-      graph.push(definedNode);
-    } else {
-      graph[existingIndex] = { ...graph[existingIndex]!, ...definedNode };
-    }
-  }
-
-  return jsonLdScript({ "@context": SCHEMA_CONTEXT, "@graph": graph });
-};
 
 // --- Node builders ---
 
@@ -142,7 +108,7 @@ const webPageNode = ({
 }: WebPageNodeInput): JsonLdNode => ({
   "@type": type,
   "@id": id,
-  ...(url !== undefined ? { url } : {}),
+  url,
   name,
   description,
   inLanguage: preferredLanguage,
@@ -244,10 +210,10 @@ const experienceCollection = ({
   experiences,
   preferredLanguage,
 }: {
-  id: string;
-  name: string;
-  experiences: ExperienceList;
-  preferredLanguage: PreferredLanguage;
+  readonly id: string;
+  readonly name: string;
+  readonly experiences: ExperienceList;
+  readonly preferredLanguage: PreferredLanguage;
 }): JsonLdNodes => {
   if (experiences.length === 0) return [];
 
@@ -439,4 +405,38 @@ export const experienceJsonLd = ({ experience, preferredLanguage }: ExperienceHe
   });
 
   return [...page, article, ...employmentNodes];
+};
+
+// --- JSON-LD graph serialization ---
+
+// Escapes '<' so serialized content can never close the script tag.
+const jsonLdScript = (data: unknown): JsonLdScript => ({
+  type: "application/ld+json",
+  children: JSON.stringify(data).replace(/</g, "\\u003C"),
+});
+
+// Merges nodes by @id, preserving order and letting defined fields override.
+// Nodes without an @id are emitted exactly as written.
+export const jsonLdGraph = (nodes: ReadonlyArray<JsonLdNode>): JsonLdScript => {
+  const graph: Array<JsonLdNode> = [];
+  const indexById = new Map<string, number>();
+
+  for (const node of nodes) {
+    const definedNode = Object.fromEntries(Object.entries(node).filter(([, value]) => value !== undefined)) as JsonLdNode;
+    const id = definedNode["@id"];
+    if (!Predicate.isString(id)) {
+      graph.push(definedNode);
+      continue;
+    }
+
+    const existingIndex = indexById.get(id);
+    if (existingIndex === undefined) {
+      indexById.set(id, graph.length);
+      graph.push(definedNode);
+    } else {
+      graph[existingIndex] = { ...graph[existingIndex]!, ...definedNode };
+    }
+  }
+
+  return jsonLdScript({ "@context": "https://schema.org", "@graph": graph });
 };

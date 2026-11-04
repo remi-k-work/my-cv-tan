@@ -32,7 +32,15 @@ export const BRANDED_TITLE = (title: string) => `${SITE_NAME} ● ${title}`;
 // --- Author identity ---
 
 export const JOB_TITLE = "Web Developer";
-export const KNOWS_ABOUT = ["Web Development", "TypeScript", "React", "Next.js", "Effect", "Front-End Development", "Full-Stack Development"] as const;
+export const KNOWS_ABOUT = [
+  "Web Development",
+  "TypeScript",
+  "React",
+  "Next.js",
+  "Effect",
+  "Front-End Development",
+  "Full-Stack Development",
+] as const;
 
 // Social profiles declared once for JSON-LD sameAs, rel="me", and markdown twins.
 export const SOCIAL_PROFILES = [
@@ -99,9 +107,6 @@ export const LLMS_TXT_HREF = "/llms.txt";
 export const LLMS_FULL_TXT_HREF = "/llms-full.txt";
 export const SITEMAP_HREF = "/sitemap.xml";
 export const ROBOTS_TXT_HREF = "/robots.txt";
-export const HOME_MD_HREF = "/index.md";
-export const EDUCATION_MD_HREF = "/education.md";
-export const CONTACT_MD_HREF = "/contact.md";
 
 // Downloadable document links exposed to crawlers.
 export const CV_EN_HREF = "/my-cv.pdf";

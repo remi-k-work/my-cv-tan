@@ -6,19 +6,19 @@ import { excerpt, experienceHeadline } from "@/features/experience/domain/helper
 import { PreferredLanguage } from "@/domain/models";
 import {
   absoluteUrl,
-  authorLink,
-  canonicalLink,
   experienceMarkdownPath,
   experiencePath,
   experienceScreenshot,
+  canonicalLink,
+  authorLink,
   markdownAlternateLink,
-} from "./helpers";
-import { AI_INDEX_LINKS, LLMS_DISCOVERY_LINK, SITEMAP_LINK } from "./discovery";
+  LLMS_DISCOVERY_LINK,
+  SITEMAP_LINK,
+  AI_INDEX_LINKS,
+} from "./links";
 import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd, jsonLdGraph, siteNodes } from "./structured-data";
-import { staticPageCopy } from "./static-pages";
 
 // types
-import type { PagePath } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
 import type {
@@ -29,31 +29,9 @@ import type {
   MetaTag,
   PageHead,
   SocialImage,
-  StaticPageCopy,
   StaticPageHeadInput,
 } from "./models";
-
-interface SocialMetaInput {
-  readonly title: string;
-  readonly description: string;
-  readonly canonical: string;
-  readonly image: SocialImage;
-  readonly preferredLanguage: PreferredLanguage;
-  readonly ogType?: "website" | "article";
-  readonly articleSection?: "employment" | "portfolio";
-}
-
-interface PageHeadSpec extends SocialMetaInput {
-  readonly markdownPath: string;
-  readonly graph: JsonLdNodes;
-  readonly authorHref?: string;
-}
-
-interface RootHeadContract {
-  readonly meta: ReadonlyArray<MetaTag>;
-  readonly links: ReadonlyArray<LinkTag>;
-  readonly scripts?: undefined;
-}
+import type { StaticPageCopy } from "./pages";
 
 // constants
 import {
@@ -77,11 +55,37 @@ import {
   SOCIAL_LINKS,
 } from "./constants";
 
+// Static page catalogue (shared data, imported from its own module).
+import { staticPageCopy } from "./pages";
+
+// --- HTML Head & Link Tags ---
+
+interface SocialMetaInput {
+  readonly title: string;
+  readonly description: string;
+  readonly canonical: string;
+  readonly image: SocialImage;
+  readonly preferredLanguage: PreferredLanguage;
+  readonly ogType?: "website" | "article";
+  readonly articleSection?: "employment" | "portfolio";
+}
+
+interface PageHeadSpec extends SocialMetaInput {
+  readonly markdownPath: string;
+  readonly graph: JsonLdNodes;
+  readonly authorHref?: string;
+}
+
+interface RootHeadContract {
+  readonly meta: ReadonlyArray<MetaTag>;
+  readonly links: ReadonlyArray<LinkTag>;
+  readonly scripts?: undefined;
+}
+
 const ME_LINKS: ReadonlyArray<LinkTag> = SOCIAL_LINKS.map((href) => ({ rel: "me", href }));
 
 // --- Social cards ---
 
-// Supported alternate locales for og:locale:alternate tags.
 const alternateLocales = (preferredLanguage: PreferredLanguage) => SITE_LANGUAGES.filter((language) => language !== preferredLanguage);
 
 const socialMeta = ({
@@ -193,36 +197,39 @@ export const routeHead = <TData>(
 
 // --- Page head builders ---
 
-// Shared head builder for static pages aligning copy, canonical links, and structured data.
-const staticPageHead = (input: StaticPageHeadInput, pagePath: PagePath, graph: (copy: StaticPageCopy) => JsonLdNodes): PageHead => {
-  const copy = staticPageCopy(input.pageTitles, pagePath, input.preferredLanguage);
-  return pageHead({
+// Shared layout for the three static pages; only the page graph differs.
+const staticPageHead = (copy: StaticPageCopy, graph: JsonLdNodes): PageHead =>
+  pageHead({
     title: copy.seoTitle,
     description: copy.description,
     canonical: copy.canonical,
     markdownPath: copy.mdHref,
     image: GLOBAL_SOCIAL_IMAGE,
     preferredLanguage: copy.preferredLanguage,
-    graph: graph(copy),
+    graph,
   });
+
+export const homeHead = (input: StaticPageHeadInput & { readonly experienceList: ExperienceList }): PageHead => {
+  const copy = staticPageCopy(input.pageTitles, HOME_PATH, input.preferredLanguage);
+  return staticPageHead(copy, homeJsonLd({ ...copy, experienceList: input.experienceList }));
 };
 
-export const homeHead = (input: StaticPageHeadInput & { readonly experienceList: ExperienceList }): PageHead =>
-  staticPageHead(input, HOME_PATH, (copy) => homeJsonLd({ ...copy, experienceList: input.experienceList }));
+export const educationHead = (input: StaticPageHeadInput & { readonly educationList: EducationList }): PageHead => {
+  const copy = staticPageCopy(input.pageTitles, EDUCATION_PATH, input.preferredLanguage);
+  return staticPageHead(copy, educationJsonLd({ ...copy, educationList: input.educationList }));
+};
 
-export const educationHead = (input: StaticPageHeadInput & { readonly educationList: EducationList }): PageHead =>
-  staticPageHead(input, EDUCATION_PATH, (copy) => educationJsonLd({ ...copy, educationList: input.educationList }));
+export const contactHead = (input: StaticPageHeadInput): PageHead => {
+  const copy = staticPageCopy(input.pageTitles, CONTACT_PATH, input.preferredLanguage);
+  return staticPageHead(copy, contactJsonLd(copy));
+};
 
-export const contactHead = (input: StaticPageHeadInput): PageHead => staticPageHead(input, CONTACT_PATH, contactJsonLd);
-
-// Screenshot image when available, otherwise the global social banner.
 const experienceCardImage = (headline: string, imageName: string): SocialImage =>
   Option.match(experienceScreenshot(imageName), {
     onNone: () => GLOBAL_SOCIAL_IMAGE,
     onSome: (screenshot) => ({ ...screenshot, alt: `Screenshot of ${headline}` }),
   });
 
-// Detail page head for an experience or portfolio project.
 export const experienceHead = ({ experience, preferredLanguage }: ExperienceHeadInput): PageHead => {
   const { slug, txt, imageName, type } = experience;
   const headline = experienceHeadline(experience, preferredLanguage);

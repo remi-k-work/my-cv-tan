@@ -2,14 +2,13 @@
 import { assert, it } from "@effect/vitest";
 import { Effect, Option } from "effect";
 import { recoverDataFailure, requireData } from "@/features/data/domain/required";
-import { discoveryTxtResponse, txtResponse, txtUnavailableResponse } from "@/features/meta/http";
-import { mdNotFoundResponse, mdResponse, mdUnavailableResponse, parseLangParam, slugFromMdPathname } from "@/features/markdown/http";
+import { discoveryTxtResponse, txtResponse, txtUnavailableResponse, mdNotFoundResponse, mdResponse, mdUnavailableResponse } from "@/features/meta/services/http";
+import { parseLangParam, slugFromMdPathname, absoluteUrl } from "@/features/meta/domain/links";
 import { CONTENT_SIGNAL, INDEXABLE_ROBOTS, NOINDEX_FOLLOW, PERSON_DESCRIPTION } from "@/features/meta/domain/constants";
-import { buildLlmsTxt, buildLlmsFullTxt, SITE_OPENING, DISCOVERY_LINES, unavailableIndexBody } from "../domain/site-index";
-import { unavailableMarkdownBody } from "../domain/documents";
-import { escapeMd } from "../domain/formatting";
+import { buildLlmsTxt, buildLlmsFullTxt, SITE_OPENING, DISCOVERY_LINES, unavailableIndexBody } from "../domain/indexes";
+import { escapeMd } from "../domain/twins";
+import { unavailableMarkdownBody } from "../domain/twins";
 import { experienceFromList } from "@/features/experience/domain/helpers";
-import { absoluteUrl } from "@/features/meta/domain/helpers";
 
 // types
 import type { PageTitles } from "@/domain/models";

@@ -1,39 +1,17 @@
-// Machine-readable discovery indexes for AI systems (llms.txt and llms-full.txt).
+// AI index documents (llms.txt / llms-full.txt) and their shared sections/copy.
+// Twin declarations and builders live in ./twins.
 
 // services, features, and other libraries
-import { allEntries, experienceLines, PAGE_ENTRIES } from "./documents";
-import {
-  demoteHeadings,
-  escapeMd,
-  mdBody,
-  mdBulletList,
-  mdDocument,
-  mdDocumentLinks,
-  mdFact,
-  mdHeading,
-  mdIndexEntry,
-  mdLink,
-  mdProfileLinks,
-  mdQuote,
-  mdTitledSection,
-  SOURCE_COPY,
-  translateSource,
-} from "./formatting";
-import { absoluteUrl, markdownTwinUrl } from "@/features/meta/domain/helpers";
-import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/discovery";
-
-// types
 import type { ExperienceList } from "@/features/experience/domain/models";
-import type { TwinData } from "./models";
 
-// constants
+// meta (shared)
 import {
   CONTENT_SIGNAL,
   DOWNLOADABLE_DOCUMENTS,
+  HOME_LOCALITY,
   HOME_COUNTRY,
   HOME_COUNTRY_NAME,
-  HOME_LOCALITY,
-  HOME_MD_HREF,
+  HOME_PATH,
   HOME_TITLE,
   JOB_TITLE,
   KNOWS_ABOUT,
@@ -45,6 +23,32 @@ import {
   SITEMAP_HREF,
   SOCIAL_PROFILES,
 } from "@/features/meta/domain/constants";
+import { STATIC_PAGES } from "@/features/meta/domain/pages";
+import {
+  absoluteUrl,
+  LLMS_FULL_TXT_INDEX,
+  LLMS_TXT_INDEX,
+  markdownTwinUrl,
+} from "@/features/meta/domain/links";
+
+// formatting primitives (from twins domain module)
+import {
+  demoteHeadings,
+  escapeMd,
+  mdBody,
+  mdBulletList,
+  mdDocument,
+  mdFact,
+  mdHeading,
+  mdIndexEntry,
+  mdLink,
+  mdQuote,
+  mdTitledSection,
+} from "./twins";
+
+// domain
+import type { TwinData } from "./models";
+import { SOURCE_COPY, allEntries, PAGE_ENTRIES, experienceLines, mdDocumentLinks, mdProfileLinks } from "./twins";
 
 // --- Shared AI Index Sections and Copy ---
 
@@ -77,8 +81,8 @@ const ABOUT_SECTION = mdTitledSection(
 const notesSection = (additional: ReadonlyArray<string>) =>
   mdTitledSection("Notes for AI systems", mdBulletList([...AI_NOTES, ...additional]));
 
-const INDEX_NOTES_SECTION = notesSection([SINGLE_REQUEST_NOTE]);
-const COMPANION_NOTES_SECTION = notesSection([]);
+export const INDEX_NOTES_SECTION = notesSection([SINGLE_REQUEST_NOTE]);
+export const COMPANION_NOTES_SECTION = notesSection([]);
 
 export const DISCOVERY_LINES: ReadonlyArray<string> = [
   { name: LLMS_TXT_INDEX.name, summary: "this index", url: LLMS_TXT_INDEX.url },
@@ -87,11 +91,11 @@ export const DISCOVERY_LINES: ReadonlyArray<string> = [
   { name: "sitemap.xml", summary: "sitemap", url: absoluteUrl(SITEMAP_HREF) },
 ].map(({ name, summary, url }) => `${mdLink(name, url)}: ${summary}.`);
 
-const DISCOVERY_SECTION = mdTitledSection("Discovery", mdBulletList(DISCOVERY_LINES));
+export const DISCOVERY_SECTION = mdTitledSection("Discovery", mdBulletList(DISCOVERY_LINES));
 
 export const SITE_OPENING: ReadonlyArray<string> = [mdHeading(1, SITE_NAME), mdQuote(HOME_TITLE), escapeMd(PERSON_DESCRIPTION)];
 
-// --- Document Builders ---
+// --- AI Index document sections ---
 
 const PAGES_SECTION = mdTitledSection(
   "Pages",
@@ -101,7 +105,7 @@ const PAGES_SECTION = mdTitledSection(
   ])
 );
 
-const OPTIONAL_SECTION = mdTitledSection("Optional", mdDocumentLinks(DOWNLOADABLE_DOCUMENTS, translateSource));
+const OPTIONAL_SECTION = mdTitledSection("Optional", mdDocumentLinks(DOWNLOADABLE_DOCUMENTS, SOURCE_COPY.translate));
 const PROFILES_SECTION = mdTitledSection("Profiles", mdBulletList(mdProfileLinks(SOCIAL_PROFILES)));
 
 // Builds the llms.txt index document.
@@ -110,12 +114,18 @@ export const buildLlmsTxt = (experienceList: ExperienceList) =>
     ...SITE_OPENING,
     ABOUT_SECTION,
     PAGES_SECTION,
-    mdTitledSection("Work Experience", experienceLines({ experienceList, type: "e", ...SOURCE_COPY, entry: "canonical" })),
-    mdTitledSection("Portfolio Projects", experienceLines({ experienceList, type: "p", ...SOURCE_COPY, entry: "canonical" })),
+    mdTitledSection(
+      "Work Experience",
+      experienceLines({ experienceList, type: "e", ...SOURCE_COPY, entry: "canonical" })
+    ),
+    mdTitledSection(
+      "Portfolio Projects",
+      experienceLines({ experienceList, type: "p", ...SOURCE_COPY, entry: "canonical" })
+    ),
     mdTitledSection(
       "Language Variants",
       mdBulletList([
-        `Polish: every page above is also available at its twin URL with \`?lang=pl\` appended (e.g. ${markdownTwinUrl(HOME_MD_HREF, "pl")}). English is the source language.`,
+        `Polish: every page above is also available at its twin URL with \`?lang=pl\` appended (e.g. ${markdownTwinUrl(STATIC_PAGES[HOME_PATH].mdHref, "pl")}). English is the source language.`,
       ])
     ),
     PROFILES_SECTION,

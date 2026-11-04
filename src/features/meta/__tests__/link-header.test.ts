@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-import { joinLinkHeader, languageVariantLinks } from "../domain/helpers";
-import { AI_INDEX_LINKS, AI_INDEX_LINK_HEADER } from "../domain/discovery";
+import { joinLinkHeader, languageVariantLinks } from "../domain/links";
+import { AI_INDEX_LINKS, AI_INDEX_LINK_HEADER } from "../domain/links";
 import { ROOT_HEAD } from "../domain/heads";
 
 // --- The Link header ---
