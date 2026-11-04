@@ -55,8 +55,8 @@ interface WebPageNodeInput {
   readonly description: string;
   readonly preferredLanguage: PreferredLanguage;
   readonly breadcrumb?: boolean;
-  readonly mainEntity?: unknown;
-  readonly primaryImageOfPage?: unknown;
+  readonly mainEntity?: JsonLdNode;
+  readonly primaryImageOfPage?: JsonLdNode;
   readonly datePublished?: string;
 }
 
@@ -64,7 +64,7 @@ interface CollectionNodeInput {
   readonly id: string;
   readonly name: string;
   readonly preferredLanguage: PreferredLanguage;
-  readonly parts: ReadonlyArray<unknown>;
+  readonly parts: JsonLdNodes;
   readonly url?: string;
 }
 
@@ -115,40 +115,51 @@ export const jsonLdGraph = (nodes: ReadonlyArray<JsonLdNode>): JsonLdScript => {
 
 // --- Node builders ---
 
-const articleNode = (input: ArticleNodeInput): JsonLdNode => ({
+const articleNode = ({ id, headline, description, preferredLanguage, about, mainEntityOfPage, datePublished }: ArticleNodeInput): JsonLdNode => ({
   "@type": "Article",
-  "@id": input.id,
-  headline: input.headline,
-  description: input.description,
-  inLanguage: input.preferredLanguage,
+  "@id": id,
+  headline,
+  description,
+  inLanguage: preferredLanguage,
   author: { "@id": PERSON_ID },
   publisher: { "@id": PUBLISHER_ID },
-  about: { "@id": input.about },
-  ...(input.datePublished !== undefined ? { datePublished: input.datePublished } : {}),
-  mainEntityOfPage: { "@id": input.mainEntityOfPage },
+  about: { "@id": about },
+  ...(datePublished !== undefined ? { datePublished } : {}),
+  mainEntityOfPage: { "@id": mainEntityOfPage },
 });
 
-const webPageNode = (input: WebPageNodeInput): JsonLdNode => ({
-  "@type": input.type,
-  "@id": input.id,
-  ...(input.url !== undefined ? { url: input.url } : {}),
-  name: input.name,
-  description: input.description,
-  inLanguage: input.preferredLanguage,
+const webPageNode = ({
+  type,
+  id,
+  url,
+  name,
+  description,
+  preferredLanguage,
+  breadcrumb: hasBreadcrumb,
+  mainEntity,
+  primaryImageOfPage,
+  datePublished,
+}: WebPageNodeInput): JsonLdNode => ({
+  "@type": type,
+  "@id": id,
+  ...(url !== undefined ? { url } : {}),
+  name,
+  description,
+  inLanguage: preferredLanguage,
   isPartOf: { "@id": WEBSITE_ID },
-  ...(input.breadcrumb ? { breadcrumb: { "@id": `${input.id}#breadcrumb` } } : {}),
-  ...(input.mainEntity !== undefined ? { mainEntity: input.mainEntity } : {}),
-  ...(input.primaryImageOfPage !== undefined ? { primaryImageOfPage: input.primaryImageOfPage } : {}),
-  ...(input.datePublished !== undefined ? { datePublished: input.datePublished } : {}),
+  ...(hasBreadcrumb ? { breadcrumb: { "@id": `${id}#breadcrumb` } } : {}),
+  ...(mainEntity !== undefined ? { mainEntity } : {}),
+  ...(primaryImageOfPage !== undefined ? { primaryImageOfPage } : {}),
+  ...(datePublished !== undefined ? { datePublished } : {}),
 });
 
-const collectionNode = (input: CollectionNodeInput): JsonLdNode => ({
+const collectionNode = ({ id, name, preferredLanguage, parts, url }: CollectionNodeInput): JsonLdNode => ({
   "@type": "Collection",
-  "@id": input.id,
-  ...(input.url !== undefined ? { url: input.url } : {}),
-  name: input.name,
-  inLanguage: input.preferredLanguage,
-  hasPart: input.parts,
+  "@id": id,
+  ...(url !== undefined ? { url } : {}),
+  name,
+  inLanguage: preferredLanguage,
+  hasPart: parts,
 });
 
 const imageObject = (url: string, width: number, height: number) => ({ "@type": "ImageObject", url, width, height }) as const;
@@ -227,17 +238,27 @@ export const siteNodes: JsonLdNodes = [
 
 // --- Page graphs ---
 
-const experienceCollection = (input: { id: string; name: string; experiences: ExperienceList; preferredLanguage: PreferredLanguage }): JsonLdNodes => {
-  if (input.experiences.length === 0) return [];
+const experienceCollection = ({
+  id,
+  name,
+  experiences,
+  preferredLanguage,
+}: {
+  id: string;
+  name: string;
+  experiences: ExperienceList;
+  preferredLanguage: PreferredLanguage;
+}): JsonLdNodes => {
+  if (experiences.length === 0) return [];
 
   return [
     collectionNode({
-      id: input.id,
-      name: input.name,
-      preferredLanguage: input.preferredLanguage,
-      parts: input.experiences.map((experience) => {
+      id,
+      name,
+      preferredLanguage,
+      parts: experiences.map((experience) => {
         const url = absoluteUrl(experiencePath(experience.slug));
-        return { "@type": "WebPage", "@id": url, url, name: experienceHeadline(experience, input.preferredLanguage) };
+        return { "@type": "WebPage", "@id": url, url, name: experienceHeadline(experience, preferredLanguage) };
       }),
     }),
   ];

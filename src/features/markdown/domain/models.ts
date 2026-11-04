@@ -16,9 +16,6 @@ export interface LocalizedMdInput {
   readonly translate: Translate;
 }
 
-// URL lead style for experience listings: twin endpoint or canonical HTML URL.
-export type ExperienceEntryLink = "twin" | "canonical";
-
 export interface ExperienceMdInput extends LocalizedMdInput {
   readonly experience: Experience;
 }
@@ -26,7 +23,8 @@ export interface ExperienceMdInput extends LocalizedMdInput {
 export interface ExperienceLinesInput extends LocalizedMdInput {
   readonly experienceList: ExperienceList;
   readonly type: Experience["type"];
-  readonly entry: ExperienceEntryLink;
+  // URL lead style for the listing line: twin endpoint or canonical HTML URL.
+  readonly entry: "twin" | "canonical";
 }
 
 export interface HomeMdInput extends LocalizedMdInput {

@@ -1,4 +1,4 @@
-// URL formatting, Link-header serialization, and asset resolution for metadata.
+// URL formatting, Link serialization, and asset resolution for metadata.
 
 // services, features, and other libraries
 import { Option, Schema, String, pipe } from "effect";
@@ -9,16 +9,7 @@ import type { PreferredLanguage } from "@/domain/models";
 import type { LinkTag, SocialImageFacts } from "./models";
 
 // constants
-import {
-  CV_EN_HREF,
-  CV_PL_HREF,
-  DEFAULT_LANGUAGE,
-  LLMS_FULL_TXT_HREF,
-  LLMS_TXT_HREF,
-  SITE_LANGUAGES,
-  SITE_URL,
-  SITEMAP_HREF,
-} from "./constants";
+import { CV_EN_HREF, CV_PL_HREF, DEFAULT_LANGUAGE, SITE_LANGUAGES, SITE_URL } from "./constants";
 import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain/constants";
 
 // --- URL Helpers ---
@@ -69,7 +60,7 @@ export const experienceScreenshot = (imageName: string): Option.Option<SocialIma
     : Option.none();
 };
 
-// --- RFC 8288 Link Formatting & Declarations ---
+// --- RFC 8288 Link Formatting ---
 
 // Formats a single link as an RFC 8288 header value in fixed parameter order (rel, type, title, hreflang).
 const linkHeader = ({ href, rel, type, title, hreflang }: LinkTag) => {
@@ -84,36 +75,19 @@ export const joinLinkHeader = (links: ReadonlyArray<LinkTag>) => links.map(linkH
 export const canonicalLink = (href: string): LinkTag => ({ rel: "canonical", href });
 export const authorLink = (href: string): LinkTag => ({ rel: "author", href });
 
-export const markdownAlternateLink = (mdPath: string, preferredLanguage: PreferredLanguage): LinkTag => ({
+// All markdown alternate links share the same rel and type.
+const markdownLink = (href: string, hreflang?: string): LinkTag => ({
   rel: "alternate",
   type: "text/markdown",
-  href: markdownTwinUrl(mdPath, preferredLanguage),
+  ...(hreflang !== undefined ? { hreflang } : {}),
+  href,
 });
 
-export const SITEMAP_LINK: LinkTag = { rel: "sitemap", href: absoluteUrl(SITEMAP_HREF) };
-export const LLMS_DISCOVERY_LINK: LinkTag = { rel: "llms", href: absoluteUrl(LLMS_TXT_HREF) };
-
-// Discovery document declarations for GEO index surfaces.
-export const LLMS_TXT_INDEX = { name: "llms.txt", url: LLMS_DISCOVERY_LINK.href } as const;
-export const LLMS_FULL_TXT_INDEX = { name: "llms-full.txt", url: absoluteUrl(LLMS_FULL_TXT_HREF) } as const;
-export const AI_INDEXES = [LLMS_TXT_INDEX, LLMS_FULL_TXT_INDEX] as const;
-
-export const AI_INDEX_LINKS: ReadonlyArray<LinkTag> = AI_INDEXES.map(({ name, url }) => ({
-  rel: "alternate",
-  type: "text/plain",
-  title: name,
-  href: url,
-}));
-
-export const AI_INDEX_LINK_HEADER = joinLinkHeader(AI_INDEX_LINKS);
+export const markdownAlternateLink = (mdPath: string, preferredLanguage: PreferredLanguage): LinkTag =>
+  markdownLink(markdownTwinUrl(mdPath, preferredLanguage));
 
 // Hreflang alternates for every supported language plus x-default.
 export const languageVariantLinks = (markdownUrl: string): ReadonlyArray<LinkTag> => [
-  ...SITE_LANGUAGES.map((language): LinkTag => ({
-    rel: "alternate",
-    type: "text/markdown",
-    hreflang: language,
-    href: withLanguageParam(markdownUrl, language),
-  })),
-  { rel: "alternate", type: "text/markdown", hreflang: "x-default", href: withLanguageParam(markdownUrl, DEFAULT_LANGUAGE) },
+  ...SITE_LANGUAGES.map((language) => markdownLink(withLanguageParam(markdownUrl, language), language)),
+  markdownLink(withLanguageParam(markdownUrl, DEFAULT_LANGUAGE), "x-default"),
 ];

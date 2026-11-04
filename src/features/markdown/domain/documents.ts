@@ -6,7 +6,8 @@ import { msg } from "gt-tanstack-start";
 import { matchPreferredLanguage } from "@/domain/helpers";
 import { excerpt, experienceHeadline } from "@/features/experience/domain/helpers";
 import { staticPageCopy, STATIC_PAGE_PATHS, STATIC_PAGES } from "@/features/meta/domain/static-pages";
-import { absoluteUrl, AI_INDEXES, experienceMarkdownPath, experiencePath, LLMS_TXT_INDEX, markdownTwinUrl } from "@/features/meta/domain/helpers";
+import { absoluteUrl, experienceMarkdownPath, experiencePath, markdownTwinUrl } from "@/features/meta/domain/helpers";
+import { AI_INDEXES, LLMS_TXT_INDEX } from "@/features/meta/domain/discovery";
 import {
   escapeMd,
   escapeMdInline,
@@ -280,18 +281,24 @@ export const CONTACT_TWIN: PageTwin<{}> = staticTwin(CONTACT_PATH, {
 
 export const PAGE_TWINS = [HOME_TWIN, EDUCATION_TWIN, CONTACT_TWIN] as const;
 
-const twinEntry = (input: {
+const twinEntry = ({
+  name,
+  canonicalPath,
+  mdHref,
+  summary,
+  render,
+}: {
   readonly name: string;
   readonly canonicalPath: string;
   readonly mdHref: string;
   readonly summary?: string;
   readonly render: (data: TwinData) => string;
 }): TwinEntry => ({
-  name: input.name,
-  canonical: absoluteUrl(input.canonicalPath),
-  twinUrl: markdownTwinUrl(input.mdHref, DEFAULT_LANGUAGE),
-  summary: input.summary,
-  render: input.render,
+  name,
+  canonical: absoluteUrl(canonicalPath),
+  twinUrl: markdownTwinUrl(mdHref, DEFAULT_LANGUAGE),
+  summary,
+  render,
 });
 
 // Static page entries for AI index publication.

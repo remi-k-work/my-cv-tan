@@ -6,7 +6,7 @@ import { msg } from "gt-tanstack-start";
 import { absoluteUrl, decodeUrlOption, encodeParens } from "@/features/meta/domain/helpers";
 
 // types
-import type { Translate } from "@/domain/models";
+import type { PreferredLanguage, Translate } from "@/domain/models";
 import type { LocalizedMdInput } from "./models";
 
 // constants
@@ -71,17 +71,22 @@ export const frontmatter = (fields: Readonly<Record<string, string>>) => {
   return [FRONTMATTER_DELIMITER, body, FRONTMATTER_DELIMITER].join("\n");
 };
 
-export const twinIdentity = (input: {
+export const twinIdentity = ({
+  title,
+  description,
+  canonical,
+  preferredLanguage,
+}: {
   readonly title: string;
   readonly description: string;
   readonly canonical: string;
-  readonly preferredLanguage: string;
+  readonly preferredLanguage: PreferredLanguage;
 }) => ({
-  title: BRANDED_TITLE(input.title),
-  description: input.description,
+  title: BRANDED_TITLE(title),
+  description,
   author: SITE_NAME,
-  canonical: input.canonical,
-  lang: input.preferredLanguage,
+  canonical,
+  lang: preferredLanguage,
 });
 
 export const mdHeading = (level: 1 | 2 | 3, text: string) => `${"#".repeat(level)} ${escapeMdInline(text)}`;

@@ -3,7 +3,8 @@
 // services, features, and other libraries
 import { flow, Option, Schema, String, pipe } from "effect";
 import { PreferredLanguage } from "@/domain/models";
-import { AI_INDEX_LINKS, canonicalLink, decodeUrlOption, joinLinkHeader, languageVariantLinks, markdownTwinUrl } from "@/features/meta/domain/helpers";
+import { canonicalLink, decodeUrlOption, joinLinkHeader, languageVariantLinks, markdownTwinUrl } from "@/features/meta/domain/helpers";
+import { AI_INDEX_LINKS } from "@/features/meta/domain/discovery";
 
 // constants
 import { INDEXABLE_ROBOTS } from "@/features/meta/domain/constants";

@@ -19,7 +19,8 @@ import {
   SOURCE_COPY,
   translateSource,
 } from "./formatting";
-import { absoluteUrl, LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX, markdownTwinUrl } from "@/features/meta/domain/helpers";
+import { absoluteUrl, markdownTwinUrl } from "@/features/meta/domain/helpers";
+import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/discovery";
 
 // types
 import type { ExperienceList } from "@/features/experience/domain/models";

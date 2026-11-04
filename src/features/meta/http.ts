@@ -5,7 +5,7 @@ import type { PreferredLanguage } from "@/domain/models";
 
 // constants
 import { CONTENT_SIGNAL, NOINDEX_FOLLOW, NO_STORE } from "./domain/constants";
-import { AI_INDEX_LINK_HEADER } from "./domain/helpers";
+import { AI_INDEX_LINK_HEADER } from "./domain/discovery";
 
 const CACHE_CONTROL = "public, max-age=3600, stale-while-revalidate=86400";
 const TXT_CONTENT_TYPE = "text/plain; charset=utf-8";

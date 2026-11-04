@@ -1,8 +1,12 @@
-// Robots directives and sitemap XML for crawler discovery.
+// Crawler and AI discovery: robots.txt, sitemap XML, and the link declarations for
+// every machine-readable document (robots.txt, sitemap.xml, llms.txt, llms-full.txt).
 
 // services, features, and other libraries
-import { absoluteUrl, experiencePath } from "./helpers";
+import { absoluteUrl, experiencePath, joinLinkHeader } from "./helpers";
 import { STATIC_PAGE_PATHS } from "./static-pages";
+
+// types
+import type { LinkTag } from "./models";
 
 // constants
 import {
@@ -11,6 +15,8 @@ import {
   CRAWL_DELAY,
   CV_EN_HREF,
   CV_PL_HREF,
+  LLMS_FULL_TXT_HREF,
+  LLMS_TXT_HREF,
   SITEMAP_HREF,
 } from "./constants";
 
@@ -68,3 +74,22 @@ export const buildSitemapXml = (slugs: ReadonlyArray<string>) => {
     "</urlset>",
   ].join("\n");
 };
+
+// --- Discovery link declarations ---
+
+export const SITEMAP_LINK: LinkTag = { rel: "sitemap", href: absoluteUrl(SITEMAP_HREF) };
+export const LLMS_DISCOVERY_LINK: LinkTag = { rel: "llms", href: absoluteUrl(LLMS_TXT_HREF) };
+
+// The AI index documents, declared once and projected into both the <head> and the Link header.
+export const LLMS_TXT_INDEX = { name: "llms.txt", url: LLMS_DISCOVERY_LINK.href } as const;
+export const LLMS_FULL_TXT_INDEX = { name: "llms-full.txt", url: absoluteUrl(LLMS_FULL_TXT_HREF) } as const;
+export const AI_INDEXES = [LLMS_TXT_INDEX, LLMS_FULL_TXT_INDEX] as const;
+
+export const AI_INDEX_LINKS: ReadonlyArray<LinkTag> = AI_INDEXES.map(({ name, url }) => ({
+  rel: "alternate",
+  type: "text/plain",
+  title: name,
+  href: url,
+}));
+
+export const AI_INDEX_LINK_HEADER = joinLinkHeader(AI_INDEX_LINKS);

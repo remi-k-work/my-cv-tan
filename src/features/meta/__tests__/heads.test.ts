@@ -1,9 +1,8 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { contactHead, educationHead, experienceHead, headLanguage, homeHead, routeHead, ROOT_HEAD } from "../domain/heads";
-import { canonicalLink } from "../domain/helpers";
+import { canonicalLink, withLanguageParam } from "../domain/helpers";
 import { STATIC_PAGES } from "../domain/static-pages";
-import { withLanguageParam } from "../domain/helpers";
 
 import { HOME_TITLE, INDEXABLE_ROBOTS, NOINDEX_FOLLOW, PERSON_DESCRIPTION, SITE_DESCRIPTION, SITE_NAME, AUTHOR_URL } from "../domain/constants";
 

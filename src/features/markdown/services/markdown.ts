@@ -7,13 +7,8 @@ import { Datasets } from "@/features/data/services/datasets";
 import { requestPreferredLanguage } from "@/features/data/domain/helpers";
 import { recoverDataFailure } from "@/features/data/domain/required";
 import { experienceFromList } from "@/features/experience/domain/helpers";
-import {
-  absoluteUrl,
-  experienceMarkdownPath,
-  experiencePath,
-  LLMS_FULL_TXT_INDEX,
-  LLMS_TXT_INDEX,
-} from "@/features/meta/domain/helpers";
+import { absoluteUrl, experienceMarkdownPath, experiencePath } from "@/features/meta/domain/helpers";
+import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/discovery";
 import { DEFAULT_LANGUAGE } from "@/features/meta/domain/constants";
 import { discoveryTxtResponse, txtUnavailableResponse } from "@/features/meta/http";
 import {

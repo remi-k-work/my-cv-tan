@@ -6,16 +6,14 @@ import { excerpt, experienceHeadline } from "@/features/experience/domain/helper
 import { PreferredLanguage } from "@/domain/models";
 import {
   absoluteUrl,
-  AI_INDEX_LINKS,
   authorLink,
   canonicalLink,
   experienceMarkdownPath,
   experiencePath,
   experienceScreenshot,
-  LLMS_DISCOVERY_LINK,
   markdownAlternateLink,
-  SITEMAP_LINK,
 } from "./helpers";
+import { AI_INDEX_LINKS, LLMS_DISCOVERY_LINK, SITEMAP_LINK } from "./discovery";
 import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd, jsonLdGraph, siteNodes } from "./structured-data";
 import { staticPageCopy } from "./static-pages";
 
@@ -113,9 +111,9 @@ const socialMeta = ({
     ? [
         { property: "article:author", content: AUTHOR_URL },
         { property: "article:publisher", content: PUBLISHER_URL },
+        ...(articleSection ? [{ property: "article:section", content: articleSection }] : []),
       ]
     : []),
-  ...(ogType === "article" && articleSection ? [{ property: "article:section", content: articleSection }] : []),
   { name: "twitter:card", content: "summary_large_image" },
   { name: "twitter:title", content: title },
   { name: "twitter:description", content: description },
