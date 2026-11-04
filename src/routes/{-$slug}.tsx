@@ -25,11 +25,16 @@ export const Route = createFileRoute("/{-$slug}")({
   loader: ({ params }) => loaderIndex(Option.fromNullishOr(params.slug)),
   head: ({ loaderData, matches, params }) => {
     const fallbackPath = params.slug ? experiencePath(params.slug) : HOME_PATH;
-    return routeHead(loaderData, matches, (data, preferredLanguage) => {
-      // The loader resolves either an item or a list; both branches produce a full head.
-      if (data.type === "item") return experienceHead({ experience: data.experience, preferredLanguage });
-      return homeHead({ pageTitles: data.stablePageTitles, experienceList: data.experienceList, preferredLanguage });
-    }, { fallbackPath });
+    return routeHead(
+      loaderData,
+      matches,
+      (data, preferredLanguage) => {
+        // The loader resolves either an item or a list; both branches produce a full head.
+        if (data.type === "item") return experienceHead({ experience: data.experience, preferredLanguage });
+        return homeHead({ pageTitles: data.stablePageTitles, experienceList: data.experienceList, preferredLanguage });
+      },
+      fallbackPath
+    );
   },
   component: IndexRoutePage,
 });

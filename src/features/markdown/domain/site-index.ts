@@ -1,8 +1,7 @@
 // Machine-readable discovery indexes for AI systems (llms.txt and llms-full.txt).
 
 // services, features, and other libraries
-import { allEntries } from "./catalogue";
-import { experienceLines } from "./experience";
+import { allEntries, experienceLines, PAGE_ENTRIES } from "./documents";
 import {
   demoteHeadings,
   escapeMd,
@@ -23,7 +22,7 @@ import { absoluteUrl, markdownTwinUrl } from "@/features/meta/domain/url";
 
 // types
 import type { ExperienceList } from "@/features/experience/domain/models";
-import type { TwinData } from "./catalogue";
+import type { TwinData } from "./documents";
 
 // constants
 import {
@@ -45,7 +44,6 @@ import {
   SOCIAL_PROFILES,
 } from "@/features/meta/domain/constants";
 import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/links";
-import { PAGE_ENTRIES } from "./catalogue";
 import { SOURCE_COPY } from "./formatting";
 
 // --- Shared AI Index Sections and Copy ---

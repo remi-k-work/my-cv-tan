@@ -2,7 +2,7 @@
 import { assert, it } from "@effect/vitest";
 import { Effect } from "effect";
 import { Datasets } from "@/features/data/services/datasets";
-import { CONTACT_TWIN, EDUCATION_TWIN, HOME_TWIN, PAGE_TWINS, PAGE_ENTRIES, allEntries } from "../domain/catalogue";
+import { CONTACT_TWIN, EDUCATION_TWIN, HOME_TWIN, PAGE_TWINS, PAGE_ENTRIES, allEntries } from "../domain/documents";
 import { SOURCE_COPY } from "../domain/formatting";
 
 // types
@@ -68,7 +68,7 @@ it.effect("each page twin's resolver returns exactly the dataset its body declar
 );
 
 it("the contact twin still renders: a dataset-free body is not an empty document", () => {
-  const md = CONTACT_TWIN.body(
+  const md = CONTACT_TWIN.render(
     { "/": { eyebrow: "", heading: "Home", intro: "" }, "/education": { eyebrow: "", heading: "Ed", intro: "" }, "/contact": { eyebrow: "", heading: "Kontakt", intro: "" } },
     {},
     SOURCE_COPY

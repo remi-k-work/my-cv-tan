@@ -5,11 +5,10 @@ import { Effect } from "effect";
 import { RuntimeServer } from "@/lib/runtime-server";
 import { recoverDataFailure } from "@/features/data/domain/required";
 import { Datasets } from "@/features/data/services/datasets";
-import { buildSitemapXml } from "@/features/meta/domain/discovery-documents";
+import { buildSitemapXml, ROBOTS_TXT } from "@/features/meta/domain/discovery-documents";
 import { sitemapResponse, sitemapUnavailableResponse, txtResponse } from "@/features/meta/http";
 
 // constants
-import { ROBOTS_TXT } from "@/features/meta/domain/discovery-documents";
 import { SITE_LANGUAGES } from "@/features/meta/domain/constants";
 
 // Fresh Response body per execution for single-use crawler streams.

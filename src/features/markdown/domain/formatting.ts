@@ -3,10 +3,10 @@
 // services, features, and other libraries
 import { Option, pipe } from "effect";
 import { msg } from "gt-tanstack-start";
-import { absoluteUrl, decodeUrlOption, encodeParens, markdownTwinUrl } from "@/features/meta/domain/url";
+import { absoluteUrl, decodeUrlOption, encodeParens } from "@/features/meta/domain/url";
 
 // types
-import type { PagePath, PreferredLanguage, Translate } from "@/domain/models";
+import type { PreferredLanguage, Translate } from "@/domain/models";
 
 // Rendering context shared by every Markdown twin builder.
 export interface LocalizedMdInput {
@@ -16,8 +16,6 @@ export interface LocalizedMdInput {
 
 // constants
 import { BRANDED_TITLE, DEFAULT_LANGUAGE, SITE_NAME } from "@/features/meta/domain/constants";
-import { AI_INDEXES, LLMS_TXT_INDEX } from "@/features/meta/domain/links";
-import { HOME_PATH, STATIC_PAGES, STATIC_PATHS } from "@/features/meta/domain/static-pages";
 
 const NORMALIZE_RULES: ReadonlyArray<readonly [RegExp, string]> = [
   [/\r\n?/g, "\n"],
@@ -60,7 +58,6 @@ export const demoteHeadings = (markdown: string) => markdown.replace(DEMOTE_HEAD
 export const translateSource: Translate = (source) => source;
 export const SOURCE_COPY: LocalizedMdInput = { preferredLanguage: DEFAULT_LANGUAGE, translate: translateSource };
 
-const HOME_LABEL = STATIC_PAGES[HOME_PATH].label;
 const FRONTMATTER_DELIMITER = "---";
 const YAML_UNSAFE_CHARACTERS = /[\u007f-\u009f\u2028\u2029]/g;
 
@@ -68,7 +65,6 @@ const yamlValue = (value: string) =>
   JSON.stringify(value).replace(YAML_UNSAFE_CHARACTERS, (character) => `\\u${character.charCodeAt(0).toString(16).padStart(4, "0")}`);
 
 export const mdLink = (label: string, href: string) => `[${escapeMdInline(label)}](${href})`;
-export const AI_INDEX_MARKDOWN_LINKS: ReadonlyArray<string> = AI_INDEXES.map(({ name, url }) => mdLink(name, url));
 
 export const mdExternalLink = (label: string, href: string) =>
   pipe(
@@ -104,7 +100,7 @@ export const mdFact = (label: string, value: string) => `${escapeMdInline(label)
 export const mdBody = (blocks: ReadonlyArray<string>) => blocks.filter(Boolean).join("\n\n");
 export const mdTitledSection = (title: string, body: string) => mdBody([mdHeading(2, title), body]);
 
-const translatedLink = (label: string, href: string, translate: Translate) => mdLink(translate(msg(label)), href);
+export const translatedLink = (label: string, href: string, translate: Translate) => mdLink(translate(msg(label)), href);
 export const mdDocument = (blocks: ReadonlyArray<string>) => `${mdBody(blocks)}\n`;
 export const mdEmptyMarker = (translate: Translate) => `_${escapeMdInline(translate(msg("No entries.")))}_`;
 
@@ -118,22 +114,3 @@ export const mdDocumentLinks = (documents: ReadonlyArray<{ readonly label: strin
 
 export const mdProfileLinks = (profiles: ReadonlyArray<{ readonly name: string; readonly href: string }>) =>
   profiles.map(({ name, href }) => mdFact(name, href));
-
-const homeLink = (preferredLanguage: PreferredLanguage, translate: Translate) =>
-  translatedLink(HOME_LABEL, markdownTwinUrl(STATIC_PAGES[HOME_PATH].mdHref, preferredLanguage), translate);
-
-export const twinIndexLinks = (pagePath: PagePath, preferredLanguage: PreferredLanguage, translate: Translate) =>
-  mdBulletList([
-    ...STATIC_PATHS.filter((path) => path !== pagePath).map((path) =>
-      translatedLink(STATIC_PAGES[path].label, markdownTwinUrl(STATIC_PAGES[path].mdHref, preferredLanguage), translate)
-    ),
-    ...AI_INDEX_MARKDOWN_LINKS,
-  ]);
-
-export const detailIndexLinks = (preferredLanguage: PreferredLanguage, translate: Translate) =>
-  mdBulletList([homeLink(preferredLanguage, translate), ...AI_INDEX_MARKDOWN_LINKS]);
-
-export const deadEndEscapeLine = (preferredLanguage: PreferredLanguage, translate: Translate) => {
-  const indexLink = mdLink(LLMS_TXT_INDEX.name, LLMS_TXT_INDEX.url);
-  return `${escapeMdInline(translate(msg("See")))} ${homeLink(preferredLanguage, translate)} ${escapeMdInline(translate(msg("or")))} ${indexLink}.`;
-};

@@ -1,9 +1,8 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
-import { buildExperienceMd } from "../domain/experience";
-import { buildContactMd, buildEducationMd, buildHomeMd, buildNotFoundMd } from "../domain/pages";
-import { AI_INDEX_MARKDOWN_LINKS, escapeMd, escapeMdInline, frontmatter, mdEmptyMarker, twinIndexLinks } from "../domain/formatting";
+import { AI_INDEX_MARKDOWN_LINKS, buildContactMd, buildEducationMd, buildExperienceMd, buildHomeMd, buildNotFoundMd, twinIndexLinks } from "../domain/documents";
+import { escapeMd, escapeMdInline, frontmatter, mdEmptyMarker } from "../domain/formatting";
 
 import { STATIC_PAGES } from "@/features/meta/domain/static-pages";
 

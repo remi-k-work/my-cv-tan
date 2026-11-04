@@ -16,9 +16,11 @@ import { PageTitle } from "@/ui/page-title";
 export const Route = createFileRoute("/education")({
   loader: () => loaderEducation(),
   head: ({ loaderData, matches }) =>
-    routeHead(loaderData, matches, (data, preferredLanguage) =>
-      educationHead({ pageTitles: data.stablePageTitles, educationList: data.educationList, preferredLanguage }),
-      { fallbackPath: EDUCATION_PATH }
+    routeHead(
+      loaderData,
+      matches,
+      (data, preferredLanguage) => educationHead({ pageTitles: data.stablePageTitles, educationList: data.educationList, preferredLanguage }),
+      EDUCATION_PATH
     ),
   component: EducationPage,
 });

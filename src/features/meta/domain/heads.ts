@@ -39,7 +39,7 @@ interface RootHeadContract {
 interface PageHeadSpec extends SocialMetaInput {
   readonly markdownPath: string;
   readonly graph: JsonLdNodes;
-  readonly authorLink?: string;
+  readonly authorHref?: string;
 }
 
 // constants
@@ -63,7 +63,6 @@ import {
 import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "./static-pages";
 import { AI_INDEX_LINKS, LLMS_DISCOVERY_LINK, SITEMAP_LINK } from "./links";
 
-const EMPTY_HEAD: PageHead = { meta: [], links: [], scripts: [] };
 const ME_LINKS: ReadonlyArray<LinkTag> = SOCIAL_LINKS.map((href) => ({ rel: "me", href }));
 
 // --- Social cards ---
@@ -104,6 +103,7 @@ const socialMeta = ({
   { name: "twitter:card", content: "summary_large_image" },
   { name: "twitter:title", content: title },
   { name: "twitter:description", content: description },
+  // X rejects WebP, so the Twitter card always uses the JPEG banner instead of the WebP screenshot.
   { name: "twitter:image", content: GLOBAL_SOCIAL_IMAGE.src },
   { name: "twitter:image:alt", content: GLOBAL_SOCIAL_IMAGE.alt },
 ];
@@ -143,7 +143,7 @@ export const ROOT_HEAD = {
 } satisfies RootHeadContract;
 
 // Shared page head layout merging title, indexing directives, social cards, links and graph.
-const pageHead = ({ markdownPath, graph, authorLink: authorHref, ...social }: PageHeadSpec): PageHead => ({
+const pageHead = ({ markdownPath, graph, authorHref, ...social }: PageHeadSpec): PageHead => ({
   meta: [
     { title: BRANDED_TITLE(social.title) },
     { name: "description", content: social.description },
@@ -174,13 +174,8 @@ export const routeHead = <TData>(
   loaderData: TData,
   matches: MatchChain,
   build: (loaderData: NonNullable<TData>, preferredLanguage: PreferredLanguage) => PageHead,
-  options: { readonly fallbackPath?: string } = {}
-): PageHead => {
-  if (loaderData == null) {
-    return options.fallbackPath !== undefined ? fallbackHead(options.fallbackPath) : EMPTY_HEAD;
-  }
-  return build(loaderData, headLanguage(matches));
-};
+  fallbackPath: string
+): PageHead => (loaderData == null ? fallbackHead(fallbackPath) : build(loaderData, headLanguage(matches)));
 
 // --- Page head builders ---
 
@@ -226,7 +221,7 @@ export const experienceHead = ({ experience, preferredLanguage }: ExperienceHead
     image: experienceCardImage(headline, imageName),
     ogType: "article",
     articleSection: type === "e" ? "employment" : "portfolio",
-    authorLink: AUTHOR_URL,
+    authorHref: AUTHOR_URL,
     preferredLanguage,
     graph: experienceJsonLd({ experience, preferredLanguage }),
   });

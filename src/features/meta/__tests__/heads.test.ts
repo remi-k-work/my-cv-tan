@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-import { contactHead, educationHead, experienceHead, headLanguage, homeHead, ROOT_HEAD } from "../domain/heads";
+import { contactHead, educationHead, experienceHead, headLanguage, homeHead, routeHead, ROOT_HEAD } from "../domain/heads";
 import { canonicalLink } from "../domain/links";
 import { STATIC_PAGES } from "../domain/static-pages";
 import { withLanguageParam } from "../domain/url";
@@ -304,6 +304,18 @@ it("language-pinned Markdown URLs attach ?lang= and survive values the URL parse
   // A relative path is a bad canonical, not a crash: it is passed through untouched
   assert.strictEqual(withLanguageParam("/index.md", "pl"), "/index.md");
   assert.strictEqual(withLanguageParam("not a url", "pl"), "not a url");
+});
+
+it("routeHead keeps a canonical noindex fallback when loader data is missing", () => {
+  const fallback = routeHead(undefined, [], () => homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" }), "/contact");
+
+  assert.deepStrictEqual(fallback.links?.map(({ rel, href }) => ({ rel, href })), [
+    { rel: "canonical", href: "https://www.remiforge.dev/contact" },
+  ]);
+  assert.include(JSON.stringify(fallback.meta), NOINDEX_FOLLOW);
+  assert.include(JSON.stringify(fallback.meta), SITE_DESCRIPTION);
+  // The fallback still publishes the site entities, just not the page's own graph.
+  assert.isAbove(JSON.parse(fallback.scripts?.[0]?.children ?? "{}")["@graph"].length, 0);
 });
 
 it("headLanguage resolves the root loader locale and falls back safely", () => {

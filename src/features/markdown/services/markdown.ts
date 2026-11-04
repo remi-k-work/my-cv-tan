@@ -10,8 +10,7 @@ import { discoveryTxtResponse, txtUnavailableResponse } from "@/features/meta/ht
 import { mdNotFoundResponse, mdResponse, mdUnavailableResponse, parseLangParam, slugFromMdPathname } from "@/features/markdown/http";
 import { recoverDataFailure } from "@/features/data/domain/required";
 import { experienceFromList } from "@/features/experience/domain/helpers";
-import { buildExperienceMd } from "@/features/markdown/domain/experience";
-import { buildNotFoundMd, unavailableMarkdownBody } from "@/features/markdown/domain/pages";
+import { buildExperienceMd, buildNotFoundMd, unavailableMarkdownBody } from "@/features/markdown/domain/documents";
 import { buildLlmsFullTxt, buildLlmsTxt, unavailableIndexBody } from "@/features/markdown/domain/site-index";
 import { translateSource } from "@/features/markdown/domain/formatting";
 import { translateForLanguage } from "@/lib/gt-translations";
@@ -20,14 +19,14 @@ import { translateForLanguage } from "@/lib/gt-translations";
 import type { LocalizedMdInput } from "@/features/markdown/domain/formatting";
 import type { ExperienceList } from "@/features/experience/domain/models";
 import type { DatasetsService, LocalizedAccessor } from "@/features/data/services/datasets";
-import type { PageTwinSpec } from "@/features/markdown/domain/catalogue";
+import type { PageTwin } from "@/features/markdown/domain/documents";
 import type { RequiredDataError } from "@/features/data/domain/required";
 import type { PreferredLanguage } from "@/domain/models";
 
 // constants
 import { DEFAULT_LANGUAGE } from "@/features/meta/domain/constants";
 import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/links";
-import { CONTACT_TWIN, EDUCATION_TWIN, HOME_TWIN } from "@/features/markdown/domain/catalogue";
+import { CONTACT_TWIN, EDUCATION_TWIN, HOME_TWIN } from "@/features/markdown/domain/documents";
 
 type MachineDocumentBody = (request: Request, context: LocalizedMdInput) => Effect.Effect<Response, RequiredDataError>;
 type MachineDocument = (request: Request) => Effect.Effect<Response, never>;
@@ -69,7 +68,7 @@ const respond = (context: LocalizedMdInput, body: string, canonicalPath: string,
   });
 
 // Full pipeline for a static page twin resolving page titles and specific datasets.
-const pageTwinDocument = <Data>(twin: PageTwinSpec<Data>, datasets: DatasetsService): MachineDocument =>
+const pageTwinDocument = <Data>(twin: PageTwin<Data>, datasets: DatasetsService): MachineDocument =>
   documentResponse(
     Effect.fnUntraced(function* (_request: Request, context: LocalizedMdInput) {
       const { pageTitles, data } = yield* Effect.all(
@@ -79,7 +78,7 @@ const pageTwinDocument = <Data>(twin: PageTwinSpec<Data>, datasets: DatasetsServ
         },
         { concurrency: "unbounded" }
       );
-      return respond(context, twin.body(pageTitles, data, context), twin.pagePath, twin.mdHref);
+      return respond(context, twin.render(pageTitles, data, context), twin.pagePath, twin.mdHref);
     })
   );
 

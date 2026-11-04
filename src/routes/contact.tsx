@@ -16,9 +16,11 @@ import { PageTitle } from "@/ui/page-title";
 export const Route = createFileRoute("/contact")({
   loader: () => loaderContact(),
   head: ({ loaderData, matches }) =>
-    routeHead(loaderData, matches, (data, preferredLanguage) =>
-      contactHead({ pageTitles: data.stablePageTitles, preferredLanguage }),
-      { fallbackPath: CONTACT_PATH }
+    routeHead(
+      loaderData,
+      matches,
+      (data, preferredLanguage) => contactHead({ pageTitles: data.stablePageTitles, preferredLanguage }),
+      CONTACT_PATH
     ),
   component: ContactPage,
 });
