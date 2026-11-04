@@ -7,7 +7,7 @@ import { parseLangParam, slugFromMdPathname, absoluteUrl } from "@/features/meta
 import { CONTENT_SIGNAL, PERSON_DESCRIPTION } from "@/features/meta/domain/constants";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 import { buildLlmsTxt, buildLlmsFullTxt, SITE_OPENING, DISCOVERY_LINES, unavailableIndexBody } from "../domain/indexes";
-import { escapeMd } from "../domain/twins";
+import { escapeMd } from "../domain/format";
 import { unavailableMarkdownBody } from "../domain/twins";
 import { experienceFromList } from "@/features/experience/domain/helpers";
 

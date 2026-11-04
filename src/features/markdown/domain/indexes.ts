@@ -31,24 +31,26 @@ import {
   markdownTwinUrl,
 } from "@/features/meta/domain/links";
 
-// formatting primitives (from twins domain module)
+// formatting primitives
 import {
   demoteHeadings,
   escapeMd,
   mdBody,
   mdBulletList,
   mdDocument,
+  mdDocumentLinks,
   mdFact,
   mdHeading,
   mdIndexEntry,
   mdLink,
+  mdProfileLinks,
   mdQuote,
   mdTitledSection,
-} from "./twins";
+} from "./format";
 
 // domain
 import type { TwinData } from "./models";
-import { SOURCE_COPY, allEntries, PAGE_ENTRIES, experienceLines, mdDocumentLinks, mdProfileLinks } from "./twins";
+import { SOURCE_COPY, allEntries, PAGE_ENTRIES, experienceLines } from "./twins";
 
 // --- Shared AI Index Sections and Copy ---
 
