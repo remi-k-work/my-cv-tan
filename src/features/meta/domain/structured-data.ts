@@ -439,3 +439,6 @@ export const jsonLdGraph = (nodes: ReadonlyArray<JsonLdNode>): JsonLdScript => {
 
   return jsonLdScript({ "@context": "https://schema.org", "@graph": graph });
 };
+
+// The site entities on their own, serialized once for heads that publish no page graph.
+export const siteGraphScript: JsonLdScript = jsonLdGraph(siteNodes);

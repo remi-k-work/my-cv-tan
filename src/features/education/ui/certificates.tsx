@@ -22,6 +22,8 @@ interface CertificateSheetProps {
 }
 
 // constants
+import { CERTIFICATES_HREF } from "@/features/meta/domain/constants";
+
 const CERTIFICATES = [
   { src: artcom, width: 1222, height: 870, alt: "ARTCOM" },
   { src: alcc, width: 1222, height: 870, alt: "ALCC" },
@@ -58,7 +60,7 @@ export function Certificates() {
 
   return (
     <PageSection title={gt("My Certificates")}>
-      <a className="space-y-4" href="/my-certificates.pdf" target="_blank" rel="noopener noreferrer" aria-label={gt("View Certificates PDF")}>
+      <a className="space-y-4" href={CERTIFICATES_HREF} target="_blank" rel="noopener noreferrer" aria-label={gt("View Certificates PDF")}>
         {CERTIFICATES.map((cert) => (
           <CertificateSheet key={cert.src} {...cert} />
         ))}

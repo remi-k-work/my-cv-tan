@@ -17,7 +17,7 @@ import {
   SITEMAP_LINK,
   AI_INDEX_LINKS,
 } from "./links";
-import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd, jsonLdGraph, siteNodes } from "./structured-data";
+import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd, jsonLdGraph, siteGraphScript, siteNodes } from "./structured-data";
 
 // types
 import type { EducationList } from "@/features/education/domain/models";
@@ -183,7 +183,7 @@ const fallbackHead = (pagePath: string): PageHead => ({
     { name: "description", content: SITE_DESCRIPTION },
   ],
   links: [canonicalLink(absoluteUrl(pagePath))],
-  scripts: [jsonLdGraph(siteNodes)],
+  scripts: [siteGraphScript],
 });
 
 // Route head wrapper resolving language from match chain and handling absent loader data.

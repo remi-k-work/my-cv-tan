@@ -11,15 +11,7 @@ import { PreferredLanguage } from "@/domain/models";
 
 // constants
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW, NO_STORE } from "@/domain/http";
-import {
-  CONTENT_SIGNAL,
-  CRAWL_DELAY,
-  CV_EN_HREF,
-  CV_PL_HREF,
-  CERTIFICATES_HREF,
-  SITE_LANGUAGES,
-  SITEMAP_HREF,
-} from "../domain/constants";
+import { CONTENT_SIGNAL, CRAWL_DELAY, DOWNLOADABLE_DOCUMENTS, SITE_LANGUAGES, SITEMAP_HREF } from "../domain/constants";
 import { STATIC_PAGE_PATHS } from "../domain/pages";
 import {
   AI_INDEX_LINK_HEADER,
@@ -75,8 +67,8 @@ export const ROBOTS_TXT = [
 
 // --- Sitemap XML ---
 
-// Static pages come from the shared catalogue; downloads are appended after them.
-const STATIC_URLS = [...STATIC_PAGE_PATHS, CV_EN_HREF, CV_PL_HREF, CERTIFICATES_HREF].map(absoluteUrl);
+// Static pages come from the shared catalogue; downloads are exactly the advertised documents.
+const STATIC_URLS = [...STATIC_PAGE_PATHS, ...DOWNLOADABLE_DOCUMENTS.map(({ href }) => href)].map(absoluteUrl);
 const XML_ENTITIES: Readonly<Record<string, string>> = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" };
 const escapeXml = (value: string) => value.replace(/[&<>"']/g, (character) => XML_ENTITIES[character] ?? character);
 

@@ -5,7 +5,7 @@ import { LANGUAGE_VARY, sitemapResponse, sitemapUnavailableResponse, txtResponse
 import { STATIC_PAGE_PATHS } from "../domain/pages";
 
 // constants
-import { CONTENT_SIGNAL } from "../domain/constants";
+import { CONTENT_SIGNAL, DOWNLOADABLE_DOCUMENTS } from "../domain/constants";
 
 // types
 import type { Experience } from "@/features/experience/domain/models";
@@ -40,6 +40,16 @@ it("sitemap includes every static page from the shared page catalogue", () => {
 
   for (const path of STATIC_PAGE_PATHS) {
     assert.include(xml, `<loc>https://www.remiforge.dev${path}</loc>`);
+  }
+});
+
+it("sitemap lists every advertised downloadable document", () => {
+  const xml = buildSitemapXml([]);
+
+  // The sitemap reads the same catalogue the Markdown documents advertise, so a new download
+  // cannot appear on one surface and go missing from the other.
+  for (const { href } of DOWNLOADABLE_DOCUMENTS) {
+    assert.include(xml, `<loc>https://www.remiforge.dev${href}</loc>`);
   }
 });
 
