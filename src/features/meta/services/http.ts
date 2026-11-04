@@ -27,7 +27,9 @@ export const LANGUAGE_VARY = "Cookie, Accept-Language";
 const MACHINE_HEADERS = { "Content-Signal": CONTENT_SIGNAL, Link: AI_INDEX_LINK_HEADER } as const;
 // A successful representation may be cached; a failure never is.
 const CACHEABLE_HEADERS = { "Cache-Control": CACHE_CONTROL } as const;
-const UNAVAILABLE_HEADERS = { "Cache-Control": NO_STORE, "X-Robots-Tag": NOINDEX_FOLLOW } as const;
+// Documents crawlers may read but must not list as results, while still following their links.
+const NOINDEX_HEADERS = { "X-Robots-Tag": NOINDEX_FOLLOW } as const;
+const UNAVAILABLE_HEADERS = { "Cache-Control": NO_STORE, ...NOINDEX_HEADERS } as const;
 // Indexable documents opt into full snippets and large previews.
 const INDEXABLE_HEADERS = { "X-Robots-Tag": INDEXABLE_ROBOTS } as const;
 
@@ -41,11 +43,11 @@ export const txtUnavailableResponse = (body: string) => new Response(body, { sta
 export const discoveryTxtResponse = (body: string, contentLocation: string) =>
   new Response(body, {
     status: 200,
-    headers: { ...TXT_HEADERS, ...CACHEABLE_HEADERS, "X-Robots-Tag": NOINDEX_FOLLOW, "Content-Location": contentLocation },
+    headers: { ...TXT_HEADERS, ...CACHEABLE_HEADERS, ...NOINDEX_HEADERS, "Content-Location": contentLocation },
   });
 
 export const sitemapResponse = (xml: string) =>
-  new Response(xml, { status: 200, headers: { ...SITEMAP_HEADERS, ...CACHEABLE_HEADERS, "X-Robots-Tag": NOINDEX_FOLLOW } });
+  new Response(xml, { status: 200, headers: { ...SITEMAP_HEADERS, ...CACHEABLE_HEADERS, ...NOINDEX_HEADERS } });
 
 export const sitemapUnavailableResponse = () =>
   new Response(SITEMAP_UNAVAILABLE_XML, { status: 503, headers: { ...SITEMAP_HEADERS, ...UNAVAILABLE_HEADERS } });
@@ -104,7 +106,7 @@ export const robotsHandler = () => txtResponse(ROBOTS_TXT);
 // Include experience slugs from every language; the XML builder deduplicates canonical URLs.
 const sitemapDocument = Effect.gen(function* () {
   const { experienceList } = yield* Datasets;
-  const lists = yield* Effect.all(SITE_LANGUAGES.map(experienceList), { concurrency: "unbounded" });
+  const lists = yield* Effect.all(SITE_LANGUAGES.map((language) => experienceList(language)), { concurrency: "unbounded" });
 
   const slugs = lists.flatMap((list) => list.map(({ slug }) => slug));
 
