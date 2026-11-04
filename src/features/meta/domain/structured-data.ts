@@ -354,7 +354,10 @@ export const experienceJsonLd = ({ experience, preferredLanguage }: ExperienceHe
   const articleId = `${url}#article`;
   const description = excerpt(txt, META_DESCRIPTION_LENGTH);
 
-  const screenshot = Option.map(experienceScreenshot(imageName), ({ src, width, height }) => imageObject(src, width, height));
+  const screenshot = Option.match(experienceScreenshot(imageName), {
+    onNone: () => undefined,
+    onSome: ({ src, width, height }) => imageObject(src, width, height),
+  });
 
   const page = pageGraph({
     type: "WebPage",
@@ -363,7 +366,7 @@ export const experienceJsonLd = ({ experience, preferredLanguage }: ExperienceHe
     description,
     preferredLanguage,
     mainEntity: { "@id": articleId },
-    primaryImageOfPage: Option.getOrUndefined(screenshot),
+    primaryImageOfPage: screenshot,
     datePublished: year,
   });
 
@@ -381,7 +384,7 @@ export const experienceJsonLd = ({ experience, preferredLanguage }: ExperienceHe
         "@id": itemId,
         name: role,
         description,
-        ...(Option.isSome(screenshot) ? { image: screenshot.value } : {}),
+        ...(screenshot !== undefined ? { image: screenshot } : {}),
         url,
         mainEntityOfPage: { "@id": url },
         inLanguage: preferredLanguage,

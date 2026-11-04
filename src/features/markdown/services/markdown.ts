@@ -36,11 +36,14 @@ import { translateSource } from "@/features/markdown/domain/formatting";
 import { translateForLanguage } from "@/lib/gt-translations";
 
 // types
-import type { LocalizedMdInput, MachineDocument, MachineDocumentBody, PageTwin } from "@/features/markdown/domain/models";
+import type { LocalizedMdInput, PageTwin } from "@/features/markdown/domain/models";
 import type { DatasetsService, LocalizedAccessor } from "@/features/data/services/datasets";
 import type { ExperienceList } from "@/features/experience/domain/models";
 import type { RequiredDataError } from "@/features/data/domain/required";
 import type { PreferredLanguage } from "@/domain/models";
+
+type MachineDocumentBody = (request: Request, context: LocalizedMdInput) => Effect.Effect<Response, RequiredDataError>;
+type MachineDocument = (request: Request) => Effect.Effect<Response, never>;
 
 // Explicit language pins are safe to cache as a single variant, independent of visitor cookies.
 const pinCacheVariant = (response: Response): Response => {

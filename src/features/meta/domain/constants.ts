@@ -32,15 +32,7 @@ export const BRANDED_TITLE = (title: string) => `${SITE_NAME} ● ${title}`;
 // --- Author identity ---
 
 export const JOB_TITLE = "Web Developer";
-export const KNOWS_ABOUT = [
-  "Web Development",
-  "TypeScript",
-  "React",
-  "Next.js",
-  "Effect",
-  "Front-End Development",
-  "Full-Stack Development",
-] as const;
+export const KNOWS_ABOUT = ["Web Development", "TypeScript", "React", "Next.js", "Effect", "Front-End Development", "Full-Stack Development"] as const;
 
 // Social profiles declared once for JSON-LD sameAs, rel="me", and markdown twins.
 export const SOCIAL_PROFILES = [
@@ -123,13 +115,7 @@ export const DOWNLOADABLE_DOCUMENTS = [
   { label: "Certificates", href: CERTIFICATES_HREF },
 ] as const;
 
-// --- HTTP responses ---
-
-// Shared CDN cache policy for machine-readable discovery assets.
-export const CACHE_CONTROL = "public, max-age=3600, stale-while-revalidate=86400";
-
-// Vary header ensuring caches distinguish content by language cookie and header.
-export const LANGUAGE_VARY = "Cookie, Accept-Language";
+// --- HTTP directives ---
 
 export const NO_STORE = "no-store";
 export const NOINDEX_FOLLOW = "noindex, follow";
@@ -139,6 +125,3 @@ export const INDEXABLE_ROBOTS = "index, follow, max-snippet:-1, max-image-previe
 
 // Crawl pacing request delay for training bots.
 export const CRAWL_DELAY = "10";
-
-export const TXT_CONTENT_TYPE = "text/plain; charset=utf-8";
-export const XML_CONTENT_TYPE = "application/xml; charset=utf-8";

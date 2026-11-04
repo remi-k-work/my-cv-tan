@@ -72,7 +72,3 @@ export interface TwinEntry {
   readonly summary?: string;
   readonly render: (data: TwinData) => string;
 }
-
-// HTTP pipeline contracts for machine document endpoints.
-export type MachineDocumentBody = (request: Request, context: LocalizedMdInput) => Effect.Effect<Response, RequiredDataError>;
-export type MachineDocument = (request: Request) => Effect.Effect<Response, never>;

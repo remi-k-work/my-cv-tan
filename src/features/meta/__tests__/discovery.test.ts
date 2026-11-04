@@ -1,12 +1,12 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { buildSitemapXml, ROBOTS_TXT } from "../domain/discovery";
-import { sitemapResponse, sitemapUnavailableResponse, txtResponse, documentHeaders } from "../http";
+import { LANGUAGE_VARY, sitemapResponse, sitemapUnavailableResponse, txtResponse, documentHeaders } from "../http";
 import { STATIC_PAGE_PATHS } from "../domain/static-pages";
 import { robotsHandler } from "@/features/meta/services/discovery";
 
 // constants
-import { CONTENT_SIGNAL, LANGUAGE_VARY } from "../domain/constants";
+import { CONTENT_SIGNAL } from "../domain/constants";
 
 // types
 import type { Experience } from "@/features/experience/domain/models";
