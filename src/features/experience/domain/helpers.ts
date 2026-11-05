@@ -13,6 +13,14 @@ import { EXCERPT_SUFFIX } from "./constants";
 // shared by the route loaders and the Markdown twins so the lookup can never drift
 export const experienceFromList = (experienceList: ExperienceList, slug: string) => Array.findFirst(experienceList, (experience) => experience.slug === slug);
 
+// Localized records share canonical URLs, so every language must publish the same unique slugs.
+export const haveSameExperienceSlugs = (left: ReadonlyArray<Pick<Experience, "slug">>, right: ReadonlyArray<Pick<Experience, "slug">>) => {
+  const leftSlugs = new Set(left.map(({ slug }) => slug));
+  const rightSlugs = new Set(right.map(({ slug }) => slug));
+
+  return left.length === right.length && leftSlugs.size === left.length && rightSlugs.size === right.length && left.every(({ slug }) => rightSlugs.has(slug));
+};
+
 // One-pass split of the mixed list into employment ("e") and portfolio projects ("p"):
 // "e" and "p" are the only experience types, so whatever is not employment is exactly
 // the project list. Shared so the home sliders, the home JSON-LD collections and any

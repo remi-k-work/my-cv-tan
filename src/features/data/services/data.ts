@@ -1,5 +1,6 @@
 // services, features, and other libraries
 import { Array, Context, Effect, Layer, Option, Random, Schema } from "effect";
+import { haveSameExperienceSlugs } from "@/features/experience/domain/helpers";
 import { ExperienceList } from "@/features/experience/domain/models";
 import { EducationList } from "@/features/education/domain/models";
 import { PageTitlesList } from "@/domain/models";
@@ -32,10 +33,17 @@ export class Data extends Context.Service<Data>()("Data", {
       en: Schema.decodeOption(PageTitlesList)(pageTitlesEn),
       pl: Schema.decodeOption(PageTitlesList)(pageTitlesPl),
     };
-    const experienceAsset = {
+    const decodedExperienceAsset = {
       en: Schema.decodeUnknownOption(ExperienceList)(experienceEn),
       pl: Schema.decodeUnknownOption(ExperienceList)(experiencePl),
     };
+    // Canonical routes are shared across locales, so a mismatched slug set cannot be served safely.
+    const experienceAsset =
+      Option.isSome(decodedExperienceAsset.en) &&
+      Option.isSome(decodedExperienceAsset.pl) &&
+      !haveSameExperienceSlugs(decodedExperienceAsset.en.value, decodedExperienceAsset.pl.value)
+        ? { en: Option.none<ExperienceList>(), pl: Option.none<ExperienceList>() }
+        : decodedExperienceAsset;
     const educationAsset = {
       en: Schema.decodeOption(EducationList)(educationEn),
       pl: Schema.decodeOption(EducationList)(educationPl),

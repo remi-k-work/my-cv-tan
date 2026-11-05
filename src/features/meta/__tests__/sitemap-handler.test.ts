@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-import { sitemapHandler } from "../services/http";
+import { sitemapHandler } from "../services/handlers";
 import { STATIC_PAGE_PATHS } from "../domain/pages";
 import { CONTENT_SIGNAL, DOWNLOADABLE_DOCUMENTS } from "../domain/constants";
 import { experiencePath } from "../domain/urls";

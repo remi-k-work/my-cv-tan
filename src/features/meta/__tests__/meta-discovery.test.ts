@@ -2,7 +2,8 @@
 import { assert, it } from "@effect/vitest";
 import { buildSitemapXml, ROBOTS_TXT } from "../domain/discovery";
 import { documentHeaders, LANGUAGE_VARY } from "../services/headers";
-import { robotsHandler, sitemapResponse, sitemapUnavailableResponse, txtResponse } from "../services/http";
+import { robotsHandler } from "../services/handlers";
+import { sitemapResponse, sitemapUnavailableResponse, txtResponse } from "../services/responses";
 import { STATIC_PAGE_PATHS } from "../domain/pages";
 
 // constants
@@ -125,28 +126,10 @@ it("robots.txt allows content, disallows API endpoints, and advertises the sitem
   assert.include(robots, "Content-Signal: search=yes, ai-input=yes, ai-train=yes");
   // Crawl pacing: AI training crawlers get a crawl-delay directive alongside allow/disallow
   assert.include(robots, "Crawl-delay: 10");
-  // Every named bot group repeats the same directives (RFC 9309 override of '*')
-  for (const bot of [
-    "OAI-SearchBot",
-    "Claude-SearchBot",
-    "PerplexityBot",
-    "ChatGPT-User",
-    "Claude-User",
-    "Perplexity-User",
-    "GPTBot",
-    "ClaudeBot",
-    "CCBot",
-    "Google-Extended",
-    "Applebot-Extended",
-  ]) {
-    assert.include(robots, `User-agent: ${bot}`);
-  }
-  // Named groups override `*` in RFC 9309, so every group must repeat the signal to keep it in force
-  assert.strictEqual((robots.match(/^Content-Signal: /gm) ?? []).length, (robots.match(/^User-agent: /gm) ?? []).length);
-  // Every bot record is followed by one blank line: without it two `User-agent` groups merge into a
-  // single record and every bot after the first inherits only the directives of the first. Each
-  // comment and its `User-agent` line stay adjacent, and every record ends with the blank separator.
-  const userAgents = robots.match(/^User-agent: /gm) ?? [];
+  // A single wildcard group keeps this policy current for crawlers that are added after this file.
+  const userAgents = robots.match(/^User-agent: .*/gm) ?? [];
+  assert.deepStrictEqual(userAgents, ["User-agent: *"]);
+  assert.strictEqual((robots.match(/^Content-Signal: /gm) ?? []).length, userAgents.length);
   assert.strictEqual((robots.match(/^# [^\n]*\nUser-agent: /gm) ?? []).length, userAgents.length);
   assert.strictEqual((robots.match(/\n\n# /g) ?? []).length, userAgents.length);
   assert.isTrue(
@@ -176,11 +159,13 @@ it("robots.txt allows content, disallows API endpoints, and advertises the sitem
   assert.strictEqual(await first.text(), await second.text());
 });
 
-it("plain-text discovery responses are always English and carry the shared reuse signal", () => {
+it("robots.txt responses are English, noindex, and carry the shared reuse signal", () => {
   const response = txtResponse("# Plain");
   assert.strictEqual(response.status, 200);
   assert.strictEqual(response.headers.get("Content-Type"), "text/plain; charset=utf-8");
-  // Plain-text discovery documents are always English
+  // robots.txt itself is not a search result
+  assert.strictEqual(response.headers.get("X-Robots-Tag"), "noindex, follow");
+  // The crawler instructions are always English
   assert.strictEqual(response.headers.get("Content-Language"), "en");
 });
 

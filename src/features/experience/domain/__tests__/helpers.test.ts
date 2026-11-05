@@ -2,7 +2,7 @@
 import { assert, describe, it } from "@effect/vitest";
 
 // domain
-import { excerpt } from "../helpers";
+import { excerpt, haveSameExperienceSlugs } from "../helpers";
 
 // constants
 import { EXCERPT_SUFFIX } from "../constants";
@@ -29,5 +29,20 @@ describe("excerpt", () => {
     assert.strictEqual(result, `😀😀😀😀${EXCERPT_SUFFIX}`);
     assert.strictEqual(Array.from(result).length, 5);
     assert.isFalse(result.includes("\uFFFD"));
+  });
+});
+
+describe("haveSameExperienceSlugs", () => {
+  it("accepts the same unique route identities regardless of localized display order", () => {
+    assert.isTrue(haveSameExperienceSlugs([{ slug: "role-a" }, { slug: "project-b" }], [{ slug: "project-b" }, { slug: "role-a" }]));
+  });
+
+  it("rejects missing, extra, or duplicated route identities", () => {
+    const english = [{ slug: "role-a" }, { slug: "project-b" }];
+
+    assert.isFalse(haveSameExperienceSlugs(english, [{ slug: "role-a" }]));
+    assert.isFalse(haveSameExperienceSlugs(english, [...english, { slug: "project-c" }]));
+    assert.isFalse(haveSameExperienceSlugs(english, [{ slug: "role-a" }, { slug: "role-a" }]));
+    assert.isFalse(haveSameExperienceSlugs([{ slug: "role-a" }, { slug: "role-a" }], english));
   });
 });

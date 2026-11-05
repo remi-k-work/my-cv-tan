@@ -4,6 +4,7 @@ import { Effect, Option } from "effect";
 import { Data } from "../data";
 import { RequiredDataError } from "@/features/data/domain/required";
 import { applyHtmlDataUnavailableResponse, markHtmlDataUnavailable } from "@/features/data/http/html-response";
+import { haveSameExperienceSlugs } from "@/features/experience/domain/helpers";
 
 // assets
 import pageTitlesEn from "@/assets/data/en/page-titles.json";
@@ -17,6 +18,16 @@ it.effect("stablePageTitles always selects the first authored entry for each loc
 
     assert.deepStrictEqual(english, Option.some(pageTitlesEn[0]));
     assert.deepStrictEqual(polish, Option.some(pageTitlesPl[0]));
+  }).pipe(Effect.provide(Data.layer))
+);
+
+it.effect("localized experience assets keep the same unique canonical route identities", () =>
+  Effect.gen(function* () {
+    const data = yield* Data;
+    const english = yield* data.experienceList(Option.some("en"));
+    const polish = yield* data.experienceList(Option.some("pl"));
+
+    assert.isTrue(Option.isSome(english) && Option.isSome(polish) && haveSameExperienceSlugs(english.value, polish.value));
   }).pipe(Effect.provide(Data.layer))
 );
 

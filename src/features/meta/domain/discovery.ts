@@ -1,5 +1,6 @@
 // Discovery document content (robots.txt and sitemap.xml) as plain strings.
-// Purely generative: HTTP responses and route handlers live in ../services/http.
+// Purely generative: response envelopes and route handlers live in ../services/responses and
+// ../services/handlers.
 
 // constants
 import { CONTENT_SIGNAL, CRAWL_DELAY, DOWNLOADABLE_DOCUMENTS, SITEMAP_HREF } from "./constants";
@@ -8,33 +9,13 @@ import { absoluteUrl, experiencePath } from "./urls";
 
 // --- robots.txt ---
 
-const AI_SEARCH_CRAWLERS = ["OAI-SearchBot", "Claude-SearchBot", "PerplexityBot", "YouBot", "DuckAssistBot"] as const;
-const AI_USER_CRAWLERS = ["ChatGPT-User", "Claude-User", "Perplexity-User", "Meta-ExternalFetcher", "MistralAI-User"] as const;
-const AI_DATASET_CRAWLERS = [
-  "GPTBot",
-  "ClaudeBot",
-  "DeepSeekBot",
-  "CCBot",
-  "Google-Extended",
-  "Applebot-Extended",
-  "Amazonbot",
-  "Meta-ExternalAgent",
-  "AI2Bot",
-  "cohere-training-data-crawler",
-  "Bytespider",
-  "Timpibot",
-  "ImagesiftBot",
-] as const;
-
 const CONTENT_DIRECTIVES = ["Allow: /", "Allow: /*.md", "Disallow: /api", `Content-Signal: ${CONTENT_SIGNAL}`, `Crawl-delay: ${CRAWL_DELAY}`] as const;
 
-const crawlerGroup = (comment: string, bots: ReadonlyArray<string>) => bots.flatMap((bot) => [`# ${comment}`, `User-agent: ${bot}`, ...CONTENT_DIRECTIVES, ""]);
-
 export const ROBOTS_TXT = [
-  ...crawlerGroup("Every crawler: the HTML pages and their Markdown twins", ["*"]),
-  ...crawlerGroup("Explicitly allow AI search crawlers on HTML and Markdown twins", AI_SEARCH_CRAWLERS),
-  ...crawlerGroup("User-initiated AI browsing is also allowed", AI_USER_CRAWLERS),
-  ...crawlerGroup("Training and dataset crawlers are also currently allowed", AI_DATASET_CRAWLERS),
+  "# The same public-content and reuse policy applies to current and future crawlers",
+  "User-agent: *",
+  ...CONTENT_DIRECTIVES,
+  "",
   "# See /llms.txt for the Markdown page index",
   `Sitemap: ${absoluteUrl(SITEMAP_HREF)}`,
   "",
