@@ -12,6 +12,7 @@ import { buildLlmsTxt, buildLlmsFullTxt, SITE_OPENING, DISCOVERY_LINES, unavaila
 import { escapeMd } from "../domain/format";
 import { unavailableMarkdownBody } from "../domain/twins";
 import { experienceFromList } from "@/features/experience/domain/helpers";
+import { SITE_LANGUAGES } from "@/domain/constants";
 
 // types
 import type { PageTitles } from "@/domain/models";
@@ -409,10 +410,12 @@ it("the unavailable twin escapes its prose the way every other body string does"
 });
 
 it("parseLangParam honors ?lang= and rejects unknown values", () => {
-  assert.deepStrictEqual(parseLangParam("https://x.test/index.md?lang=pl"), Option.some("pl"));
+  for (const language of SITE_LANGUAGES) {
+    assert.deepStrictEqual(parseLangParam(`https://x.test/index.md?lang=${language}`), Option.some(language));
+  }
   assert.deepStrictEqual(parseLangParam("https://x.test/index.md?lang=EN"), Option.some("en"));
   assert.deepStrictEqual(parseLangParam("https://x.test/index.md"), Option.none());
-  assert.deepStrictEqual(parseLangParam("https://x.test/index.md?lang=de"), Option.none());
+  assert.deepStrictEqual(parseLangParam("https://x.test/index.md?lang=xx"), Option.none());
 });
 
 it("slugFromMdPathname extracts slugs and never throws on hostile input", () => {

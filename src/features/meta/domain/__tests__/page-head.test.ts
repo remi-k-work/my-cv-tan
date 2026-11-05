@@ -8,6 +8,7 @@ import { assert, it } from "@effect/vitest";
 
 // domain
 import { pageHead, experienceHead, contactHead } from "../page-head";
+import { globalSocialImage } from "../social-meta";
 
 // types
 import type { SocialMetaInput } from "../social-meta";
@@ -25,7 +26,7 @@ const social: SocialMetaInput = {
   title: "Headline",
   description: "Description.",
   canonical: "https://www.remiforge.dev/test",
-  image: GLOBAL_SOCIAL_IMAGE,
+  image: globalSocialImage(language),
   preferredLanguage: language,
 };
 

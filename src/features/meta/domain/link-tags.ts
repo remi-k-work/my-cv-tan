@@ -8,8 +8,9 @@ import type { LinkTag } from "./models";
 import type { PreferredLanguage } from "@/domain/models";
 
 // constants
-import { DEFAULT_LANGUAGE, LLMS_FULL_TXT_HREF, LLMS_TXT_HREF, SITEMAP_HREF, SITE_LANGUAGES } from "./constants";
+import { DEFAULT_LANGUAGE, LLMS_FULL_TXT_HREF, LLMS_TXT_HREF, SITEMAP_HREF } from "./constants";
 import { absoluteUrl, markdownTwinUrl, withLanguageParam } from "./urls";
+import { SITE_LANGUAGES } from "@/domain/constants";
 
 // --- RFC 8288 Link formatting ---
 

@@ -3,7 +3,8 @@ import { createFileRoute } from "@tanstack/react-router";
 
 // services, features, and other libraries
 import { loaderEducation } from "@/loaders/education";
-import { educationHead, routeHead } from "@/features/meta/domain/heads";
+import { routeHead } from "@/features/meta/domain/route-head";
+import { educationHead } from "@/features/meta/domain/page-head";
 
 // components
 import { Certificates } from "@/features/education/ui/certificates";

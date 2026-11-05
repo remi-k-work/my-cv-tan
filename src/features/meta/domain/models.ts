@@ -48,7 +48,11 @@ export interface PageHead {
 }
 
 // TanStack route head match chain providing loader data.
-export type MatchChain = ReadonlyArray<{ readonly loaderData?: unknown }>;
+export type MatchChain = ReadonlyArray<{
+  readonly loaderData?: unknown;
+  readonly status?: "pending" | "success" | "error" | "notFound";
+  readonly _notFound?: boolean;
+}>;
 
 // Verified facts about a published image file.
 export interface SocialImageFacts {

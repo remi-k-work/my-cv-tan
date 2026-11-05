@@ -5,7 +5,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Option } from "effect";
 import { useGT, useLocale } from "gt-tanstack-start";
 import { loaderIndex } from "@/loaders/index";
-import { experienceHead, homeHead, routeHead } from "@/features/meta/domain/heads";
+import { routeHead } from "@/features/meta/domain/route-head";
+import { experienceHead, homeHead } from "@/features/meta/domain/page-head";
 import { experienceHeadline, partitionExperiences } from "@/features/experience/domain/helpers";
 import { experiencePath } from "@/features/meta/domain/urls";
 import { preferredLanguageFromLocale } from "@/domain/helpers";
@@ -16,6 +17,7 @@ import { PageGrid } from "@/ui/page-grid";
 import { SliderPanel } from "@/features/experience/ui/slider-panel";
 import { ExperienceDetails } from "@/features/experience/ui/experience-details";
 import { ExperienceDetailsModal } from "@/features/modals/ui/experience-details-modal";
+import { NotFoundPage } from "@/ui/not-found-page";
 
 // types
 import type { PageTitles } from "@/domain/models";
@@ -25,6 +27,7 @@ import type { Experience, ExperienceList } from "@/features/experience/domain/mo
 import { HOME_PATH } from "@/features/meta/domain/constants";
 
 export const Route = createFileRoute("/{-$slug}")({
+  notFoundComponent: NotFoundPage,
   loader: ({ params }) => loaderIndex(Option.fromNullishOr(params.slug)),
   head: ({ loaderData, matches, params }) => {
     const fallbackPath = params.slug ? experiencePath(params.slug) : HOME_PATH;
@@ -82,7 +85,5 @@ function ExperienceItemPage({ experience }: { experience: Experience }) {
   const headline = experienceHeadline(experience, preferredLanguageFromLocale(locale));
 
   // The visible page title matches the identity used by its head, JSON-LD and Markdown twin.
-  return (
-    <ExperienceDetails experience={experience} heading={headline} headingLevel={1} />
-  );
+  return <ExperienceDetails experience={experience} heading={headline} headingLevel={1} />;
 }

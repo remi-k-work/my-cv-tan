@@ -3,6 +3,7 @@
 
 // services, features, and other libraries
 import { Effect } from "effect";
+import { removeSetCookieHeader } from "@/lib/server-response-headers";
 import { RuntimeServer } from "@/lib/runtime-server";
 import { recoverDataFailure } from "@/features/data/domain/required";
 import { Datasets } from "@/features/data/services/datasets";
@@ -11,11 +12,14 @@ import { Datasets } from "@/features/data/services/datasets";
 import { sitemapResponse, sitemapUnavailableResponse, txtResponse } from "./responses";
 
 // constants
-import { SITE_LANGUAGES } from "../domain/constants";
+import { SITE_LANGUAGES } from "@/domain/constants";
 import { ROBOTS_TXT, buildSitemapXml } from "../domain/discovery";
 
 // robots.txt is a static document: no datasets, no async work — serve it directly.
-export const robotsHandler = () => txtResponse(ROBOTS_TXT);
+export const robotsHandler = () => {
+  removeSetCookieHeader();
+  return txtResponse(ROBOTS_TXT);
+};
 
 // Include experience slugs from every language; the XML builder deduplicates canonical URLs.
 // Like the Markdown service, this effect declares its dataset requirement and leaves the layer
@@ -32,4 +36,10 @@ const sitemapDocument = Effect.gen(function* () {
   return sitemapResponse(buildSitemapXml(slugs));
 }).pipe(recoverDataFailure("[SITEMAP.XML]", sitemapUnavailableResponse), Effect.withSpan("sitemapDocument"));
 
-export const sitemapHandler = () => RuntimeServer.runPromise(Effect.provide(sitemapDocument, Datasets.layer));
+export const sitemapHandler = async () => {
+  try {
+    return await RuntimeServer.runPromise(Effect.provide(sitemapDocument, Datasets.layer));
+  } finally {
+    removeSetCookieHeader();
+  }
+};

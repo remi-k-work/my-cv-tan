@@ -1,12 +1,13 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-import { contactHead, educationHead, experienceHead, headLanguage, homeHead, routeHead, ROOT_HEAD } from "../domain/heads";
-import { fallbackHead } from "../domain/route-head";
+import { contactHead, educationHead, experienceHead, homeHead } from "../domain/page-head";
+import { headLanguage, rootHead, ROOT_HEAD, fallbackHead } from "../domain/root-head";
+import { routeHead } from "../domain/route-head";
 import { canonicalLink } from "../domain/link-tags";
 import { withLanguageParam } from "../domain/urls";
 import { STATIC_PAGES } from "../domain/pages";
 
-import { HOME_TITLE, PERSON_DESCRIPTION, SITE_DESCRIPTION, SITE_NAME, AUTHOR_URL } from "../domain/constants";
+import { PERSON_DESCRIPTION, SITE_DESCRIPTION, SITE_NAME, AUTHOR_URL } from "../domain/constants";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 
 // types
@@ -175,12 +176,16 @@ it("each card's alt describes the picture that card actually shows", () => {
   assert.strictEqual(contentOf(head, "og:image:alt"), "Screenshot of Full-Stack Developer");
   // twitter:image is the banner, so its alt names the banner
   assert.strictEqual(srcOf(head, "twitter:image"), "https://www.remiforge.dev/opengraph-image.jpg");
-  assert.strictEqual(contentOf(head, "twitter:image:alt"), `${SITE_NAME} — ${HOME_TITLE}`);
+  assert.strictEqual(contentOf(head, "twitter:image:alt"), "Portfolio collage showing web development skills and project screenshots");
 
   // A screenshot-less experience falls back to the banner on both cards, so both alts describe it
   const bare = experienceHead({ experience: { ...sampleExperience, imageName: "" }, preferredLanguage: "en" });
   assert.include(srcOf(bare, "og:image") ?? "", "opengraph-image.jpg");
-  assert.strictEqual(contentOf(bare, "og:image:alt"), `${SITE_NAME} — ${HOME_TITLE}`);
+  assert.strictEqual(contentOf(bare, "og:image:alt"), "Portfolio collage showing web development skills and project screenshots");
+
+  const polish = experienceHead({ experience: sampleExperience, preferredLanguage: "pl" });
+  assert.strictEqual(contentOf(polish, "og:image:alt"), "Zrzut ekranu przedstawiający Projekt osobisty: Full-Stack Developer");
+  assert.strictEqual(contentOf(polish, "twitter:image:alt"), "Kolaż portfolio przedstawiający umiejętności tworzenia stron i zrzuty projektów");
 
   // A screen-reader user hears a sentence, not a bare repeat of the title the card already shows
   assert.include(contentOf(head, "og:image:alt") ?? "", "Full-Stack Developer");
@@ -326,7 +331,8 @@ it("routeHead keeps a canonical noindex fallback when loader data is missing", (
     [{ rel: "canonical", href: "https://www.remiforge.dev/contact" }]
   );
   assert.include(JSON.stringify(fallback.meta), NOINDEX_FOLLOW);
-  assert.include(JSON.stringify(fallback.meta), SITE_DESCRIPTION);
+  assert.include(JSON.stringify(fallback.meta), '"title":"Remi Forge ● Page unavailable"');
+  assert.include(JSON.stringify(fallback.meta), "This page is temporarily unavailable.");
   // The fallback still publishes the site entities, just not the page's own graph.
   assert.isAbove(JSON.parse(fallback.scripts?.[0]?.children ?? "{}")["@graph"].length, 0);
 });
@@ -339,7 +345,8 @@ it("fallbackHead publishes a canonical noindex head with site entities", () => {
     [{ rel: "canonical", href: "https://www.remiforge.dev/contact" }]
   );
   assert.include(JSON.stringify(fallback.meta), NOINDEX_FOLLOW);
-  assert.include(JSON.stringify(fallback.meta), SITE_DESCRIPTION);
+  assert.include(JSON.stringify(fallback.meta), '"title":"Remi Forge ● Page unavailable"');
+  assert.include(JSON.stringify(fallback.meta), "This page is temporarily unavailable.");
   // The fallback publishes site entities (WebSite, Person, Organization) without a page graph
   const graph = JSON.parse(fallback.scripts?.[0]?.children ?? "{}");
   assert.isDefined(graph["@graph"].find((node: { "@type"?: string }) => node["@type"] === "WebSite"));
@@ -347,6 +354,60 @@ it("fallbackHead publishes a canonical noindex head with site entities", () => {
   assert.isDefined(graph["@graph"].find((node: { "@type"?: string }) => node["@type"] === "Organization"));
   // Exactly one JSON-LD block
   assert.strictEqual(fallback.scripts?.length, 1);
+});
+
+it("rootHead adds localized not-found metadata while retaining site-wide discovery links", () => {
+  const fallback = rootHead([{ loaderData: { preferredLanguage: "pl" }, status: "success" }, { status: "notFound" }]);
+
+  assert.include(JSON.stringify(fallback.meta), '"title":"Remi Forge ● Nie znaleziono"');
+  assert.include(JSON.stringify(fallback.meta), NOINDEX_FOLLOW);
+  assert.include(JSON.stringify(fallback.links), '"rel":"llms"');
+  assert.include(JSON.stringify(fallback.links), '"rel":"sitemap"');
+  assert.notInclude(JSON.stringify(fallback.links), '"rel":"canonical"');
+  assert.strictEqual(fallback.scripts?.length, 1);
+});
+
+it("rootHead recognizes TanStack's internal not-found marker", () => {
+  const fallback = rootHead([{ loaderData: { preferredLanguage: "pl" }, status: "success" }, { _notFound: true }]);
+
+  assert.include(JSON.stringify(fallback.meta), '"title":"Remi Forge ● Nie znaleziono"');
+  assert.include(JSON.stringify(fallback.meta), NOINDEX_FOLLOW);
+  assert.notInclude(JSON.stringify(fallback.links), '"rel":"canonical"');
+});
+
+it("routeHead leaves not-found metadata to the root boundary, even with stale loader data", () => {
+  let builderCalled = false;
+  const build = () => {
+    builderCalled = true;
+    return homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" });
+  };
+
+  const notFound = routeHead({ title: "Stale page data" }, [{ loaderData: { preferredLanguage: "pl" }, status: "error", _notFound: true }], build, "/missing");
+  const rootFallback = rootHead([{ loaderData: { preferredLanguage: "pl" }, status: "success" }, { status: "notFound" }]);
+
+  assert.deepStrictEqual(notFound, { meta: [], links: [], scripts: [] });
+  assert.isFalse(builderCalled);
+  assert.include(JSON.stringify(rootFallback.meta), '"title":"Remi Forge ● Nie znaleziono"');
+  assert.include(JSON.stringify(rootFallback.meta), "Nie znaleziono żądanej strony.");
+  assert.include(JSON.stringify(rootFallback.meta), NOINDEX_FOLLOW);
+});
+
+it("routeHead uses a noindex unavailable head instead of stale loader data after an error", () => {
+  let builderCalled = false;
+  const fallback = routeHead(
+    { title: "Stale page data" },
+    [{ loaderData: { preferredLanguage: "pl" }, status: "error" }],
+    () => {
+      builderCalled = true;
+      return pageHeadFromInput("Stale page data", "pl");
+    },
+    "/missing"
+  );
+
+  assert.isFalse(builderCalled);
+  assert.include(JSON.stringify(fallback.meta), '"title":"Remi Forge ● Strona niedostępna"');
+  assert.include(JSON.stringify(fallback.meta), NOINDEX_FOLLOW);
+  assert.deepStrictEqual(fallback.links, [{ rel: "canonical", href: "https://www.remiforge.dev/missing" }]);
 });
 
 it("routeHead delegates to the builder when loader data is present, resolving language from matches", () => {

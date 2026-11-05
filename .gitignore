@@ -2,6 +2,7 @@
 /_scratchpad
 .env
 loop.ps1
+loop-codex.ps1
 opencode.json
 
 # dependencies

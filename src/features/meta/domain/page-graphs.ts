@@ -12,7 +12,8 @@ import { articleNode, imageObject, personEdge, webPageNode } from "./nodes";
 import { absoluteUrl } from "./urls";
 
 // constants
-import { CONTACT_PATH, EDUCATION_PATH, HOME_URL, PERSON_ID, PROFILE_ID, PUBLISHER_ID, SITE_LANGUAGES } from "./constants";
+import { CONTACT_PATH, EDUCATION_PATH, HOME_URL, PERSON_ID, PROFILE_ID, PUBLISHER_ID } from "./constants";
+import { SITE_LANGUAGES } from "@/domain/constants";
 
 // types
 import type { EducationList } from "@/features/education/domain/models";

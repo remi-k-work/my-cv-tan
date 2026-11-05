@@ -6,6 +6,10 @@
 import { Array, Option, Schema, pipe } from "effect";
 import { PreferredLanguage } from "@/domain/models";
 import { NOINDEX_FOLLOW } from "@/domain/http";
+import { matchPreferredLanguage } from "@/domain/helpers";
+import { absoluteUrl } from "./urls";
+import { canonicalLink } from "./link-tags";
+import { siteGraphScript } from "./merge";
 
 // constants
 import { AUTHOR_URL, AVATAR, BRANDED_TITLE, DEFAULT_LANGUAGE, HOME_TITLE, SITE_DESCRIPTION, SITE_NAME, SOCIAL_LINKS } from "./constants";
@@ -14,7 +18,7 @@ import { AUTHOR_URL, AVATAR, BRANDED_TITLE, DEFAULT_LANGUAGE, HOME_TITLE, SITE_D
 import { authorLink, AI_INDEX_LINKS, LLMS_DISCOVERY_LINK, SITEMAP_LINK } from "./link-tags";
 
 // types
-import type { LinkTag, MatchChain, MetaTag } from "./models";
+import type { LinkTag, MatchChain, MetaTag, PageHead } from "./models";
 
 interface RootHeadContract {
   readonly meta: ReadonlyArray<MetaTag>;
@@ -55,3 +59,42 @@ export const ROOT_HEAD = {
     ...AI_INDEX_LINKS,
   ],
 } satisfies RootHeadContract;
+
+export const isNotFoundMatch = (match: MatchChain[number]): boolean => match.status === "notFound" || match._notFound === true;
+
+// Fallback documents stay out of search results while identifying the failed route and language.
+export const fallbackHead = (pagePath: string | undefined, preferredLanguage: PreferredLanguage = DEFAULT_LANGUAGE, notFound = false): PageHead => {
+  const title = matchPreferredLanguage(
+    preferredLanguage,
+    notFound ? "Not Found" : "Page unavailable",
+    notFound ? "Nie znaleziono" : "Strona niedostępna"
+  );
+  const description = matchPreferredLanguage(
+    preferredLanguage,
+    notFound ? "The requested page could not be found." : "This page is temporarily unavailable.",
+    notFound ? "Nie znaleziono żądanej strony." : "Ta strona jest tymczasowo niedostępna."
+  );
+
+  return {
+    meta: [
+      { title: BRANDED_TITLE(title) },
+      { name: "robots", content: NOINDEX_FOLLOW },
+      { name: "description", content: description },
+    ],
+    links: pagePath === undefined ? [] : [canonicalLink(absoluteUrl(pagePath))],
+    scripts: [siteGraphScript],
+  };
+};
+
+// The root boundary renders not-found pages even when a route-level head callback is skipped.
+export const rootHead = (matches: MatchChain): PageHead => {
+  if (!matches.some(isNotFoundMatch)) return { meta: [...ROOT_HEAD.meta], links: [...ROOT_HEAD.links], scripts: [] };
+
+  const fallback = fallbackHead(undefined, headLanguage(matches), true);
+
+  return {
+    meta: [...ROOT_HEAD.meta, ...fallback.meta],
+    links: [...ROOT_HEAD.links, ...fallback.links],
+    scripts: fallback.scripts,
+  };
+};

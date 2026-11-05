@@ -13,12 +13,12 @@ import {
   PERSON_ID,
   PUBLISHER_ID,
   SITE_DESCRIPTION,
-  SITE_LANGUAGES,
   SITE_NAME,
   SOCIAL_LINKS,
   WEBSITE_ID,
 } from "./constants";
 import { imageObject } from "./nodes";
+import { SITE_LANGUAGES } from "@/domain/constants";
 
 // types
 import type { JsonLdNode } from "./models";

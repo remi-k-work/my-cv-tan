@@ -49,10 +49,9 @@ export const HOME_COUNTRY_NAME = "Poland";
 
 // --- Images ---
 
-// Standard 1200x630 Open Graph share image.
+// Standard 1200x630 Open Graph share image; alt text is resolved with each page's language.
 export const GLOBAL_SOCIAL_IMAGE = {
   src: `${SITE_URL}/opengraph-image.jpg`,
-  alt: `${SITE_NAME} — ${HOME_TITLE}`,
   mime: "image/jpeg",
   width: 1200,
   height: 630,
@@ -64,9 +63,6 @@ export const AVATAR = { src: `${SITE_URL}/avatar.jpg`, width: 288, height: 288 }
 // --- Languages ---
 
 export const DEFAULT_LANGUAGE = "en" as const;
-
-// Content languages supported across metadata and discovery documents.
-export const SITE_LANGUAGES = ["en", "pl"] as const;
 
 export const SITE_LANGUAGE_NAMES = {
   en: "English",

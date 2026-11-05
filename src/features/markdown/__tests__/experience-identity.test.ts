@@ -9,7 +9,7 @@ import { assert, it } from "@effect/vitest";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { experienceSeo } from "@/features/meta/domain/experience-seo";
-import { experienceHead } from "@/features/meta/domain/heads";
+import { experienceHead } from "@/features/meta/domain/page-head";
 import { ExperienceIdentity } from "@/features/experience/ui/experience-identity";
 import { buildExperienceMd } from "../domain/twins";
 

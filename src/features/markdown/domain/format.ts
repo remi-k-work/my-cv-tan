@@ -47,7 +47,7 @@ export const escapeMd = (text: string) => {
   return result.trim();
 };
 
-export const escapeMdInline = (text: string) => escapeMd(text.replace(/\n+/g, " "));
+export const escapeMdInline = (text: string) => escapeMd(text.replace(/[\r\n]+/g, " "));
 export const demoteHeadings = (markdown: string) => markdown.replace(DEMOTE_HEADINGS, (hashes) => `${hashes}##`);
 
 const FRONTMATTER_DELIMITER = "---";

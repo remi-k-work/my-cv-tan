@@ -6,7 +6,7 @@ import { Outlet, createRootRoute, HeadContent, Scripts } from "@tanstack/react-r
 // services, features, and other libraries
 import { cn } from "@/lib/utils";
 import { getLocale, getTranslationsSnapshot, useGT } from "gt-tanstack-start";
-import { ROOT_HEAD, headLanguage } from "@/features/meta/domain/heads";
+import { rootHead, headLanguage } from "@/features/meta/domain/root-head";
 import { documentHeaders } from "@/features/meta/services/headers";
 import { preferredLanguageFromLocale } from "@/domain/helpers";
 
@@ -16,6 +16,7 @@ import { AtomRegistryProvider } from "@/ui/atom-registry-provider";
 import { Toastify } from "@/ui/toastify";
 import { Header } from "@/ui/header";
 import { Skills } from "@/ui/skills";
+import { NotFoundPage } from "@/ui/not-found-page";
 
 // assets
 // Only the two weights the design uses (regular body copy + semibold accents); the full
@@ -27,7 +28,8 @@ import "@fontsource/outfit/600.css";
 import type { ReactNode } from "react";
 
 export const Route = createRootRoute({
-  head: () => ROOT_HEAD,
+  head: ({ matches }) => rootHead(matches),
+  notFoundComponent: NotFoundPage,
   // The HTML document carries the same reuse signal and AI-index advertisements as the
   // Markdown twins, the indexes and robots.txt, so a crawler reading only the response headers
   // — never the <head> or the discovery documents — still learns the site's ingestion policy.

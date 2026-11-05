@@ -2,23 +2,21 @@
 
 // services, features, and other libraries
 import { Context, Effect, Layer, Option } from "effect";
-import { removeResponseHeader } from "@tanstack/react-start/server";
 import { Datasets } from "@/features/data/services/datasets";
-import { requestPreferredLanguage } from "@/features/data/domain/helpers";
+import { requestPreferredLanguage } from "@/features/data/services/request-language";
 import { recoverDataFailure } from "@/features/data/domain/required";
 import { experienceFromList } from "@/features/experience/domain/helpers";
 import { DEFAULT_LANGUAGE } from "@/features/meta/domain/constants";
 import { absoluteUrl, experienceMarkdownPath, experiencePath } from "@/features/meta/domain/urls";
 import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/link-tags";
 import { discoveryTxtResponse, txtUnavailableResponse } from "@/features/meta/services/responses";
-import { mdNotFoundResponse, mdResponse, mdUnavailableResponse } from "./responses";
+import { mdNotFoundResponse, mdResponse, mdUnavailableResponse, pinCacheVariant } from "./responses";
 
 // domain
 import { buildExperienceMd, buildNotFoundMd, unavailableMarkdownBody, translateSource } from "../domain/twins";
 import { CONTACT_TWIN, EDUCATION_TWIN, HOME_TWIN } from "../domain/catalogue";
 import { buildLlmsFullTxt, buildLlmsTxt, unavailableIndexBody } from "../domain/indexes";
 import { parseLangParam, slugFromMdPathname } from "../domain/requests";
-import { withoutNegotiationVary } from "../domain/cache-variant";
 import { translateForLanguage } from "@/lib/gt-translations";
 import { resolveContactTwinData, resolveEducationTwinData, resolveHomeTwinData } from "./twin-data";
 
@@ -33,31 +31,12 @@ import type { TwinDataResolver } from "./twin-data";
 type MachineDocumentBody = (request: Request, context: LocalizedMdInput) => Effect.Effect<Response, RequiredDataError>;
 type MachineDocument = (request: Request) => Effect.Effect<Response, never>;
 
-// Explicit language pins are safe to cache as a single variant: the URL alone selects the
-// document, so the vary tokens that name the negotiation inputs are dropped, while any other
-// Vary the runtime added still governs the cached response. The ambient cookie strip is
-// best-effort: only the framework runtime owns that state, and a caller without a Start event still
-// gets a correct response, because the returned Response itself never carries one.
-const pinCacheVariant = (response: Response): Response => {
-  const headers = new Headers(response.headers);
-  const vary = withoutNegotiationVary(headers.get("vary"));
-
-  if (vary !== null) headers.set("vary", vary);
-  else headers.delete("vary");
-
-  try {
-    removeResponseHeader("set-cookie");
-  } catch {
-    // No Start event: no ambient response state to strip.
-  }
-
-  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
-};
-
 const translateFor = (preferredLanguage: PreferredLanguage) =>
-  Effect.tryPromise(() => translateForLanguage(preferredLanguage)).pipe(
-    Effect.catch((error) => Effect.logError(`[MARKDOWN]: translation snapshot unavailable for "${preferredLanguage}"`, error).pipe(Effect.as(translateSource)))
-  );
+  preferredLanguage === DEFAULT_LANGUAGE
+    ? Effect.succeed(translateSource)
+    : Effect.tryPromise(() => translateForLanguage(preferredLanguage)).pipe(
+        Effect.catch((error) => Effect.logError(`[MARKDOWN]: translation snapshot unavailable for "${preferredLanguage}"`, error).pipe(Effect.as(translateSource)))
+      );
 
 const documentResponse = (render: MachineDocumentBody): MachineDocument =>
   Effect.fnUntraced(function* (request: Request) {

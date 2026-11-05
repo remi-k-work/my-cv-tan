@@ -1,32 +1,28 @@
-// Router head wrapper: resolves language from the TanStack match chain and handles absent loader data.
-// This is a route/infrastructure concern, not a page-head builder, so it lives apart from page-head.
+// Route adapter for loader-backed heads: resolve locale, suppress stale metadata on failure, and
+// leave not-found metadata to the root boundary. Page-specific SEO stays in page-head.
 import { PreferredLanguage } from "@/domain/models";
-import { NOINDEX_FOLLOW } from "@/domain/http";
-import { absoluteUrl } from "./urls";
-import { canonicalLink } from "./link-tags";
-import { headLanguage } from "./root-head";
-import { siteGraphScript } from "./merge";
-
-// constants
-import { SITE_DESCRIPTION } from "./constants";
+import { fallbackHead, headLanguage, isNotFoundMatch } from "./root-head";
 
 // types
 import type { MatchChain, PageHead } from "./models";
 
-// Fallback head when loader data is missing: keeps canonical and noindex while preserving site entities.
-export const fallbackHead = (pagePath: string): PageHead => ({
-  meta: [
-    { name: "robots", content: NOINDEX_FOLLOW },
-    { name: "description", content: SITE_DESCRIPTION },
-  ],
-  links: [canonicalLink(absoluteUrl(pagePath))],
-  scripts: [siteGraphScript],
-});
+// constants
+const EMPTY_HEAD: PageHead = { meta: [], links: [], scripts: [] };
 
-// Route head wrapper resolving language from the match chain and handling absent loader data.
 export const routeHead = <TData>(
   loaderData: TData,
   matches: MatchChain,
   build: (loaderData: NonNullable<TData>, preferredLanguage: PreferredLanguage) => PageHead,
   fallbackPath: string
-): PageHead => (loaderData == null ? fallbackHead(fallbackPath) : build(loaderData, headLanguage(matches)));
+): PageHead => {
+  // The root route owns not-found metadata, including for a matched route. Do not let a stale
+  // loader payload override its noindex fallback with the previous page's canonical or graph.
+  if (matches.some(isNotFoundMatch)) return EMPTY_HEAD;
+
+  // Failed revalidation can leave loaderData populated. A failure head must not reuse that data.
+  if (loaderData == null || matches.some(({ status }) => status === "error")) {
+    return fallbackHead(fallbackPath, headLanguage(matches));
+  }
+
+  return build(loaderData, headLanguage(matches));
+};

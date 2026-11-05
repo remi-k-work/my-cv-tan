@@ -2,12 +2,25 @@
 // Built once from a SocialMetaInput so the HTML <head>, JSON-LD graph, and Markdown twins
 // never disagree about a page's title, description, image, or language.
 
+// services, features, and other libraries
+import { matchPreferredLanguage } from "@/domain/helpers";
+
 // types
 import type { PreferredLanguage } from "@/domain/models";
 import type { MetaTag, SocialImage } from "./models";
 
 // constants
-import { AUTHOR_URL, GLOBAL_SOCIAL_IMAGE, OPEN_GRAPH_LOCALES, PUBLISHER_URL, SITE_LANGUAGES, SITE_NAME } from "./constants";
+import { AUTHOR_URL, GLOBAL_SOCIAL_IMAGE, OPEN_GRAPH_LOCALES, PUBLISHER_URL, SITE_NAME } from "./constants";
+import { SITE_LANGUAGES } from "@/domain/constants";
+
+export const globalSocialImage = (preferredLanguage: PreferredLanguage): SocialImage => ({
+  ...GLOBAL_SOCIAL_IMAGE,
+  alt: matchPreferredLanguage(
+    preferredLanguage,
+    "Portfolio collage showing web development skills and project screenshots",
+    "Kolaż portfolio przedstawiający umiejętności tworzenia stron i zrzuty projektów"
+  ),
+});
 
 export interface SocialMetaInput {
   readonly title: string;
@@ -59,5 +72,5 @@ export const socialMeta = ({
   { name: "twitter:description", content: description },
   // X rejects WebP, so the Twitter card always uses the JPEG banner instead of the WebP screenshot.
   { name: "twitter:image", content: GLOBAL_SOCIAL_IMAGE.src },
-  { name: "twitter:image:alt", content: GLOBAL_SOCIAL_IMAGE.alt },
+  { name: "twitter:image:alt", content: globalSocialImage(preferredLanguage).alt },
 ];

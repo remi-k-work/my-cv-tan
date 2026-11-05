@@ -4,7 +4,7 @@ import { haveSameExperienceSlugs } from "@/features/experience/domain/helpers";
 import { ExperienceList } from "@/features/experience/domain/models";
 import { EducationList } from "@/features/education/domain/models";
 import { PageTitlesList } from "@/domain/models";
-import { requestPreferredLanguage } from "@/features/data/domain/helpers";
+import { requestPreferredLanguage } from "./request-language";
 
 // assets
 import pageTitlesEn from "@/assets/data/en/page-titles.json";

@@ -11,7 +11,10 @@ export type PageTitlesList = typeof PageTitlesList.Type;
 // pure builders stay testable while the service decides where translations come from
 export type Translate = (source: string) => string;
 
-export const PreferredLanguage = Schema.Literals(["en", "pl"]);
+// constants
+import { SITE_LANGUAGES } from "./constants";
+
+export const PreferredLanguage = Schema.Literals(SITE_LANGUAGES);
 
 const PagePath = Schema.Literals(["/", "/education", "/contact"]);
 const PageTitle = Schema.Struct({

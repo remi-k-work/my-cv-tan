@@ -6,7 +6,7 @@
 import { assert, it } from "@effect/vitest";
 
 // domain
-import { socialMeta } from "../social-meta";
+import { globalSocialImage, socialMeta } from "../social-meta";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
@@ -14,7 +14,7 @@ import type { SocialImage } from "../models";
 import type { SocialMetaInput } from "../social-meta";
 
 // constants
-import { AUTHOR_URL, GLOBAL_SOCIAL_IMAGE, HOME_TITLE, PUBLISHER_URL, SITE_NAME } from "../constants";
+import { AUTHOR_URL, GLOBAL_SOCIAL_IMAGE, PUBLISHER_URL, SITE_NAME } from "../constants";
 
 const language: PreferredLanguage = "en";
 
@@ -109,5 +109,6 @@ it("socialMeta publishes Twitter Card tags with the JPEG banner for X", () => {
   assert.strictEqual(tagContent(tags, "name", "twitter:description"), "Description.");
   // X rejects WebP, so the Twitter image is always the global JPEG banner
   assert.strictEqual(tagContent(tags, "name", "twitter:image"), GLOBAL_SOCIAL_IMAGE.src);
-  assert.strictEqual(tagContent(tags, "name", "twitter:image:alt"), `${SITE_NAME} — ${HOME_TITLE}`);
+  assert.strictEqual(tagContent(tags, "name", "twitter:image:alt"), "Portfolio collage showing web development skills and project screenshots");
+  assert.strictEqual(globalSocialImage("pl").alt, "Kolaż portfolio przedstawiający umiejętności tworzenia stron i zrzuty projektów");
 });

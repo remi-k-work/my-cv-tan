@@ -11,8 +11,21 @@ import type { PreferredLanguage } from "@/domain/models";
 import { AI_INDEX_LINKS, canonicalLink, joinLinkHeader, languageVariantLinks } from "@/features/meta/domain/link-tags";
 import { markdownTwinUrl } from "@/features/meta/domain/urls";
 import { CACHEABLE_HEADERS, documentHeaders, INDEXABLE_HEADERS, UNAVAILABLE_HEADERS } from "@/features/meta/services/headers";
+import { withoutNegotiationVary } from "../domain/cache-variant";
 
 const MD_CONTENT_TYPE = "text/markdown; charset=utf-8";
+
+// An explicit language pin makes the URL the complete cache key. Keep unrelated Vary tokens,
+// such as compression, while removing only the inputs the pin replaces.
+export const pinCacheVariant = (response: Response): Response => {
+  const headers = new Headers(response.headers);
+  const vary = withoutNegotiationVary(headers.get("vary"));
+
+  if (vary !== null) headers.set("vary", vary);
+  else headers.delete("vary");
+
+  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+};
 
 // A twin is a language-negotiated document: everything `documentHeaders` carries, plus its media type.
 const markdownHeaders = (preferredLanguage: PreferredLanguage) => ({

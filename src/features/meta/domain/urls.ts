@@ -3,7 +3,6 @@
 
 // services, features, and other libraries
 import { Option, Schema, String, pipe } from "effect";
-import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain/constants";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
@@ -11,6 +10,7 @@ import type { SocialImageFacts } from "./models";
 
 // constants
 import { CV_EN_HREF, CV_PL_HREF, SITE_URL } from "./constants";
+import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain/constants";
 
 // --- URL helpers ---
 
@@ -37,9 +37,8 @@ export const markdownTwinUrl = (mdPath: string, preferredLanguage: PreferredLang
 // Resolves CV download link based on visitor language.
 export const cvPdfHref = (preferredLanguage: PreferredLanguage) => (preferredLanguage === "pl" ? CV_PL_HREF : CV_EN_HREF);
 
-// `encodeURIComponent` already percent-encodes parentheses, but `encodeParens` is applied on top
-// anywhere a path is embedded in Markdown (or XML) so a `)` can never terminate a link destination
-// and a `(` can never open an unbalanced one, regardless of how the URL was produced.
+// `encodeURIComponent` leaves parentheses unescaped, so apply `encodeParens` wherever a path is
+// embedded in Markdown or XML to keep them from changing the destination's structure.
 export const encodeParens = (value: string) => value.replace(/\(/g, "%28").replace(/\)/g, "%29");
 
 // Resolves experience route and markdown twin path from slug.

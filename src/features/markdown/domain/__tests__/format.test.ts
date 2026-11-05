@@ -145,5 +145,12 @@ it("escapeMd neutralizes structure-building characters everywhere", () => {
 
 it("escapeMdInline flattens newlines before escaping", () => {
   assert.strictEqual(escapeMdInline("Design\n- Systems"), "Design - Systems");
+  assert.strictEqual(escapeMdInline("Design\r\n- Systems"), "Design - Systems");
+  assert.strictEqual(escapeMdInline("Design\r- Systems"), "Design - Systems");
   assert.strictEqual(escapeMdInline("  spaced   out\nvalue  "), "spaced   out value");
+});
+
+it("escapeMd preserves literal backslashes while escaping adjacent Markdown punctuation", () => {
+  assert.strictEqual(escapeMd(String.raw`C:\src\test`), String.raw`C:\\src\\test`);
+  assert.strictEqual(escapeMdInline(String.raw`literal \* text`), String.raw`literal \\\* text`);
 });

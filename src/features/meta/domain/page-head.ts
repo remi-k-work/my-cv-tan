@@ -5,22 +5,24 @@
 // services, features, and other libraries
 import { Option } from "effect";
 import { INDEXABLE_ROBOTS } from "@/domain/http";
+import { matchPreferredLanguage } from "@/domain/helpers";
 import { canonicalLink, markdownAlternateLink } from "./link-tags";
 import { experienceSeo } from "./experience-seo";
 import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd } from "./page-graphs";
 import { jsonLdGraph } from "./merge";
 import { siteNodes } from "./entities";
-import { socialMeta } from "./social-meta";
+import { globalSocialImage, socialMeta } from "./social-meta";
 import { staticPageCopy } from "./pages";
 
 // types
 import type { ExperienceHeadInput, JsonLdNodes, PageHead, SocialImage, SocialImageFacts, StaticPageCopy, StaticPageHeadInput } from "./models";
 import type { SocialMetaInput } from "./social-meta";
+import type { PreferredLanguage } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
 
 // constants
-import { BRANDED_TITLE, CONTACT_PATH, EDUCATION_PATH, GLOBAL_SOCIAL_IMAGE, HOME_PATH } from "./constants";
+import { BRANDED_TITLE, CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "./constants";
 
 // Shared page head layout merging title, indexing directives, social cards, links and graph.
 // `social` carries the Open Graph / Twitter fields rendered by `socialMeta`; the remaining
@@ -50,10 +52,13 @@ export const pageHead = (spec: PageHeadSpec): PageHead => {
   };
 };
 
-const experienceCardImage = (headline: string, image: Option.Option<SocialImageFacts>): SocialImage =>
+const experienceCardImage = (headline: string, image: Option.Option<SocialImageFacts>, preferredLanguage: PreferredLanguage): SocialImage =>
   Option.match(image, {
-    onNone: () => GLOBAL_SOCIAL_IMAGE,
-    onSome: (screenshot) => ({ ...screenshot, alt: `Screenshot of ${headline}` }),
+    onNone: () => globalSocialImage(preferredLanguage),
+    onSome: (screenshot) => ({
+      ...screenshot,
+      alt: matchPreferredLanguage(preferredLanguage, `Screenshot of ${headline}`, `Zrzut ekranu przedstawiający ${headline}`),
+    }),
   });
 
 export const experienceHead = (input: ExperienceHeadInput): PageHead => {
@@ -64,7 +69,7 @@ export const experienceHead = (input: ExperienceHeadInput): PageHead => {
       title: seo.headline,
       description: seo.description,
       canonical: seo.canonical,
-      image: experienceCardImage(seo.headline, seo.screenshot),
+      image: experienceCardImage(seo.headline, seo.screenshot, seo.preferredLanguage),
       preferredLanguage: seo.preferredLanguage,
       ogType: "article",
       articleSection: seo.experience.type === "e" ? "employment" : "portfolio",
@@ -81,7 +86,7 @@ const staticPageHead = (copy: StaticPageCopy, graph: JsonLdNodes): PageHead =>
       title: copy.seoTitle,
       description: copy.description,
       canonical: copy.canonical,
-      image: GLOBAL_SOCIAL_IMAGE,
+      image: globalSocialImage(copy.preferredLanguage),
       preferredLanguage: copy.preferredLanguage,
     },
     markdownPath: copy.mdHref,
