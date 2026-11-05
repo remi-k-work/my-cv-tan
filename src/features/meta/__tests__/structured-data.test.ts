@@ -278,7 +278,8 @@ it("employment details use OrganizationRole linked to the person and canonical W
   assert.deepStrictEqual(role?.member, { "@id": "https://www.remiforge.dev/#person" });
   assert.deepStrictEqual(role?.mainEntityOfPage, { "@id": "https://www.remiforge.dev/sample-job" });
   assert.strictEqual(organization?.name, "Sample Co");
-  assert.deepStrictEqual(organization?.member, { "@id": "https://www.remiforge.dev/sample-job#organization-role" });
+  // The employer claims the person; the OrganizationRole is reached through the Article's subject
+  assert.deepStrictEqual(organization?.member, { "@id": "https://www.remiforge.dev/#person" });
   // The reciprocal Person edge: "works for" is readable from the person side of the graph too
   assert.deepStrictEqual(personOf(parsed)?.worksFor, { "@id": "https://www.remiforge.dev/sample-job#organization" });
   assert.notInclude(JSON.stringify(role), "startDate");

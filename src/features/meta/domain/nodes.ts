@@ -20,7 +20,6 @@ interface ArticleNodeInput {
   readonly preferredLanguage: PreferredLanguage;
   readonly about: string;
   readonly mainEntityOfPage: string;
-  readonly datePublished?: string;
 }
 
 interface WebPageNodeInput {
@@ -33,7 +32,6 @@ interface WebPageNodeInput {
   readonly breadcrumb?: boolean;
   readonly mainEntity?: JsonLdNode;
   readonly primaryImageOfPage?: JsonLdNode;
-  readonly datePublished?: string;
 }
 
 interface CollectionNodeInput {
@@ -46,7 +44,7 @@ interface CollectionNodeInput {
 
 // --- Node builders ---
 
-export const articleNode = ({ id, headline, description, preferredLanguage, about, mainEntityOfPage, datePublished }: ArticleNodeInput): JsonLdNode => ({
+export const articleNode = ({ id, headline, description, preferredLanguage, about, mainEntityOfPage }: ArticleNodeInput): JsonLdNode => ({
   "@type": "Article",
   "@id": id,
   headline,
@@ -55,7 +53,6 @@ export const articleNode = ({ id, headline, description, preferredLanguage, abou
   author: { "@id": PERSON_ID },
   publisher: { "@id": PUBLISHER_ID },
   about: { "@id": about },
-  ...(datePublished !== undefined ? { datePublished } : {}),
   mainEntityOfPage: { "@id": mainEntityOfPage },
 });
 
@@ -69,7 +66,6 @@ export const webPageNode = ({
   breadcrumb: hasBreadcrumb,
   mainEntity,
   primaryImageOfPage,
-  datePublished,
 }: WebPageNodeInput): JsonLdNode => ({
   "@type": type,
   "@id": id,
@@ -81,7 +77,6 @@ export const webPageNode = ({
   ...(hasBreadcrumb ? { breadcrumb: { "@id": `${id}#breadcrumb` } } : {}),
   ...(mainEntity !== undefined ? { mainEntity } : {}),
   ...(primaryImageOfPage !== undefined ? { primaryImageOfPage } : {}),
-  ...(datePublished !== undefined ? { datePublished } : {}),
 });
 
 export const collectionNode = ({ id, name, preferredLanguage, parts, url }: CollectionNodeInput): JsonLdNode => ({

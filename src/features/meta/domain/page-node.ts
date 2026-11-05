@@ -22,7 +22,6 @@ export const pageGraph = ({
   preferredLanguage,
   mainEntity,
   primaryImageOfPage,
-  datePublished,
 }: {
   readonly type: PageNodeType;
   readonly path: string;
@@ -31,7 +30,6 @@ export const pageGraph = ({
   readonly preferredLanguage: PreferredLanguage;
   readonly mainEntity?: JsonLdNode;
   readonly primaryImageOfPage?: JsonLdNode;
-  readonly datePublished?: string;
 }): JsonLdNodes => {
   const id = absoluteUrl(path);
 
@@ -46,7 +44,6 @@ export const pageGraph = ({
       breadcrumb: true,
       mainEntity,
       primaryImageOfPage,
-      datePublished,
     }),
     breadcrumb(preferredLanguage, id, name),
   ];

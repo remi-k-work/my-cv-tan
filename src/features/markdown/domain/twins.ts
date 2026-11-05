@@ -157,7 +157,7 @@ export const buildExperienceMd = ({ experience, preferredLanguage, translate }: 
       type: experience.type === "e" ? "work-experience" : "project",
       role,
       company,
-      datePublished: year,
+      year,
       skills: skillsUsed.join(", "),
     }),
     mdHeading(1, headline),

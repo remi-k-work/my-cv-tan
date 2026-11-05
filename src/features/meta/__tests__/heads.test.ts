@@ -97,11 +97,11 @@ it("experienceHead omits unsupported publication dates and keyword meta", () => 
   assert.notInclude(dated, '"name":"keywords"');
   assert.notInclude(dated, "article:tag");
 
-  // But datePublished IS a factual freshness signal in the JSON-LD graph, matching the Markdown
-  // twin's frontmatter. AI crawlers can cite it without parsing the body.
+  // The authored year is a display string ("Mar 2026", "2005 – 2007", "Too Long"), not an ISO
+  // date, so it is never published as schema.org datePublished. It stays a factual "year" field in
+  // the Markdown twin instead of a freshness claim the graph cannot substantiate.
   const graph = JSON.parse(head.scripts?.[0]?.children ?? "{}");
-  const webPage = graph["@graph"].find((node: { "@type"?: string }) => node["@type"] === "WebPage");
-  assert.strictEqual(webPage?.datePublished, "Mar 2026");
+  assert.notInclude(JSON.stringify(graph), "datePublished");
 
   const undated = JSON.stringify(experienceHead({ experience: { ...sampleExperience, year: "Too Long" }, preferredLanguage: "en" }).meta);
   assert.notInclude(undated, "article:published_time");
@@ -235,11 +235,12 @@ it("localized metadata uses authored SEO copy and emits canonical plus Markdown 
   assert.include(html, '"content":"pl_PL"');
   assert.include(html, "https://www.remiforge.dev/index.md");
   // The HTML pages are language-negotiated from one URL, so hreflang alternates must not claim
-  // distinct documents; only the canonical, the Markdown twin and the llms discovery link are advertised
+  // distinct documents; a leaf page advertises only its canonical and the Markdown twin — the
+  // site-wide discovery and identity links are the root head's concern.
   assert.notInclude(html, "hrefLang");
   assert.deepStrictEqual(
     head.links?.map(({ rel }) => rel),
-    ["canonical", "alternate", "llms"]
+    ["canonical", "alternate"]
   );
   assert.strictEqual(head.links?.[0]?.href, "https://www.remiforge.dev/");
   // The Polish page advertises the Polish twin, not a negotiated variant
@@ -268,20 +269,24 @@ it("og:url is byte-equal to the canonical link on every page kind", () => {
   }
 });
 
-it("every page head publishes the llms discovery link, and article pages publish the author link", () => {
-  // rel="llms" lets AI crawlers find the index from HTTP headers alone (https://llmstxt.com)
+it("the root head publishes the site-wide discovery and author links exactly once", () => {
+  // rel="llms" lets AI crawlers find the index from HTTP headers alone (https://llmstxt.com).
+  // The root declares it once for the whole site; a leaf page that restated it would only emit a
+  // byte-identical duplicate the router then has to dedupe.
+  assert.include(JSON.stringify(ROOT_HEAD.links), '"rel":"llms"');
+  assert.include(JSON.stringify(ROOT_HEAD.links), "https://www.remiforge.dev/llms.txt");
+  // rel="author" gives parsers that don't read OpenGraph a followable profile URL (GEO attribution)
+  assert.include(JSON.stringify(ROOT_HEAD.links), '"rel":"author"');
+  assert.include(JSON.stringify(ROOT_HEAD.links), "https://www.remiforge.dev/");
+
+  // Pages contribute only their own canonical and Markdown alternate; nothing site-wide is repeated
   for (const head of [
     homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" }),
     experienceHead({ experience: sampleExperience, preferredLanguage: "en" }),
   ]) {
-    assert.include(JSON.stringify(head.links), '"rel":"llms"');
-    assert.include(JSON.stringify(head.links), "https://www.remiforge.dev/llms.txt");
+    assert.notInclude(JSON.stringify(head.links), '"rel":"llms"');
+    assert.notInclude(JSON.stringify(head.links), '"rel":"author"');
   }
-  // rel="author" gives parsers that don't read OpenGraph a followable profile URL (GEO attribution)
-  // Only article-like pages publish it.
-  const detail = experienceHead({ experience: sampleExperience, preferredLanguage: "en" });
-  assert.include(JSON.stringify(detail.links), '"rel":"author"');
-  assert.include(JSON.stringify(detail.links), "https://www.remiforge.dev/");
 });
 
 it("experience URL construction percent-encodes one slug consistently in canonical, social, alternate and JSON-LD URLs", () => {

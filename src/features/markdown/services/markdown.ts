@@ -8,7 +8,7 @@ import { requestPreferredLanguage } from "@/features/data/domain/helpers";
 import { recoverDataFailure } from "@/features/data/domain/required";
 import { experienceFromList } from "@/features/experience/domain/helpers";
 import { DEFAULT_LANGUAGE } from "@/features/meta/domain/constants";
-import { absoluteUrl, experienceMarkdownPath, experiencePath, parseLangParam, slugFromMdPathname } from "@/features/meta/domain/urls";
+import { absoluteUrl, experienceMarkdownPath, experiencePath } from "@/features/meta/domain/urls";
 import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/link-tags";
 import { discoveryTxtResponse, txtUnavailableResponse } from "@/features/meta/services/http";
 import { mdNotFoundResponse, mdResponse, mdUnavailableResponse } from "./http";
@@ -17,6 +17,8 @@ import { mdNotFoundResponse, mdResponse, mdUnavailableResponse } from "./http";
 import { buildExperienceMd, buildNotFoundMd, unavailableMarkdownBody, translateSource } from "../domain/twins";
 import { CONTACT_TWIN, EDUCATION_TWIN, HOME_TWIN } from "../domain/catalogue";
 import { buildLlmsFullTxt, buildLlmsTxt, unavailableIndexBody } from "../domain/indexes";
+import { parseLangParam, slugFromMdPathname } from "../domain/requests";
+import { withoutNegotiationVary } from "../domain/cache-variant";
 import { translateForLanguage } from "@/lib/gt-translations";
 
 // types
@@ -30,18 +32,23 @@ type MachineDocumentBody = (request: Request, context: LocalizedMdInput) => Effe
 type MachineDocument = (request: Request) => Effect.Effect<Response, never>;
 
 // Explicit language pins are safe to cache as a single variant: the URL alone selects the
-// document, so neither the negotiation inputs nor a visitor cookie written for this response
-// still apply. The ambient cookie strip is best-effort — only the framework runtime owns that
-// state, and a caller without a Start event still gets a correct response, because the
-// returned Response itself never carries one.
+// document, so the vary tokens that name the negotiation inputs are dropped, while any other
+// Vary the runtime added still governs the cached response. The ambient cookie strip is
+// best-effort: only the framework runtime owns that state, and a caller without a Start event still
+// gets a correct response, because the returned Response itself never carries one.
 const pinCacheVariant = (response: Response): Response => {
   const headers = new Headers(response.headers);
-  headers.delete("vary");
+  const vary = withoutNegotiationVary(headers.get("vary"));
+
+  if (vary !== null) headers.set("vary", vary);
+  else headers.delete("vary");
+
   try {
     removeResponseHeader("set-cookie");
   } catch {
     // No Start event: no ambient response state to strip.
   }
+
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 };
 

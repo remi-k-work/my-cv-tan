@@ -17,8 +17,7 @@ import { CONTACT_PATH, EDUCATION_PATH, HOME_URL, PERSON_ID, PROFILE_ID, PUBLISHE
 // types
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
-import type { ExperienceSeo } from "./experience-seo";
-import type { JsonLdNode, JsonLdNodes, LocalizedCopy } from "./models";
+import type { ExperienceGraphInput, JsonLdNode, JsonLdNodes, LocalizedCopy } from "./models";
 
 // Education page: CollectionPage plus its school subgraph.
 export const educationJsonLd = ({
@@ -71,8 +70,8 @@ export const contactJsonLd = ({ pageName, description, preferredLanguage }: Loca
 // Experience detail page: WebPage + Article + item node (OrganizationRole or project type).
 // Every URL here derives from the route path, so the page, its article, and its subject cannot
 // disagree about which address they describe.
-export const experienceJsonLd = ({ experience, preferredLanguage, path, headline, description, screenshot }: ExperienceSeo): JsonLdNodes => {
-  const { type, role, company, year, skillsUsed, gitHubLink } = experience;
+export const experienceJsonLd = ({ experience, preferredLanguage, path, headline, description, screenshot }: ExperienceGraphInput): JsonLdNodes => {
+  const { type, role, company, skillsUsed, gitHubLink } = experience;
 
   const employment = type === "e";
   const url = absoluteUrl(path);
@@ -93,7 +92,6 @@ export const experienceJsonLd = ({ experience, preferredLanguage, path, headline
     preferredLanguage,
     mainEntity: { "@id": articleId },
     primaryImageOfPage: image,
-    datePublished: year,
   });
 
   const item: JsonLdNode = employment
@@ -122,7 +120,8 @@ export const experienceJsonLd = ({ experience, preferredLanguage, path, headline
 
   const employmentNodes: JsonLdNodes = employment
     ? [
-        { "@type": "Organization", "@id": `${url}#organization`, name: company, member: { "@id": itemId } },
+        // The employer claims the person as its member; the role node above carries the role itself.
+        { "@type": "Organization", "@id": `${url}#organization`, name: company, member: { "@id": PERSON_ID } },
         item,
         { "@type": "Person", "@id": PERSON_ID, worksFor: { "@id": `${url}#organization` } },
       ]
@@ -134,7 +133,6 @@ export const experienceJsonLd = ({ experience, preferredLanguage, path, headline
     description,
     preferredLanguage,
     about: itemId,
-    datePublished: year,
     mainEntityOfPage: url,
   });
 

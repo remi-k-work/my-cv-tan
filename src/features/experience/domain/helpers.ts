@@ -28,7 +28,9 @@ export const experienceHeadline = (experience: Pick<Experience, "type" | "role" 
     : matchPreferredLanguage(preferredLanguage, `${experience.role} at ${experience.company}`, `${experience.role} w ${experience.company}`);
 
 // Bounds prose to `maxLength` user-visible characters, preferring the last word boundary so a
-// summary never ends mid-word; shared by meta descriptions, JSON-LD, Markdown twins and the slider
+// summary never ends mid-word; shared by meta descriptions, JSON-LD, Markdown twins and the slider.
+// The truncation suffix is part of the budget, so the returned summary — ellipsis included — never
+// exceeds the limit a search engine or social card enforces.
 export const excerpt = (text: string, maxLength: number) => {
   // Split into code points so the cut below can never fall inside a surrogate pair; `maxLength`
   // counts user-visible characters, matching the unit the typewriter types and deletes in
@@ -37,8 +39,11 @@ export const excerpt = (text: string, maxLength: number) => {
   // Return early if text fits within limits
   if (chars.length <= maxLength) return text;
 
-  // Take the first maxLength characters from the left
-  const cut = Array.join(Array.take(chars, maxLength), "");
+  // Reserve room for the suffix so the appended ellipsis cannot push the result past the budget
+  const budget = Math.max(0, maxLength - EXCERPT_SUFFIX.length);
+
+  // Take the first `budget` characters from the left
+  const cut = Array.join(Array.take(chars, budget), "");
 
   // Find last word boundary using Option
   const wordBoundedText = pipe(

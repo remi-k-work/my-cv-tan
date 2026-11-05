@@ -2,11 +2,11 @@
 // Pure string computation: no network, no layer, no framework types.
 
 // services, features, and other libraries
-import { flow, Option, Schema, String, pipe } from "effect";
+import { Option, Schema, String, pipe } from "effect";
 import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain/constants";
 
 // types
-import { PreferredLanguage } from "@/domain/models";
+import type { PreferredLanguage } from "@/domain/models";
 import type { SocialImageFacts } from "./models";
 
 // constants
@@ -16,9 +16,6 @@ import { CV_EN_HREF, CV_PL_HREF, SITE_URL } from "./constants";
 
 // Validates and parses URLs safely into an Option.
 export const decodeUrlOption = Schema.decodeUnknownOption(Schema.URLFromString);
-
-const decodePreferredLanguage = Schema.decodeUnknownOption(PreferredLanguage);
-const decodeUrlComponent = Option.liftThrowable(decodeURIComponent);
 
 // Canonical absolute URL for a site path.
 export const absoluteUrl = (path: string) => `${SITE_URL}${path}`;
@@ -62,28 +59,3 @@ export const experienceScreenshot = (imageName: string): Option.Option<SocialIma
       })
     : Option.none();
 };
-
-// --- URL parsing ---
-
-// Extracts the ?lang= override from a request URL, validating it against supported languages.
-export const parseLangParam = (url: string) =>
-  pipe(
-    decodeUrlOption(url),
-    Option.flatMap(({ searchParams }) => Option.fromNullishOr(searchParams.get("lang"))),
-    Option.map(flow(String.trim, String.toLowerCase)),
-    Option.flatMap(decodePreferredLanguage)
-  );
-
-// Extracts a markdown twin slug from a request URL pathname (e.g. /my-page.md -> "my-page").
-// The twin route is one path segment, so literal nested paths and extensionless paths return
-// None; an encoded slash inside the segment still decodes into the slug.
-export const slugFromMdPathname = (url: string) =>
-  pipe(
-    decodeUrlOption(url),
-    Option.map(({ pathname }) => pathname.slice(1)),
-    Option.filter((path) => !path.includes("/")),
-    Option.filter((segment) => segment.endsWith(".md")),
-    Option.map((segment) => segment.slice(0, -".md".length)),
-    Option.flatMap(decodeUrlComponent),
-    Option.filter(String.isNonEmpty)
-  );

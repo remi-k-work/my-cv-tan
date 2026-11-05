@@ -4,7 +4,7 @@
 // services, features, and other libraries
 import { Option } from "effect";
 import { INDEXABLE_ROBOTS } from "@/domain/http";
-import { authorLink, canonicalLink, LLMS_DISCOVERY_LINK, markdownAlternateLink } from "./link-tags";
+import { canonicalLink, markdownAlternateLink } from "./link-tags";
 import { experienceSeo } from "./experience-seo";
 import { experienceJsonLd } from "./page-graphs";
 import { jsonLdGraph } from "./merge";
@@ -16,17 +16,20 @@ import type { ExperienceHeadInput, JsonLdNodes, PageHead, SocialImage, SocialIma
 import type { SocialMetaInput } from "./social-meta";
 
 // constants
-import { AUTHOR_URL, BRANDED_TITLE, GLOBAL_SOCIAL_IMAGE } from "./constants";
+import { BRANDED_TITLE, GLOBAL_SOCIAL_IMAGE } from "./constants";
 
 // Shared page head layout merging title, indexing directives, social cards, links and graph.
 // `social` carries the Open Graph / Twitter fields rendered by `socialMeta`; the remaining
 // fields are page-structural. Composition keeps the social contract explicit instead of
 // inheriting it into the page spec.
+//
+// Only the page's own canonical and Markdown alternate are declared here: the site-wide
+// discovery and identity links (llms, sitemap, author, rel=me) live on the root head and are
+// merged into every page's head by the router, so restating them here would only duplicate them.
 interface PageHeadSpec {
   readonly social: SocialMetaInput;
   readonly markdownPath: string;
   readonly graph: JsonLdNodes;
-  readonly authorHref?: string;
 }
 
 export const pageHead = (spec: PageHeadSpec): PageHead => {
@@ -38,12 +41,7 @@ export const pageHead = (spec: PageHeadSpec): PageHead => {
       { name: "robots", content: INDEXABLE_ROBOTS },
       ...socialMeta(social),
     ],
-    links: [
-      canonicalLink(social.canonical),
-      markdownAlternateLink(spec.markdownPath, social.preferredLanguage),
-      ...(spec.authorHref ? [authorLink(spec.authorHref)] : []),
-      LLMS_DISCOVERY_LINK,
-    ],
+    links: [canonicalLink(social.canonical), markdownAlternateLink(spec.markdownPath, social.preferredLanguage)],
     scripts: [jsonLdGraph([...siteNodes, ...spec.graph])],
   };
 };
@@ -68,7 +66,6 @@ export const experienceHead = (input: ExperienceHeadInput): PageHead => {
       articleSection: seo.experience.type === "e" ? "employment" : "portfolio",
     },
     markdownPath: seo.markdownPath,
-    authorHref: AUTHOR_URL,
     graph: experienceJsonLd(seo),
   });
 };

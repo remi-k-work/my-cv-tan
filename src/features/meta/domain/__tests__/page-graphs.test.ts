@@ -107,8 +107,6 @@ it("experienceJsonLd assembles WebPage, Article and the item node for a project"
     experience: sampleExperience,
     preferredLanguage: language,
     path: "/sample-role",
-    canonical: "https://www.remiforge.dev/sample-role",
-    markdownPath: "/sample-role.md",
     headline: "Full-Stack Developer",
     description: "Built things with care.",
     screenshot: Option.some({ src: "https://www.remiforge.dev/images/01-a.webp", mime: "image/webp", width: 1600, height: 900 }),
@@ -143,8 +141,6 @@ it("experienceJsonLd uses OrganizationRole for employment type", () => {
     experience: employment,
     preferredLanguage: language,
     path: "/sample-job",
-    canonical: "https://www.remiforge.dev/sample-job",
-    markdownPath: "/sample-job.md",
     headline: "Web Developer",
     description: "Work.",
     screenshot: Option.none(),
@@ -158,7 +154,9 @@ it("experienceJsonLd uses OrganizationRole for employment type", () => {
   assert.isDefined(organization);
   assert.isDefined(article);
   assert.deepStrictEqual(role?.member, { "@id": "https://www.remiforge.dev/#person" });
-  assert.deepStrictEqual(organization?.member, { "@id": "https://www.remiforge.dev/sample-job#organization-role" });
+  // The employer claims the person, not the OrganizationRole node: Organization.member expects a
+  // Person or Organization, and the role is already carried as the Article's subject.
+  assert.deepStrictEqual(organization?.member, { "@id": "https://www.remiforge.dev/#person" });
   assert.isUndefined(role?.inLanguage);
   assert.deepStrictEqual(article?.about, { "@id": "https://www.remiforge.dev/sample-job#organization-role" });
 });

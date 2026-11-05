@@ -25,7 +25,7 @@ const baseWebPageInput = {
   isPartOf: { "@id": WEBSITE_ID },
 };
 
-it("articleNode builds an Article with author, publisher, about and optional datePublished", () => {
+it("articleNode builds an Article with author, publisher, about and mainEntityOfPage", () => {
   const node = articleNode({
     id: "https://www.remiforge.dev/#article",
     headline: "Headline",
@@ -35,7 +35,6 @@ it("articleNode builds an Article with author, publisher, about and optional dat
     mainEntityOfPage: "https://www.remiforge.dev/test",
   });
 
-  // datePublished is omitted when undefined, so it is not a key on the node
   assert.deepStrictEqual(node, {
     "@type": "Article",
     "@id": "https://www.remiforge.dev/#article",
@@ -49,19 +48,6 @@ it("articleNode builds an Article with author, publisher, about and optional dat
   });
 });
 
-it("articleNode omits datePublished when not provided", () => {
-  const node = articleNode({
-    id: "https://www.remiforge.dev/#article",
-    headline: "Headline",
-    description: "Description.",
-    preferredLanguage: language,
-    about: "https://www.remiforge.dev/#item",
-    mainEntityOfPage: "https://www.remiforge.dev/test",
-  });
-  assert.isUndefined(node.datePublished);
-  assert.notInclude(Object.keys(node), "datePublished");
-});
-
 it("webPageNode builds a WebPage node with optional fields conditionally included", () => {
   const node = webPageNode({
     type: "WebPage",
@@ -69,7 +55,6 @@ it("webPageNode builds a WebPage node with optional fields conditionally include
     breadcrumb: true,
     mainEntity: { "@id": "https://www.remiforge.dev/#item" },
     primaryImageOfPage: { "@type": "ImageObject", url: "https://www.remiforge.dev/img.jpg", width: 100, height: 100 },
-    datePublished: "2026",
   });
 
   assert.deepStrictEqual(node, {
@@ -83,7 +68,6 @@ it("webPageNode builds a WebPage node with optional fields conditionally include
     breadcrumb: { "@id": "https://www.remiforge.dev/test#breadcrumb" },
     mainEntity: { "@id": "https://www.remiforge.dev/#item" },
     primaryImageOfPage: { "@type": "ImageObject", url: "https://www.remiforge.dev/img.jpg", width: 100, height: 100 },
-    datePublished: "2026",
   });
 });
 
@@ -95,7 +79,6 @@ it("webPageNode omits undefined optional fields", () => {
   assert.isUndefined(node.breadcrumb);
   assert.isUndefined(node.mainEntity);
   assert.isUndefined(node.primaryImageOfPage);
-  assert.isUndefined(node.datePublished);
 });
 
 it("collectionNode builds a Collection with parts and optional url", () => {
