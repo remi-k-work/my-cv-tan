@@ -225,6 +225,21 @@ it("buildExperienceMd omits the Links section when the experience has no links",
   assert.notInclude(md, `## Links`);
 });
 
+it("experience link builders drop destinations that are not http(s) URLs", () => {
+  // The Experience schema accepts any non-empty string, so the link builder is the one place a
+  // hostile scheme can be stopped before it reaches a crawler-parseable document.
+  const md = buildExperienceMd({
+    experience: { ...sampleExperience, gitHubLink: "javascript:alert(1)", liveLink: "ftp://example.com/file" },
+    preferredLanguage: "en",
+    translate: translateEn,
+  });
+
+  assert.notInclude(md, "javascript:");
+  assert.notInclude(md, "ftp://");
+  // Every link dropped: the section itself disappears instead of rendering an empty shell
+  assert.notInclude(md, "## Links");
+});
+
 it("buildExperienceMd localizes fixed Polish section and fact labels", () => {
   const md = buildExperienceMd({ experience: sampleExperience, preferredLanguage: "pl", translate: translatePl });
   assert.include(md, "## Opis");

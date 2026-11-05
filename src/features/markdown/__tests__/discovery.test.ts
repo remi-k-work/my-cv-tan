@@ -2,7 +2,8 @@
 import { assert, it } from "@effect/vitest";
 import { Effect, Option } from "effect";
 import { recoverDataFailure, requireData } from "@/features/data/domain/required";
-import { discoveryTxtResponse, txtResponse, txtUnavailableResponse, mdNotFoundResponse, mdResponse, mdUnavailableResponse } from "@/features/meta/services/http";
+import { discoveryTxtResponse, txtResponse, txtUnavailableResponse } from "@/features/meta/services/http";
+import { mdNotFoundResponse, mdResponse, mdUnavailableResponse } from "../services/http";
 import { parseLangParam, slugFromMdPathname, absoluteUrl } from "@/features/meta/domain/links";
 import { CONTENT_SIGNAL, PERSON_DESCRIPTION } from "@/features/meta/domain/constants";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";

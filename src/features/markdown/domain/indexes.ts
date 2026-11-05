@@ -50,7 +50,8 @@ import {
 
 // domain
 import type { TwinData } from "./models";
-import { SOURCE_COPY, allEntries, PAGE_ENTRIES, experienceLines } from "./twins";
+import { PAGE_ENTRIES, allEntries } from "./catalogue";
+import { SOURCE_COPY, experienceLines } from "./twins";
 
 // --- Shared AI Index Sections and Copy ---
 

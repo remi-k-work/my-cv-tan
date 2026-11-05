@@ -3,7 +3,6 @@
 // services, features, and other libraries
 import { Context, Effect, Layer, Option } from "effect";
 import { removeResponseHeader } from "@tanstack/react-start/server";
-import { RuntimeServer } from "@/lib/runtime-server";
 import { Datasets } from "@/features/data/services/datasets";
 import { requestPreferredLanguage } from "@/features/data/domain/helpers";
 import { recoverDataFailure } from "@/features/data/domain/required";
@@ -18,18 +17,17 @@ import {
   parseLangParam,
   slugFromMdPathname,
 } from "@/features/meta/domain/links";
-import { discoveryTxtResponse, txtUnavailableResponse, mdNotFoundResponse, mdResponse, mdUnavailableResponse } from "@/features/meta/services/http";
+import { discoveryTxtResponse, txtUnavailableResponse } from "@/features/meta/services/http";
+import { mdNotFoundResponse, mdResponse, mdUnavailableResponse } from "./http";
 
 // domain
 import {
   buildExperienceMd,
   buildNotFoundMd,
   unavailableMarkdownBody,
-  CONTACT_TWIN,
-  EDUCATION_TWIN,
-  HOME_TWIN,
   translateSource,
 } from "../domain/twins";
+import { CONTACT_TWIN, EDUCATION_TWIN, HOME_TWIN } from "../domain/catalogue";
 import { buildLlmsFullTxt, buildLlmsTxt, unavailableIndexBody } from "../domain/indexes";
 import { translateForLanguage } from "@/lib/gt-translations";
 
@@ -43,12 +41,19 @@ import type { PreferredLanguage } from "@/domain/models";
 type MachineDocumentBody = (request: Request, context: LocalizedMdInput) => Effect.Effect<Response, RequiredDataError>;
 type MachineDocument = (request: Request) => Effect.Effect<Response, never>;
 
-// Explicit language pins are safe to cache as a single variant, independent of visitor cookies.
+// Explicit language pins are safe to cache as a single variant: the URL alone selects the
+// document, so neither the negotiation inputs nor a visitor cookie written for this response
+// still apply. The ambient cookie strip is best-effort — only the framework runtime owns that
+// state, and a caller without a Start event still gets a correct response, because the
+// returned Response itself never carries one.
 const pinCacheVariant = (response: Response): Response => {
   const headers = new Headers(response.headers);
   headers.delete("vary");
-  removeResponseHeader("set-cookie");
-
+  try {
+    removeResponseHeader("set-cookie");
+  } catch {
+    // No Start event: no ambient response state to strip.
+  }
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 };
 
@@ -170,19 +175,3 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
   // Layer resolves dataset dependencies internally so endpoints remain requirement-free.
   static readonly layer = Layer.effect(this, this.make).pipe(Layer.provide(Datasets.layer));
 }
-
-// Bridges machine-readable document routes to TanStack server route handlers.
-const handler =
-  (name: keyof Markdown["Service"]) =>
-  ({ request }: { request: Request }) =>
-    RuntimeServer.runPromise(Effect.flatMap(Markdown, (markdown) => markdown[name](request)));
-
-// Request-aware markdown twin endpoints.
-export const homeHandler = handler("home");
-export const educationHandler = handler("education");
-export const contactHandler = handler("contact");
-export const experienceHandler = handler("experience");
-
-// Request-independent GEO indexes for AI ingestion.
-export const llmsTxtHandler = handler("siteIndex");
-export const llmsFullTxtHandler = handler("siteIndexFull");

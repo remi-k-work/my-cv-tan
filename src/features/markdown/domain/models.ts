@@ -1,7 +1,7 @@
 // Twin model types shared by every Markdown twin builder.
 
 // services, features, and other libraries
-import { Effect, Option } from "effect";
+import type { Effect, Option } from "effect";
 
 // types
 import type { PagePath, PageTitles, PreferredLanguage, Translate } from "@/domain/models";

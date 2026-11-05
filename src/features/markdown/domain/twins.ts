@@ -1,8 +1,9 @@
-// Markdown twin declarations, document builders, and SEO identity helpers.
-// Low-level Markdown formatting primitives live in ./format.
+// Markdown twin document builders: the shared source-language context, SEO identity, twin
+// navigation, and the per-page documents. The twin catalogue lives in ./catalogue; the
+// security-sensitive formatting primitives live in ./format.
 
 // services, features, and other libraries
-import { Array, Effect, Option, pipe } from "effect";
+import { Array, Option, pipe } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
 import { excerpt, experienceHeadline } from "@/features/experience/domain/helpers";
 
@@ -54,7 +55,7 @@ import {
 // types
 import type { PagePath, PageTitles, PreferredLanguage, Translate } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
-import type { Experience, ExperienceList } from "@/features/experience/domain/models";
+import type { Experience } from "@/features/experience/domain/models";
 import type { StaticPageCopy } from "@/features/meta/domain/models";
 import type {
   ContactMdInput,
@@ -63,9 +64,6 @@ import type {
   ExperienceMdInput,
   HomeMdInput,
   NotFoundMdInput,
-  PageTwin,
-  TwinData,
-  TwinEntry,
 } from "./models";
 
 // --- Source-language copy context ---
@@ -103,85 +101,12 @@ const externalLink = (label: string, href: string): Option.Option<string> =>
     Option.map((url) => mdLink(label, url.href))
   );
 
-// --- Twin catalogue ---
-
-const staticTwin = <Data>(pagePath: PagePath, spec: Omit<PageTwin<Data>, "pagePath" | "mdHref">): PageTwin<Data> => ({
-  ...spec,
-  pagePath,
-  mdHref: STATIC_PAGES[pagePath].mdHref,
-});
-
-export const HOME_TWIN: PageTwin<{ readonly experienceList: ExperienceList }> = staticTwin(HOME_PATH, {
-  name: "Home",
-  summary: "portfolio overview with experience and project lists.",
-  resolve: (datasets, preferredLanguage) =>
-    Effect.map(datasets.experienceList(preferredLanguage), (experienceList) => ({ experienceList })),
-  render: (pageTitles, { experienceList }, context) => buildHomeMd({ pageTitles, experienceList, ...context }),
-});
-
-export const EDUCATION_TWIN: PageTwin<{ readonly educationList: EducationList }> = staticTwin(EDUCATION_PATH, {
-  name: "Education & Certificates",
-  summary: "schools, courses and certificates.",
-  resolve: (datasets, preferredLanguage) =>
-    Effect.map(datasets.educationList(preferredLanguage), (educationList) => ({ educationList })),
-  render: (pageTitles, { educationList }, context) => buildEducationMd({ pageTitles, educationList, ...context }),
-});
-
-export const CONTACT_TWIN: PageTwin<{}> = staticTwin(CONTACT_PATH, {
-  name: "Contact",
-  summary: "contact form, location and social profiles.",
-  resolve: () => Effect.succeed({}),
-  render: (pageTitles, _data, context) => buildContactMd({ pageTitles, ...context }),
-});
-
-export const PAGE_TWINS = [HOME_TWIN, EDUCATION_TWIN, CONTACT_TWIN] as const;
-
-const twinEntry = ({
-  name,
-  canonicalPath,
-  mdHref,
-  summary,
-  render,
-}: {
-  readonly name: string;
-  readonly canonicalPath: string;
-  readonly mdHref: string;
-  readonly summary?: string;
-  readonly render: (data: TwinData) => string;
-}): TwinEntry => ({
-  name,
-  canonical: absoluteUrl(canonicalPath),
-  twinUrl: markdownTwinUrl(mdHref, DEFAULT_LANGUAGE),
-  summary,
-  render,
-});
-
-// Static page entries for AI index publication.
-export const PAGE_ENTRIES: ReadonlyArray<TwinEntry> = PAGE_TWINS.map((twin) =>
-  twinEntry({
-    name: twin.name,
-    canonicalPath: twin.pagePath,
-    mdHref: twin.mdHref,
-    summary: twin.summary,
-    render: (data) => twin.render(data.pageTitles, data, SOURCE_COPY),
-  })
-);
-
-const experienceEntries = (experienceList: ExperienceList): ReadonlyArray<TwinEntry> =>
-  experienceList.map((experience) =>
-    twinEntry({
-      name: experienceHeadline(experience, DEFAULT_LANGUAGE),
-      canonicalPath: experiencePath(experience.slug),
-      mdHref: experienceMarkdownPath(experience.slug),
-      render: () => buildExperienceMd({ experience, ...SOURCE_COPY }),
-    })
+// Formats an optional web link as a bullet item; non-http/https URLs are omitted.
+const optionalBulletLink = (label: string, href: string | undefined) =>
+  pipe(
+    Option.fromNullishOr(href),
+    Option.flatMap((validHref) => externalLink(label, validHref))
   );
-
-// All static and detail entries in index order.
-export const allEntries = (experienceList: ExperienceList): ReadonlyArray<TwinEntry> => [
-  ...PAGE_ENTRIES,
-  ...experienceEntries(experienceList),
-];
 
 // --- Twin navigation ---
 
@@ -366,10 +291,3 @@ export const unavailableMarkdownBody = (translate: Translate) =>
     mdHeading(1, translate("Content temporarily unavailable")),
     escapeMd(translate("The required portfolio content could not be loaded. Please try again shortly.")),
   ]);
-
-// Formats an optional web link as a bullet item; non-http/https URLs are omitted.
-const optionalBulletLink = (label: string, href: string | undefined) =>
-  pipe(
-    Option.fromNullishOr(href),
-    Option.flatMap((validHref) => externalLink(label, validHref))
-  );

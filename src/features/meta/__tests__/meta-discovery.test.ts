@@ -1,7 +1,8 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { buildSitemapXml, ROBOTS_TXT } from "../domain/discovery";
-import { LANGUAGE_VARY, sitemapResponse, sitemapUnavailableResponse, txtResponse, documentHeaders, robotsHandler } from "../services/http";
+import { documentHeaders, LANGUAGE_VARY } from "../services/headers";
+import { robotsHandler, sitemapResponse, sitemapUnavailableResponse, txtResponse } from "../services/http";
 import { STATIC_PAGE_PATHS } from "../domain/pages";
 
 // constants
