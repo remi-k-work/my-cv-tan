@@ -17,15 +17,7 @@ import type { PageData } from "./page-data";
 const load = <E>(source: PageData<E>, slug: Option.Option<string>) =>
   Effect.gen(function* () {
     if (Option.isSome(slug)) {
-      const { randomPageTitles, experienceList } = yield* Effect.all(
-        {
-          randomPageTitles: source.randomPageTitles,
-          experienceList: source.experienceList,
-        },
-        { concurrency: "unbounded" }
-      );
-
-      const requiredRandomPageTitles = yield* requireData(randomPageTitles, "random page titles");
+      const experienceList = yield* source.experienceList;
       const experiences = yield* requireData(experienceList, "experience list");
       const experience = experienceFromList(experiences, slug.value);
 
@@ -34,7 +26,6 @@ const load = <E>(source: PageData<E>, slug: Option.Option<string>) =>
 
       return {
         type: "item" as const,
-        randomPageTitles: requiredRandomPageTitles,
         experience: experience.value,
       };
     }

@@ -1,7 +1,5 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-import { Effect } from "effect";
-import { Datasets } from "@/features/data/services/datasets";
 import { CONTACT_TWIN, EDUCATION_TWIN, HOME_TWIN, PAGE_TWINS, PAGE_ENTRIES, allEntries } from "../domain/catalogue";
 import { SOURCE_COPY } from "../domain/twins";
 
@@ -42,30 +40,6 @@ it("page entries advertise the canonical HTML URL and a language-pinned twin for
     assert.isString(entry.summary);
   }
 });
-
-it("the contact twin resolves no dataset, so an unrelated asset failure cannot 503 it", () => {
-  // Its resolver is the constant empty record: no Data requirement reaches the layer, and the
-  // rendered body is complete without ever reading a portfolio asset.
-  const resolved = CONTACT_TWIN.resolve({} as Parameters<typeof CONTACT_TWIN.resolve>[0], "en");
-  assert.deepStrictEqual(Effect.runSync(resolved), {});
-});
-
-it.effect("each page twin's resolver returns exactly the dataset its body declares", () =>
-  Effect.gen(function* () {
-    const datasets = yield* Datasets;
-
-    // One key for the home twin, and it is the one the home body renders from
-    const home = yield* HOME_TWIN.resolve(datasets, "en");
-    assert.deepStrictEqual(Object.keys(home), ["experienceList"]);
-
-    // The education twin keys off the school list instead, so a portfolio failure never reaches it
-    const education = yield* EDUCATION_TWIN.resolve(datasets, "en");
-    assert.deepStrictEqual(Object.keys(education), ["educationList"]);
-
-    // The contact twin resolves nothing at all
-    assert.deepStrictEqual(yield* CONTACT_TWIN.resolve(datasets, "en"), {});
-  }).pipe(Effect.provide(Datasets.layer))
-);
 
 it("the contact twin still renders: a dataset-free body is not an empty document", () => {
   const md = CONTACT_TWIN.render(

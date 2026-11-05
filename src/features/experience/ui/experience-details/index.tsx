@@ -13,12 +13,14 @@ import type { Experience } from "@/features/experience/domain/models";
 
 interface ExperienceDetailsProps {
   experience: Experience;
+  heading?: string;
+  headingLevel?: 1 | 2;
 }
 
 // constants
 import { MAX_CHUNK_LENGTH } from "@/features/typewriter/domain/constants";
 
-export function ExperienceDetails({ experience }: ExperienceDetailsProps) {
+export function ExperienceDetails({ experience, heading, headingLevel = 2 }: ExperienceDetailsProps) {
   const { txt } = experience;
 
   // Chunking is pure and the text is static per experience, so it is computed directly
@@ -28,7 +30,7 @@ export function ExperienceDetails({ experience }: ExperienceDetailsProps) {
   return (
     // The rise plays on the details page load and again inside the overlay each time it opens
     <article className="mx-auto w-full max-w-4xl animate-rise rounded-xl bg-surface-2 p-3">
-      <ExperienceHeader experience={experience}>
+      <ExperienceHeader experience={experience} heading={heading} headingLevel={headingLevel}>
         <ExperienceLinks experience={experience} iconClassName="size-11" />
       </ExperienceHeader>
       <ScreenShots experience={experience} priorityFirstFrame />

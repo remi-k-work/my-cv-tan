@@ -3,11 +3,12 @@ import { createFileRoute } from "@tanstack/react-router";
 
 // services, features, and other libraries
 import { Option } from "effect";
-import { useGT } from "gt-tanstack-start";
+import { useGT, useLocale } from "gt-tanstack-start";
 import { loaderIndex } from "@/loaders/index";
 import { experienceHead, homeHead, routeHead } from "@/features/meta/domain/heads";
-import { partitionExperiences } from "@/features/experience/domain/helpers";
+import { experienceHeadline, partitionExperiences } from "@/features/experience/domain/helpers";
 import { experiencePath } from "@/features/meta/domain/urls";
+import { preferredLanguageFromLocale } from "@/domain/helpers";
 
 // components
 import { PageTitle } from "@/ui/page-title";
@@ -52,7 +53,7 @@ function IndexRoutePage() {
   const loaderData = Route.useLoaderData();
 
   if (loaderData.type === "list") return <HomeListPage pageTitles={loaderData.randomPageTitles} experienceList={loaderData.experienceList} />;
-  return <ExperienceItemPage pageTitles={loaderData.randomPageTitles} experience={loaderData.experience} />;
+  return <ExperienceItemPage experience={loaderData.experience} />;
 }
 
 // Homepage list: two experience sliders and the overlay that opens a project's details
@@ -76,11 +77,12 @@ function HomeListPage({ pageTitles, experienceList }: { pageTitles: PageTitles; 
 }
 
 // Single experience detail page, reached from the "more info" link on a slide
-function ExperienceItemPage({ pageTitles, experience }: { pageTitles: PageTitles; experience: Experience }) {
+function ExperienceItemPage({ experience }: { experience: Experience }) {
+  const locale = useLocale();
+  const headline = experienceHeadline(experience, preferredLanguageFromLocale(locale));
+
+  // The visible page title matches the identity used by its head, JSON-LD and Markdown twin.
   return (
-    <>
-      <PageTitle pagePath="/" pageTitles={pageTitles} />
-      <ExperienceDetails experience={experience} />
-    </>
+    <ExperienceDetails experience={experience} heading={headline} headingLevel={1} />
   );
 }

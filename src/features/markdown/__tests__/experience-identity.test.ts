@@ -6,8 +6,11 @@
 
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { experienceSeo } from "@/features/meta/domain/experience-seo";
 import { experienceHead } from "@/features/meta/domain/heads";
+import { ExperienceIdentity } from "@/features/experience/ui/experience-identity";
 import { buildExperienceMd } from "../domain/twins";
 
 // types
@@ -27,7 +30,7 @@ const sampleExperience: Experience = {
 
 const translateEn = (source: string): string => source;
 
-it("the head, the JSON-LD graph and the Markdown twin restate one experience identity", () => {
+it("the head, JSON-LD, Markdown twin and visible detail heading share one experience identity", () => {
   const preferredLanguage = "pl";
   const seo = experienceSeo({ experience: sampleExperience, preferredLanguage });
   const head = experienceHead({ experience: sampleExperience, preferredLanguage });
@@ -56,6 +59,10 @@ it("the head, the JSON-LD graph and the Markdown twin restate one experience ide
   assert.strictEqual(metaContent("og:url"), seo.canonical);
   assert.strictEqual(webPage?.["url"], seo.canonical);
   assert.include(twin, `canonical: ${JSON.stringify(seo.canonical)}`);
+
+  // The route's visible H1 uses this same localized headline rather than the homepage heading.
+  const identity = renderToStaticMarkup(createElement(ExperienceIdentity, { experience: sampleExperience, heading: seo.headline, headingLevel: 1 }));
+  assert.include(identity, `<h1 class="text-xl">${seo.headline}</h1>`);
 
   // One screenshot: the og:image src and the graph's ImageObject name the same verified file.
   const primaryImage = webPage?.["primaryImageOfPage"] as { readonly url?: string } | undefined;

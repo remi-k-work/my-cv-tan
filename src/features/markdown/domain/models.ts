@@ -1,14 +1,12 @@
 // Twin model types shared by every Markdown twin builder.
 
 // services, features, and other libraries
-import type { Effect, Option } from "effect";
+import type { Option } from "effect";
 
 // types
 import type { PagePath, PageTitles, PreferredLanguage, Translate } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { Experience, ExperienceList } from "@/features/experience/domain/models";
-import type { DatasetsService } from "@/features/data/services/datasets";
-import type { RequiredDataError } from "@/features/data/domain/required";
 
 // --- Twin models ---
 
@@ -60,7 +58,6 @@ export interface PageTwin<Data> {
   readonly mdHref: string;
   readonly name: string;
   readonly summary: string;
-  readonly resolve: (datasets: DatasetsService, preferredLanguage: PreferredLanguage) => Effect.Effect<Data, RequiredDataError>;
   readonly render: (pageTitles: PageTitles, data: Data, context: LocalizedMdInput) => string;
 }
 

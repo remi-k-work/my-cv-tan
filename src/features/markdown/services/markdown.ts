@@ -20,6 +20,7 @@ import { buildLlmsFullTxt, buildLlmsTxt, unavailableIndexBody } from "../domain/
 import { parseLangParam, slugFromMdPathname } from "../domain/requests";
 import { withoutNegotiationVary } from "../domain/cache-variant";
 import { translateForLanguage } from "@/lib/gt-translations";
+import { resolveContactTwinData, resolveEducationTwinData, resolveHomeTwinData } from "./twin-data";
 
 // types
 import type { LocalizedMdInput, PageTwin } from "../domain/models";
@@ -27,6 +28,7 @@ import type { DatasetsService, LocalizedAccessor } from "@/features/data/service
 import type { ExperienceList } from "@/features/experience/domain/models";
 import type { RequiredDataError } from "@/features/data/domain/required";
 import type { PreferredLanguage } from "@/domain/models";
+import type { TwinDataResolver } from "./twin-data";
 
 type MachineDocumentBody = (request: Request, context: LocalizedMdInput) => Effect.Effect<Response, RequiredDataError>;
 type MachineDocument = (request: Request) => Effect.Effect<Response, never>;
@@ -80,13 +82,13 @@ const respond = (context: LocalizedMdInput, body: string, canonicalPath: string,
   });
 
 // Full pipeline for a static page twin resolving page titles and specific datasets.
-const pageTwinDocument = <Data>(twin: PageTwin<Data>, datasets: DatasetsService): MachineDocument =>
+const pageTwinDocument = <Data>(twin: PageTwin<Data>, resolveData: TwinDataResolver<Data>, datasets: DatasetsService): MachineDocument =>
   documentResponse(
     Effect.fnUntraced(function* (_request: Request, context: LocalizedMdInput) {
       const { pageTitles, data } = yield* Effect.all(
         {
           pageTitles: datasets.pageTitles(context.preferredLanguage),
-          data: twin.resolve(datasets, context.preferredLanguage),
+          data: resolveData(datasets, context.preferredLanguage),
         },
         { concurrency: "unbounded" }
       );
@@ -135,9 +137,9 @@ export class Markdown extends Context.Service<Markdown>()("Markdown", {
     const datasets = yield* Datasets;
 
     return {
-      home: pageTwinDocument(HOME_TWIN, datasets),
-      education: pageTwinDocument(EDUCATION_TWIN, datasets),
-      contact: pageTwinDocument(CONTACT_TWIN, datasets),
+      home: pageTwinDocument(HOME_TWIN, resolveHomeTwinData, datasets),
+      education: pageTwinDocument(EDUCATION_TWIN, resolveEducationTwinData, datasets),
+      contact: pageTwinDocument(CONTACT_TWIN, resolveContactTwinData, datasets),
       experience: experienceTwin(datasets.experienceList),
       // AI discovery indexes describe fixed English documents resolved per request.
       siteIndex: discoveryDocument(LLMS_TXT_INDEX, Effect.map(datasets.experienceList(DEFAULT_LANGUAGE), buildLlmsTxt)),

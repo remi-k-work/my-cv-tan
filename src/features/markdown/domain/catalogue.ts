@@ -3,7 +3,6 @@
 // in ./twins; the catalogue only decides what exists and how each entry is advertised.
 
 // services, features, and other libraries
-import { Effect } from "effect";
 import { experienceHeadline } from "@/features/experience/domain/helpers";
 
 // meta (shared)
@@ -29,21 +28,18 @@ const staticTwin = <Data>(pagePath: PagePath, spec: Omit<PageTwin<Data>, "pagePa
 export const HOME_TWIN: PageTwin<{ readonly experienceList: ExperienceList }> = staticTwin(HOME_PATH, {
   name: "Home",
   summary: "portfolio overview with experience and project lists.",
-  resolve: (datasets, preferredLanguage) => Effect.map(datasets.experienceList(preferredLanguage), (experienceList) => ({ experienceList })),
   render: (pageTitles, { experienceList }, context) => buildHomeMd({ pageTitles, experienceList, ...context }),
 });
 
 export const EDUCATION_TWIN: PageTwin<{ readonly educationList: EducationList }> = staticTwin(EDUCATION_PATH, {
   name: "Education & Certificates",
   summary: "schools, courses and certificates.",
-  resolve: (datasets, preferredLanguage) => Effect.map(datasets.educationList(preferredLanguage), (educationList) => ({ educationList })),
   render: (pageTitles, { educationList }, context) => buildEducationMd({ pageTitles, educationList, ...context }),
 });
 
 export const CONTACT_TWIN: PageTwin<{}> = staticTwin(CONTACT_PATH, {
   name: "Contact",
   summary: "contact form, location and social profiles.",
-  resolve: () => Effect.succeed({}),
   render: (pageTitles, _data, context) => buildContactMd({ pageTitles, ...context }),
 });
 
