@@ -1,8 +1,9 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { contactHead, educationHead, experienceHead, headLanguage, homeHead, routeHead, ROOT_HEAD } from "../domain/heads";
-import { canonicalLink } from "../domain/links";
-import { withLanguageParam } from "../domain/links";
+import { fallbackHead } from "../domain/route-head";
+import { canonicalLink } from "../domain/link-tags";
+import { withLanguageParam } from "../domain/urls";
 import { STATIC_PAGES } from "../domain/pages";
 
 import { HOME_TITLE, PERSON_DESCRIPTION, SITE_DESCRIPTION, SITE_NAME, AUTHOR_URL } from "../domain/constants";
@@ -11,6 +12,7 @@ import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 // types
 import type { PageTitles } from "@/domain/models";
 import type { Experience } from "@/features/experience/domain/models";
+import type { PageHead } from "../domain/models";
 
 const sampleExperience: Experience = {
   type: "p",
@@ -322,6 +324,47 @@ it("routeHead keeps a canonical noindex fallback when loader data is missing", (
   assert.include(JSON.stringify(fallback.meta), SITE_DESCRIPTION);
   // The fallback still publishes the site entities, just not the page's own graph.
   assert.isAbove(JSON.parse(fallback.scripts?.[0]?.children ?? "{}")["@graph"].length, 0);
+});
+
+it("fallbackHead publishes a canonical noindex head with site entities", () => {
+  const fallback = fallbackHead("/contact");
+
+  assert.deepStrictEqual(
+    fallback.links?.map(({ rel, href }) => ({ rel, href })),
+    [{ rel: "canonical", href: "https://www.remiforge.dev/contact" }]
+  );
+  assert.include(JSON.stringify(fallback.meta), NOINDEX_FOLLOW);
+  assert.include(JSON.stringify(fallback.meta), SITE_DESCRIPTION);
+  // The fallback publishes site entities (WebSite, Person, Organization) without a page graph
+  const graph = JSON.parse(fallback.scripts?.[0]?.children ?? "{}");
+  assert.isDefined(graph["@graph"].find((node: { "@type"?: string }) => node["@type"] === "WebSite"));
+  assert.isDefined(graph["@graph"].find((node: { "@type"?: string }) => node["@type"] === "Person"));
+  assert.isDefined(graph["@graph"].find((node: { "@type"?: string }) => node["@type"] === "Organization"));
+  // Exactly one JSON-LD block
+  assert.strictEqual(fallback.scripts?.length, 1);
+});
+
+it("routeHead delegates to the builder when loader data is present, resolving language from matches", () => {
+  const build = (loaderData: { readonly title: string }, preferredLanguage: "en" | "pl") => pageHeadFromInput(loaderData.title, preferredLanguage);
+  const matches = [{ loaderData: { preferredLanguage: "pl" } }];
+
+  const head = routeHead({ title: "Custom" }, matches, build, "/contact");
+
+  // The builder received the loader data and the resolved language
+  assert.include(JSON.stringify(head.meta), '"title":"Remi Forge ● Custom"');
+  assert.include(JSON.stringify(head.meta), '"content":"pl_PL"');
+});
+
+// Minimal inline pageHead substitute for the routeHead delegation test — keeps the test
+// self-contained without importing the full page-head module.
+const pageHeadFromInput = (title: string, preferredLanguage: "en" | "pl"): PageHead => ({
+  meta: [
+    { title: `Remi Forge ● ${title}` },
+    { name: "robots", content: INDEXABLE_ROBOTS },
+    { property: "og:locale", content: preferredLanguage === "pl" ? "pl_PL" : "en_US" },
+  ],
+  links: [{ rel: "canonical", href: "https://www.remiforge.dev/" }],
+  scripts: [],
 });
 
 it("headLanguage resolves the root loader locale and falls back safely", () => {

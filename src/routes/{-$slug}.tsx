@@ -7,7 +7,7 @@ import { useGT } from "gt-tanstack-start";
 import { loaderIndex } from "@/loaders/index";
 import { experienceHead, homeHead, routeHead } from "@/features/meta/domain/heads";
 import { partitionExperiences } from "@/features/experience/domain/helpers";
-import { experiencePath } from "@/features/meta/domain/links";
+import { experiencePath } from "@/features/meta/domain/urls";
 
 // components
 import { PageTitle } from "@/ui/page-title";

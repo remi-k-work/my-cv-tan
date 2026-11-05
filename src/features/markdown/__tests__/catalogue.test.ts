@@ -69,7 +69,11 @@ it.effect("each page twin's resolver returns exactly the dataset its body declar
 
 it("the contact twin still renders: a dataset-free body is not an empty document", () => {
   const md = CONTACT_TWIN.render(
-    { "/": { eyebrow: "", heading: "Home", intro: "" }, "/education": { eyebrow: "", heading: "Ed", intro: "" }, "/contact": { eyebrow: "", heading: "Kontakt", intro: "" } },
+    {
+      "/": { eyebrow: "", heading: "Home", intro: "" },
+      "/education": { eyebrow: "", heading: "Ed", intro: "" },
+      "/contact": { eyebrow: "", heading: "Kontakt", intro: "" },
+    },
     {},
     SOURCE_COPY
   );

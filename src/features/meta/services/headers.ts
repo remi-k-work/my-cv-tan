@@ -8,7 +8,7 @@ import type { PreferredLanguage } from "@/domain/models";
 // constants
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW, NO_STORE } from "@/domain/http";
 import { CONTENT_SIGNAL } from "../domain/constants";
-import { AI_INDEX_LINK_HEADER } from "../domain/links";
+import { AI_INDEX_LINK_HEADER } from "../domain/link-tags";
 
 // Language-negotiated documents must vary on both inputs.
 export const LANGUAGE_VARY = "Cookie, Accept-Language";

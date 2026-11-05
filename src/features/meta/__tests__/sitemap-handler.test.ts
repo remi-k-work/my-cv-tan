@@ -3,7 +3,7 @@ import { assert, it } from "@effect/vitest";
 import { sitemapHandler } from "../services/http";
 import { STATIC_PAGE_PATHS } from "../domain/pages";
 import { CONTENT_SIGNAL, DOWNLOADABLE_DOCUMENTS } from "../domain/constants";
-import { experiencePath } from "../domain/links";
+import { experiencePath } from "../domain/urls";
 
 // assets
 import experienceEn from "@/assets/data/en/experience.json";

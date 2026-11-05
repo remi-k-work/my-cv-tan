@@ -2,7 +2,8 @@
 import { assert, it } from "@effect/vitest";
 import { Option, Schema, pipe } from "effect";
 import { contactHead, educationHead, experienceHead, homeHead, ROOT_HEAD } from "../domain/heads";
-import { jsonLdGraph, siteNodes } from "../domain/structured-data";
+import { jsonLdGraph } from "../domain/merge";
+import { siteNodes } from "../domain/entities";
 
 import { PERSON_DESCRIPTION, SITE_DESCRIPTION, PERSON_ID } from "../domain/constants";
 
@@ -52,7 +53,11 @@ const personOf = (graph: ReadonlyArray<JsonLdNode>) => {
 // Optional ordered reference list carried by a node; validated on read so a node that lacks
 // the key, or carries something that is not a list of nodes, decodes to an empty list
 const childNodes = (node: JsonLdNode | undefined, key: string): ReadonlyArray<JsonLdNode> =>
-  pipe(Option.fromNullishOr(node), Option.flatMap((value) => decodeReferenceList(value[key])), Option.getOrElse<ReadonlyArray<JsonLdNode>>(() => []));
+  pipe(
+    Option.fromNullishOr(node),
+    Option.flatMap((value) => decodeReferenceList(value[key])),
+    Option.getOrElse<ReadonlyArray<JsonLdNode>>(() => [])
+  );
 
 const listItems = (node: JsonLdNode | undefined) => childNodes(node, "itemListElement");
 // Grouped page/school references carried by Collection nodes (the non-carousel replacement for ItemList)
@@ -198,9 +203,7 @@ it("the @graph merge ignores undefined fields instead of erasing known values", 
     ]).children
   );
 
-  assert.deepStrictEqual(graph, [
-    { "@type": "Person", "@id": "https://www.remiforge.dev/#person", name: "Remi Forge", jobTitle: "Web Developer" },
-  ]);
+  assert.deepStrictEqual(graph, [{ "@type": "Person", "@id": "https://www.remiforge.dev/#person", name: "Remi Forge", jobTitle: "Web Developer" }]);
 });
 
 it("the @graph merge publishes a node without an @id exactly as written", () => {

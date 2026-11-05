@@ -92,4 +92,3 @@ export interface StaticPageCopy extends LocalizedCopy {
   readonly intro: string;
   readonly canonical: string;
 }
-

@@ -4,7 +4,7 @@ import { useLocation } from "@tanstack/react-router";
 // services, features, and other libraries
 import { cn } from "@/lib/utils";
 import { useGT, useLocale } from "gt-tanstack-start";
-import { cvPdfHref } from "@/features/meta/domain/links";
+import { cvPdfHref } from "@/features/meta/domain/urls";
 import { preferredLanguageFromLocale } from "@/domain/helpers";
 
 // components

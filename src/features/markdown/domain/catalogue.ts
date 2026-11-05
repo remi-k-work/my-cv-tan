@@ -9,7 +9,7 @@ import { experienceHeadline } from "@/features/experience/domain/helpers";
 // meta (shared)
 import { STATIC_PAGES } from "@/features/meta/domain/pages";
 import { CONTACT_PATH, DEFAULT_LANGUAGE, EDUCATION_PATH, HOME_PATH } from "@/features/meta/domain/constants";
-import { absoluteUrl, experienceMarkdownPath, experiencePath, markdownTwinUrl } from "@/features/meta/domain/links";
+import { absoluteUrl, experienceMarkdownPath, experiencePath, markdownTwinUrl } from "@/features/meta/domain/urls";
 
 // domain
 import { SOURCE_COPY, buildContactMd, buildEducationMd, buildExperienceMd, buildHomeMd } from "./twins";

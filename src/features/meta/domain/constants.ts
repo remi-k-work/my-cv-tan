@@ -33,15 +33,7 @@ export const BRANDED_TITLE = (title: string) => `${SITE_NAME} ● ${title}`;
 // --- Author identity ---
 
 export const JOB_TITLE = "Web Developer";
-export const KNOWS_ABOUT = [
-  "Web Development",
-  "TypeScript",
-  "React",
-  "Next.js",
-  "Effect",
-  "Front-End Development",
-  "Full-Stack Development",
-] as const;
+export const KNOWS_ABOUT = ["Web Development", "TypeScript", "React", "Next.js", "Effect", "Front-End Development", "Full-Stack Development"] as const;
 
 // Social profiles declared once for JSON-LD sameAs, rel="me", and markdown twins.
 export const SOCIAL_PROFILES = [

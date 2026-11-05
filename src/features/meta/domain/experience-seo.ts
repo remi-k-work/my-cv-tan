@@ -6,7 +6,7 @@
 // services, features, and other libraries
 import { Option } from "effect";
 import { excerpt, experienceHeadline } from "@/features/experience/domain/helpers";
-import { absoluteUrl, experienceMarkdownPath, experiencePath, experienceScreenshot } from "./links";
+import { absoluteUrl, experienceMarkdownPath, experiencePath, experienceScreenshot } from "./urls";
 
 // types
 import type { ExperienceHeadInput, SocialImageFacts } from "./models";

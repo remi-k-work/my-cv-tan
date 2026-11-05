@@ -8,25 +8,13 @@ import { requestPreferredLanguage } from "@/features/data/domain/helpers";
 import { recoverDataFailure } from "@/features/data/domain/required";
 import { experienceFromList } from "@/features/experience/domain/helpers";
 import { DEFAULT_LANGUAGE } from "@/features/meta/domain/constants";
-import {
-  absoluteUrl,
-  experienceMarkdownPath,
-  experiencePath,
-  LLMS_FULL_TXT_INDEX,
-  LLMS_TXT_INDEX,
-  parseLangParam,
-  slugFromMdPathname,
-} from "@/features/meta/domain/links";
-import { discoveryTxtResponse, txtUnavailableResponse } from "@/features/meta/services/http";
+import { absoluteUrl, experienceMarkdownPath, experiencePath, parseLangParam, slugFromMdPathname } from "@/features/meta/domain/urls";
+import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/link-tags";
+import { discoveryTxtResponse, txtUnavailableResponse } from "@/features/meta/services";
 import { mdNotFoundResponse, mdResponse, mdUnavailableResponse } from "./http";
 
 // domain
-import {
-  buildExperienceMd,
-  buildNotFoundMd,
-  unavailableMarkdownBody,
-  translateSource,
-} from "../domain/twins";
+import { buildExperienceMd, buildNotFoundMd, unavailableMarkdownBody, translateSource } from "../domain/twins";
 import { CONTACT_TWIN, EDUCATION_TWIN, HOME_TWIN } from "../domain/catalogue";
 import { buildLlmsFullTxt, buildLlmsTxt, unavailableIndexBody } from "../domain/indexes";
 import { translateForLanguage } from "@/lib/gt-translations";
@@ -59,11 +47,7 @@ const pinCacheVariant = (response: Response): Response => {
 
 const translateFor = (preferredLanguage: PreferredLanguage) =>
   Effect.tryPromise(() => translateForLanguage(preferredLanguage)).pipe(
-    Effect.catch((error) =>
-      Effect.logError(`[MARKDOWN]: translation snapshot unavailable for "${preferredLanguage}"`, error).pipe(
-        Effect.as(translateSource)
-      )
-    )
+    Effect.catch((error) => Effect.logError(`[MARKDOWN]: translation snapshot unavailable for "${preferredLanguage}"`, error).pipe(Effect.as(translateSource)))
   );
 
 const documentResponse = (render: MachineDocumentBody): MachineDocument =>
@@ -126,12 +110,7 @@ const experienceTwin = (experienceList: LocalizedAccessor<ExperienceList>): Mach
       }
 
       const experience = found.value;
-      return respond(
-        context,
-        buildExperienceMd({ experience, ...context }),
-        experiencePath(experience.slug),
-        experienceMarkdownPath(experience.slug)
-      );
+      return respond(context, buildExperienceMd({ experience, ...context }), experiencePath(experience.slug), experienceMarkdownPath(experience.slug));
     })
   );
 

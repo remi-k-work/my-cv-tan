@@ -3,19 +3,15 @@ import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
 import {
   absoluteUrl,
-  authorLink,
-  canonicalLink,
   cvPdfHref,
   encodeParens,
   experienceMarkdownPath,
   experiencePath,
   experienceScreenshot,
-  LLMS_DISCOVERY_LINK,
-  markdownAlternateLink,
   markdownTwinUrl,
-  SITEMAP_LINK,
   withLanguageParam,
-} from "../domain/links";
+} from "../domain/urls";
+import { authorLink, canonicalLink, LLMS_DISCOVERY_LINK, markdownAlternateLink, SITEMAP_LINK } from "../domain/link-tags";
 
 // constants
 import { CV_EN_HREF, CV_PL_HREF } from "../domain/constants";

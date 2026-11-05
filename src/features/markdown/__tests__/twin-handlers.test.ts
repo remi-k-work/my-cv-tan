@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { INDEXABLE_ROBOTS } from "@/domain/http";
-import { absoluteUrl, experiencePath } from "@/features/meta/domain/links";
+import { absoluteUrl, experiencePath } from "@/features/meta/domain/urls";
 import { CACHEABLE_HEADERS } from "@/features/meta/services/headers";
 
 // handlers under test

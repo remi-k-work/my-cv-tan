@@ -9,15 +9,8 @@ import type { PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
 import type { StaticPageCopy, StaticPageType } from "./models";
 
 // constants
-import {
-  CONTACT_PATH,
-  EDUCATION_PATH,
-  HOME_PATH,
-  HOME_TITLE,
-  PERSON_DESCRIPTION,
-  SITE_DESCRIPTION,
-} from "./constants";
-import { absoluteUrl } from "./links";
+import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH, HOME_TITLE, PERSON_DESCRIPTION, SITE_DESCRIPTION } from "./constants";
+import { absoluteUrl } from "./urls";
 
 interface StaticPageCopySource {
   readonly heading: string;

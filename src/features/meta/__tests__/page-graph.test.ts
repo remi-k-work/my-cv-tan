@@ -1,7 +1,8 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { Option, Schema, pipe } from "effect";
-import { jsonLdGraph, pageGraph } from "../domain/structured-data";
+import { jsonLdGraph } from "../domain/merge";
+import { pageGraph } from "../domain/page-node";
 
 // --- The shared subpage graph pair ---
 // Four page graphs lead with exactly this pair, so the @id the breadcrumb hangs from and the

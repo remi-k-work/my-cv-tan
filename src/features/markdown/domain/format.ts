@@ -3,7 +3,8 @@
 // document is assembled from. Twin declarations and page-specific builders live in ./twins.
 
 // meta (shared)
-import { AI_INDEXES, absoluteUrl, encodeParens } from "@/features/meta/domain/links";
+import { AI_INDEXES } from "@/features/meta/domain/link-tags";
+import { absoluteUrl, encodeParens } from "@/features/meta/domain/urls";
 
 // types
 import type { Translate } from "@/domain/models";
@@ -52,8 +53,7 @@ export const demoteHeadings = (markdown: string) => markdown.replace(DEMOTE_HEAD
 const FRONTMATTER_DELIMITER = "---";
 const YAML_UNSAFE_CHARACTERS = /[\u007f-\u009f\u2028\u2029]/g;
 
-const yamlValue = (value: string) =>
-  JSON.stringify(value).replace(YAML_UNSAFE_CHARACTERS, (char) => `\\u${char.charCodeAt(0).toString(16).padStart(4, "0")}`);
+const yamlValue = (value: string) => JSON.stringify(value).replace(YAML_UNSAFE_CHARACTERS, (char) => `\\u${char.charCodeAt(0).toString(16).padStart(4, "0")}`);
 
 export const frontmatter = (fields: Readonly<Record<string, string>>) => {
   const body = Object.entries(fields)

@@ -32,27 +32,26 @@ export const discoveryTxtResponse = (body: string, contentLocation: string) =>
     headers: { ...TXT_HEADERS, ...CACHEABLE_HEADERS, ...NOINDEX_HEADERS, "Content-Location": contentLocation },
   });
 
-export const sitemapResponse = (xml: string) =>
-  new Response(xml, { status: 200, headers: { ...SITEMAP_HEADERS, ...CACHEABLE_HEADERS, ...NOINDEX_HEADERS } });
+export const sitemapResponse = (xml: string) => new Response(xml, { status: 200, headers: { ...SITEMAP_HEADERS, ...CACHEABLE_HEADERS, ...NOINDEX_HEADERS } });
 
-export const sitemapUnavailableResponse = () =>
-  new Response(SITEMAP_UNAVAILABLE_XML, { status: 503, headers: { ...SITEMAP_HEADERS, ...UNAVAILABLE_HEADERS } });
+export const sitemapUnavailableResponse = () => new Response(SITEMAP_UNAVAILABLE_XML, { status: 503, headers: { ...SITEMAP_HEADERS, ...UNAVAILABLE_HEADERS } });
 
 // robots.txt is a static document: no datasets, no async work — serve it directly.
 export const robotsHandler = () => txtResponse(ROBOTS_TXT);
 
 // Include experience slugs from every language; the XML builder deduplicates canonical URLs.
+// Like the Markdown service, this effect declares its dataset requirement and leaves the layer
+// provision to the route-handler boundary, so the pure document stays testable without a layer.
 const sitemapDocument = Effect.gen(function* () {
   const { experienceList } = yield* Datasets;
-  const lists = yield* Effect.all(SITE_LANGUAGES.map((language) => experienceList(language)), { concurrency: "unbounded" });
+  const lists = yield* Effect.all(
+    SITE_LANGUAGES.map((language) => experienceList(language)),
+    { concurrency: "unbounded" }
+  );
 
   const slugs = lists.flatMap((list) => list.map(({ slug }) => slug));
 
   return sitemapResponse(buildSitemapXml(slugs));
-}).pipe(
-  Effect.provide(Datasets.layer),
-  recoverDataFailure("[SITEMAP.XML]", sitemapUnavailableResponse),
-  Effect.withSpan("sitemapDocument")
-);
+}).pipe(recoverDataFailure("[SITEMAP.XML]", sitemapUnavailableResponse), Effect.withSpan("sitemapDocument"));
 
-export const sitemapHandler = () => RuntimeServer.runPromise(sitemapDocument);
+export const sitemapHandler = () => RuntimeServer.runPromise(Effect.provide(sitemapDocument, Datasets.layer));

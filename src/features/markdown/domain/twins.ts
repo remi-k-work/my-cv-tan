@@ -22,14 +22,8 @@ import {
   SOCIAL_PROFILES,
 } from "@/features/meta/domain/constants";
 import { experienceSeo } from "@/features/meta/domain/experience-seo";
-import {
-  absoluteUrl,
-  decodeUrlOption,
-  experienceMarkdownPath,
-  experiencePath,
-  LLMS_TXT_INDEX,
-  markdownTwinUrl,
-} from "@/features/meta/domain/links";
+import { absoluteUrl, decodeUrlOption, experienceMarkdownPath, experiencePath, markdownTwinUrl } from "@/features/meta/domain/urls";
+import { LLMS_TXT_INDEX } from "@/features/meta/domain/link-tags";
 
 // formatting primitives
 import {
@@ -57,14 +51,7 @@ import type { PagePath, PageTitles, PreferredLanguage, Translate } from "@/domai
 import type { EducationList } from "@/features/education/domain/models";
 import type { Experience } from "@/features/experience/domain/models";
 import type { StaticPageCopy } from "@/features/meta/domain/models";
-import type {
-  ContactMdInput,
-  EducationMdInput,
-  ExperienceLinesInput,
-  ExperienceMdInput,
-  HomeMdInput,
-  NotFoundMdInput,
-} from "./models";
+import type { ContactMdInput, EducationMdInput, ExperienceLinesInput, ExperienceMdInput, HomeMdInput, NotFoundMdInput } from "./models";
 
 // --- Source-language copy context ---
 
@@ -225,10 +212,7 @@ const documentsSection = (translate: Translate) => mdTitledSection(translate("Do
 const contactChannels = (canonical: string, translate: Translate) =>
   mdTitledSection(
     translate("Channels"),
-    mdBulletList([
-      `${escapeMdInline(translate("Contact Form"))}: ${canonical} (${escapeMdInline(translate("same page in HTML"))})`,
-      ...profileLinks(translate),
-    ])
+    mdBulletList([`${escapeMdInline(translate("Contact Form"))}: ${canonical} (${escapeMdInline(translate("same page in HTML"))})`, ...profileLinks(translate)])
   );
 
 const pagesSection = (copy: StaticPageCopy, translate: Translate) =>

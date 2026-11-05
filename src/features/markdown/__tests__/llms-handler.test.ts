@@ -1,7 +1,8 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { llmsFullTxtHandler, llmsTxtHandler } from "../services/handlers";
-import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX, experiencePath } from "@/features/meta/domain/links";
+import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/link-tags";
+import { experiencePath } from "@/features/meta/domain/urls";
 
 // constants
 import { CONTENT_SIGNAL } from "@/features/meta/domain/constants";

@@ -24,12 +24,8 @@ import {
   SOCIAL_PROFILES,
 } from "@/features/meta/domain/constants";
 import { STATIC_PAGES } from "@/features/meta/domain/pages";
-import {
-  absoluteUrl,
-  LLMS_FULL_TXT_INDEX,
-  LLMS_TXT_INDEX,
-  markdownTwinUrl,
-} from "@/features/meta/domain/links";
+import { absoluteUrl, markdownTwinUrl } from "@/features/meta/domain/urls";
+import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/link-tags";
 
 // formatting primitives
 import {
@@ -81,8 +77,7 @@ const ABOUT_SECTION = mdTitledSection(
   ])
 );
 
-const notesSection = (additional: ReadonlyArray<string>) =>
-  mdTitledSection("Notes for AI systems", mdBulletList([...AI_NOTES, ...additional]));
+const notesSection = (additional: ReadonlyArray<string>) => mdTitledSection("Notes for AI systems", mdBulletList([...AI_NOTES, ...additional]));
 
 const INDEX_NOTES_SECTION = notesSection([SINGLE_REQUEST_NOTE]);
 const COMPANION_NOTES_SECTION = notesSection([]);
@@ -117,14 +112,8 @@ export const buildLlmsTxt = (experienceList: ExperienceList) =>
     ...SITE_OPENING,
     ABOUT_SECTION,
     PAGES_SECTION,
-    mdTitledSection(
-      "Work Experience",
-      experienceLines({ experienceList, type: "e", ...SOURCE_COPY, entry: "canonical" })
-    ),
-    mdTitledSection(
-      "Portfolio Projects",
-      experienceLines({ experienceList, type: "p", ...SOURCE_COPY, entry: "canonical" })
-    ),
+    mdTitledSection("Work Experience", experienceLines({ experienceList, type: "e", ...SOURCE_COPY, entry: "canonical" })),
+    mdTitledSection("Portfolio Projects", experienceLines({ experienceList, type: "p", ...SOURCE_COPY, entry: "canonical" })),
     mdTitledSection(
       "Language Variants",
       mdBulletList([

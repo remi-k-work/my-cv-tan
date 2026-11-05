@@ -4,7 +4,7 @@
 // constants
 import { CONTENT_SIGNAL, CRAWL_DELAY, DOWNLOADABLE_DOCUMENTS, SITEMAP_HREF } from "./constants";
 import { STATIC_PAGE_PATHS } from "./pages";
-import { absoluteUrl, experiencePath } from "./links";
+import { absoluteUrl, experiencePath } from "./urls";
 
 // --- robots.txt ---
 
@@ -26,16 +26,9 @@ const AI_DATASET_CRAWLERS = [
   "ImagesiftBot",
 ] as const;
 
-const CONTENT_DIRECTIVES = [
-  "Allow: /",
-  "Allow: /*.md",
-  "Disallow: /api",
-  `Content-Signal: ${CONTENT_SIGNAL}`,
-  `Crawl-delay: ${CRAWL_DELAY}`,
-] as const;
+const CONTENT_DIRECTIVES = ["Allow: /", "Allow: /*.md", "Disallow: /api", `Content-Signal: ${CONTENT_SIGNAL}`, `Crawl-delay: ${CRAWL_DELAY}`] as const;
 
-const crawlerGroup = (comment: string, bots: ReadonlyArray<string>) =>
-  bots.flatMap((bot) => [`# ${comment}`, `User-agent: ${bot}`, ...CONTENT_DIRECTIVES, ""]);
+const crawlerGroup = (comment: string, bots: ReadonlyArray<string>) => bots.flatMap((bot) => [`# ${comment}`, `User-agent: ${bot}`, ...CONTENT_DIRECTIVES, ""]);
 
 export const ROBOTS_TXT = [
   ...crawlerGroup("Every crawler: the HTML pages and their Markdown twins", ["*"]),
