@@ -9,10 +9,11 @@ import { experienceSeo } from "./experience-seo";
 import { experienceJsonLd } from "./page-graphs";
 import { jsonLdGraph } from "./merge";
 import { siteNodes } from "./entities";
-import { socialMeta, SocialMetaInput } from "./social-meta";
+import { socialMeta } from "./social-meta";
 
 // types
 import type { ExperienceHeadInput, JsonLdNodes, PageHead, SocialImage, SocialImageFacts } from "./models";
+import type { SocialMetaInput } from "./social-meta";
 
 // constants
 import { AUTHOR_URL, BRANDED_TITLE, GLOBAL_SOCIAL_IMAGE } from "./constants";

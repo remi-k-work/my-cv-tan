@@ -10,7 +10,7 @@ import type { PreferredLanguage } from "@/domain/models";
 // meta (shared)
 import { AI_INDEX_LINKS, canonicalLink, joinLinkHeader, languageVariantLinks } from "@/features/meta/domain/link-tags";
 import { markdownTwinUrl } from "@/features/meta/domain/urls";
-import { CACHEABLE_HEADERS, documentHeaders, INDEXABLE_HEADERS, UNAVAILABLE_HEADERS } from "@/features/meta/services";
+import { CACHEABLE_HEADERS, documentHeaders, INDEXABLE_HEADERS, UNAVAILABLE_HEADERS } from "@/features/meta/services/headers";
 
 const MD_CONTENT_TYPE = "text/markdown; charset=utf-8";
 

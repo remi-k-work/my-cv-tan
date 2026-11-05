@@ -10,7 +10,7 @@ import { experienceFromList } from "@/features/experience/domain/helpers";
 import { DEFAULT_LANGUAGE } from "@/features/meta/domain/constants";
 import { absoluteUrl, experienceMarkdownPath, experiencePath, parseLangParam, slugFromMdPathname } from "@/features/meta/domain/urls";
 import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/link-tags";
-import { discoveryTxtResponse, txtUnavailableResponse } from "@/features/meta/services";
+import { discoveryTxtResponse, txtUnavailableResponse } from "@/features/meta/services/http";
 import { mdNotFoundResponse, mdResponse, mdUnavailableResponse } from "./http";
 
 // domain

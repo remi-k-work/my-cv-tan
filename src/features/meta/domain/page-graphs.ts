@@ -8,18 +8,17 @@ import { partitionExperiences } from "@/features/experience/domain/helpers";
 // domain
 import { pageGraph } from "./page-node";
 import { schoolSubgraph, educationCollectionId, experienceCollections } from "./collections";
-import { articleNode } from "./nodes";
+import { articleNode, imageObject, webPageNode } from "./nodes";
 import { absoluteUrl } from "./urls";
 
 // constants
-import { CONTACT_PATH, EDUCATION_PATH, HOME_URL, PERSON_ID, SITE_LANGUAGES } from "./constants";
+import { CONTACT_PATH, EDUCATION_PATH, HOME_URL, PERSON_ID, PROFILE_ID, PUBLISHER_ID, SITE_LANGUAGES } from "./constants";
 
 // types
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
-import type { PreferredLanguage } from "@/domain/models";
 import type { ExperienceSeo } from "./experience-seo";
-import type { JsonLdNode, JsonLdNodes } from "./models";
+import type { JsonLdNode, JsonLdNodes, LocalizedCopy } from "./models";
 
 // Education page: CollectionPage plus its school subgraph.
 export const educationJsonLd = ({
@@ -27,12 +26,7 @@ export const educationJsonLd = ({
   description,
   educationList,
   preferredLanguage,
-}: {
-  readonly pageName: string;
-  readonly description: string;
-  readonly educationList: EducationList;
-  readonly preferredLanguage: PreferredLanguage;
-}): JsonLdNodes => {
+}: LocalizedCopy & { readonly educationList: EducationList }): JsonLdNodes => {
   const url = absoluteUrl(EDUCATION_PATH);
   const schools = schoolSubgraph(url, educationList, preferredLanguage);
 
@@ -50,15 +44,7 @@ export const educationJsonLd = ({
 };
 
 // Contact page: ContactPage plus a ContactPoint node and the Person contactPoint edge.
-export const contactJsonLd = ({
-  pageName,
-  description,
-  preferredLanguage,
-}: {
-  readonly pageName: string;
-  readonly description: string;
-  readonly preferredLanguage: PreferredLanguage;
-}): JsonLdNodes => {
+export const contactJsonLd = ({ pageName, description, preferredLanguage }: LocalizedCopy): JsonLdNodes => {
   const url = absoluteUrl(CONTACT_PATH);
   const contactPointId = `${url}#contact-point`;
 
@@ -83,17 +69,20 @@ export const contactJsonLd = ({
 };
 
 // Experience detail page: WebPage + Article + item node (OrganizationRole or project type).
-export const experienceJsonLd = ({ experience, preferredLanguage, path, canonical: url, headline, description, screenshot }: ExperienceSeo): JsonLdNodes => {
+// Every URL here derives from the route path, so the page, its article, and its subject cannot
+// disagree about which address they describe.
+export const experienceJsonLd = ({ experience, preferredLanguage, path, headline, description, screenshot }: ExperienceSeo): JsonLdNodes => {
   const { type, role, company, year, skillsUsed, gitHubLink } = experience;
 
   const employment = type === "e";
+  const url = absoluteUrl(path);
 
   const itemId = `${url}#${employment ? "organization-role" : "project"}`;
   const articleId = `${url}#article`;
 
   const image = Option.match(screenshot, {
     onNone: () => undefined,
-    onSome: ({ src, width, height }) => ({ "@type": "ImageObject", url: src, width, height }),
+    onSome: ({ src, width, height }) => imageObject(src, width, height),
   });
 
   const page = pageGraph({
@@ -126,7 +115,7 @@ export const experienceJsonLd = ({ experience, preferredLanguage, path, canonica
         mainEntityOfPage: { "@id": url },
         inLanguage: preferredLanguage,
         creator: { "@id": PERSON_ID },
-        publisher: { "@id": `${HOME_URL}#publisher` },
+        publisher: { "@id": PUBLISHER_ID },
         keywords: skillsUsed.join(", "),
         ...(gitHubLink !== undefined ? { codeRepository: gitHubLink } : {}),
       };
@@ -158,25 +147,19 @@ export const homeJsonLd = ({
   description,
   experienceList,
   preferredLanguage,
-}: {
-  readonly pageName: string;
-  readonly description: string;
-  readonly experienceList: ExperienceList;
-  readonly preferredLanguage: PreferredLanguage;
-}): JsonLdNodes => {
+}: LocalizedCopy & { readonly experienceList: ExperienceList }): JsonLdNodes => {
   const [employment, projects] = partitionExperiences(experienceList);
 
   return [
-    {
-      "@type": "ProfilePage",
-      "@id": `${HOME_URL}#profile`,
+    webPageNode({
+      type: "ProfilePage",
+      id: PROFILE_ID,
       url: HOME_URL,
       name: pageName,
       description,
-      inLanguage: preferredLanguage,
-      isPartOf: { "@id": `${HOME_URL}#website` },
-      mainEntity: { "@id": `${HOME_URL}#person` },
-    },
+      preferredLanguage,
+      mainEntity: { "@id": PERSON_ID },
+    }),
     ...experienceCollections(employment, projects, preferredLanguage),
   ];
 };

@@ -10,6 +10,7 @@ import { absoluteUrl } from "./urls";
 // types
 import type { PreferredLanguage } from "@/domain/models";
 import type { JsonLdNode, JsonLdNodes } from "./models";
+import type { PageNodeType } from "./nodes";
 
 // Emits a WebPage node paired with its two-level breadcrumb list.
 // The page's absolute URL doubles as its @id so the two spellings can never disagree.
@@ -23,7 +24,7 @@ export const pageGraph = ({
   primaryImageOfPage,
   datePublished,
 }: {
-  readonly type: "WebPage" | "ContactPage" | "CollectionPage" | "ProfilePage";
+  readonly type: PageNodeType;
   readonly path: string;
   readonly name: string;
   readonly description: string;

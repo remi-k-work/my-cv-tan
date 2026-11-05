@@ -5,7 +5,7 @@ import { contactHead, educationHead, experienceHead, homeHead, ROOT_HEAD } from 
 import { jsonLdGraph } from "../domain/merge";
 import { siteNodes } from "../domain/entities";
 
-import { PERSON_DESCRIPTION, SITE_DESCRIPTION, PERSON_ID } from "../domain/constants";
+import { PERSON_DESCRIPTION, SITE_DESCRIPTION, PERSON_ID, PROFILE_ID } from "../domain/constants";
 
 // types
 import type { PageTitles } from "@/domain/models";
@@ -313,6 +313,7 @@ it("home structured data is a first-party ProfilePage linking site entities plus
   const head = homeHead({ pageTitles: stablePageTitles, experienceList: [sampleExperience], preferredLanguage: "en" });
   const graph = graphOf(head.scripts?.[0]?.children);
   const profile = nodeOf(graph, "ProfilePage");
+  assert.strictEqual(profile?.["@id"], PROFILE_ID);
   assert.deepStrictEqual(profile?.mainEntity, { "@id": "https://www.remiforge.dev/#person" });
   assert.deepStrictEqual(profile?.isPartOf, { "@id": "https://www.remiforge.dev/#website" });
   // Collection nodes carry stable @ids like every other entity in the graph; the sample is a

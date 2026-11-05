@@ -20,34 +20,30 @@ const jsonLdScript = (data: unknown): JsonLdScript => ({
 const definedNode = (node: JsonLdNode): JsonLdNode => Object.fromEntries(Object.entries(node).filter(([, value]) => value !== undefined)) as JsonLdNode;
 
 // Merges nodes by @id, preserving order and letting defined fields override.
-// Nodes without an @id are emitted exactly as written. Pure: no array mutation, no non-null asserts.
+// Nodes without an @id are emitted exactly as written. The working array and index map are
+// local to the call, so the merge is pure at its boundary while avoiding a new array per node.
 export const jsonLdGraph = (nodes: ReadonlyArray<JsonLdNode>): JsonLdScript => {
-  type MergeState = {
-    readonly graph: Array<JsonLdNode>;
-    readonly indexById: Map<string, number>;
-  };
+  const graph: Array<JsonLdNode> = [];
+  const indexById = new Map<string, number>();
 
-  const { graph } = nodes.reduce<MergeState>(
-    (state, node) => {
-      const nd = definedNode(node);
-      const id = nd["@id"];
-      if (!Predicate.isString(id)) return { ...state, graph: [...state.graph, nd] };
+  for (const node of nodes) {
+    const defined = definedNode(node);
+    const id = defined["@id"];
 
-      const existingIndex = state.indexById.get(id);
-      if (existingIndex === undefined) {
-        return {
-          graph: [...state.graph, nd],
-          indexById: new Map(state.indexById).set(id, state.graph.length),
-        };
-      }
+    if (!Predicate.isString(id)) {
+      graph.push(defined);
+      continue;
+    }
 
-      return {
-        graph: state.graph.map((existing, index) => (index === existingIndex ? { ...existing, ...nd } : existing)),
-        indexById: state.indexById,
-      };
-    },
-    { graph: [] as Array<JsonLdNode>, indexById: new Map<string, number>() }
-  );
+    const existingIndex = indexById.get(id);
+    if (existingIndex === undefined) {
+      indexById.set(id, graph.length);
+      graph.push(defined);
+      continue;
+    }
+
+    graph[existingIndex] = { ...graph[existingIndex], ...defined };
+  }
 
   return jsonLdScript({ "@context": "https://schema.org", "@graph": graph });
 };

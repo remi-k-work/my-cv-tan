@@ -11,7 +11,7 @@ import { HOME_URL, PERSON_ID, PUBLISHER_ID, WEBSITE_ID } from "./constants";
 import type { PreferredLanguage } from "@/domain/models";
 import type { JsonLdNode } from "./models";
 
-type PageNodeType = "WebPage" | "ContactPage" | "CollectionPage" | "ProfilePage";
+export type PageNodeType = "WebPage" | "ContactPage" | "CollectionPage" | "ProfilePage";
 
 interface ArticleNodeInput {
   readonly id: string;

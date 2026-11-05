@@ -15,7 +15,7 @@ import type { EducationList } from "@/features/education/domain/models";
 import type { Experience, ExperienceList } from "@/features/experience/domain/models";
 
 // constants
-import { EXPERIENCE_LIST_ID, HOME_URL, PORTFOLIO_LIST_ID } from "../constants";
+import { EXPERIENCE_LIST_ID, HOME_URL, PERSON_ID, PORTFOLIO_LIST_ID, PROFILE_ID, WEBSITE_ID } from "../constants";
 
 const language: PreferredLanguage = "en";
 
@@ -174,8 +174,12 @@ it("homeJsonLd builds a ProfilePage linking site entities plus grouped collectio
   const profile = nodes.find((node) => node["@type"] === "ProfilePage");
   assert.deepStrictEqual(profile?.name, "Home");
   assert.deepStrictEqual(profile?.description, "A home page.");
-  assert.deepStrictEqual(profile?.mainEntity, { "@id": `${HOME_URL}#person` });
-  assert.deepStrictEqual(profile?.isPartOf, { "@id": `${HOME_URL}#website` });
+  assert.strictEqual(profile?.["@id"], PROFILE_ID);
+  assert.strictEqual(profile?.url, HOME_URL);
+  assert.deepStrictEqual(profile?.mainEntity, { "@id": PERSON_ID });
+  assert.deepStrictEqual(profile?.isPartOf, { "@id": WEBSITE_ID });
+  // The homepage is the site root, so its page node has no redundant breadcrumb trail.
+  assert.isUndefined(profile?.breadcrumb);
 
   const collections = nodes.filter((node) => node["@type"] === "Collection");
   assert.deepStrictEqual(
