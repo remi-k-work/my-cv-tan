@@ -7,12 +7,12 @@
 import { assert, it } from "@effect/vitest";
 
 // domain
-import { pageHead, experienceHead } from "../page-head";
+import { pageHead, experienceHead, contactHead } from "../page-head";
 
 // types
 import type { SocialMetaInput } from "../social-meta";
 import type { JsonLdNodes, PageHead } from "../models";
-import type { PreferredLanguage } from "@/domain/models";
+import type { PageTitles, PreferredLanguage } from "@/domain/models";
 import type { Experience } from "@/features/experience/domain/models";
 
 // constants
@@ -30,6 +30,12 @@ const social: SocialMetaInput = {
 };
 
 const graph: JsonLdNodes = [{ "@type": "WebPage", "@id": "https://www.remiforge.dev/test", name: "Test" }];
+
+const stablePageTitles: PageTitles = {
+  "/": { eyebrow: "Home", heading: "Home", intro: "Home description." },
+  "/education": { eyebrow: "Education", heading: "Education", intro: "Education description." },
+  "/contact": { eyebrow: "Contact", heading: "Contact", intro: "Contact description." },
+};
 
 const sampleExperience: Experience = {
   type: "p",
@@ -102,4 +108,15 @@ it("experienceHead uses the global banner for Twitter when no screenshot exists"
 
   assert.strictEqual(tagContent(tags, "name", "twitter:image"), GLOBAL_SOCIAL_IMAGE.src);
   assert.strictEqual(tagContent(tags, "property", "og:image"), GLOBAL_SOCIAL_IMAGE.src);
+});
+
+it("static page heads share the layout, each supplying its own canonical and Markdown twin", () => {
+  const head = contactHead({ pageTitles: stablePageTitles, preferredLanguage: language });
+  const tags = metaOf(head);
+
+  assert.strictEqual(tagContent(tags, "name", "robots"), INDEXABLE_ROBOTS);
+  assert.strictEqual(tagContent(tags, "property", "og:type"), "website");
+  assert.strictEqual(head.links?.[0]?.href, "https://www.remiforge.dev/contact");
+  assert.strictEqual(head.links?.[1]?.href, "https://www.remiforge.dev/contact.md?lang=en");
+  assert.strictEqual(head.scripts?.length, 1);
 });

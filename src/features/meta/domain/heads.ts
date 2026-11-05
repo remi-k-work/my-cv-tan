@@ -3,5 +3,4 @@
 
 export { headLanguage, ROOT_HEAD } from "./root-head";
 export { routeHead } from "./route-head";
-export { experienceHead } from "./page-head";
-export { homeHead, educationHead, contactHead } from "./static-pages";
+export { experienceHead, homeHead, educationHead, contactHead } from "./page-head";

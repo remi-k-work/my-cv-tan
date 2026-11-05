@@ -1,22 +1,26 @@
-// Shared page head layout merging title, indexing directives, social cards, links and the
-// JSON-LD graph. Also the experience detail head.
+// HTML page head builders: the shared page head layout, the experience detail head, and the three
+// static page heads (home, education, contact). Each concrete head supplies its own social card,
+// Markdown twin path, and JSON-LD graph to the shared `pageHead` layout.
 
 // services, features, and other libraries
 import { Option } from "effect";
 import { INDEXABLE_ROBOTS } from "@/domain/http";
 import { canonicalLink, markdownAlternateLink } from "./link-tags";
 import { experienceSeo } from "./experience-seo";
-import { experienceJsonLd } from "./page-graphs";
+import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd } from "./page-graphs";
 import { jsonLdGraph } from "./merge";
 import { siteNodes } from "./entities";
 import { socialMeta } from "./social-meta";
+import { staticPageCopy } from "./pages";
 
 // types
-import type { ExperienceHeadInput, JsonLdNodes, PageHead, SocialImage, SocialImageFacts } from "./models";
+import type { ExperienceHeadInput, JsonLdNodes, PageHead, SocialImage, SocialImageFacts, StaticPageCopy, StaticPageHeadInput } from "./models";
 import type { SocialMetaInput } from "./social-meta";
+import type { EducationList } from "@/features/education/domain/models";
+import type { ExperienceList } from "@/features/experience/domain/models";
 
 // constants
-import { BRANDED_TITLE, GLOBAL_SOCIAL_IMAGE } from "./constants";
+import { BRANDED_TITLE, CONTACT_PATH, EDUCATION_PATH, GLOBAL_SOCIAL_IMAGE, HOME_PATH } from "./constants";
 
 // Shared page head layout merging title, indexing directives, social cards, links and graph.
 // `social` carries the Open Graph / Twitter fields rendered by `socialMeta`; the remaining
@@ -68,4 +72,33 @@ export const experienceHead = (input: ExperienceHeadInput): PageHead => {
     markdownPath: seo.markdownPath,
     graph: experienceJsonLd(seo),
   });
+};
+
+// Shared layout for the three static pages; only the page graph differs.
+const staticPageHead = (copy: StaticPageCopy, graph: JsonLdNodes): PageHead =>
+  pageHead({
+    social: {
+      title: copy.seoTitle,
+      description: copy.description,
+      canonical: copy.canonical,
+      image: GLOBAL_SOCIAL_IMAGE,
+      preferredLanguage: copy.preferredLanguage,
+    },
+    markdownPath: copy.mdHref,
+    graph,
+  });
+
+export const homeHead = (input: StaticPageHeadInput & { readonly experienceList: ExperienceList }): PageHead => {
+  const copy = staticPageCopy(input.pageTitles, HOME_PATH, input.preferredLanguage);
+  return staticPageHead(copy, homeJsonLd({ ...copy, experienceList: input.experienceList }));
+};
+
+export const educationHead = (input: StaticPageHeadInput & { readonly educationList: EducationList }): PageHead => {
+  const copy = staticPageCopy(input.pageTitles, EDUCATION_PATH, input.preferredLanguage);
+  return staticPageHead(copy, educationJsonLd({ ...copy, educationList: input.educationList }));
+};
+
+export const contactHead = (input: StaticPageHeadInput): PageHead => {
+  const copy = staticPageCopy(input.pageTitles, CONTACT_PATH, input.preferredLanguage);
+  return staticPageHead(copy, contactJsonLd(copy));
 };

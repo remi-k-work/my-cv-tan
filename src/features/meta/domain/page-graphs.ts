@@ -8,7 +8,7 @@ import { partitionExperiences } from "@/features/experience/domain/helpers";
 // domain
 import { pageGraph } from "./page-node";
 import { schoolSubgraph, educationCollectionId, experienceCollections } from "./collections";
-import { articleNode, imageObject, webPageNode } from "./nodes";
+import { articleNode, imageObject, personEdge, webPageNode } from "./nodes";
 import { absoluteUrl } from "./urls";
 
 // constants
@@ -56,7 +56,7 @@ export const contactJsonLd = ({ pageName, description, preferredLanguage }: Loca
       preferredLanguage,
       mainEntity: { "@id": PERSON_ID },
     }),
-    { "@type": "Person", "@id": PERSON_ID, contactPoint: { "@id": contactPointId } },
+    personEdge({ contactPoint: { "@id": contactPointId } }),
     {
       "@type": "ContactPoint",
       "@id": contactPointId,
@@ -123,7 +123,7 @@ export const experienceJsonLd = ({ experience, preferredLanguage, path, headline
         // The employer claims the person as its member; the role node above carries the role itself.
         { "@type": "Organization", "@id": `${url}#organization`, name: company, member: { "@id": PERSON_ID } },
         item,
-        { "@type": "Person", "@id": PERSON_ID, worksFor: { "@id": `${url}#organization` } },
+        personEdge({ worksFor: { "@id": `${url}#organization` } }),
       ]
     : [item];
 

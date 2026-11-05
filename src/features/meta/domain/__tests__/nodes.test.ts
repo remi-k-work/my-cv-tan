@@ -22,7 +22,6 @@ const baseWebPageInput = {
   name: "Test Page",
   description: "A test page.",
   preferredLanguage: language,
-  isPartOf: { "@id": WEBSITE_ID },
 };
 
 it("articleNode builds an Article with author, publisher, about and mainEntityOfPage", () => {
