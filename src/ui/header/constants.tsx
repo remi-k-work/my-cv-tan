@@ -7,6 +7,12 @@ import VideoCameraIcon from "@heroicons/react/24/solid/VideoCameraIcon";
 import { GitHubIcon } from "@/assets/icons/github";
 import { LinkedInIcon } from "@/assets/icons/linked-in";
 
+// meta (shared)
+import { SOCIAL_PROFILES } from "@/features/meta/domain/constants";
+
+// types
+import type { ReactNode } from "react";
+
 // Static icons hoisted to module scope so re-rendering the nav reuses the same elements instead of recreating them
 const ICON_HOME = <HomeIcon />;
 const ICON_EDUCATION = <AcademicCapIcon />;
@@ -16,7 +22,13 @@ const ICON_VIDEO = <VideoCameraIcon />;
 const ICON_LINKEDIN = <LinkedInIcon />;
 const ICON_GITHUB = <GitHubIcon />;
 
-// types
+// The social links are the same declaration the JSON-LD sameAs, the rel="me" head links and the
+// Markdown twins publish, so the nav reads them instead of restating the URLs by hand.
+const SOCIAL_ICONS: Record<(typeof SOCIAL_PROFILES)[number]["name"], ReactNode> = {
+  LinkedIn: ICON_LINKEDIN,
+  GitHub: ICON_GITHUB,
+};
+
 export const NAV_ITEMS = (pdfHref: string, translate: (message: string) => string) => [
   {
     href: "/",
@@ -45,16 +57,5 @@ export const NAV_ITEMS = (pdfHref: string, translate: (message: string) => strin
     icon: ICON_VIDEO,
     isExternal: true,
   },
-  {
-    href: "https://linkedin.com/in/remi-k-work",
-    title: "LinkedIn",
-    icon: ICON_LINKEDIN,
-    isExternal: true,
-  },
-  {
-    href: "https://github.com/remi-k-work",
-    title: "GitHub",
-    icon: ICON_GITHUB,
-    isExternal: true,
-  },
+  ...SOCIAL_PROFILES.map(({ name, href }) => ({ href, title: name, icon: SOCIAL_ICONS[name], isExternal: true })),
 ];

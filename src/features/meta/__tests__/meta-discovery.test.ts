@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { buildSitemapXml, ROBOTS_TXT } from "../domain/discovery";
-import { documentHeaders, LANGUAGE_VARY } from "../services/headers";
+import { documentHeaders } from "../services/headers";
 import { robotsHandler } from "../services/handlers";
 import { sitemapResponse, sitemapUnavailableResponse, txtResponse } from "../services/responses";
 import { STATIC_PAGE_PATHS } from "../domain/pages";
@@ -184,7 +184,10 @@ it("the HTML document names the request inputs it is language-negotiated from", 
   const polish = documentHeaders("pl");
   const english = documentHeaders("en");
 
-  assert.strictEqual(polish.Vary, LANGUAGE_VARY);
+  // Pinned against the two negotiation inputs themselves rather than the constant the builder
+  // reads: comparing a value to its own source cannot fail, so it would not notice a third token
+  // being added to (or dropped from) the list a shared cache keys the document on.
+  assert.strictEqual(polish.Vary, "Cookie, Accept-Language");
   assert.strictEqual(polish["Content-Signal"], CONTENT_SIGNAL);
   assert.strictEqual(polish["Content-Language"], "pl");
   assert.strictEqual(english["Content-Language"], "en");

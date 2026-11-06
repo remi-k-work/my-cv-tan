@@ -1,21 +1,11 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
-import {
-  absoluteUrl,
-  cvPdfHref,
-  encodeParens,
-  experienceMarkdownPath,
-  experiencePath,
-  experienceScreenshot,
-  markdownTwinUrl,
-  withLanguageParam,
-} from "../domain/urls";
-import { authorLink, canonicalLink, LLMS_DISCOVERY_LINK, markdownAlternateLink, SITEMAP_LINK } from "../domain/link-tags";
+import { absoluteUrl, cvPdfHref, encodeParens, experienceMarkdownPath, experiencePath, httpUrlOption, markdownTwinUrl, withLanguageParam } from "../urls";
+import { authorLink, canonicalLink, LLMS_DISCOVERY_LINK, markdownAlternateLink, SITEMAP_LINK } from "../link-tags";
 
 // constants
-import { CV_EN_HREF, CV_PL_HREF } from "../domain/constants";
-import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain/constants";
+import { CV_EN_HREF, CV_PL_HREF } from "../constants";
 
 // These tests pin the URL math the HTML heads, Markdown twins, discovery documents and HTTP
 // responses share. The Link-header serialization itself is covered in link-header.test.ts.
@@ -24,6 +14,18 @@ it("absoluteUrl resolves a site path against the canonical origin", () => {
   assert.strictEqual(absoluteUrl("/"), "https://www.remiforge.dev/");
   assert.strictEqual(absoluteUrl("/education"), "https://www.remiforge.dev/education");
   assert.strictEqual(absoluteUrl("/images/01-a.webp"), "https://www.remiforge.dev/images/01-a.webp");
+});
+
+it("httpUrlOption publishes only parseable http(s) destinations", () => {
+  // Both web schemes pass through the URL parser, which normalizes what it can
+  assert.deepStrictEqual(httpUrlOption("https://github.com/example/repo"), Option.some("https://github.com/example/repo"));
+  assert.deepStrictEqual(httpUrlOption("http://example.com"), Option.some("http://example.com/"));
+  // Content fields accept any non-empty string, so every other shape is dropped before a head,
+  // graph or twin can publish it as a destination
+  assert.deepStrictEqual(httpUrlOption("javascript:alert(1)"), Option.none());
+  assert.deepStrictEqual(httpUrlOption("ftp://example.com/file"), Option.none());
+  assert.deepStrictEqual(httpUrlOption("/relative"), Option.none());
+  assert.deepStrictEqual(httpUrlOption("not a url"), Option.none());
 });
 
 it("withLanguageParam pins the lang parameter without disturbing the rest of the URL", () => {
@@ -60,24 +62,6 @@ it("experience paths encode one URL segment, including parentheses that would cl
   assert.strictEqual(experiencePath("résumé"), "/r%C3%A9sum%C3%A9");
   // The twin route is the detail path with one suffix, so both always name the same document
   assert.strictEqual(experienceMarkdownPath("role (senior)"), "/role%20%28senior%29.md");
-});
-
-it("experienceScreenshot resolves verified WebP facts and ignores an unpublished image", () => {
-  const published = {
-    src: "https://www.remiforge.dev/images/01-a.webp",
-    mime: "image/webp",
-    width: SCREENSHOT_WIDTH,
-    height: SCREENSHOT_HEIGHT,
-  } as const;
-
-  assert.deepStrictEqual(experienceScreenshot("01"), Option.some(published));
-  // The name is trimmed, so stray formatting whitespace still resolves the file the UI renders
-  assert.deepStrictEqual(experienceScreenshot(" 01 "), Option.some(published));
-  // An empty or whitespace-only name means the page publishes no screenshot
-  assert.deepStrictEqual(experienceScreenshot(""), Option.none());
-  assert.deepStrictEqual(experienceScreenshot("   "), Option.none());
-  // The name is one path segment, so a hostile value cannot escape /images/
-  assert.strictEqual(Option.getOrThrow(experienceScreenshot("../secret")).src, "https://www.remiforge.dev/images/..%2Fsecret-a.webp");
 });
 
 it("link builders name the canonical, author, and language-pinned Markdown twin", () => {

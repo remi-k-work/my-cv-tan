@@ -1,8 +1,9 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
-import { buildContactMd, buildEducationMd, buildExperienceMd, buildHomeMd, buildNotFoundMd, twinIndexLinks } from "../domain/twins";
-import { AI_INDEX_MARKDOWN_LINKS, escapeMd, escapeMdInline, frontmatter, mdEmptyMarker, mdLink } from "../domain/format";
+import { buildContactMd, buildEducationMd, buildExperienceMd, buildHomeMd, buildNotFoundMd } from "../twins";
+import { AI_INDEX_MARKDOWN_LINKS, twinIndexLinks } from "../twin-nav";
+import { escapeMd, escapeMdInline, frontmatter, mdEmptyMarker, mdLink } from "../format";
 
 import { STATIC_PAGES } from "@/features/meta/domain/pages";
 
@@ -406,6 +407,9 @@ it("buildContactMd advertises the same social profiles as the HTML page", () => 
   const md = buildContactMd({ pageTitles: stablePageTitles, preferredLanguage: "en", translate: translateEn });
   assert.include(md, `title: "Remi Forge ● ${STATIC_PAGES["/contact"].copy.en.title}"`);
   assert.notInclude(md, "Notes for AI systems");
+  // The Channels line names the contact page's canonical — the same URL the contact <head>
+  // publishes — read from the copy the shared frame resolved rather than derived a second time
+  assert.include(md, "Contact Form: https://www.remiforge.dev/contact (same page in HTML)");
   assert.include(md, `GitHub: https://github.com/remi-k-work`);
   assert.include(md, `LinkedIn: https://linkedin.com/in/remi-k-work`);
 

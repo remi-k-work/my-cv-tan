@@ -1,4 +1,4 @@
-// Direct unit tests for the JSON-LD collection builders in ./collections.
+// Direct unit tests for the JSON-LD collection builders in ./page-graphs.
 // Experience lists split into employment and portfolio; school lists group
 // attended institutions. All builders are pure.
 
@@ -6,7 +6,7 @@
 import { assert, it } from "@effect/vitest";
 
 // domain
-import { experienceCollections, schoolSubgraph, educationCollectionId } from "../collections";
+import { experienceCollections, schoolSubgraph, educationCollectionId } from "../page-graphs";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";

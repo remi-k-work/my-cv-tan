@@ -1,24 +1,25 @@
-// JSON-LD collection builders: grouped content lists that sit beside a page's own node.
-// Experience lists split into employment and portfolio; school lists group attended institutions.
+// The collection subgraphs that group the site's content beside a page's own node: the two
+// experience collections (employment and portfolio) and the education page's school list.
 
 // services, features, and other libraries
 import { matchPreferredLanguage } from "@/domain/helpers";
 import { excerpt, experienceHeadline } from "@/features/experience/domain/helpers";
-import { absoluteUrl, experiencePath } from "./urls";
-
-// constants
-import { EXPERIENCE_LIST_ID, META_DESCRIPTION_LENGTH, PERSON_ID, PORTFOLIO_LIST_ID, SITE_NAME } from "./constants";
 
 // domain
 import { collectionNode, personEdge } from "./nodes";
 
+// constants
+import { absoluteUrl, experiencePath } from "./urls";
+import { EXPERIENCE_LIST_ID, META_DESCRIPTION_LENGTH, PERSON_ID, PORTFOLIO_LIST_ID, SITE_NAME } from "./constants";
+
 // types
-import type { PreferredLanguage } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
+import type { PreferredLanguage } from "@/domain/models";
 import type { JsonLdNodes } from "./models";
 
 // Builds one experience collection node (employment or portfolio) with its detail-page parts.
+// An empty list emits nothing at all, so no page publishes a misleading empty collection.
 const experienceCollection = ({
   id,
   name,
@@ -61,6 +62,7 @@ export const experienceCollections = (employment: ExperienceList, projects: Expe
   }),
 ];
 
+// Each school gets a stable fragment id the person's alumniOf edges reference.
 export const educationCollectionId = (url: string) => `${url}#education-list`;
 
 // Builds the school collection plus the Person alumniOf edge for the education page.

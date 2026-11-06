@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-import { CONTACT_TWIN, EDUCATION_TWIN, HOME_TWIN, PAGE_TWINS, PAGE_ENTRIES, allEntries } from "../domain/catalogue";
-import { SOURCE_COPY } from "../domain/twins";
+import { CONTACT_TWIN, EDUCATION_TWIN, HOME_TWIN, PAGE_TWINS, PAGE_ENTRIES, allEntries } from "../catalogue";
+import { SOURCE_COPY } from "../twins";
 
 // types
 import type { ExperienceList } from "@/features/experience/domain/models";

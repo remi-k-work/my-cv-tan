@@ -23,7 +23,40 @@ import experienceEn from "@/assets/data/en/experience.json";
 // dropped and the ambient cookie strip must never break the response.
 const pinned = (path: string, lang: "en" | "pl") => new Request(`https://www.remiforge.dev${path}?lang=${lang}`);
 
+// The Link header serializes one URI-reference per parameter group, so the canonical is the first
+// `<...>` of the entry carrying `rel="canonical"`.
+const headerCanonical = (header: string | null) =>
+  header
+    ?.split(", ")
+    .find((entry) => entry.includes(`rel="canonical"`))
+    ?.match(/^<([^>]+)>/)?.[1];
+
 const firstSlug = experienceEn[0]!.slug;
+
+it("a served twin's response canonical names the very page its frontmatter cites", async () => {
+  // The HTTP envelope and the document body are two projections of one identity. A crawler reading
+  // either one alone resolves a citation target, and the two spellings it could compare must agree:
+  // this is the same invariant the experience-identity test pins for the HTML head, extended to the
+  // twin's HTTP surface, where the canonical is a Link header rather than a <link> tag.
+  for (const [handler, path] of [
+    [homeHandler, "/index.md"],
+    [educationHandler, "/education.md"],
+    [contactHandler, "/contact.md"],
+  ] as const) {
+    const response = await handler({ request: pinned(path, "en") });
+    const canonical = headerCanonical(response.headers.get("Link"));
+
+    assert.isDefined(canonical, `${path} advertised no canonical in its Link header`);
+    assert.include(await response.text(), `canonical: ${JSON.stringify(canonical)}`);
+  }
+
+  // The detail twin agrees too, with its slug encoded the way every other surface encodes it
+  const detail = await experienceHandler({ request: pinned(`/${encodeURIComponent(firstSlug)}.md`, "en") });
+  const detailCanonical = headerCanonical(detail.headers.get("Link"));
+
+  assert.strictEqual(detailCanonical, absoluteUrl(experiencePath(firstSlug)));
+  assert.include(await detail.text(), `canonical: ${JSON.stringify(detailCanonical)}`);
+});
 
 it("the home twin serves the full indexable envelope behind the pinned language", async () => {
   const response = await homeHandler({ request: pinned("/index.md", "en") });

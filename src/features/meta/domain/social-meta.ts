@@ -42,35 +42,40 @@ export const socialMeta = ({
   preferredLanguage,
   ogType = "website",
   articleSection,
-}: SocialMetaInput): ReadonlyArray<MetaTag> => [
-  { property: "og:title", content: title },
-  { property: "og:description", content: description },
-  { property: "og:image", content: image.src },
-  { property: "og:image:url", content: image.src },
-  { property: "og:image:alt", content: image.alt },
-  { property: "og:image:type", content: image.mime },
-  { property: "og:image:width", content: `${image.width}` },
-  { property: "og:image:height", content: `${image.height}` },
-  { property: "og:image:secure_url", content: image.src },
-  { property: "og:type", content: ogType },
-  { property: "og:url", content: canonical },
-  { property: "og:site_name", content: SITE_NAME },
-  { property: "og:locale", content: OPEN_GRAPH_LOCALES[preferredLanguage] },
-  ...alternateLocales(preferredLanguage).map((language) => ({
-    property: "og:locale:alternate",
-    content: OPEN_GRAPH_LOCALES[language],
-  })),
-  ...(ogType === "article"
-    ? [
-        { property: "article:author", content: AUTHOR_URL },
-        { property: "article:publisher", content: PUBLISHER_URL },
-        ...(articleSection ? [{ property: "article:section", content: articleSection }] : []),
-      ]
-    : []),
-  { name: "twitter:card", content: "summary_large_image" },
-  { name: "twitter:title", content: title },
-  { name: "twitter:description", content: description },
-  // X rejects WebP, so the Twitter card always uses the JPEG banner instead of the WebP screenshot.
-  { name: "twitter:image", content: GLOBAL_SOCIAL_IMAGE.src },
-  { name: "twitter:image:alt", content: globalSocialImage(preferredLanguage).alt },
-];
+}: SocialMetaInput): ReadonlyArray<MetaTag> => {
+  // The Twitter card always shows the JPEG banner (X rejects WebP), so its image and alt name
+  // the banner regardless of the og:image the page publishes.
+  const banner = globalSocialImage(preferredLanguage);
+
+  return [
+    { property: "og:title", content: title },
+    { property: "og:description", content: description },
+    { property: "og:image", content: image.src },
+    { property: "og:image:url", content: image.src },
+    { property: "og:image:alt", content: image.alt },
+    { property: "og:image:type", content: image.mime },
+    { property: "og:image:width", content: `${image.width}` },
+    { property: "og:image:height", content: `${image.height}` },
+    { property: "og:image:secure_url", content: image.src },
+    { property: "og:type", content: ogType },
+    { property: "og:url", content: canonical },
+    { property: "og:site_name", content: SITE_NAME },
+    { property: "og:locale", content: OPEN_GRAPH_LOCALES[preferredLanguage] },
+    ...alternateLocales(preferredLanguage).map((language) => ({
+      property: "og:locale:alternate",
+      content: OPEN_GRAPH_LOCALES[language],
+    })),
+    ...(ogType === "article"
+      ? [
+          { property: "article:author", content: AUTHOR_URL },
+          { property: "article:publisher", content: PUBLISHER_URL },
+          ...(articleSection ? [{ property: "article:section", content: articleSection }] : []),
+        ]
+      : []),
+    { name: "twitter:card", content: "summary_large_image" },
+    { name: "twitter:title", content: title },
+    { name: "twitter:description", content: description },
+    { name: "twitter:image", content: banner.src },
+    { name: "twitter:image:alt", content: banner.alt },
+  ];
+};

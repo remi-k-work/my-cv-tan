@@ -1,24 +1,153 @@
-// Page-specific JSON-LD graph assemblers. Each pulls together the page node (from ./page-node),
-// any collections (from ./collections), and page-unique nodes into one subgraph.
+// Page JSON-LD graph assembly: the page-node pair every content page publishes, the collection
+// subgraphs that group the site's content, and the per-page assemblers that combine them.
 
 // services, features, and other libraries
-import { Option } from "effect";
-import { partitionExperiences } from "@/features/experience/domain/helpers";
+import { Option, pipe } from "effect";
+import { matchPreferredLanguage } from "@/domain/helpers";
+import { excerpt, experienceHeadline, partitionExperiences } from "@/features/experience/domain/helpers";
 
 // domain
-import { pageGraph } from "./page-node";
-import { schoolSubgraph, educationCollectionId, experienceCollections } from "./collections";
-import { articleNode, imageObject, personEdge, webPageNode } from "./nodes";
-import { absoluteUrl } from "./urls";
+import { absoluteUrl, experiencePath, httpUrlOption } from "./urls";
+import { articleNode, breadcrumb, collectionNode, imageObject, personEdge, webPageNode } from "./nodes";
 
 // constants
-import { CONTACT_PATH, EDUCATION_PATH, HOME_URL, PERSON_ID, PROFILE_ID, PUBLISHER_ID } from "./constants";
 import { SITE_LANGUAGES } from "@/domain/constants";
+import {
+  CONTACT_PATH,
+  EDUCATION_PATH,
+  EXPERIENCE_LIST_ID,
+  HOME_URL,
+  META_DESCRIPTION_LENGTH,
+  PERSON_ID,
+  PORTFOLIO_LIST_ID,
+  PROFILE_ID,
+  PUBLISHER_ID,
+  SITE_NAME,
+} from "./constants";
 
 // types
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
+import type { PreferredLanguage } from "@/domain/models";
 import type { ExperienceGraphInput, JsonLdNode, JsonLdNodes, LocalizedCopy } from "./models";
+import type { PageNodeType } from "./nodes";
+
+// --- The shared page-node pair ---
+
+// Emits a WebPage node paired with its two-level breadcrumb trail. Every content page publishes
+// this pair, so it is decided once here rather than repeated in each builder below. The page's
+// absolute URL doubles as its @id so the two spellings can never disagree.
+export const pageGraph = ({
+  type,
+  path,
+  name,
+  description,
+  preferredLanguage,
+  mainEntity,
+  primaryImageOfPage,
+}: {
+  readonly type: PageNodeType;
+  readonly path: string;
+  readonly name: string;
+  readonly description: string;
+  readonly preferredLanguage: PreferredLanguage;
+  readonly mainEntity?: JsonLdNode;
+  readonly primaryImageOfPage?: JsonLdNode;
+}): JsonLdNodes => {
+  const id = absoluteUrl(path);
+
+  return [
+    webPageNode({
+      type,
+      id,
+      url: id,
+      name,
+      description,
+      preferredLanguage,
+      breadcrumb: true,
+      mainEntity,
+      primaryImageOfPage,
+    }),
+    breadcrumb(preferredLanguage, id, name),
+  ];
+};
+
+// --- Collection subgraphs ---
+
+// Grouped content lists that sit beside a page's own node: experience lists split into employment
+// and portfolio; school lists group attended institutions.
+
+// Builds one experience collection node (employment or portfolio) with its detail-page parts.
+const experienceCollection = ({
+  id,
+  name,
+  experiences,
+  preferredLanguage,
+}: {
+  readonly id: string;
+  readonly name: string;
+  readonly experiences: ExperienceList;
+  readonly preferredLanguage: PreferredLanguage;
+}): JsonLdNodes => {
+  if (experiences.length === 0) return [];
+
+  return [
+    collectionNode({
+      id,
+      name,
+      preferredLanguage,
+      parts: experiences.map((experience) => {
+        const url = absoluteUrl(experiencePath(experience.slug));
+        return { "@type": "WebPage", "@id": url, url, name: experienceHeadline(experience, preferredLanguage) };
+      }),
+    }),
+  ];
+};
+
+// Builds both experience collections (employment then portfolio) for the homepage graph.
+export const experienceCollections = (employment: ExperienceList, projects: ExperienceList, preferredLanguage: PreferredLanguage): JsonLdNodes => [
+  ...experienceCollection({
+    id: EXPERIENCE_LIST_ID,
+    name: matchPreferredLanguage(preferredLanguage, "Experience", "Doświadczenie"),
+    experiences: employment,
+    preferredLanguage,
+  }),
+  ...experienceCollection({
+    id: PORTFOLIO_LIST_ID,
+    name: matchPreferredLanguage(preferredLanguage, "Portfolio Projects", "Projekty do Portfolio"),
+    experiences: projects,
+    preferredLanguage,
+  }),
+];
+
+export const educationCollectionId = (url: string) => `${url}#education-list`;
+
+// Builds the school collection plus the Person alumniOf edge for the education page.
+export const schoolSubgraph = (url: string, educationList: EducationList, preferredLanguage: PreferredLanguage): JsonLdNodes => {
+  if (educationList.length === 0) return [];
+
+  const schoolNodes = educationList.map(({ name, info, location }, index) => ({
+    "@type": "EducationalOrganization",
+    "@id": `${url}#school-${index + 1}`,
+    name,
+    description: excerpt(info, META_DESCRIPTION_LENGTH),
+    address: location,
+    alumni: { "@id": PERSON_ID },
+  }));
+
+  return [
+    collectionNode({
+      id: educationCollectionId(url),
+      url,
+      name: `${SITE_NAME} — ${matchPreferredLanguage(preferredLanguage, "Education", "Edukacja")}`,
+      preferredLanguage,
+      parts: schoolNodes,
+    }),
+    personEdge({ alumniOf: schoolNodes.map(({ "@id": id }) => ({ "@id": id })) }),
+  ];
+};
+
+// --- Per-page graphs ---
 
 // Education page: CollectionPage plus its school subgraph.
 export const educationJsonLd = ({
@@ -85,6 +214,10 @@ export const experienceJsonLd = ({ experience, preferredLanguage, path, headline
     onSome: ({ src, width, height }) => imageObject(src, width, height),
   });
 
+  // The schema accepts any non-empty repository string, so validate the scheme before publishing
+  // it: JSON-LD is crawler-facing exactly like the Markdown twin's link list.
+  const repository = pipe(Option.fromNullishOr(gitHubLink), Option.flatMap(httpUrlOption), Option.getOrUndefined);
+
   const page = pageGraph({
     type: "WebPage",
     path,
@@ -105,7 +238,10 @@ export const experienceJsonLd = ({ experience, preferredLanguage, path, headline
         mainEntityOfPage: { "@id": url },
       }
     : {
-        "@type": gitHubLink ? "SoftwareSourceCode" : "CreativeWork",
+        // The source-code type is a claim that this page's code is published, so it follows the
+        // validated repository rather than the raw field: a dropped scheme leaves a CreativeWork
+        // instead of a SoftwareSourceCode that advertises code it cannot link to.
+        "@type": repository !== undefined ? "SoftwareSourceCode" : "CreativeWork",
         "@id": itemId,
         name: role,
         description,
@@ -116,7 +252,7 @@ export const experienceJsonLd = ({ experience, preferredLanguage, path, headline
         creator: { "@id": PERSON_ID },
         publisher: { "@id": PUBLISHER_ID },
         keywords: skillsUsed.join(", "),
-        ...(gitHubLink !== undefined ? { codeRepository: gitHubLink } : {}),
+        ...(repository !== undefined ? { codeRepository: repository } : {}),
       };
 
   const employmentNodes: JsonLdNodes = employment
@@ -135,6 +271,7 @@ export const experienceJsonLd = ({ experience, preferredLanguage, path, headline
     preferredLanguage,
     about: itemId,
     mainEntityOfPage: url,
+    image,
   });
 
   return [...page, article, ...employmentNodes];

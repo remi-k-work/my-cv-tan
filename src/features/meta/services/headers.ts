@@ -11,7 +11,7 @@ import { CONTENT_SIGNAL } from "../domain/constants";
 import { AI_INDEX_LINK_HEADER } from "../domain/link-tags";
 
 // Language-negotiated documents must vary on both inputs.
-export const LANGUAGE_VARY = "Cookie, Accept-Language";
+const LANGUAGE_VARY = "Cookie, Accept-Language";
 
 // The reuse signal and AI-index advertisements every response repeats.
 export const MACHINE_HEADERS = { "Content-Signal": CONTENT_SIGNAL, Link: AI_INDEX_LINK_HEADER } as const;

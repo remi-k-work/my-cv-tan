@@ -20,6 +20,7 @@ interface ArticleNodeInput {
   readonly preferredLanguage: PreferredLanguage;
   readonly about: string;
   readonly mainEntityOfPage: string;
+  readonly image?: JsonLdNode;
 }
 
 interface WebPageNodeInput {
@@ -44,7 +45,7 @@ interface CollectionNodeInput {
 
 // --- Node builders ---
 
-export const articleNode = ({ id, headline, description, preferredLanguage, about, mainEntityOfPage }: ArticleNodeInput): JsonLdNode => ({
+export const articleNode = ({ id, headline, description, preferredLanguage, about, mainEntityOfPage, image }: ArticleNodeInput): JsonLdNode => ({
   "@type": "Article",
   "@id": id,
   headline,
@@ -54,6 +55,7 @@ export const articleNode = ({ id, headline, description, preferredLanguage, abou
   publisher: { "@id": PUBLISHER_ID },
   about: { "@id": about },
   mainEntityOfPage: { "@id": mainEntityOfPage },
+  ...(image !== undefined ? { image } : {}),
 });
 
 export const webPageNode = ({

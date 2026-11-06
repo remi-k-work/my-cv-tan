@@ -1,19 +1,19 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-import { contactHead, educationHead, experienceHead, homeHead } from "../domain/page-head";
-import { headLanguage, rootHead, ROOT_HEAD, fallbackHead } from "../domain/root-head";
-import { routeHead } from "../domain/route-head";
-import { canonicalLink } from "../domain/link-tags";
-import { withLanguageParam } from "../domain/urls";
-import { STATIC_PAGES } from "../domain/pages";
+import { contactHead, educationHead, experienceHead, homeHead } from "../page-head";
+import { headLanguage, rootHead, ROOT_HEAD, fallbackHead } from "../root-head";
+import { routeHead } from "../route-head";
+import { canonicalLink } from "../link-tags";
+import { withLanguageParam } from "../urls";
+import { STATIC_PAGES } from "../pages";
 
-import { PERSON_DESCRIPTION, SITE_DESCRIPTION, SITE_NAME, AUTHOR_URL } from "../domain/constants";
+import { PERSON_DESCRIPTION, SITE_DESCRIPTION, SITE_NAME, AUTHOR_URL } from "../constants";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 
 // types
 import type { PageTitles } from "@/domain/models";
 import type { Experience } from "@/features/experience/domain/models";
-import type { PageHead } from "../domain/models";
+import type { MetaTag, PageHead } from "../models";
 
 const sampleExperience: Experience = {
   type: "p",
@@ -36,6 +36,16 @@ const stablePageTitles: PageTitles = {
 // The loader payload shapes headLanguage sees: a valid locale, an unsupported
 // one, and a missing match entry (404 / SSR shell renders before the root loader resolves)
 const rootLoaderData = [{ loaderData: { preferredLanguage: "pl" } }, { loaderData: { preferredLanguage: "de" } }] as const;
+
+// TanStack keeps the last meta tag for each name/property (and the single <title>), so replay
+// that merge to assert which value a browser actually receives from the root fallback chain.
+const dedupeMeta = (tags: ReadonlyArray<MetaTag>): ReadonlyArray<MetaTag> => {
+  const keyOf = (tag: MetaTag) => ("title" in tag ? "title" : "name" in tag ? `name:${tag.name}` : "property" in tag ? `property:${tag.property}` : "charset");
+
+  const merged = new Map<string, MetaTag>();
+  for (const tag of tags) merged.set(keyOf(tag), tag);
+  return [...merged.values()];
+};
 
 it("root metadata defaults to noindex and complete page heads explicitly allow indexing", () => {
   assert.include(JSON.stringify(ROOT_HEAD.meta), `"content":"${NOINDEX_FOLLOW}"`);
@@ -365,6 +375,41 @@ it("rootHead adds localized not-found metadata while retaining site-wide discove
   assert.include(JSON.stringify(fallback.links), '"rel":"sitemap"');
   assert.notInclude(JSON.stringify(fallback.links), '"rel":"canonical"');
   assert.strictEqual(fallback.scripts?.length, 1);
+});
+
+it("the not-found fallback wins the root's duplicate meta tags after TanStack's merge", () => {
+  const head = rootHead([{ loaderData: { preferredLanguage: "pl" }, status: "success" }, { status: "notFound" }]);
+  const rendered = JSON.stringify(dedupeMeta(head.meta));
+
+  // One title, description and robots directive, each carrying the not-found value rather than
+  // the root's default description and home title
+  assert.include(rendered, '"title":"Remi Forge ● Nie znaleziono"');
+  assert.include(rendered, "Nie znaleziono żądanej strony.");
+  assert.include(rendered, NOINDEX_FOLLOW);
+  assert.notInclude(rendered, SITE_DESCRIPTION);
+  assert.strictEqual((rendered.match(/"title":/g) ?? []).length, 1);
+  assert.strictEqual((rendered.match(/"name":"description"/g) ?? []).length, 1);
+  assert.strictEqual((rendered.match(/"name":"robots"/g) ?? []).length, 1);
+});
+
+it("rootHead serves the site-wide head with no scripts when no match is a not-found", () => {
+  // The branch every successful SSR page takes: the root contributes its identity and discovery
+  // links but no fallback document and, critically, no JSON-LD. TanStack concatenates every
+  // match's scripts, so a root-level graph would render beside the page's own single block.
+  const head = rootHead([{ loaderData: { preferredLanguage: "en" }, status: "success" }, { status: "success" }]);
+
+  assert.deepStrictEqual(head.scripts, []);
+  // No unavailable/not-found fallback copy is merged into a successful page's head
+  assert.notInclude(JSON.stringify(head.meta), "Page unavailable");
+  assert.notInclude(JSON.stringify(head.meta), "Not Found");
+  // The site-wide identity and discovery links ride along unchanged
+  assert.include(JSON.stringify(head.links), '"rel":"llms"');
+  assert.include(JSON.stringify(head.links), '"rel":"sitemap"');
+  assert.include(JSON.stringify(head.links), '"rel":"me"');
+  assert.include(JSON.stringify(head.links), '"rel":"author"');
+  // The root's noindex default survives on the happy path too: a leaf head always overrides it
+  // by name, while a page that declares no head of its own keeps the safe fallback
+  assert.include(JSON.stringify(head.meta), NOINDEX_FOLLOW);
 });
 
 it("rootHead recognizes TanStack's internal not-found marker", () => {

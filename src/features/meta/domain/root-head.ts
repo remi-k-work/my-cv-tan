@@ -4,18 +4,17 @@
 
 // services, features, and other libraries
 import { Array, Option, Schema, pipe } from "effect";
-import { PreferredLanguage } from "@/domain/models";
 import { NOINDEX_FOLLOW } from "@/domain/http";
 import { matchPreferredLanguage } from "@/domain/helpers";
+import { PreferredLanguage } from "@/domain/models";
+
+// domain
+import { siteGraphScript } from "./entities";
+import { AI_INDEX_LINKS, LLMS_DISCOVERY_LINK, SITEMAP_LINK, authorLink, canonicalLink } from "./link-tags";
 import { absoluteUrl } from "./urls";
-import { canonicalLink } from "./link-tags";
-import { siteGraphScript } from "./merge";
 
 // constants
 import { AUTHOR_URL, AVATAR, BRANDED_TITLE, DEFAULT_LANGUAGE, HOME_TITLE, SITE_DESCRIPTION, SITE_NAME, SOCIAL_LINKS } from "./constants";
-
-// link tags
-import { authorLink, AI_INDEX_LINKS, LLMS_DISCOVERY_LINK, SITEMAP_LINK } from "./link-tags";
 
 // types
 import type { LinkTag, MatchChain, MetaTag, PageHead } from "./models";
@@ -64,11 +63,7 @@ export const isNotFoundMatch = (match: MatchChain[number]): boolean => match.sta
 
 // Fallback documents stay out of search results while identifying the failed route and language.
 export const fallbackHead = (pagePath: string | undefined, preferredLanguage: PreferredLanguage = DEFAULT_LANGUAGE, notFound = false): PageHead => {
-  const title = matchPreferredLanguage(
-    preferredLanguage,
-    notFound ? "Not Found" : "Page unavailable",
-    notFound ? "Nie znaleziono" : "Strona niedostępna"
-  );
+  const title = matchPreferredLanguage(preferredLanguage, notFound ? "Not Found" : "Page unavailable", notFound ? "Nie znaleziono" : "Strona niedostępna");
   const description = matchPreferredLanguage(
     preferredLanguage,
     notFound ? "The requested page could not be found." : "This page is temporarily unavailable.",
@@ -76,11 +71,7 @@ export const fallbackHead = (pagePath: string | undefined, preferredLanguage: Pr
   );
 
   return {
-    meta: [
-      { title: BRANDED_TITLE(title) },
-      { name: "robots", content: NOINDEX_FOLLOW },
-      { name: "description", content: description },
-    ],
+    meta: [{ title: BRANDED_TITLE(title) }, { name: "robots", content: NOINDEX_FOLLOW }, { name: "description", content: description }],
     links: pagePath === undefined ? [] : [canonicalLink(absoluteUrl(pagePath))],
     scripts: [siteGraphScript],
   };

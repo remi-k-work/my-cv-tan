@@ -4,15 +4,30 @@
 // than independently per surface — the surfaces can then never drift apart.
 
 // services, features, and other libraries
-import { Option } from "effect";
+import { Option, String } from "effect";
 import { excerpt, experienceHeadline } from "@/features/experience/domain/helpers";
-import { absoluteUrl, experienceMarkdownPath, experiencePath, experienceScreenshot } from "./urls";
+import { absoluteUrl, experienceMarkdownPath, experiencePath } from "./urls";
+
+// constants
+import { META_DESCRIPTION_LENGTH } from "./constants";
+import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain/constants";
 
 // types
 import type { ExperienceHeadInput, SocialImageFacts } from "./models";
 
-// constants
-import { META_DESCRIPTION_LENGTH } from "./constants";
+// Resolves screenshot dimensions and absolute URL when an image name is provided.
+export const experienceScreenshot = (imageName: string): Option.Option<SocialImageFacts> => {
+  const name = String.trim(imageName);
+
+  return String.isNonEmpty(name)
+    ? Option.some({
+        src: absoluteUrl(`/images/${encodeURIComponent(name)}-a.webp`),
+        mime: "image/webp",
+        width: SCREENSHOT_WIDTH,
+        height: SCREENSHOT_HEIGHT,
+      })
+    : Option.none();
+};
 
 export interface ExperienceSeo extends ExperienceHeadInput {
   // Canonical HTML path and twin route for the page.

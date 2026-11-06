@@ -1,12 +1,12 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { Option, Schema, pipe } from "effect";
-import { contactHead, educationHead, experienceHead, homeHead } from "../domain/page-head";
-import { ROOT_HEAD } from "../domain/root-head";
-import { jsonLdGraph } from "../domain/merge";
-import { siteNodes } from "../domain/entities";
+import { contactHead, educationHead, experienceHead, homeHead } from "../page-head";
+import { ROOT_HEAD } from "../root-head";
+import { jsonLdGraph } from "../merge";
+import { siteNodes } from "../entities";
 
-import { PERSON_DESCRIPTION, SITE_DESCRIPTION, PERSON_ID, PROFILE_ID } from "../domain/constants";
+import { PERSON_DESCRIPTION, SITE_DESCRIPTION, PERSON_ID, PROFILE_ID } from "../constants";
 
 // types
 import type { PageTitles } from "@/domain/models";
@@ -255,6 +255,9 @@ it("project details use SoftwareSourceCode linked to the canonical WebPage, pers
     width: 1600,
     height: 900,
   });
+  // The Article carries the same verified picture, so an extractor that reads only Article
+  // markup still finds a page image without following the mainEntity reference
+  assert.deepStrictEqual(article?.image, project?.image);
   assert.isDefined(nodeOf(parsed, "BreadcrumbList"));
 });
 
@@ -308,6 +311,7 @@ it("experience pages claim the screenshot as their main image only when one exis
   const bareGraph = graphOf(bareHead.scripts?.[0]?.children);
   assert.isUndefined(nodeOf(bareGraph, "WebPage")?.primaryImageOfPage);
   assert.isUndefined(nodeOf(bareGraph, "SoftwareSourceCode")?.image);
+  assert.isUndefined(nodeOf(bareGraph, "Article")?.image);
   assert.include(JSON.stringify(bareHead.meta), "https://www.remiforge.dev/opengraph-image.jpg");
 });
 

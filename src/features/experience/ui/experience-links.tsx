@@ -1,6 +1,7 @@
 // services, features, and other libraries
 import { Array, Option, pipe } from "effect";
 import { useGT } from "gt-tanstack-start";
+import { httpUrlOption } from "@/features/meta/domain/urls";
 
 // components
 import { LinkChip } from "@/features/experience/ui/link-chip";
@@ -38,8 +39,14 @@ export function ExperienceLinks({ experience, iconClassName }: ExperienceLinksPr
   // Repeated chips ("Live Link", "GitHub Repo") are told apart by the experience they belong to
   const context = `${role}, ${company}`;
 
+  // The schema accepts any non-empty string, so the HTML chips apply the same http(s) guard the
+  // Markdown twin and JSON-LD use: a malformed destination renders nowhere, not just in the head.
   const link = (href: string | undefined, title: string, icon: ElementType): Option.Option<ExperienceLink> =>
-    Option.map(Option.fromNullishOr(href), (href) => ({ href, title, icon }));
+    pipe(
+      Option.fromNullishOr(href),
+      Option.flatMap(httpUrlOption),
+      Option.map((href) => ({ href, title, icon }))
+    );
 
   const existingLinks = pipe(
     [link(liveLink, gt("Live Link"), GlobeAltIcon), link(gitHubLink, gt("GitHub Repo"), GitHubIcon), link(videoLink, gt("Watch Video"), VideoCameraIcon)],

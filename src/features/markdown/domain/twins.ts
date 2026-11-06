@@ -1,6 +1,6 @@
-// Markdown twin document builders: the shared source-language context, SEO identity, twin
-// navigation, and the per-page documents. The twin catalogue lives in ./catalogue; the
-// security-sensitive formatting primitives live in ./format.
+// Markdown twin document builders: the shared source-language context, SEO identity, and the
+// per-page documents. The twin catalogue lives in ./catalogue, the crawl graph the documents
+// link through in ./twin-nav, and the security-sensitive formatting primitives in ./format.
 
 // services, features, and other libraries
 import { Array, Option, pipe } from "effect";
@@ -8,11 +8,11 @@ import { matchPreferredLanguage } from "@/domain/helpers";
 import { excerpt, experienceHeadline } from "@/features/experience/domain/helpers";
 
 // meta (shared)
-import { STATIC_PAGES, STATIC_PAGE_PATHS, staticPageCopy } from "@/features/meta/domain/pages";
+import { staticPageCopy } from "@/features/meta/domain/pages";
 import {
-  DEFAULT_LANGUAGE,
   BRANDED_TITLE,
   CONTACT_PATH,
+  DEFAULT_LANGUAGE,
   DOWNLOADABLE_DOCUMENTS,
   EDUCATION_PATH,
   HOME_COUNTRY_NAME,
@@ -22,12 +22,10 @@ import {
   SOCIAL_PROFILES,
 } from "@/features/meta/domain/constants";
 import { experienceSeo } from "@/features/meta/domain/experience-seo";
-import { absoluteUrl, decodeUrlOption, experienceMarkdownPath, experiencePath, markdownTwinUrl } from "@/features/meta/domain/urls";
-import { LLMS_TXT_INDEX } from "@/features/meta/domain/link-tags";
+import { absoluteUrl, experienceMarkdownPath, experiencePath, httpUrlOption, markdownTwinUrl } from "@/features/meta/domain/urls";
 
 // formatting primitives
 import {
-  AI_INDEX_MARKDOWN_LINKS,
   escapeMd,
   escapeMdInline,
   frontmatter,
@@ -43,8 +41,10 @@ import {
   mdProfileLinks,
   mdQuote,
   mdTitledSection,
-  translatedLink,
 } from "./format";
+
+// domain
+import { deadEndEscapeLine, detailIndexLinks, twinIndexLinks } from "./twin-nav";
 
 // types
 import type { PagePath, PageTitles, PreferredLanguage, Translate } from "@/domain/models";
@@ -83,39 +83,16 @@ const twinIdentity = ({
 
 const externalLink = (label: string, href: string): Option.Option<string> =>
   pipe(
-    decodeUrlOption(href),
-    Option.filter((url) => url.protocol === "http:" || url.protocol === "https:"),
-    Option.map((url) => mdLink(label, url.href))
+    httpUrlOption(href),
+    Option.map((url) => mdLink(label, url))
   );
 
-// Formats an optional web link as a bullet item; non-http/https URLs are omitted.
-const optionalBulletLink = (label: string, href: string | undefined) =>
+// Formats an optional web link line for a bullet list; non-http/https URLs are omitted.
+const optionalLink = (label: string, href: string | undefined) =>
   pipe(
     Option.fromNullishOr(href),
     Option.flatMap((validHref) => externalLink(label, validHref))
   );
-
-// --- Twin navigation ---
-
-const homeLink = (preferredLanguage: PreferredLanguage, translate: Translate) =>
-  translatedLink(STATIC_PAGES[HOME_PATH].label, markdownTwinUrl(STATIC_PAGES[HOME_PATH].mdHref, preferredLanguage), translate);
-
-// Sibling twins for a static page, plus the two AI indexes; a page never links itself.
-export const twinIndexLinks = (pagePath: PagePath, preferredLanguage: PreferredLanguage, translate: Translate) =>
-  mdBulletList([
-    ...STATIC_PAGE_PATHS.filter((path) => path !== pagePath).map((path) =>
-      translatedLink(STATIC_PAGES[path].label, markdownTwinUrl(STATIC_PAGES[path].mdHref, preferredLanguage), translate)
-    ),
-    ...AI_INDEX_MARKDOWN_LINKS,
-  ]);
-
-const detailIndexLinks = (preferredLanguage: PreferredLanguage, translate: Translate) =>
-  mdBulletList([homeLink(preferredLanguage, translate), ...AI_INDEX_MARKDOWN_LINKS]);
-
-const deadEndEscapeLine = (preferredLanguage: PreferredLanguage, translate: Translate) => {
-  const indexLink = mdLink(LLMS_TXT_INDEX.name, LLMS_TXT_INDEX.url);
-  return `${escapeMdInline(translate("See"))} ${homeLink(preferredLanguage, translate)} ${escapeMdInline(translate("or"))} ${indexLink}.`;
-};
 
 // --- Experience documents ---
 
@@ -146,9 +123,9 @@ export const buildExperienceMd = ({ experience, preferredLanguage, translate }: 
   const { canonical, headline, description } = experienceSeo({ experience, preferredLanguage });
 
   const links = Array.getSomes([
-    optionalBulletLink(translate("GitHub Repo"), experience.gitHubLink),
-    optionalBulletLink(translate("Live Link"), experience.liveLink),
-    optionalBulletLink(translate("Watch Video"), experience.videoLink),
+    optionalLink(translate("GitHub Repo"), experience.gitHubLink),
+    optionalLink(translate("Live Link"), experience.liveLink),
+    optionalLink(translate("Watch Video"), experience.videoLink),
   ]);
 
   return mdDocument([
@@ -218,29 +195,31 @@ const contactChannels = (canonical: string, translate: Translate) =>
 const pagesSection = (copy: StaticPageCopy, translate: Translate) =>
   mdTitledSection(translate("Pages"), twinIndexLinks(copy.path, copy.preferredLanguage, translate));
 
+// Sections render from the copy the shared frame already resolved, so a section that needs the
+// page's canonical reads the one value the frontmatter also publishes instead of deriving a second.
 const staticTwinDocument = (
   pageTitles: PageTitles,
   pagePath: PagePath,
   preferredLanguage: PreferredLanguage,
   translate: Translate,
-  sections: ReadonlyArray<string>
+  sections: (copy: StaticPageCopy) => ReadonlyArray<string>
 ) => {
   const copy = staticPageCopy(pageTitles, pagePath, preferredLanguage);
 
-  return mdDocument([...pageOpening(copy), escapeMd(copy.intro), ...sections, pagesSection(copy, translate)]);
+  return mdDocument([...pageOpening(copy), escapeMd(copy.intro), ...sections(copy), pagesSection(copy, translate)]);
 };
 
 export const buildHomeMd = ({ pageTitles, experienceList, preferredLanguage, translate }: HomeMdInput) =>
-  staticTwinDocument(pageTitles, HOME_PATH, preferredLanguage, translate, [
+  staticTwinDocument(pageTitles, HOME_PATH, preferredLanguage, translate, () => [
     mdTitledSection(translate("Experience"), experienceLines({ experienceList, type: "e", translate, preferredLanguage, entry: "twin" })),
     mdTitledSection(translate("Portfolio Projects"), experienceLines({ experienceList, type: "p", translate, preferredLanguage, entry: "twin" })),
   ]);
 
 export const buildEducationMd = ({ pageTitles, educationList, preferredLanguage, translate }: EducationMdInput) =>
-  staticTwinDocument(pageTitles, EDUCATION_PATH, preferredLanguage, translate, [schoolSections(educationList, translate), documentsSection(translate)]);
+  staticTwinDocument(pageTitles, EDUCATION_PATH, preferredLanguage, translate, () => [schoolSections(educationList, translate), documentsSection(translate)]);
 
 export const buildContactMd = ({ pageTitles, preferredLanguage, translate }: ContactMdInput) =>
-  staticTwinDocument(pageTitles, CONTACT_PATH, preferredLanguage, translate, [contactChannels(absoluteUrl(CONTACT_PATH), translate)]);
+  staticTwinDocument(pageTitles, CONTACT_PATH, preferredLanguage, translate, (copy) => [contactChannels(copy.canonical, translate)]);
 
 // The raw slug is quoted inside YAML frontmatter; the path is escaped for the Markdown body.
 const detailOf = (slug: Option.Option<string>) => Option.map(slug, (value) => ({ slug: value, path: escapeMdInline(experiencePath(value)) }));

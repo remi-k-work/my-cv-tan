@@ -12,20 +12,11 @@ import type { RequiredDataError } from "@/features/data/domain/required";
 
 export type TwinDataResolver<Data> = (datasets: DatasetsService, preferredLanguage: PreferredLanguage) => Effect.Effect<Data, RequiredDataError>;
 
-export const resolveHomeTwinData: TwinDataResolver<{ readonly experienceList: ExperienceList }> = Effect.fnUntraced(function* (
-  datasets: DatasetsService,
-  preferredLanguage: PreferredLanguage
-) {
-  const experienceList = yield* datasets.experienceList(preferredLanguage);
-  return { experienceList };
-});
+// Each resolver projects exactly one localized dataset into its twin's render input.
+export const resolveHomeTwinData: TwinDataResolver<{ readonly experienceList: ExperienceList }> = (datasets, preferredLanguage) =>
+  Effect.map(datasets.experienceList(preferredLanguage), (experienceList) => ({ experienceList }));
 
-export const resolveEducationTwinData: TwinDataResolver<{ readonly educationList: EducationList }> = Effect.fnUntraced(function* (
-  datasets: DatasetsService,
-  preferredLanguage: PreferredLanguage
-) {
-  const educationList = yield* datasets.educationList(preferredLanguage);
-  return { educationList };
-});
+export const resolveEducationTwinData: TwinDataResolver<{ readonly educationList: EducationList }> = (datasets, preferredLanguage) =>
+  Effect.map(datasets.educationList(preferredLanguage), (educationList) => ({ educationList }));
 
 export const resolveContactTwinData: TwinDataResolver<{}> = () => Effect.succeed({});

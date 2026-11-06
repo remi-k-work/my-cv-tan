@@ -3,7 +3,6 @@
 // document is assembled from. Twin declarations and page-specific builders live in ./twins.
 
 // meta (shared)
-import { AI_INDEXES } from "@/features/meta/domain/link-tags";
 import { absoluteUrl, encodeParens } from "@/features/meta/domain/urls";
 
 // types
@@ -87,5 +86,3 @@ export const mdDocumentLinks = (documents: ReadonlyArray<{ readonly label: strin
 
 export const mdProfileLinks = (profiles: ReadonlyArray<{ readonly name: string; readonly href: string }>) =>
   profiles.map(({ name, href }) => mdFact(name, href));
-
-export const AI_INDEX_MARKDOWN_LINKS: ReadonlyArray<string> = AI_INDEXES.map(({ name, url }) => mdLink(name, url));

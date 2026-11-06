@@ -18,10 +18,11 @@ import {
   WEBSITE_ID,
 } from "./constants";
 import { imageObject } from "./nodes";
+import { jsonLdGraph } from "./merge";
 import { SITE_LANGUAGES } from "@/domain/constants";
 
 // types
-import type { JsonLdNode } from "./models";
+import type { JsonLdNode, JsonLdScript } from "./models";
 
 const POSTAL_ADDRESS = { "@type": "PostalAddress", addressLocality: HOME_LOCALITY, addressCountry: HOME_COUNTRY } as const;
 const AVATAR_IMAGE_OBJECT = imageObject(AVATAR.src, AVATAR.width, AVATAR.height);
@@ -42,7 +43,8 @@ export const siteNodes: ReadonlyArray<JsonLdNode> = [
     "@type": "Person",
     "@id": PERSON_ID,
     name: SITE_NAME,
-    alternateName: "Remi Forge",
+    // The brand and the person share one identity, so the alias restates the same constant.
+    alternateName: SITE_NAME,
     description: PERSON_DESCRIPTION,
     url: HOME_URL,
     image: AVATAR_IMAGE_OBJECT,
@@ -64,3 +66,6 @@ export const siteNodes: ReadonlyArray<JsonLdNode> = [
     member: { "@id": PERSON_ID },
   },
 ] as const;
+
+// The site entities on their own, serialized once for heads that publish no page graph.
+export const siteGraphScript: JsonLdScript = jsonLdGraph(siteNodes);

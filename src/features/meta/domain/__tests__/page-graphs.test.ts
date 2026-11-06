@@ -1,6 +1,6 @@
 // Direct unit tests for the page-specific JSON-LD graph assemblers in ./page-graphs.
-// Each assembles a complete subgraph for one page kind from the page node
-// (./page-node) plus page-unique nodes.
+// Each assembles a complete subgraph for one page kind from the shared page-node pair
+// (pageGraph, defined in the same module) plus page-unique nodes.
 
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
@@ -133,6 +133,43 @@ it("experienceJsonLd assembles WebPage, Article and the item node for a project"
     width: 1600,
     height: 900,
   });
+  // The Article points at the same verified picture, so a reader that only extracts Article
+  // markup still learns the page's image without resolving the page's mainEntity
+  assert.deepStrictEqual(article?.image, project?.image);
+});
+
+it("experienceJsonLd drops a repository URL that is not http(s)", () => {
+  const nodes = experienceJsonLd({
+    experience: { ...sampleExperience, gitHubLink: "javascript:alert(1)" },
+    preferredLanguage: language,
+    path: "/sample-role",
+    headline: "Full-Stack Developer",
+    description: "Built things with care.",
+    screenshot: Option.none(),
+  });
+
+  // The source-code type is a claim that this page's code is published, so a repository URL the
+  // site refuses to publish also removes the claim: the node is an ordinary creative work.
+  const project = findByType(nodes, "CreativeWork");
+  assert.isDefined(project);
+  assert.isUndefined(findByType(nodes, "SoftwareSourceCode"));
+  // The hostile scheme never reaches a crawler
+  assert.isUndefined(project?.codeRepository);
+  assert.notInclude(JSON.stringify(nodes), "javascript:");
+});
+
+it("experienceJsonLd drops the source-code type when the experience publishes no repository", () => {
+  const nodes = experienceJsonLd({
+    experience: { ...sampleExperience, gitHubLink: undefined },
+    preferredLanguage: language,
+    path: "/sample-role",
+    headline: "Full-Stack Developer",
+    description: "Built things with care.",
+    screenshot: Option.none(),
+  });
+
+  assert.isDefined(findByType(nodes, "CreativeWork"));
+  assert.isUndefined(findByType(nodes, "SoftwareSourceCode"));
 });
 
 it("experienceJsonLd uses OrganizationRole for employment type", () => {

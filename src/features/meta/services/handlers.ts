@@ -22,8 +22,7 @@ export const robotsHandler = () => {
 };
 
 // Include experience slugs from every language; the XML builder deduplicates canonical URLs.
-// Like the Markdown service, this effect declares its dataset requirement and leaves the layer
-// provision to the route-handler boundary, so the pure document stays testable without a layer.
+// The dataset requirement is resolved by the server runtime layer, like every other consumer.
 const sitemapDocument = Effect.gen(function* () {
   const { experienceList } = yield* Datasets;
   const lists = yield* Effect.all(
@@ -38,7 +37,7 @@ const sitemapDocument = Effect.gen(function* () {
 
 export const sitemapHandler = async () => {
   try {
-    return await RuntimeServer.runPromise(Effect.provide(sitemapDocument, Datasets.layer));
+    return await RuntimeServer.runPromise(sitemapDocument);
   } finally {
     removeSetCookieHeader();
   }

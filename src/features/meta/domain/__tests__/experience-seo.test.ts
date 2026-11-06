@@ -7,13 +7,14 @@ import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
 
 // domain
-import { experienceSeo } from "../experience-seo";
+import { experienceSeo, experienceScreenshot } from "../experience-seo";
 
 // types
 import type { Experience } from "@/features/experience/domain/models";
 
 // constants
 import { META_DESCRIPTION_LENGTH } from "../constants";
+import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain/constants";
 
 const sampleExperience: Experience = {
   type: "p",
@@ -67,6 +68,24 @@ it("resolves screenshot facts when an image is published", () => {
     preferredLanguage: "en",
   });
   assert.deepStrictEqual(withoutShot.screenshot, Option.none());
+});
+
+it("experienceScreenshot resolves verified WebP facts and ignores an unpublished image", () => {
+  const published = {
+    src: "https://www.remiforge.dev/images/01-a.webp",
+    mime: "image/webp",
+    width: SCREENSHOT_WIDTH,
+    height: SCREENSHOT_HEIGHT,
+  } as const;
+
+  assert.deepStrictEqual(experienceScreenshot("01"), Option.some(published));
+  // The name is trimmed, so stray formatting whitespace still resolves the file the UI renders
+  assert.deepStrictEqual(experienceScreenshot(" 01 "), Option.some(published));
+  // An empty or whitespace-only name means the page publishes no screenshot
+  assert.deepStrictEqual(experienceScreenshot(""), Option.none());
+  assert.deepStrictEqual(experienceScreenshot("   "), Option.none());
+  // The name is one path segment, so a hostile value cannot escape /images/
+  assert.strictEqual(Option.getOrThrow(experienceScreenshot("../secret")).src, "https://www.remiforge.dev/images/..%2Fsecret-a.webp");
 });
 
 it("encodes slugs consistently in path, canonical and markdownPath", () => {

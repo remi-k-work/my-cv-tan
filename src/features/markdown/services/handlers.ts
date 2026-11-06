@@ -9,29 +9,29 @@ import { removeSetCookieHeader } from "@/lib/server-response-headers";
 import { parseLangParam } from "../domain/requests";
 import { Markdown } from "./markdown";
 
-interface HandlerPolicy {
-  readonly pinLanguage?: boolean;
-  readonly suppressCookies?: boolean;
-}
+// The twins are language-negotiated, so the cookie that negotiation writes is only stale once the
+// request pins its own language from the URL — before that it is the reader's own locale.
+const stripWhenPinned = (request: Request) => Option.isSome(parseLangParam(request.url));
+
+// The AI indexes are fixed English documents, so no visitor state ever applies to them.
+const stripAlways = () => true;
 
 const handler =
-  (name: keyof Markdown["Service"], policy: HandlerPolicy = {}) =>
+  (name: keyof Markdown["Service"], stripsCookies: (request: Request) => boolean) =>
   async ({ request }: { request: Request }) => {
-    const languageIsPinned = policy.pinLanguage === true && Option.isSome(parseLangParam(request.url));
-
     try {
       return await RuntimeServer.runPromise(Effect.flatMap(Markdown, (markdown) => markdown[name](request)));
     } finally {
-      if (policy.suppressCookies === true || languageIsPinned) removeSetCookieHeader();
+      if (stripsCookies(request)) removeSetCookieHeader();
     }
   };
 
 // Request-aware markdown twin endpoints.
-export const homeHandler = handler("home", { pinLanguage: true });
-export const educationHandler = handler("education", { pinLanguage: true });
-export const contactHandler = handler("contact", { pinLanguage: true });
-export const experienceHandler = handler("experience", { pinLanguage: true });
+export const homeHandler = handler("home", stripWhenPinned);
+export const educationHandler = handler("education", stripWhenPinned);
+export const contactHandler = handler("contact", stripWhenPinned);
+export const experienceHandler = handler("experience", stripWhenPinned);
 
 // Request-independent GEO indexes are public cache entries and do not set a visitor locale.
-export const llmsTxtHandler = handler("siteIndex", { suppressCookies: true });
-export const llmsFullTxtHandler = handler("siteIndexFull", { suppressCookies: true });
+export const llmsTxtHandler = handler("siteIndex", stripAlways);
+export const llmsFullTxtHandler = handler("siteIndexFull", stripAlways);

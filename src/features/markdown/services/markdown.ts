@@ -7,7 +7,8 @@ import { requestPreferredLanguage } from "@/features/data/services/request-langu
 import { recoverDataFailure } from "@/features/data/domain/required";
 import { experienceFromList } from "@/features/experience/domain/helpers";
 import { DEFAULT_LANGUAGE } from "@/features/meta/domain/constants";
-import { absoluteUrl, experienceMarkdownPath, experiencePath } from "@/features/meta/domain/urls";
+import { absoluteUrl, experienceMarkdownPath } from "@/features/meta/domain/urls";
+import { experienceSeo } from "@/features/meta/domain/experience-seo";
 import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/link-tags";
 import { discoveryTxtResponse, txtUnavailableResponse } from "@/features/meta/services/responses";
 import { mdNotFoundResponse, mdResponse, mdUnavailableResponse, pinCacheVariant } from "./responses";
@@ -35,7 +36,9 @@ const translateFor = (preferredLanguage: PreferredLanguage) =>
   preferredLanguage === DEFAULT_LANGUAGE
     ? Effect.succeed(translateSource)
     : Effect.tryPromise(() => translateForLanguage(preferredLanguage)).pipe(
-        Effect.catch((error) => Effect.logError(`[MARKDOWN]: translation snapshot unavailable for "${preferredLanguage}"`, error).pipe(Effect.as(translateSource)))
+        Effect.catch((error) =>
+          Effect.logError(`[MARKDOWN]: translation snapshot unavailable for "${preferredLanguage}"`, error).pipe(Effect.as(translateSource))
+        )
       );
 
 const documentResponse = (render: MachineDocumentBody): MachineDocument =>
@@ -98,7 +101,11 @@ const experienceTwin = (experienceList: LocalizedAccessor<ExperienceList>): Mach
       }
 
       const experience = found.value;
-      return respond(context, buildExperienceMd({ experience, ...context }), experiencePath(experience.slug), experienceMarkdownPath(experience.slug));
+      // One published SEO record drives the twin body and the response envelope alike, so the
+      // frontmatter canonical and the response's own canonical can never spell two addresses.
+      const seo = experienceSeo({ experience, preferredLanguage: context.preferredLanguage });
+
+      return respond(context, buildExperienceMd({ experience, ...context }), seo.path, seo.markdownPath);
     })
   );
 

@@ -35,7 +35,7 @@ export const BRANDED_TITLE = (title: string) => `${SITE_NAME} ● ${title}`;
 export const JOB_TITLE = "Web Developer";
 export const KNOWS_ABOUT = ["Web Development", "TypeScript", "React", "Next.js", "Effect", "Front-End Development", "Full-Stack Development"] as const;
 
-// Social profiles declared once for JSON-LD sameAs, rel="me", and markdown twins.
+// Social profiles declared once for JSON-LD sameAs, rel="me", the header nav and Markdown twins.
 export const SOCIAL_PROFILES = [
   { name: "GitHub", href: "https://github.com/remi-k-work" },
   { name: "LinkedIn", href: "https://linkedin.com/in/remi-k-work" },

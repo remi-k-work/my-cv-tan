@@ -1,10 +1,10 @@
-// Builds a single page's JSON-LD node plus its two-level breadcrumb trail.
-// Every content page on the site publishes this pair, so it lives here rather than being
-// repeated in each page-specific builder. Companion to ./page-graphs, which assembles
-// complete page graphs from this node and additional page-unique nodes.
+// The page-node pair every content page publishes: a WebPage node and its two-level breadcrumb
+// trail, decided once so no per-page builder has to restate how the two hang together.
 
 // domain
-import { webPageNode, breadcrumb } from "./nodes";
+import { breadcrumb, webPageNode } from "./nodes";
+
+// constants
 import { absoluteUrl } from "./urls";
 
 // types
@@ -12,8 +12,8 @@ import type { PreferredLanguage } from "@/domain/models";
 import type { JsonLdNode, JsonLdNodes } from "./models";
 import type { PageNodeType } from "./nodes";
 
-// Emits a WebPage node paired with its two-level breadcrumb list.
-// The page's absolute URL doubles as its @id so the two spellings can never disagree.
+// The page's absolute URL doubles as its @id so the two spellings can never disagree, and a parser
+// resolves the page from the node itself instead of interpreting a host-rooted @id first.
 export const pageGraph = ({
   type,
   path,
