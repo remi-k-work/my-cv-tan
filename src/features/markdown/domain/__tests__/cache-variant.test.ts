@@ -4,6 +4,9 @@ import { assert, describe, it } from "@effect/vitest";
 // domain
 import { withoutNegotiationVary } from "../cache-variant";
 
+// meta (shared)
+import { documentHeaders } from "@/features/meta/services/headers";
+
 describe("withoutNegotiationVary", () => {
   it("drops both negotiation tokens, leaving no Vary value", () => {
     assert.isNull(withoutNegotiationVary("Cookie, Accept-Language"));
@@ -20,5 +23,16 @@ describe("withoutNegotiationVary", () => {
     assert.isNull(withoutNegotiationVary(null));
     assert.strictEqual(withoutNegotiationVary(" Accept-Encoding ,  Origin "), "Accept-Encoding, Origin");
     assert.strictEqual(withoutNegotiationVary("Cookie,,Accept-Encoding"), "Accept-Encoding");
+  });
+
+  it("strips exactly the negotiation tokens documentHeaders advertises, for both languages", () => {
+    // documentHeaders writes a twin's Vary and this strip reads it back, both from one shared token
+    // list. Round-tripping to null is the contract: a token advertised but not stripped would leave a
+    // language-pinned twin varying on inputs its pin replaced, and a token stripped but never
+    // advertised would be drift that no response currently exercises.
+    for (const language of ["en", "pl"] as const) {
+      const vary = documentHeaders(language);
+      assert.isNull(withoutNegotiationVary(vary.Vary));
+    }
   });
 });

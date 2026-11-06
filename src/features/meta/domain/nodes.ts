@@ -102,6 +102,57 @@ export const breadcrumb = (preferredLanguage: PreferredLanguage, url: string, na
     ],
   }) as const;
 
+interface ExperienceItemNodeInput {
+  readonly employment: boolean;
+  readonly id: string;
+  readonly url: string;
+  readonly role: string;
+  readonly description: string;
+  readonly preferredLanguage: PreferredLanguage;
+  readonly keywords: ReadonlyArray<string>;
+  readonly image?: JsonLdNode;
+  readonly repository?: string;
+}
+
+// The subject node of an experience detail page: an OrganizationRole for employment, or the project
+// itself. SoftwareSourceCode is a claim that this page's code is published, so it follows the
+// validated repository rather than the raw field — a dropped scheme leaves a CreativeWork instead
+// of advertising code the site cannot link to.
+export const experienceItemNode = ({
+  employment,
+  id,
+  url,
+  role,
+  description,
+  preferredLanguage,
+  keywords,
+  image,
+  repository,
+}: ExperienceItemNodeInput): JsonLdNode =>
+  employment
+    ? {
+        "@type": "OrganizationRole",
+        "@id": id,
+        roleName: role,
+        description,
+        member: { "@id": PERSON_ID },
+        mainEntityOfPage: { "@id": url },
+      }
+    : {
+        "@type": repository === undefined ? "CreativeWork" : "SoftwareSourceCode",
+        "@id": id,
+        name: role,
+        description,
+        ...(image !== undefined ? { image } : {}),
+        url,
+        mainEntityOfPage: { "@id": url },
+        inLanguage: preferredLanguage,
+        creator: { "@id": PERSON_ID },
+        publisher: { "@id": PUBLISHER_ID },
+        keywords: keywords.join(", "),
+        ...(repository === undefined ? {} : { codeRepository: repository }),
+      };
+
 // Extends the site Person entity with an additional edge during graph merging.
 export const personEdge = <Fields extends Readonly<Record<string, unknown>>>(fields: Fields): JsonLdNode => ({
   "@type": "Person",

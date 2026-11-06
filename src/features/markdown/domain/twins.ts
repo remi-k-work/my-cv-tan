@@ -3,9 +3,9 @@
 // link through in ./twin-nav, and the security-sensitive formatting primitives in ./format.
 
 // services, features, and other libraries
-import { Array, Option, pipe } from "effect";
+import { Array, Option } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
-import { excerpt, experienceHeadline } from "@/features/experience/domain/helpers";
+import { excerpt, experienceHeadline, partitionExperiences } from "@/features/experience/domain/helpers";
 
 // meta (shared)
 import { staticPageCopy } from "@/features/meta/domain/pages";
@@ -21,14 +21,12 @@ import {
   SITE_NAME,
   SOCIAL_PROFILES,
 } from "@/features/meta/domain/constants";
-import { experienceSeo } from "@/features/meta/domain/experience-seo";
-import { absoluteUrl, experienceMarkdownPath, experiencePath, httpUrlOption, markdownTwinUrl } from "@/features/meta/domain/urls";
+import { absoluteUrl, experienceMarkdownPath, experiencePath, markdownTwinUrl, validatedHref } from "@/features/meta/domain/urls";
 
 // formatting primitives
 import {
   escapeMd,
   escapeMdInline,
-  frontmatter,
   mdBody,
   mdBulletList,
   mdDocument,
@@ -51,7 +49,8 @@ import type { PagePath, PageTitles, PreferredLanguage, Translate } from "@/domai
 import type { EducationList } from "@/features/education/domain/models";
 import type { Experience } from "@/features/experience/domain/models";
 import type { StaticPageCopy } from "@/features/meta/domain/models";
-import type { ContactMdInput, EducationMdInput, ExperienceLinesInput, ExperienceMdInput, HomeMdInput, NotFoundMdInput } from "./models";
+import type { MarkdownTwin } from "./format";
+import type { ContactMdInput, EducationMdInput, ExperienceLinesInput, ExperienceMdInput, HomeMdInput, LocalizedMdInput, NotFoundMdInput } from "./models";
 
 // --- Source-language copy context ---
 
@@ -81,18 +80,10 @@ const twinIdentity = ({
   lang: preferredLanguage,
 });
 
-const externalLink = (label: string, href: string): Option.Option<string> =>
-  pipe(
-    httpUrlOption(href),
-    Option.map((url) => mdLink(label, url))
-  );
-
-// Formats an optional web link line for a bullet list; non-http/https URLs are omitted.
-const optionalLink = (label: string, href: string | undefined) =>
-  pipe(
-    Option.fromNullishOr(href),
-    Option.flatMap((validHref) => externalLink(label, validHref))
-  );
+// Formats an optional web link line for a bullet list. Absent values and non-http/https URLs are
+// both omitted: the Experience schema accepts any non-empty string, so this is the one place a
+// hostile scheme is stopped before it reaches a crawler-parseable document.
+const optionalLink = (label: string, href: string | undefined): Option.Option<string> => Option.map(validatedHref(href), (url) => mdLink(label, url));
 
 // --- Experience documents ---
 
@@ -109,18 +100,20 @@ const experienceLine = (experience: Experience, preferredLanguage: PreferredLang
     : mdIndexEntry(headline, absoluteUrl(experiencePath(experience.slug)), twin, summary);
 };
 
-// Builds list lines for an experience type, or an empty marker when no items match.
+// Builds list lines for an experience type, or an empty marker when no items match. The grouping is
+// the one-pass split the home sliders and the home JSON-LD collections already use, so the Markdown
+// listing can never group an experience differently from the page it renders.
 export const experienceLines = ({ experienceList, type, translate, preferredLanguage, entry }: ExperienceLinesInput) => {
-  const experiences = experienceList.filter((experience) => experience.type === type);
-  return experiences.length === 0
-    ? mdEmptyMarker(translate)
-    : mdBulletList(experiences.map((experience) => experienceLine(experience, preferredLanguage, entry)));
+  const [employment, projects] = partitionExperiences(experienceList);
+  const experiences = type === "e" ? employment : projects;
+
+  return experiences.length === 0 ? mdEmptyMarker(translate) : mdBulletList(experiences.map((experience) => experienceLine(experience, preferredLanguage, entry)));
 };
 
-// Builds the full Markdown twin document for an experience detail page.
-export const buildExperienceMd = ({ experience, preferredLanguage, translate }: ExperienceMdInput) => {
+// Builds the Markdown twin for an experience detail page from its SEO record.
+export const buildExperienceMd = ({ seo, translate }: ExperienceMdInput): MarkdownTwin => {
+  const { experience, preferredLanguage, canonical, headline, description } = seo;
   const { role, company, txt, skillsUsed, year } = experience;
-  const { canonical, headline, description } = experienceSeo({ experience, preferredLanguage });
 
   const links = Array.getSomes([
     optionalLink(translate("GitHub Repo"), experience.gitHubLink),
@@ -128,26 +121,28 @@ export const buildExperienceMd = ({ experience, preferredLanguage, translate }: 
     optionalLink(translate("Watch Video"), experience.videoLink),
   ]);
 
-  return mdDocument([
-    frontmatter({
+  return {
+    facts: {
       ...twinIdentity({ title: headline, description, canonical, preferredLanguage }),
       type: experience.type === "e" ? "work-experience" : "project",
       role,
       company,
       year,
       skills: skillsUsed.join(", "),
-    }),
-    mdHeading(1, headline),
-    mdQuote(description),
-    mdTitledSection(translate("Overview"), escapeMd(txt)),
-    mdTitledSection(
-      translate("Details"),
-      mdBulletList([mdFact(translate("Role"), role), mdFact(translate("Company"), company), mdFact(translate("Year"), year)])
-    ),
-    mdTitledSection(translate("Skills Used"), mdBulletList(skillsUsed.map(escapeMdInline))),
-    ...(links.length > 0 ? [mdTitledSection(translate("Links"), mdBulletList(links))] : []),
-    mdTitledSection(translate("Pages"), detailIndexLinks(preferredLanguage, translate)),
-  ]);
+    },
+    body: mdBody([
+      mdHeading(1, headline),
+      mdQuote(description),
+      mdTitledSection(translate("Overview"), escapeMd(txt)),
+      mdTitledSection(
+        translate("Details"),
+        mdBulletList([mdFact(translate("Role"), role), mdFact(translate("Company"), company), mdFact(translate("Year"), year)])
+      ),
+      mdTitledSection(translate("Skills Used"), mdBulletList(skillsUsed.map(escapeMdInline))),
+      ...(links.length > 0 ? [mdTitledSection(translate("Links"), mdBulletList(links))] : []),
+      mdTitledSection(translate("Pages"), detailIndexLinks(preferredLanguage, translate)),
+    ]),
+  };
 };
 
 // --- Static page documents ---
@@ -157,20 +152,16 @@ const profileLinks = (translate: Translate) => [
   mdFact(translate("Base"), translate(`${HOME_LOCALITY}, ${HOME_COUNTRY_NAME}`)),
 ];
 
-// Shared identity header and pull quote for static page twins.
-const pageOpening = (copy: StaticPageCopy) => [
-  frontmatter({
-    ...twinIdentity({
-      title: copy.seoTitle,
-      description: copy.description,
-      canonical: copy.canonical,
-      preferredLanguage: copy.preferredLanguage,
-    }),
-    type: copy.type,
+// The shared static-pages identity: the SEO record plus the page's own type.
+const pageFacts = (copy: StaticPageCopy) => ({
+  ...twinIdentity({
+    title: copy.seoTitle,
+    description: copy.description,
+    canonical: copy.canonical,
+    preferredLanguage: copy.preferredLanguage,
   }),
-  mdHeading(1, copy.pageName),
-  mdQuote(copy.description),
-];
+  type: copy.type,
+});
 
 const schoolSections = (educationList: EducationList, translate: Translate) =>
   mdTitledSection(
@@ -198,34 +189,44 @@ const pagesSection = (copy: StaticPageCopy, translate: Translate) =>
 // Sections render from the copy the shared frame already resolved, so a section that needs the
 // page's canonical reads the one value the frontmatter also publishes instead of deriving a second.
 const staticTwinDocument = (
-  pageTitles: PageTitles,
+  input: LocalizedMdInput & { readonly pageTitles: PageTitles },
   pagePath: PagePath,
-  preferredLanguage: PreferredLanguage,
-  translate: Translate,
   sections: (copy: StaticPageCopy) => ReadonlyArray<string>
-) => {
-  const copy = staticPageCopy(pageTitles, pagePath, preferredLanguage);
+): MarkdownTwin => {
+  const copy = staticPageCopy(input.pageTitles, pagePath, input.preferredLanguage);
 
-  return mdDocument([...pageOpening(copy), escapeMd(copy.intro), ...sections(copy), pagesSection(copy, translate)]);
+  return {
+    facts: pageFacts(copy),
+    body: mdBody([mdHeading(1, copy.pageName), mdQuote(copy.description), escapeMd(copy.intro), ...sections(copy), pagesSection(copy, input.translate)]),
+  };
 };
 
-export const buildHomeMd = ({ pageTitles, experienceList, preferredLanguage, translate }: HomeMdInput) =>
-  staticTwinDocument(pageTitles, HOME_PATH, preferredLanguage, translate, () => [
+export const buildHomeMd = (input: HomeMdInput) => {
+  const { translate, experienceList, preferredLanguage } = input;
+
+  return staticTwinDocument(input, HOME_PATH, () => [
     mdTitledSection(translate("Experience"), experienceLines({ experienceList, type: "e", translate, preferredLanguage, entry: "twin" })),
     mdTitledSection(translate("Portfolio Projects"), experienceLines({ experienceList, type: "p", translate, preferredLanguage, entry: "twin" })),
   ]);
+};
 
-export const buildEducationMd = ({ pageTitles, educationList, preferredLanguage, translate }: EducationMdInput) =>
-  staticTwinDocument(pageTitles, EDUCATION_PATH, preferredLanguage, translate, () => [schoolSections(educationList, translate), documentsSection(translate)]);
+export const buildEducationMd = (input: EducationMdInput) => {
+  const { translate, educationList } = input;
 
-export const buildContactMd = ({ pageTitles, preferredLanguage, translate }: ContactMdInput) =>
-  staticTwinDocument(pageTitles, CONTACT_PATH, preferredLanguage, translate, (copy) => [contactChannels(copy.canonical, translate)]);
+  return staticTwinDocument(input, EDUCATION_PATH, () => [schoolSections(educationList, translate), documentsSection(translate)]);
+};
+
+export const buildContactMd = (input: ContactMdInput) => {
+  const { translate } = input;
+
+  return staticTwinDocument(input, CONTACT_PATH, (copy) => [contactChannels(copy.canonical, translate)]);
+};
 
 // The raw slug is quoted inside YAML frontmatter; the path is escaped for the Markdown body.
 const detailOf = (slug: Option.Option<string>) => Option.map(slug, (value) => ({ slug: value, path: escapeMdInline(experiencePath(value)) }));
 
-// Builds a structured Markdown 404 document with graph escape links.
-export const buildNotFoundMd = ({ slug, preferredLanguage, translate }: NotFoundMdInput) => {
+// Builds the Markdown 404 twin, with the escape links a dead-end document walks a reader through.
+export const buildNotFoundMd = ({ slug, preferredLanguage, translate }: NotFoundMdInput): MarkdownTwin => {
   const title = translate("Not Found");
   const detail = detailOf(slug);
 
@@ -240,15 +241,14 @@ export const buildNotFoundMd = ({ slug, preferredLanguage, translate }: NotFound
       matchPreferredLanguage(preferredLanguage, `No Markdown document exists for ${path}.`, `Dokument Markdown dla adresu ${path} nie istnieje.`),
   });
 
-  return mdDocument([
-    frontmatter({ title, description, lang: preferredLanguage, author: SITE_NAME }),
-    mdHeading(1, title),
-    missing,
-    deadEndEscapeLine(preferredLanguage, translate),
-  ]);
+  return {
+    facts: { title, description, lang: preferredLanguage, author: SITE_NAME },
+    body: mdBody([mdHeading(1, title), missing, deadEndEscapeLine(preferredLanguage, translate)]),
+  };
 };
 
-// 503 fallback body for Markdown twins when required portfolio data is unavailable.
+// 503 fallback body for Markdown twins when required portfolio data is unavailable. A degraded
+// document is not a twin: it carries no identity facts, only the notice and its escape.
 export const unavailableMarkdownBody = (translate: Translate) =>
   mdDocument([
     mdHeading(1, translate("Content temporarily unavailable")),

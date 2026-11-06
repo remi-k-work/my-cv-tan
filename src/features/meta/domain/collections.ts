@@ -7,9 +7,9 @@ import { excerpt, experienceHeadline } from "@/features/experience/domain/helper
 
 // domain
 import { collectionNode, personEdge } from "./nodes";
+import { absoluteUrl, experiencePath } from "./urls";
 
 // constants
-import { absoluteUrl, experiencePath } from "./urls";
 import { EXPERIENCE_LIST_ID, META_DESCRIPTION_LENGTH, PERSON_ID, PORTFOLIO_LIST_ID, SITE_NAME } from "./constants";
 
 // types

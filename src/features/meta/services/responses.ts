@@ -6,16 +6,21 @@
 import { CACHEABLE_HEADERS, MACHINE_HEADERS, NOINDEX_HEADERS, UNAVAILABLE_HEADERS } from "./headers";
 
 // domain
+import { DEFAULT_LANGUAGE } from "../domain/constants";
 import { SITEMAP_UNAVAILABLE_XML } from "../domain/discovery";
 
 const TXT_CONTENT_TYPE = "text/plain; charset=utf-8";
 const XML_CONTENT_TYPE = "application/xml; charset=utf-8";
 
-const TXT_HEADERS = { ...MACHINE_HEADERS, "Content-Type": TXT_CONTENT_TYPE, "Content-Language": "en" } as const;
+// These documents are the site's crawler instructions, published once in the source language the
+// AI indexes are built in — so the header names that language rather than repeating an independent
+// guess about it.
+const TXT_HEADERS = { ...MACHINE_HEADERS, "Content-Type": TXT_CONTENT_TYPE, "Content-Language": DEFAULT_LANGUAGE } as const;
 const SITEMAP_HEADERS = { ...MACHINE_HEADERS, "Content-Type": XML_CONTENT_TYPE } as const;
 
 // robots.txt and the AI discovery indexes are crawler instruction documents, not search results:
-// a successful representation may be cached, a failure never is.
+// a successful representation may be cached and names the index it represents through
+// Content-Location, a failure never is.
 const instructionsHeaders = (contentLocation?: string) => ({
   ...TXT_HEADERS,
   ...CACHEABLE_HEADERS,
@@ -23,12 +28,9 @@ const instructionsHeaders = (contentLocation?: string) => ({
   ...(contentLocation === undefined ? {} : { "Content-Location": contentLocation }),
 });
 
-export const txtResponse = (body: string) => new Response(body, { status: 200, headers: instructionsHeaders() });
+export const txtResponse = (body: string, contentLocation?: string) => new Response(body, { status: 200, headers: instructionsHeaders(contentLocation) });
 
 export const txtUnavailableResponse = (body: string) => new Response(body, { status: 503, headers: { ...TXT_HEADERS, ...UNAVAILABLE_HEADERS } });
-
-export const discoveryTxtResponse = (body: string, contentLocation: string) =>
-  new Response(body, { status: 200, headers: instructionsHeaders(contentLocation) });
 
 export const sitemapResponse = (xml: string) => new Response(xml, { status: 200, headers: { ...SITEMAP_HEADERS, ...CACHEABLE_HEADERS, ...NOINDEX_HEADERS } });
 

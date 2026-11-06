@@ -1,11 +1,9 @@
 // Strongly-typed head metadata and structured data models.
 
-// services, features, and other libraries
-import type { Option } from "effect";
-
 // types
 import type { Experience } from "@/features/experience/domain/models";
 import type { PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
+import type { ExperienceSeo } from "./experience-seo";
 
 // --- HTML Head & Link Tags ---
 
@@ -80,15 +78,9 @@ export interface StaticPageHeadInput {
 }
 
 // The subset of a published experience identity the JSON-LD graph restates. Narrower than the
-// full ExperienceSeo so the graph cannot silently start depending on the twin's URL fields.
-export interface ExperienceGraphInput {
-  readonly experience: Experience;
-  readonly preferredLanguage: PreferredLanguage;
-  readonly path: string;
-  readonly headline: string;
-  readonly description: string;
-  readonly screenshot: Option.Option<SocialImageFacts>;
-}
+// full ExperienceSeo so the graph cannot silently start depending on the twin's URL fields, and
+// derived from it so the two can never spell those fields differently.
+export type ExperienceGraphInput = Omit<ExperienceSeo, "canonical" | "markdownPath">;
 
 // --- Static page copy ---
 

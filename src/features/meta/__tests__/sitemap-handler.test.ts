@@ -14,7 +14,7 @@ import experiencePl from "@/assets/data/pl/experience.json";
 // The pure builder tests cannot see that wiring — a missing layer, a swapped language, or a
 // dataless fallback would all still pass them — so this exercises the whole pipeline once.
 it("sitemap route resolves the real portfolio assets into one canonical URL per page", async () => {
-  const response = await sitemapHandler();
+  const response = await sitemapHandler({ request: new Request("https://www.remiforge.dev/sitemap.xml") });
 
   assert.strictEqual(response.status, 200);
   assert.strictEqual(response.headers.get("Content-Type"), "application/xml; charset=utf-8");

@@ -13,3 +13,9 @@ const LoggerLayer = Logger.layer([Logger.consolePretty()]);
 const MainLayer = Layer.mergeAll(LoggerLayer, Data.layer, Datasets.layer, Markdown.layer);
 
 export const RuntimeServer = ManagedRuntime.make(MainLayer, { memoMap: sharedMemoMap });
+
+// The services MainLayer composes: a document pipeline may require any subset of them, and the
+// runtime satisfies the rest. Server routes declare their pipelines against this rather than
+// restating the layer list, so a pipeline that needs a service stays a compile error until the
+// runtime actually provides it.
+export type ServerServices = Data | Datasets | Markdown;

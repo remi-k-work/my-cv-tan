@@ -5,7 +5,7 @@
 // services, features, and other libraries
 import { flow, Option, Schema, String, pipe } from "effect";
 import { PreferredLanguage } from "@/domain/models";
-import { decodeUrlOption } from "@/features/meta/domain/urls";
+import { LANG_PARAM, decodeUrlOption } from "@/features/meta/domain/urls";
 
 const decodePreferredLanguage = Schema.decodeUnknownOption(PreferredLanguage);
 const decodeUrlComponent = Option.liftThrowable(decodeURIComponent);
@@ -14,7 +14,7 @@ const decodeUrlComponent = Option.liftThrowable(decodeURIComponent);
 export const parseLangParam = (url: string) =>
   pipe(
     decodeUrlOption(url),
-    Option.flatMap(({ searchParams }) => Option.fromNullishOr(searchParams.get("lang"))),
+    Option.flatMap(({ searchParams }) => Option.fromNullishOr(searchParams.get(LANG_PARAM))),
     Option.map(flow(String.trim, String.toLowerCase)),
     Option.flatMap(decodePreferredLanguage)
   );

@@ -18,6 +18,7 @@ import { absoluteUrl } from "@/features/meta/domain/urls";
 import { buildSitemapXml } from "@/features/meta/domain/discovery";
 import { buildLlmsTxt } from "../indexes";
 import { buildContactMd, buildEducationMd, buildExperienceMd, buildHomeMd } from "../twins";
+import { twinDocument } from "../format";
 
 // types
 import type { PageTitles } from "@/domain/models";
@@ -49,7 +50,7 @@ it("the head, JSON-LD, Markdown twin and visible detail heading share one experi
   const head = experienceHead({ experience: sampleExperience, preferredLanguage });
   const graph = JSON.parse(head.scripts?.[0]?.children ?? "{}") as { readonly "@graph": ReadonlyArray<Record<string, unknown>> };
   const webPage = graph["@graph"].find((node) => node["@type"] === "WebPage");
-  const twin = buildExperienceMd({ experience: sampleExperience, preferredLanguage, translate: translateEn });
+  const twin = twinDocument(buildExperienceMd({ seo, translate: translateEn }));
 
   const metaContent = (key: string) => {
     const meta = JSON.parse(JSON.stringify(head.meta)) as ReadonlyArray<Record<string, string>>;
@@ -97,7 +98,7 @@ it("each static page's head and twin publish the same canonical, title and descr
   for (const { path, head: buildHead, twin: buildTwin } of pages) {
     const copy = staticPageCopy(stablePageTitles, path, preferredLanguage);
     const head = buildHead({ pageTitles: stablePageTitles, experienceList: [], educationList: [], preferredLanguage });
-    const twin = buildTwin({ pageTitles: stablePageTitles, experienceList: [], educationList: [], preferredLanguage, translate: translateEn });
+    const twin = twinDocument(buildTwin({ pageTitles: stablePageTitles, experienceList: [], educationList: [], preferredLanguage, translate: translateEn }));
 
     const metaContent = (key: string) => {
       const meta = JSON.parse(JSON.stringify(head.meta)) as ReadonlyArray<Record<string, string>>;
@@ -130,7 +131,7 @@ it("every advertised download is published by the sitemap, the AI index and the 
   // appearing on one surface and going missing from another.
   const sitemap = buildSitemapXml([]);
   const index = buildLlmsTxt([]);
-  const twin = buildEducationMd({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "en", translate: translateEn });
+  const twin = twinDocument(buildEducationMd({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "en", translate: translateEn }));
 
   for (const document of DOWNLOADABLE_DOCUMENTS) {
     const url = absoluteUrl(document.href);

@@ -7,10 +7,10 @@ import { requestPreferredLanguage } from "@/features/data/services/request-langu
 import { recoverDataFailure } from "@/features/data/domain/required";
 import { experienceFromList } from "@/features/experience/domain/helpers";
 import { DEFAULT_LANGUAGE } from "@/features/meta/domain/constants";
-import { absoluteUrl, experienceMarkdownPath } from "@/features/meta/domain/urls";
+import { experienceMarkdownPath } from "@/features/meta/domain/urls";
 import { experienceSeo } from "@/features/meta/domain/experience-seo";
 import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/link-tags";
-import { discoveryTxtResponse, txtUnavailableResponse } from "@/features/meta/services/responses";
+import { txtResponse, txtUnavailableResponse } from "@/features/meta/services/responses";
 import { mdNotFoundResponse, mdResponse, mdUnavailableResponse, pinCacheVariant } from "./responses";
 
 // domain
@@ -20,17 +20,24 @@ import { buildLlmsFullTxt, buildLlmsTxt, unavailableIndexBody } from "../domain/
 import { parseLangParam, slugFromMdPathname } from "../domain/requests";
 import { translateForLanguage } from "@/lib/gt-translations";
 import { resolveContactTwinData, resolveEducationTwinData, resolveHomeTwinData } from "./twin-data";
+import { twinDocument } from "../domain/format";
 
 // types
 import type { LocalizedMdInput, PageTwin } from "../domain/models";
+import type { MarkdownTwin } from "../domain/format";
 import type { DatasetsService, LocalizedAccessor } from "@/features/data/services/datasets";
 import type { ExperienceList } from "@/features/experience/domain/models";
 import type { RequiredDataError } from "@/features/data/domain/required";
 import type { PreferredLanguage } from "@/domain/models";
 import type { TwinDataResolver } from "./twin-data";
 
-type MachineDocumentBody = (request: Request, context: LocalizedMdInput) => Effect.Effect<Response, RequiredDataError>;
-type MachineDocument = (request: Request) => Effect.Effect<Response, never>;
+// A document pipeline that renders a body off the request context; its data requirement is the
+// one every twin declares.
+type DocumentBody = (request: Request, context: LocalizedMdInput) => Effect.Effect<Response, RequiredDataError>;
+
+// A finished document: total, because every pipeline that can fail has already recovered into its
+// own fallback response.
+type DocumentResponse = (request: Request) => Effect.Effect<Response, never>;
 
 const translateFor = (preferredLanguage: PreferredLanguage) =>
   preferredLanguage === DEFAULT_LANGUAGE
@@ -41,7 +48,7 @@ const translateFor = (preferredLanguage: PreferredLanguage) =>
         )
       );
 
-const documentResponse = (render: MachineDocumentBody): MachineDocument =>
+const documentResponse = (render: DocumentBody): DocumentResponse =>
   Effect.fnUntraced(function* (request: Request) {
     const langOverride = parseLangParam(request.url);
     const preferredLanguage = requestPreferredLanguage(langOverride);
@@ -54,36 +61,35 @@ const documentResponse = (render: MachineDocumentBody): MachineDocument =>
     return Option.isSome(langOverride) ? pinCacheVariant(response) : response;
   });
 
-// Builds a markdown HTTP response with canonical and twin route headers.
-const respond = (context: LocalizedMdInput, body: string, canonicalPath: string, markdownPath: string) =>
+// Builds a markdown HTTP response with canonical and twin route headers. The canonical is the one
+// the document's frontmatter also publishes, so the envelope and the body cite the same address.
+const respond = (context: LocalizedMdInput, twin: MarkdownTwin, canonical: string, markdownPath: string) =>
   mdResponse({
-    body,
+    body: twinDocument(twin),
     preferredLanguage: context.preferredLanguage,
-    canonical: absoluteUrl(canonicalPath),
+    canonical,
     markdownPath,
   });
 
-// Full pipeline for a static page twin resolving page titles and specific datasets.
-const pageTwinDocument = <Data>(twin: PageTwin<Data>, resolveData: TwinDataResolver<Data>, datasets: DatasetsService): MachineDocument =>
+// Full pipeline for a static page twin, resolving the bundle its render declares.
+const pageTwinDocument = <Data>(twin: PageTwin<Data>, resolveData: TwinDataResolver<Data>, datasets: DatasetsService): DocumentResponse =>
   documentResponse(
     Effect.fnUntraced(function* (_request: Request, context: LocalizedMdInput) {
-      const { pageTitles, data } = yield* Effect.all(
-        {
-          pageTitles: datasets.pageTitles(context.preferredLanguage),
-          data: resolveData(datasets, context.preferredLanguage),
-        },
-        { concurrency: "unbounded" }
-      );
-      return respond(context, twin.render(pageTitles, data, context), twin.pagePath, twin.mdHref);
+      const data = yield* resolveData(datasets, context.preferredLanguage);
+      return respond(context, twin.render(data, context), twin.canonical, twin.mdHref);
     })
   );
 
 // Shared 404 response for unparseable or unknown slug requests.
 const notFoundTwin = (slug: Option.Option<string>, context: LocalizedMdInput) =>
-  mdNotFoundResponse(buildNotFoundMd({ slug, ...context }), context.preferredLanguage, Option.map(slug, experienceMarkdownPath));
+  mdNotFoundResponse(
+    twinDocument(buildNotFoundMd({ slug, ...context })),
+    context.preferredLanguage,
+    Option.map(slug, experienceMarkdownPath)
+  );
 
 // Detail twin resolving the slug against the localized experience list.
-const experienceTwin = (experienceList: LocalizedAccessor<ExperienceList>): MachineDocument =>
+const experienceTwin = (experienceList: LocalizedAccessor<ExperienceList>): DocumentResponse =>
   documentResponse(
     Effect.fnUntraced(function* (request: Request, context: LocalizedMdInput) {
       const slug = slugFromMdPathname(request.url);
@@ -105,16 +111,16 @@ const experienceTwin = (experienceList: LocalizedAccessor<ExperienceList>): Mach
       // frontmatter canonical and the response's own canonical can never spell two addresses.
       const seo = experienceSeo({ experience, preferredLanguage: context.preferredLanguage });
 
-      return respond(context, buildExperienceMd({ experience, ...context }), seo.path, seo.markdownPath);
+      return respond(context, buildExperienceMd({ seo, translate: context.translate }), seo.canonical, seo.markdownPath);
     })
   );
 
 // English-only plain-text index pipeline with 503 recovery.
 const discoveryDocument =
-  (index: { readonly name: string; readonly url: string }, content: Effect.Effect<string, RequiredDataError>): MachineDocument =>
+  (index: { readonly name: string; readonly url: string }, content: Effect.Effect<string, RequiredDataError>): DocumentResponse =>
   (_request: Request) =>
     content.pipe(
-      Effect.map((body) => discoveryTxtResponse(body, index.url)),
+      Effect.map((body) => txtResponse(body, index.url)),
       recoverDataFailure(`[${index.name.toUpperCase()}]`, () => txtUnavailableResponse(unavailableIndexBody(index.name)))
     );
 

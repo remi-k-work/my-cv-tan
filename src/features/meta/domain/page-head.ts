@@ -38,20 +38,19 @@ interface PageHeadSpec {
   readonly graph: JsonLdNodes;
 }
 
-export const pageHead = (spec: PageHeadSpec): PageHead => {
-  const { social } = spec;
-  return {
-    meta: [
-      { title: BRANDED_TITLE(social.title) },
-      { name: "description", content: social.description },
-      { name: "robots", content: INDEXABLE_ROBOTS },
-      ...socialMeta(social),
-    ],
-    links: [canonicalLink(social.canonical), markdownAlternateLink(spec.markdownPath, social.preferredLanguage)],
-    scripts: [jsonLdGraph([...siteNodes, ...spec.graph])],
-  };
-};
+export const pageHead = ({ social, markdownPath, graph }: PageHeadSpec): PageHead => ({
+  meta: [
+    { title: BRANDED_TITLE(social.title) },
+    { name: "description", content: social.description },
+    { name: "robots", content: INDEXABLE_ROBOTS },
+    ...socialMeta(social),
+  ],
+  links: [canonicalLink(social.canonical), markdownAlternateLink(markdownPath, social.preferredLanguage)],
+  scripts: [jsonLdGraph([...siteNodes, ...graph])],
+});
 
+// The detail page's card image: its own verified screenshot with a localized alt, or the global
+// banner when the page publishes no image. Both cards then describe the picture they actually show.
 const experienceCardImage = (headline: string, image: Option.Option<SocialImageFacts>, preferredLanguage: PreferredLanguage): SocialImage =>
   Option.match(image, {
     onNone: () => globalSocialImage(preferredLanguage),

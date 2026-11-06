@@ -10,7 +10,7 @@ import { Effect, Option } from "effect";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 import { CONTENT_SIGNAL } from "@/features/meta/domain/constants";
 import { absoluteUrl } from "@/features/meta/domain/urls";
-import { discoveryTxtResponse, txtResponse, txtUnavailableResponse } from "@/features/meta/services/responses";
+import { txtResponse, txtUnavailableResponse } from "@/features/meta/services/responses";
 import { requireData, recoverDataFailure } from "@/features/data/domain/required";
 import { experienceFromList } from "@/features/experience/domain/helpers";
 
@@ -128,6 +128,9 @@ it("response helpers set content types, indexing, cache, canonical, and language
   assert.strictEqual(txt.headers.get("Content-Type"), "text/plain; charset=utf-8");
   // Plain-text discovery documents are always English
   assert.strictEqual(txt.headers.get("Content-Language"), "en");
+  // robots.txt is one site-wide document rather than a representation of a specific index URL, so
+  // only the discovery indexes pass the content location through
+  assert.isNull(txt.headers.get("Content-Location"));
   // The reuse signal is mirrored from robots.txt into the header, so a crawler reading only the
   // HTTP layer learns the same policy without fetching the crawl directives document
   assert.strictEqual(txt.headers.get("Content-Signal"), CONTENT_SIGNAL);
@@ -139,7 +142,7 @@ it("response helpers set content types, indexing, cache, canonical, and language
   assert.strictEqual(unavailableTxt.headers.get("X-Robots-Tag"), "noindex, follow");
 
   // llms.txt indexes serve AI fetchers, not search results: noindex, but still crawlable
-  const discovery = discoveryTxtResponse("# Index", absoluteUrl("/llms.txt"));
+  const discovery = txtResponse("# Index", absoluteUrl("/llms.txt"));
   assert.strictEqual(discovery.status, 200);
   assert.strictEqual(discovery.headers.get("Content-Type"), "text/plain; charset=utf-8");
   assert.strictEqual(discovery.headers.get("Cache-Control"), "public, max-age=3600, stale-while-revalidate=86400");

@@ -1,7 +1,8 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-import { escapeMd, escapeMdInline as escapeInline, mdFact, mdIndexEntry, mdLink } from "../format";
+import { escapeMd, escapeMdInline as escapeInline, mdFact, mdIndexEntry, mdLink, twinDocument } from "../format";
 import { buildExperienceMd } from "../twins";
+import { experienceSeo } from "@/features/meta/domain/experience-seo";
 
 // types
 import type { Experience } from "@/features/experience/domain/models";
@@ -28,7 +29,7 @@ it("a fact label is escaped exactly once, so no stray backslash reaches the twin
   // pass had written — so an authored "Role _" rendered as "Role \\_" with a literal stray "\".
   const hostile = (source: string): string => (source === "Role" ? "Role _" : source);
 
-  const md = buildExperienceMd({ experience: sampleExperience, preferredLanguage: "en", translate: hostile });
+  const md = twinDocument(buildExperienceMd({ seo: experienceSeo({ experience: sampleExperience, preferredLanguage: "en" }), translate: hostile }));
 
   // Exactly one backslash: the one mdFact added, rendering back as the authored underscore
   assert.include(md, "- Role \\_: Full-Stack Developer");

@@ -25,15 +25,24 @@ export const httpUrlOption = (value: string): Option.Option<string> =>
     Option.map((url) => url.href)
   );
 
+// The form every publisher of an authored link reads it in: an absent value and a value the site
+// refuses to publish are both `None`, so one guard serves the optional fields the schemas allow.
+export const validatedHref = (value: string | undefined): Option.Option<string> => pipe(Option.fromNullishOr(value), Option.flatMap(httpUrlOption));
+
 // Canonical absolute URL for a site path.
 export const absoluteUrl = (path: string) => `${SITE_URL}${path}`;
+
+// The one language-override query parameter every published twin URL carries (markdownTwinUrl) and
+// every twin request reads back (markdown/domain/requests). Named beside the builder that writes it so
+// the pin and its parser can never disagree about the parameter and silently drop a `?lang=` override.
+export const LANG_PARAM = "lang";
 
 // Appends or updates the lang query parameter on a URL.
 export const withLanguageParam = (url: string, preferredLanguage: PreferredLanguage) =>
   pipe(
     decodeUrlOption(url),
     Option.map((variant) => {
-      variant.searchParams.set("lang", preferredLanguage);
+      variant.searchParams.set(LANG_PARAM, preferredLanguage);
       return variant.href;
     }),
     Option.getOrElse(() => url)

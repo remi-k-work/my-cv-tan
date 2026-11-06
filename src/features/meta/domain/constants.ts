@@ -74,6 +74,11 @@ export const OPEN_GRAPH_LOCALES = {
   pl: "pl_PL",
 } as const satisfies Record<PreferredLanguage, string>;
 
+// The request inputs the HTML document and Markdown twins vary on. Declared once so the document's
+// Vary (services/headers) and the twin cache-pin (markdown/domain/cache-variant) stay one contract:
+// a token added on either side lands on the other instead of silently breaking shared-cache correctness.
+export const NEGOTIATION_VARY_TOKENS = ["Cookie", "Accept-Language"] as const;
+
 // --- Route paths ---
 
 export const HOME_PATH = "/" as const satisfies PagePath;

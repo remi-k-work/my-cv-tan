@@ -366,6 +366,23 @@ it("fallbackHead publishes a canonical noindex head with site entities", () => {
   assert.strictEqual(fallback.scripts?.length, 1);
 });
 
+it("fallbackHead's copy and canonical follow one fact: no route to name is the not-found head", () => {
+  // The unavailable and not-found fallbacks differ only in their localized copy, and the copy
+  // selection is derived from the same fact that decides the canonical — so a head that publishes
+  // an "unavailable" title must name the route it stands in for, and one that names none must
+  // carry the not-found copy and no canonical at all.
+  const unavailable = fallbackHead("/contact", "pl");
+  assert.include(JSON.stringify(unavailable.meta), '"title":"Remi Forge ● Strona niedostępna"');
+  assert.deepStrictEqual(unavailable.links, [{ rel: "canonical", href: "https://www.remiforge.dev/contact" }]);
+
+  const notFound = fallbackHead(undefined, "pl");
+  assert.include(JSON.stringify(notFound.meta), '"title":"Remi Forge ● Nie znaleziono"');
+  assert.include(JSON.stringify(notFound.meta), "Nie znaleziono żądanej strony.");
+  assert.strictEqual(notFound.links.length, 0);
+  // The site entities are published either way: a fallback is still a document about the site
+  assert.isDefined(JSON.parse(notFound.scripts?.[0]?.children ?? "{}")["@graph"].find((node: { "@type"?: string }) => node["@type"] === "Person"));
+});
+
 it("rootHead adds localized not-found metadata while retaining site-wide discovery links", () => {
   const fallback = rootHead([{ loaderData: { preferredLanguage: "pl" }, status: "success" }, { status: "notFound" }]);
 

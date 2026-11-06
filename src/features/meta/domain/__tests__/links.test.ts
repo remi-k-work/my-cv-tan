@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
-import { absoluteUrl, cvPdfHref, encodeParens, experienceMarkdownPath, experiencePath, httpUrlOption, markdownTwinUrl, withLanguageParam } from "../urls";
+import { absoluteUrl, cvPdfHref, encodeParens, experienceMarkdownPath, experiencePath, httpUrlOption, markdownTwinUrl, validatedHref, withLanguageParam } from "../urls";
 import { authorLink, canonicalLink, LLMS_DISCOVERY_LINK, markdownAlternateLink, SITEMAP_LINK } from "../link-tags";
 
 // constants
@@ -26,6 +26,16 @@ it("httpUrlOption publishes only parseable http(s) destinations", () => {
   assert.deepStrictEqual(httpUrlOption("ftp://example.com/file"), Option.none());
   assert.deepStrictEqual(httpUrlOption("/relative"), Option.none());
   assert.deepStrictEqual(httpUrlOption("not a url"), Option.none());
+});
+
+it("validatedHref folds an absent authored field into the same None as a refused scheme", () => {
+  // Every publisher of an experience link reads the field through this guard, so the optional
+  // `gitHubLink` / `liveLink` / `videoLink` cases and the hostile-scheme case are one answer.
+  assert.deepStrictEqual(validatedHref(undefined), Option.none());
+  assert.deepStrictEqual(validatedHref(""), Option.none());
+  assert.deepStrictEqual(validatedHref("https://github.com/example/repo"), Option.some("https://github.com/example/repo"));
+  assert.deepStrictEqual(validatedHref("javascript:alert(1)"), Option.none());
+  assert.deepStrictEqual(validatedHref("/relative"), Option.none());
 });
 
 it("withLanguageParam pins the lang parameter without disturbing the rest of the URL", () => {

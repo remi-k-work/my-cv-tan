@@ -19,10 +19,13 @@ export const routeHead = <TData>(
   // loader payload override its noindex fallback with the previous page's canonical or graph.
   if (matches.some(isNotFoundMatch)) return { meta: [], links: [], scripts: [] };
 
+  // One negotiation feeds both the failure fallback and the successful build.
+  const preferredLanguage = headLanguage(matches);
+
   // Failed revalidation can leave loaderData populated. A failure head must not reuse that data.
   if (loaderData == null || matches.some(({ status }) => status === "error")) {
-    return fallbackHead(fallbackPath, headLanguage(matches));
+    return fallbackHead(fallbackPath, preferredLanguage);
   }
 
-  return build(loaderData, headLanguage(matches));
+  return build(loaderData, preferredLanguage);
 };

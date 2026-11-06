@@ -2,6 +2,12 @@
 import { assert, it } from "@effect/vitest";
 import { CONTACT_TWIN, EDUCATION_TWIN, HOME_TWIN, PAGE_TWINS, PAGE_ENTRIES, allEntries } from "../catalogue";
 import { SOURCE_COPY } from "../twins";
+import { twinDocument } from "../format";
+
+// meta (shared)
+import { STATIC_PAGES } from "@/features/meta/domain/pages";
+import { absoluteUrl, markdownTwinUrl } from "@/features/meta/domain/urls";
+import { experienceSeo } from "@/features/meta/domain/experience-seo";
 
 // types
 import type { ExperienceList } from "@/features/experience/domain/models";
@@ -16,11 +22,14 @@ it("the catalogue declares every static page twin exactly once", () => {
     ["/", "/education", "/contact"]
   );
 
-  // The route each service key names is the same declaration the indexes walk, so a twin's
-  // route and its advertisement cannot drift apart
-  assert.strictEqual(HOME_TWIN.name, "Home");
-  assert.strictEqual(EDUCATION_TWIN.name, "Education & Certificates");
-  assert.strictEqual(CONTACT_TWIN.name, "Contact");
+  // Each twin's display name, route, canonical and twin path come from the shared page catalogue,
+  // so the twin, its index entry and the twin graph cannot describe the page a second way
+  for (const twin of PAGE_TWINS) {
+    assert.strictEqual(twin.name, STATIC_PAGES[twin.pagePath].label, `${twin.pagePath} name`);
+    assert.strictEqual(twin.mdHref, STATIC_PAGES[twin.pagePath].mdHref, `${twin.pagePath} twin route`);
+    assert.strictEqual(twin.canonical, absoluteUrl(twin.pagePath), `${twin.pagePath} canonical`);
+  }
+
   // The named twins and the walked list are the same three declarations, not two tables
   assert.deepStrictEqual(new Set(PAGE_TWINS), new Set([HOME_TWIN, EDUCATION_TWIN, CONTACT_TWIN]));
 });
@@ -41,15 +50,18 @@ it("page entries advertise the canonical HTML URL and a language-pinned twin for
   }
 });
 
-it("the contact twin still renders: a dataset-free body is not an empty document", () => {
-  const md = CONTACT_TWIN.render(
-    {
-      "/": { eyebrow: "", heading: "Home", intro: "" },
-      "/education": { eyebrow: "", heading: "Ed", intro: "" },
-      "/contact": { eyebrow: "", heading: "Kontakt", intro: "" },
-    },
-    {},
-    SOURCE_COPY
+it("the contact twin still renders: a body that reads no portfolio dataset is not an empty document", () => {
+  const md = twinDocument(
+    CONTACT_TWIN.render(
+      {
+        pageTitles: {
+          "/": { eyebrow: "", heading: "Home", intro: "" },
+          "/education": { eyebrow: "", heading: "Ed", intro: "" },
+          "/contact": { eyebrow: "", heading: "Kontakt", intro: "" },
+        },
+      },
+      SOURCE_COPY
+    )
   );
 
   assert.include(md, `title: "Remi Forge ● Contact"`);
@@ -74,4 +86,14 @@ it("allEntries concatenates the page twins and then every detail twin in portfol
     entries.slice(PAGE_TWINS.length).map((entry) => entry.canonical),
     ["https://www.remiforge.dev/job", "https://www.remiforge.dev/project"]
   );
+
+  // Every detail entry restates the SEO record its page publishes — headline, canonical and
+  // language-pinned twin — so the index can never advertise an address the page itself denies
+  for (const experience of experienceList) {
+    const seo = experienceSeo({ experience, preferredLanguage: "en" });
+    const entry = entries.find(({ canonical }) => canonical === seo.canonical);
+
+    assert.strictEqual(entry?.name, seo.headline, `${experience.slug} headline`);
+    assert.strictEqual(entry?.twinUrl, markdownTwinUrl(seo.markdownPath, "en"), `${experience.slug} twin URL`);
+  }
 });

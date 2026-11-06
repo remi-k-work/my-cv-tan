@@ -140,10 +140,13 @@ it("robots.txt allows content, disallows API endpoints, and advertises the sitem
   // The route serves the document through the meta service, so the response carries the shared
   // discovery headers (English, the reuse signal and the AI-index Link) the same way sitemap.xml
   // does beside its own content type
-  const response = robotsHandler();
+  const response = await robotsHandler({ request: new Request("https://www.remiforge.dev/robots.txt") });
   assert.strictEqual(response.status, 200);
   assert.strictEqual(response.headers.get("Content-Type"), "text/plain; charset=utf-8");
   assert.strictEqual(response.headers.get("Content-Language"), "en");
+  // robots.txt is one site-wide document, not a representation of a specific index URL, so the
+  // optional Content-Location only the AI discovery indexes pass through stays absent
+  assert.isNull(response.headers.get("Content-Location"));
   assert.strictEqual(response.headers.get("Cache-Control"), "public, max-age=3600, stale-while-revalidate=86400");
   // robots.txt is the one document every crawler fetches, so it advertises the AI indexes from the
   // Link header as well: a parser acts on that, where the `# See /llms.txt` comment is human prose
@@ -153,8 +156,8 @@ it("robots.txt allows content, disallows API endpoints, and advertises the sitem
   // A Response body is single-use, so a document held as a constant would hand the same consumed
   // body to every crawler. robots.txt is the document every bot fetches, so this is the one family
   // where the regression is guaranteed to be noticed.
-  const first = robotsHandler();
-  const second = robotsHandler();
+  const first = await robotsHandler({ request: new Request("https://www.remiforge.dev/robots.txt") });
+  const second = await robotsHandler({ request: new Request("https://www.remiforge.dev/robots.txt") });
   assert.notStrictEqual(first, second);
   assert.strictEqual(await first.text(), await second.text());
 });

@@ -3,7 +3,7 @@
 // ../services/handlers.
 
 // constants
-import { CONTENT_SIGNAL, CRAWL_DELAY, DOWNLOADABLE_DOCUMENTS, SITEMAP_HREF } from "./constants";
+import { CONTENT_SIGNAL, CRAWL_DELAY, DOWNLOADABLE_DOCUMENTS, LLMS_TXT_HREF, SITEMAP_HREF } from "./constants";
 import { STATIC_PAGE_PATHS } from "./pages";
 import { absoluteUrl, experiencePath } from "./urls";
 
@@ -16,7 +16,7 @@ export const ROBOTS_TXT = [
   "User-agent: *",
   ...CONTENT_DIRECTIVES,
   "",
-  "# See /llms.txt for the Markdown page index",
+  `# See ${LLMS_TXT_HREF} for the Markdown page index`,
   `Sitemap: ${absoluteUrl(SITEMAP_HREF)}`,
   "",
 ].join("\n");
@@ -24,7 +24,7 @@ export const ROBOTS_TXT = [
 // --- sitemap.xml ---
 
 // Static pages come from the shared catalogue; downloads are exactly the advertised documents.
-const STATIC_URLS = [...STATIC_PAGE_PATHS, ...DOWNLOADABLE_DOCUMENTS.map(({ href }) => href)].map(absoluteUrl);
+const STATIC_URLS = [...STATIC_PAGE_PATHS, ...DOWNLOADABLE_DOCUMENTS.map(({ href }) => href)].map((path) => absoluteUrl(path));
 const XML_ENTITIES: Readonly<Record<string, string>> = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" };
 const escapeXml = (value: string) => value.replace(/[&<>"']/g, (character) => XML_ENTITIES[character] ?? character);
 

@@ -5,7 +5,10 @@ import { absoluteUrl, experiencePath } from "@/features/meta/domain/urls";
 import { CACHEABLE_HEADERS } from "@/features/meta/services/headers";
 
 // handlers under test
-import { contactHandler, educationHandler, experienceHandler, homeHandler } from "../services/handlers";
+import { contactHandler, educationHandler, experienceHandler, homeHandler, llmsFullTxtHandler, llmsTxtHandler } from "../services/handlers";
+
+// the other machine-readable document routes share the same public-cache contract
+import { robotsHandler, sitemapHandler } from "@/features/meta/services/handlers";
 
 // assets
 import experienceEn from "@/assets/data/en/experience.json";
@@ -147,4 +150,30 @@ it("paths the twin route cannot represent are 404s without a fabricated location
   const malformed = await experienceHandler({ request: pinned("/%zz.md", "en") });
   assert.strictEqual(malformed.status, 404);
   assert.isNull(malformed.headers.get("Content-Location"));
+});
+
+// `removeResponseHeader` only has an effect inside the framework's response context, so the policy
+// each route carries is the observable half of the public-cache contract a direct call can pin.
+it("every document route publishes the visitor-state policy its response needs", async () => {
+  const pinnedRequest = (path: string) => new Request(`https://www.remiforge.dev${path}?lang=pl`);
+
+  // A language-negotiated twin's cookie is the reader's own until the URL pins the language for it.
+  for (const handler of [homeHandler, educationHandler, contactHandler, experienceHandler]) {
+    assert.isTrue(handler.keepsVisitorState(new Request("https://www.remiforge.dev/index.md")));
+    assert.isFalse(handler.keepsVisitorState(pinnedRequest("/index.md")));
+  }
+
+  // The GEO indexes are one public, language-independent document: whatever the caller appends to
+  // the path, no visitor-specific cookie may ride along. Reusing the twin policy here would keep
+  // the negotiation cookie for a `?lang=` the document ignores and pin a visitor response in a
+  // shared cache.
+  for (const handler of [llmsTxtHandler, llmsFullTxtHandler]) {
+    assert.isFalse(handler.keepsVisitorState(new Request("https://www.remiforge.dev/llms.txt")));
+    assert.isFalse(handler.keepsVisitorState(pinnedRequest("/llms.txt")));
+  }
+
+  // robots.txt and sitemap.xml are the other two public, visitor-independent documents.
+  for (const handler of [robotsHandler, sitemapHandler]) {
+    assert.isFalse(handler.keepsVisitorState(new Request("https://www.remiforge.dev/sitemap.xml")));
+  }
 });

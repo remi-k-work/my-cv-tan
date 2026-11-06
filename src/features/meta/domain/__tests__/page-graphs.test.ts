@@ -1,13 +1,14 @@
-// Direct unit tests for the page-specific JSON-LD graph assemblers in ./page-graphs.
-// Each assembles a complete subgraph for one page kind from the shared page-node pair
-// (pageGraph, defined in the same module) plus page-unique nodes.
+// Direct unit tests for the page-specific JSON-LD graph assemblers in ./page-graphs, which also
+// owns the shared page-node pair every content page leads with. Each assembler combines that pair
+// with its own nodes and the collection subgraphs.
 
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-import { Option } from "effect";
+import { Option, Schema, pipe } from "effect";
 
 // domain
 import { educationJsonLd, contactJsonLd, experienceJsonLd, homeJsonLd } from "../page-graphs";
+import { jsonLdGraph } from "../merge";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
@@ -221,4 +222,107 @@ it("homeJsonLd builds a ProfilePage linking site entities plus grouped collectio
     collections.map((node) => node["@id"]),
     [EXPERIENCE_LIST_ID, PORTFOLIO_LIST_ID]
   );
+});
+
+// --- The shared page-node pair ---
+
+// Four page graphs lead with exactly this pair, so the @id the breadcrumb hangs from and the
+// isPartOf edge are decided in one place. These tests pin the invariant the four of them rely on:
+// the page node, its trail and the site entity they both reference stay one addressable graph.
+
+// Minimal reader, mirroring the one in structured-data.test.ts: a node is an open record because the
+// assertions probe arbitrary fields, and a payload that fails to decode reads as an empty graph so
+// the assertions below fail loudly instead of quietly reading `undefined` off a cast.
+const JsonLdNode = Schema.Record(Schema.String, Schema.Unknown);
+const decodeGraph = Schema.decodeUnknownOption(Schema.fromJsonString(Schema.Struct({ "@graph": Schema.Array(JsonLdNode) })));
+
+const graphOf = (children: string | undefined) =>
+  pipe(
+    decodeGraph(children ?? "{}"),
+    Option.map((document) => document["@graph"] as ReadonlyArray<Record<string, unknown>>),
+    Option.getOrElse<ReadonlyArray<Record<string, unknown>>>(() => [])
+  );
+
+const nodeOf = (graph: ReadonlyArray<Record<string, unknown>>, type: string) => graph.find((node) => node["@type"] === type);
+
+const graph = educationJsonLd({
+  pageName: "Education",
+  description: "Schools and certificates.",
+  educationList: sampleEducation,
+  preferredLanguage: "pl",
+});
+
+// Every subpage assembler's first two nodes: the page node, then its trail.
+const subpagePairs: ReadonlyArray<ReadonlyArray<Record<string, unknown>>> = [
+  graph,
+  contactJsonLd({ pageName: "Contact", description: "Get in touch.", preferredLanguage: language }),
+  experienceJsonLd({
+    experience: sampleExperience,
+    preferredLanguage: language,
+    path: "/sample-role",
+    headline: "Full-Stack Developer",
+    description: "Built things with care.",
+    screenshot: Option.none(),
+  }),
+];
+
+it("the page node comes first and its breadcrumb trail second, so a parser reads page-entity-first", () => {
+  // With an empty school list the education assembler emits the pair and nothing else.
+  const bare = educationJsonLd({ pageName: "Education", description: "Schools and certificates.", educationList: [], preferredLanguage: "pl" });
+
+  assert.strictEqual(bare.length, 2);
+  assert.strictEqual(bare[0]?.["@type"], "CollectionPage");
+  assert.strictEqual(bare[1]?.["@type"], "BreadcrumbList");
+
+  for (const nodes of subpagePairs) {
+    assert.notStrictEqual(nodes[0]?.["@type"], "BreadcrumbList");
+    assert.strictEqual(nodes[1]?.["@type"], "BreadcrumbList");
+  }
+});
+
+it("the trail's @id is the page node's @id plus a fragment, so the pair is one addressable entity", () => {
+  const page = nodeOf(graph, "CollectionPage");
+  const trail = nodeOf(graph, "BreadcrumbList");
+
+  assert.strictEqual(page?.["@id"], "https://www.remiforge.dev/education");
+  assert.deepStrictEqual(page?.["breadcrumb"], { "@id": "https://www.remiforge.dev/education#breadcrumb" });
+  assert.strictEqual(trail?.["@id"], "https://www.remiforge.dev/education#breadcrumb");
+  // The page references the trail by @id rather than embedding it, so a single parse pass resolves both
+  assert.isUndefined(page?.itemListElement);
+});
+
+it("a page node keeps the site membership, language and main entity every route declares", () => {
+  const page = nodeOf(graph, "CollectionPage");
+
+  assert.deepStrictEqual(page?.isPartOf, { "@id": "https://www.remiforge.dev/#website" });
+  assert.strictEqual(page?.inLanguage, "pl");
+  assert.deepStrictEqual(page?.mainEntity, { "@id": "https://www.remiforge.dev/education#education-list" });
+  assert.strictEqual(page?.url, "https://www.remiforge.dev/education");
+  // The same string as the @id, so the two spellings of the page can never disagree
+  assert.strictEqual(page?.["url"], page?.["@id"]);
+});
+
+it("every subpage graph publishes a URL, because the page node derives it from the path", () => {
+  // A node whose only URL spelling is a host-rooted @id costs a parser a second lookup. Walk the
+  // three shapes the real callers use — CollectionPage, ContactPage and WebPage — and require each
+  // page node to carry the absolute URL of the page it describes.
+  for (const nodes of subpagePairs) {
+    const page = nodes[0];
+
+    assert.strictEqual(page?.["url"], page?.["@id"]);
+    assert.isString(page?.["url"]);
+  }
+});
+
+it("the page-node pair merges into the site entities as one document when a page head publishes it", () => {
+  // The real usage: pageHead calls jsonLdGraph([...siteNodes, ...contactJsonLd(...)]), and the pair
+  // must survive the merge as two distinct nodes rather than folding into one another.
+  const merged = graphOf(
+    jsonLdGraph([{ "@type": "WebSite", "@id": "https://www.remiforge.dev/#website" }, ...contactJsonLd({ pageName: "Contact", description: "Get in touch.", preferredLanguage: language })])
+      .children
+  );
+
+  assert.strictEqual(merged.filter((node) => node["@type"] === "BreadcrumbList").length, 1);
+  assert.strictEqual(merged.filter((node) => node["@type"] === "ContactPage").length, 1);
+  assert.isDefined(nodeOf(merged, "WebSite"));
 });

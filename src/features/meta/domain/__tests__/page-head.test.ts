@@ -103,6 +103,19 @@ it("experienceHead builds on pageHead with article social type and canonical lin
   assert.strictEqual(head.scripts?.length, 1);
 });
 
+it("experienceHead names the experience kind as the article section", () => {
+  // og:article:section is the one tag that tells a card reader which of the two kinds of page this
+  // is, and it follows the experience type rather than a second table that has to agree with it.
+  assert.strictEqual(
+    tagContent(metaOf(experienceHead({ experience: sampleExperience, preferredLanguage: language })), "property", "article:section"),
+    "portfolio"
+  );
+  assert.strictEqual(
+    tagContent(metaOf(experienceHead({ experience: { ...sampleExperience, type: "e" }, preferredLanguage: language })), "property", "article:section"),
+    "employment"
+  );
+});
+
 it("experienceHead uses the global banner for Twitter when no screenshot exists", () => {
   const head = experienceHead({ experience: { ...sampleExperience, imageName: "" }, preferredLanguage: language });
   const tags = metaOf(head);

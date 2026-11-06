@@ -3,13 +3,15 @@ import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
 import { buildContactMd, buildEducationMd, buildExperienceMd, buildHomeMd, buildNotFoundMd } from "../twins";
 import { AI_INDEX_MARKDOWN_LINKS, twinIndexLinks } from "../twin-nav";
-import { escapeMd, escapeMdInline, frontmatter, mdEmptyMarker, mdLink } from "../format";
+import { escapeMd, escapeMdInline, frontmatter, mdEmptyMarker, mdLink, twinDocument } from "../format";
 
 import { STATIC_PAGES } from "@/features/meta/domain/pages";
+import { experienceSeo } from "@/features/meta/domain/experience-seo";
 
 // types
-import type { PagePath, PageTitles } from "@/domain/models";
+import type { PagePath, PageTitles, PreferredLanguage, Translate } from "@/domain/models";
 import type { Experience } from "@/features/experience/domain/models";
+import type { ContactMdInput, EducationMdInput, HomeMdInput, NotFoundMdInput } from "../models";
 
 const sampleExperience: Experience = {
   type: "e",
@@ -22,6 +24,18 @@ const sampleExperience: Experience = {
   imageName: "01",
   skillsUsed: ["TypeScript", "React"],
 };
+
+// The builders return the twin's identity facts and body separately so the companion document can
+// republish them apart; every assertion below reads the served twin, which is the two joined.
+const homeTwin = (input: HomeMdInput) => twinDocument(buildHomeMd(input));
+const educationTwin = (input: EducationMdInput) => twinDocument(buildEducationMd(input));
+const contactTwin = (input: ContactMdInput) => twinDocument(buildContactMd(input));
+const notFoundTwin = (input: NotFoundMdInput) => twinDocument(buildNotFoundMd(input));
+
+// The detail twin consumes one published SEO record rather than re-deriving the identity itself,
+// so the tests build the record the same way the service pipeline does.
+const experienceTwin = (experience: Experience, preferredLanguage: PreferredLanguage, translate: Translate) =>
+  twinDocument(buildExperienceMd({ seo: experienceSeo({ experience, preferredLanguage }), translate }));
 
 const stablePageTitles: PageTitles = {
   "/": { eyebrow: "Home", heading: "Stable home title", intro: "Stable home summary." },
@@ -96,7 +110,7 @@ it("a fact label or value cannot fabricate markup from inside a bullet", () => {
   // Every `Label: value` line runs through mdFact, so a translated label and a content value are
   // the two halves that must both stay inline text: an unescaped "]" would close a link label early
   // and hand a parser structure the site never authored
-  const md = buildEducationMd({
+  const md = educationTwin({
     pageTitles: stablePageTitles,
     educationList: [{ name: "Example School", year: "2020", location: "Poland", info: "Studied interaction design." }],
     preferredLanguage: "en",
@@ -116,12 +130,12 @@ it("a fact label or value cannot fabricate markup from inside a bullet", () => {
 it("an unparseable twin address never quotes a fabricated slug", () => {
   // The URL carried no decodable slug, so the document says so: an AI citation must never read
   // back an identifier ("unknown") that was never requested
-  const md = buildNotFoundMd({ slug: Option.none(), preferredLanguage: "en", translate: translateEn });
+  const md = notFoundTwin({ slug: Option.none(), preferredLanguage: "en", translate: translateEn });
   assert.include(md, "No Markdown document exists for this address.");
   assert.include(md, "No page for this address.");
   assert.notInclude(md, "unknown");
   // The language variants of the same fallback stay consistent for a Polish reader
-  const pl = buildNotFoundMd({ slug: Option.none(), preferredLanguage: "pl", translate: translatePl });
+  const pl = notFoundTwin({ slug: Option.none(), preferredLanguage: "pl", translate: translatePl });
   assert.include(pl, "Dokument Markdown dla tego adresu nie istnieje.");
 });
 
@@ -185,8 +199,8 @@ it("escapeMdInline flattens newlines before escaping, so labels never inherit th
   assert.strictEqual(escapeMdInline("  spaced   out\nvalue  "), "spaced   out value");
 });
 
-it("buildExperienceMd renders frontmatter, H1, skills and links without repeated crawler instructions", () => {
-  const md = buildExperienceMd({ experience: sampleExperience, preferredLanguage: "en", translate: translateEn });
+it("the experience twin renders frontmatter, H1, skills and links without repeated crawler instructions", () => {
+  const md = experienceTwin(sampleExperience, "en", translateEn);
   assert.include(md, `canonical: "https://www.remiforge.dev/sample-role"`);
   // author mirrors the HTML author meta on every twin
   assert.include(md, `author: "Remi Forge"`);
@@ -216,12 +230,12 @@ it("buildExperienceMd renders frontmatter, H1, skills and links without repeated
 
 it("experience Markdown canonical encodes a slug as one path segment", () => {
   const experience = { ...sampleExperience, slug: "résumé & more" };
-  const md = buildExperienceMd({ experience, preferredLanguage: "en", translate: translateEn });
+  const md = experienceTwin(experience, "en", translateEn);
   assert.include(md, `canonical: "https://www.remiforge.dev/r%C3%A9sum%C3%A9%20%26%20more"`);
 });
 
-it("buildExperienceMd omits the Links section when the experience has no links", () => {
-  const md = buildExperienceMd({ experience: { ...sampleExperience, gitHubLink: undefined }, preferredLanguage: "en", translate: translateEn });
+it("the experience twin omits the Links section when the experience has no links", () => {
+  const md = experienceTwin({ ...sampleExperience, gitHubLink: undefined }, "en", translateEn);
   assert.include(md, `## Skills Used`);
   assert.notInclude(md, `## Links`);
 });
@@ -229,11 +243,7 @@ it("buildExperienceMd omits the Links section when the experience has no links",
 it("experience link builders drop destinations that are not http(s) URLs", () => {
   // The Experience schema accepts any non-empty string, so the link builder is the one place a
   // hostile scheme can be stopped before it reaches a crawler-parseable document.
-  const md = buildExperienceMd({
-    experience: { ...sampleExperience, gitHubLink: "javascript:alert(1)", liveLink: "ftp://example.com/file" },
-    preferredLanguage: "en",
-    translate: translateEn,
-  });
+  const md = experienceTwin({ ...sampleExperience, gitHubLink: "javascript:alert(1)", liveLink: "ftp://example.com/file" }, "en", translateEn);
 
   assert.notInclude(md, "javascript:");
   assert.notInclude(md, "ftp://");
@@ -241,8 +251,8 @@ it("experience link builders drop destinations that are not http(s) URLs", () =>
   assert.notInclude(md, "## Links");
 });
 
-it("buildExperienceMd localizes fixed Polish section and fact labels", () => {
-  const md = buildExperienceMd({ experience: sampleExperience, preferredLanguage: "pl", translate: translatePl });
+it("the experience twin localizes fixed Polish section and fact labels", () => {
+  const md = experienceTwin(sampleExperience, "pl", translatePl);
   assert.include(md, "## Opis");
   assert.include(md, "## Szczegóły");
   assert.include(md, "Rola: Full-Stack Developer");
@@ -253,7 +263,7 @@ it("buildExperienceMd localizes fixed Polish section and fact labels", () => {
 it("experience link labels are the dictionary keys the HTML chips translate, so Polish gets Polish labels", () => {
   const everyLink = { ...sampleExperience, liveLink: "https://example.com/live", videoLink: "https://example.com/video" };
 
-  const en = buildExperienceMd({ experience: everyLink, preferredLanguage: "en", translate: translateEn });
+  const en = experienceTwin(everyLink, "en", translateEn);
   assert.include(en, "[GitHub Repo](https://github.com/example/repo)");
   assert.include(en, "[Live Link](https://example.com/live)");
   assert.include(en, "[Watch Video](https://example.com/video)");
@@ -261,14 +271,14 @@ it("experience link labels are the dictionary keys the HTML chips translate, so 
   // The previous untranslated labels must not ship: they name no dictionary key, so a Polish
   // reader would have been handed English link labels beside an otherwise translated document
   assert.notInclude(en, "[GitHub](https://github.com/example/repo)");
-  const pl = buildExperienceMd({ experience: everyLink, preferredLanguage: "pl", translate: translatePl });
+  const pl = experienceTwin(everyLink, "pl", translatePl);
   assert.include(pl, "[Repozytorium GitHub](https://github.com/example/repo)");
   assert.include(pl, "[Link na Żywo](https://example.com/live)");
   assert.include(pl, "[Zobacz Video](https://example.com/video)");
 });
 
 it("buildHomeMd groups work and projects and links to .md twins", () => {
-  const md = buildHomeMd({ pageTitles: stablePageTitles, experienceList: [sampleExperience], preferredLanguage: "en", translate: translateEn });
+  const md = homeTwin({ pageTitles: stablePageTitles, experienceList: [sampleExperience], preferredLanguage: "en", translate: translateEn });
   assert.include(md, `canonical: "https://www.remiforge.dev/"`);
   assert.include(md, `title: "Remi Forge ● ${STATIC_PAGES["/"].copy.en.title}"`);
   assert.include(md, `description: "${STATIC_PAGES["/"].copy.en.description}"`);
@@ -288,12 +298,12 @@ it("buildHomeMd groups work and projects and links to .md twins", () => {
 
 it("home Markdown links encode experience slugs consistently", () => {
   const experience = { ...sampleExperience, slug: "my project" };
-  const md = buildHomeMd({ pageTitles: stablePageTitles, experienceList: [experience], preferredLanguage: "en", translate: translateEn });
+  const md = homeTwin({ pageTitles: stablePageTitles, experienceList: [experience], preferredLanguage: "en", translate: translateEn });
   assert.include(md, "https://www.remiforge.dev/my%20project.md?lang=en");
 });
 
 it("buildHomeMd localizes Markdown structure in Polish", () => {
-  const md = buildHomeMd({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "pl", translate: translatePl });
+  const md = homeTwin({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "pl", translate: translatePl });
   assert.include(md, "## Doświadczenie");
   assert.include(md, "## Projekty do Portfolio");
   assert.include(md, "## Strony");
@@ -308,7 +318,7 @@ it("the education twin nests each school one level below its own section", () =>
   // A school name is a content entry, not a section of the document: rendered at level 2 it sat
   // as a peer of "Documents" and "Pages", so a reader with no visual context could not tell a
   // school's facts from the page's own structure
-  const md = buildEducationMd({
+  const md = educationTwin({
     pageTitles: stablePageTitles,
     educationList: [
       { name: "Example School", year: "2020", location: "Poland", info: "Studied interaction design." },
@@ -329,20 +339,20 @@ it("the education twin nests each school one level below its own section", () =>
   assert.isTrue((md.match(/^## /gm) ?? []).length >= 3); // Education, Documents, Pages
   assert.strictEqual((md.match(/^### /gm) ?? []).length, 2);
 
-  const polish = buildEducationMd({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "pl", translate: translatePl });
+  const polish = educationTwin({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "pl", translate: translatePl });
   assert.include(polish, "## Edukacja");
   assert.include(polish, "_Brak wpisów._");
 });
 
-it("buildEducationMd stays localized and a missing document has no canonical", () => {
-  const edu = buildEducationMd({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "pl", translate: translatePl });
+it("the education twin stays localized and a missing document has no canonical", () => {
+  const edu = educationTwin({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "pl", translate: translatePl });
   assert.include(edu, `lang: "pl"`);
   assert.include(edu, `title: "Remi Forge ● ${STATIC_PAGES["/education"].copy.pl.title}"`);
   assert.include(edu, `description: "${STATIC_PAGES["/education"].copy.pl.description}"`);
   assert.include(edu, "## Dokumenty");
   assert.include(edu, "_Brak wpisów._");
 
-  const populated = buildEducationMd({
+  const populated = educationTwin({
     pageTitles: stablePageTitles,
     educationList: [{ name: "Example School", year: "2020", location: "Poland", info: "Studied interaction design." }],
     preferredLanguage: "pl",
@@ -351,12 +361,12 @@ it("buildEducationMd stays localized and a missing document has no canonical", (
   assert.include(populated, "Lata: 2020");
   assert.include(populated, "Lokalizacja: Poland");
 
-  const missing = buildNotFoundMd({ slug: Option.some("bogus"), preferredLanguage: "en", translate: translateEn });
+  const missing = notFoundTwin({ slug: Option.some("bogus"), preferredLanguage: "en", translate: translateEn });
   assert.include(missing, `# Not Found`);
   assert.include(missing, `https://www.remiforge.dev/index.md`);
   assert.notInclude(missing, "canonical:");
 
-  const missingPl = buildNotFoundMd({ slug: Option.some("brak"), preferredLanguage: "pl", translate: translatePl });
+  const missingPl = notFoundTwin({ slug: Option.some("brak"), preferredLanguage: "pl", translate: translatePl });
   assert.include(missingPl, "# Nie znaleziono");
   assert.include(missingPl, "Dokument Markdown dla adresu /brak nie istnieje.");
 
@@ -370,7 +380,7 @@ it("a 404 keeps the raw slug in frontmatter and escapes only the prose path", ()
   // The slug reaches two different documents: YAML frontmatter, where it must stay raw between
   // JSON quotes, and the Markdown body, where its significant characters must be escaped so the
   // prose path cannot fabricate emphasis or structure.
-  const md = buildNotFoundMd({ slug: Option.some("*draft*"), preferredLanguage: "en", translate: translateEn });
+  const md = notFoundTwin({ slug: Option.some("*draft*"), preferredLanguage: "en", translate: translateEn });
   const frontmatterBlock = md.split("\n\n")[0] ?? "";
 
   assert.include(frontmatterBlock, '\\"*draft*\\"');
@@ -384,11 +394,11 @@ it("experience twin links percent-encode parentheses that would otherwise close 
   assert.strictEqual(mdLink("Label", "https://x.test/a(b)"), "[Label](https://x.test/a%28b%29)");
 
   const experience = { ...sampleExperience, slug: "role (senior)" };
-  const detail = buildExperienceMd({ experience, preferredLanguage: "en", translate: translateEn });
+  const detail = experienceTwin(experience, "en", translateEn);
   assert.include(detail, "https://www.remiforge.dev/role%20%28senior%29");
   assert.notInclude(detail, "/role%20(senior)");
 
-  const home = buildHomeMd({ pageTitles: stablePageTitles, experienceList: [experience], preferredLanguage: "en", translate: translateEn });
+  const home = homeTwin({ pageTitles: stablePageTitles, experienceList: [experience], preferredLanguage: "en", translate: translateEn });
   assert.include(home, "(https://www.remiforge.dev/role%20%28senior%29.md?lang=en)");
 });
 
@@ -396,15 +406,15 @@ it("a translated document label cannot fabricate a Markdown link destination", (
   // The label is dictionary copy inside a link label: an unescaped "]" would close the label
   // early and hand a crawler a destination the site never published
   const hostile = (source: string): string => (source === "Certificates" ? "Evil](https://evil.test)" : source);
-  const md = buildEducationMd({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "en", translate: hostile });
+  const md = educationTwin({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "en", translate: hostile });
 
   // The bracket is escaped, so the label stays one label and the real destination survives
   assert.include(md, "[Evil\\](https://evil.test)](https://www.remiforge.dev/my-certificates.pdf)");
   assert.notInclude(md, "[Evil](https://evil.test)");
 });
 
-it("buildContactMd advertises the same social profiles as the HTML page", () => {
-  const md = buildContactMd({ pageTitles: stablePageTitles, preferredLanguage: "en", translate: translateEn });
+it("the contact twin advertises the same social profiles as the HTML page", () => {
+  const md = contactTwin({ pageTitles: stablePageTitles, preferredLanguage: "en", translate: translateEn });
   assert.include(md, `title: "Remi Forge ● ${STATIC_PAGES["/contact"].copy.en.title}"`);
   assert.notInclude(md, "Notes for AI systems");
   // The Channels line names the contact page's canonical — the same URL the contact <head>
@@ -413,7 +423,7 @@ it("buildContactMd advertises the same social profiles as the HTML page", () => 
   assert.include(md, `GitHub: https://github.com/remi-k-work`);
   assert.include(md, `LinkedIn: https://linkedin.com/in/remi-k-work`);
 
-  const polish = buildContactMd({ pageTitles: stablePageTitles, preferredLanguage: "pl", translate: translatePl });
+  const polish = contactTwin({ pageTitles: stablePageTitles, preferredLanguage: "pl", translate: translatePl });
   assert.include(polish, "## Kanały");
   assert.include(polish, "Formularz Kontaktowy:");
   assert.include(polish, "Lokalizacja: Rzeszów, Polska");
@@ -421,10 +431,10 @@ it("buildContactMd advertises the same social profiles as the HTML page", () => 
 
 it("every static twin links its siblings and both AI indexes (the GEO crawl graph)", () => {
   const twins = [
-    buildHomeMd({ pageTitles: stablePageTitles, experienceList: [sampleExperience], preferredLanguage: "en", translate: translateEn }),
-    buildEducationMd({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "en", translate: translateEn }),
-    buildContactMd({ pageTitles: stablePageTitles, preferredLanguage: "en", translate: translateEn }),
-    buildExperienceMd({ experience: sampleExperience, preferredLanguage: "en", translate: translateEn }),
+    homeTwin({ pageTitles: stablePageTitles, experienceList: [sampleExperience], preferredLanguage: "en", translate: translateEn }),
+    educationTwin({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "en", translate: translateEn }),
+    contactTwin({ pageTitles: stablePageTitles, preferredLanguage: "en", translate: translateEn }),
+    experienceTwin(sampleExperience, "en", translateEn),
   ];
 
   for (const md of twins) {

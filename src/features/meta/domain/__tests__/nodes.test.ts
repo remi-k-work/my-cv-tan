@@ -6,7 +6,7 @@
 import { assert, it } from "@effect/vitest";
 
 // domain
-import { articleNode, webPageNode, collectionNode, imageObject, breadcrumb, personEdge } from "../nodes";
+import { articleNode, webPageNode, collectionNode, experienceItemNode, imageObject, breadcrumb, personEdge } from "../nodes";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
@@ -150,5 +150,68 @@ it("personEdge extends the site Person with additional fields", () => {
     "@type": "Person",
     "@id": PERSON_ID,
     worksFor: { "@id": "https://www.remiforge.edu/#org" },
+  });
+});
+
+const itemInput = {
+  employment: false,
+  id: "https://www.remiforge.dev/sample-role#project",
+  url: "https://www.remiforge.dev/sample-role",
+  role: "Full-Stack Developer",
+  description: "Built things with care.",
+  preferredLanguage: language,
+  keywords: ["TypeScript", "React"],
+} as const;
+
+it("experienceItemNode builds the project node with its verified repository and sized image", () => {
+  const image = imageObject("https://www.remiforge.dev/images/01-a.webp", 1600, 900);
+  const node = experienceItemNode({ ...itemInput, image, repository: "https://github.com/example/repo" });
+
+  assert.deepStrictEqual(node, {
+    "@type": "SoftwareSourceCode",
+    "@id": "https://www.remiforge.dev/sample-role#project",
+    name: "Full-Stack Developer",
+    description: "Built things with care.",
+    image,
+    url: "https://www.remiforge.dev/sample-role",
+    mainEntityOfPage: { "@id": "https://www.remiforge.dev/sample-role" },
+    inLanguage: language,
+    creator: { "@id": PERSON_ID },
+    publisher: { "@id": PUBLISHER_ID },
+    keywords: "TypeScript, React",
+    codeRepository: "https://github.com/example/repo",
+  });
+});
+
+it("experienceItemNode drops the source-code claim and the image when neither is published", () => {
+  const node = experienceItemNode(itemInput);
+
+  // SoftwareSourceCode is a claim that this page's code is published, so it follows the validated
+  // repository: without one the project is an ordinary creative work, not a link that 404s
+  assert.strictEqual(node["@type"], "CreativeWork");
+  assert.isUndefined(node.codeRepository);
+  assert.isUndefined(node.image);
+  // The rest of the claim is untouched: the node still identifies the page it describes
+  assert.strictEqual(node.url, "https://www.remiforge.dev/sample-role");
+  assert.deepStrictEqual(node.creator, { "@id": PERSON_ID });
+});
+
+it("experienceItemNode builds the employment role without a url, language or image", () => {
+  const node = experienceItemNode({
+    ...itemInput,
+    employment: true,
+    id: "https://www.remiforge.dev/sample-job#organization-role",
+    url: "https://www.remiforge.dev/sample-job",
+  });
+
+  // schema.org Role has no inLanguage and carries no url: the WebPage node states the language,
+  // and the role is reached through the Article's subject rather than fetched directly
+  assert.deepStrictEqual(node, {
+    "@type": "OrganizationRole",
+    "@id": "https://www.remiforge.dev/sample-job#organization-role",
+    roleName: "Full-Stack Developer",
+    description: "Built things with care.",
+    member: { "@id": PERSON_ID },
+    mainEntityOfPage: { "@id": "https://www.remiforge.dev/sample-job" },
   });
 });

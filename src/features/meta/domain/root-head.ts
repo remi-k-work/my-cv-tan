@@ -62,7 +62,10 @@ export const ROOT_HEAD = {
 export const isNotFoundMatch = (match: MatchChain[number]): boolean => match.status === "notFound" || match._notFound === true;
 
 // Fallback documents stay out of search results while identifying the failed route and language.
-export const fallbackHead = (pagePath: string | undefined, preferredLanguage: PreferredLanguage = DEFAULT_LANGUAGE, notFound = false): PageHead => {
+// A route the head has no path for is one the site does not know, which is exactly the not-found
+// fallback, so the copy is decided by the same fact that decides the canonical.
+export const fallbackHead = (pagePath: string | undefined, preferredLanguage: PreferredLanguage = DEFAULT_LANGUAGE): PageHead => {
+  const notFound = pagePath === undefined;
   const title = matchPreferredLanguage(preferredLanguage, notFound ? "Not Found" : "Page unavailable", notFound ? "Nie znaleziono" : "Strona niedostępna");
   const description = matchPreferredLanguage(
     preferredLanguage,
@@ -72,7 +75,7 @@ export const fallbackHead = (pagePath: string | undefined, preferredLanguage: Pr
 
   return {
     meta: [{ title: BRANDED_TITLE(title) }, { name: "robots", content: NOINDEX_FOLLOW }, { name: "description", content: description }],
-    links: pagePath === undefined ? [] : [canonicalLink(absoluteUrl(pagePath))],
+    links: notFound ? [] : [canonicalLink(absoluteUrl(pagePath))],
     scripts: [siteGraphScript],
   };
 };
@@ -81,7 +84,7 @@ export const fallbackHead = (pagePath: string | undefined, preferredLanguage: Pr
 export const rootHead = (matches: MatchChain): PageHead => {
   if (!matches.some(isNotFoundMatch)) return { meta: [...ROOT_HEAD.meta], links: [...ROOT_HEAD.links], scripts: [] };
 
-  const fallback = fallbackHead(undefined, headLanguage(matches), true);
+  const fallback = fallbackHead(undefined, headLanguage(matches));
 
   return {
     meta: [...ROOT_HEAD.meta, ...fallback.meta],

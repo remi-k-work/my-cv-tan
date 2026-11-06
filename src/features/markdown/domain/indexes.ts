@@ -7,6 +7,7 @@ import type { ExperienceList } from "@/features/experience/domain/models";
 // meta (shared)
 import {
   CONTENT_SIGNAL,
+  DEFAULT_LANGUAGE,
   DOWNLOADABLE_DOCUMENTS,
   HOME_LOCALITY,
   HOME_COUNTRY,
@@ -23,14 +24,16 @@ import {
   SITEMAP_HREF,
   SOCIAL_PROFILES,
 } from "@/features/meta/domain/constants";
+import { SITE_LANGUAGES } from "@/domain/constants";
 import { STATIC_PAGES } from "@/features/meta/domain/pages";
-import { absoluteUrl, markdownTwinUrl } from "@/features/meta/domain/urls";
+import { LANG_PARAM, absoluteUrl, markdownTwinUrl } from "@/features/meta/domain/urls";
 import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/link-tags";
 
 // formatting primitives
 import {
   demoteHeadings,
   escapeMd,
+  fencedFacts,
   mdBody,
   mdBulletList,
   mdDocument,
@@ -51,9 +54,18 @@ import { SOURCE_COPY, experienceLines } from "./twins";
 
 // --- Shared AI Index Sections and Copy ---
 
+// The languages a twin may be pinned to beside the source language. Derived from the same
+// vocabulary the twin builder writes and its request parser reads, so the guidance below can never
+// name a parameter, or a language, this site does not actually publish.
+const PINNABLE_LANGUAGES = SITE_LANGUAGES.filter((language) => language !== DEFAULT_LANGUAGE);
+
+const LANGUAGE_PINS = PINNABLE_LANGUAGES.map(
+  (language) => `Append \`?${LANG_PARAM}=${language}\` to any \`.md\` URL to request ${SITE_LANGUAGE_NAMES[language]} explicitly`
+);
+
 const AI_NOTES = [
   `Reuse is permitted for search, AI input and AI training (\`Content-Signal: ${CONTENT_SIGNAL}\`).`,
-  "Markdown responses follow the request's language preferences. Append `?lang=pl` to any `.md` URL to request Polish explicitly; English is the fallback when no supported preference is present.",
+  `Markdown responses follow the request's language preferences. ${LANGUAGE_PINS.join("; ")}; ${SITE_LANGUAGE_NAMES[DEFAULT_LANGUAGE]} is the fallback when no supported preference is present.`,
   "Every page has a machine-readable Markdown twin; fetch one linked `.md` page at a time, or the single-request full-content document for everything at once.",
   "Always cite the clean canonical HTML URL from each document's frontmatter (`canonical:`), not the `.md` URL.",
   "Structured data (JSON-LD) is embedded in every page head.",
@@ -106,6 +118,18 @@ const PAGES_SECTION = mdTitledSection(
 const OPTIONAL_SECTION = mdTitledSection("Optional", mdDocumentLinks(DOWNLOADABLE_DOCUMENTS, SOURCE_COPY.translate));
 const PROFILES_SECTION = mdTitledSection("Profiles", mdBulletList(mdProfileLinks(SOCIAL_PROFILES)));
 
+// One pinned document per language beside the English source, walked from the home twin so a
+// reader sees the shape of the pin before fetching any page.
+const LANGUAGE_VARIANTS_SECTION = mdTitledSection(
+  "Language Variants",
+  mdBulletList(
+    PINNABLE_LANGUAGES.map(
+      (language) =>
+        `${SITE_LANGUAGE_NAMES[language]}: every page above is also available at its twin URL with \`?${LANG_PARAM}=${language}\` appended (e.g. ${markdownTwinUrl(STATIC_PAGES[HOME_PATH].mdHref, language)}). ${SITE_LANGUAGE_NAMES[DEFAULT_LANGUAGE]} is the source language.`
+    )
+  )
+);
+
 // Builds the llms.txt index document.
 export const buildLlmsTxt = (experienceList: ExperienceList) =>
   mdDocument([
@@ -114,12 +138,7 @@ export const buildLlmsTxt = (experienceList: ExperienceList) =>
     PAGES_SECTION,
     mdTitledSection("Work Experience", experienceLines({ experienceList, type: "e", ...SOURCE_COPY, entry: "canonical" })),
     mdTitledSection("Portfolio Projects", experienceLines({ experienceList, type: "p", ...SOURCE_COPY, entry: "canonical" })),
-    mdTitledSection(
-      "Language Variants",
-      mdBulletList([
-        `Polish: every page above is also available at its twin URL with \`?lang=pl\` appended (e.g. ${markdownTwinUrl(STATIC_PAGES[HOME_PATH].mdHref, "pl")}). English is the source language.`,
-      ])
-    ),
+    LANGUAGE_VARIANTS_SECTION,
     PROFILES_SECTION,
     DISCOVERY_SECTION,
     OPTIONAL_SECTION,
@@ -132,18 +151,18 @@ export const buildLlmsFullTxt = ({ pageTitles, experienceList, educationList }: 
 
   return mdDocument([
     ...SITE_OPENING,
-    'Complete Markdown content of every page, concatenated for single-request ingestion. Each section begins with its canonical HTML URL after "Source:", its Markdown twin after "Markdown:", and ends with the twin verbatim. Cite the canonical HTML URL, not this file.',
+    `Complete Markdown content of every page, concatenated for single-request ingestion. Each section begins with its canonical HTML URL after "Source:", its Markdown twin after "Markdown:", its identity facts as YAML, and ends with the twin body verbatim. Cite the canonical HTML URL, not this file.`,
     ABOUT_SECTION,
     mdTitledSection("Table of Contents", mdBulletList(documents.map(({ name, canonical, twinUrl }) => mdIndexEntry(name, canonical, twinUrl)))),
     DISCOVERY_SECTION,
-    ...documents.map(({ name, canonical, twinUrl, render }) =>
-      mdBody([
-        mdHeading(2, name),
-        `Source: ${canonical}`,
-        `Markdown: ${twinUrl}`,
-        demoteHeadings(render({ pageTitles, experienceList, educationList }).trimEnd()),
-      ])
-    ),
+    // The facts are fenced rather than published as a second frontmatter block: inside one
+    // document a raw `---` is a thematic break, and its closing line turns the last fact into a
+    // setext heading that would collide with the section heading above it.
+    ...documents.map(({ name, canonical, twinUrl, render }) => {
+      const twin = render({ pageTitles, experienceList, educationList });
+
+      return mdBody([mdHeading(2, name), `Source: ${canonical}`, `Markdown: ${twinUrl}`, fencedFacts(twin.facts), demoteHeadings(twin.body)]);
+    }),
     COMPANION_NOTES_SECTION,
   ]);
 };

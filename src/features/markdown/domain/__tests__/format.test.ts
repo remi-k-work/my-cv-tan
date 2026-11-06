@@ -11,6 +11,7 @@ import {
   demoteHeadings,
   escapeMd,
   escapeMdInline,
+  fencedFacts,
   frontmatter,
   mdBody,
   mdBulletList,
@@ -105,6 +106,16 @@ it("mdIndexEntry prints label, canonical, twin and an optional inline summary", 
   );
 });
 
+it("mdIndexEntry encodes parens in the twin URL exactly like mdLink encodes its href", () => {
+  // Every URL the toolkit embeds is a Markdown destination, and a raw ")" would close it early.
+  // The label goes through mdLink, so the twin spelling beside it has to take the same treatment.
+  const entry = mdIndexEntry("Role", "https://site.test/role(1)", "https://site.test/role(1).md");
+
+  assert.include(entry, "](https://site.test/role%281%29)");
+  assert.include(entry, "Markdown: https://site.test/role%281%29.md");
+  assert.notInclude(entry, "(1)");
+});
+
 it("mdLink escapes the label and percent-encodes parens in the href", () => {
   assert.strictEqual(mdLink("Evil](label", "https://x.test/a"), "[Evil\\](label](https://x.test/a)");
   assert.strictEqual(mdLink("Label", "https://x.test/a(b)"), "[Label](https://x.test/a%28b%29)");
@@ -137,6 +148,19 @@ it("frontmatter escapes YAML-unsafe control characters that JSON.stringify leave
   assert.include(block, `title: "bel\\u007f c1\\u0085 ls\\u2028 ps\\u2029"`);
 });
 
+it("fencedFacts widens its fence past any backtick run the facts themselves carry", () => {
+  // A value carrying a run as long as the fence would close the block early, and every line after
+  // it would publish as ordinary companion prose an indexer reads as structure rather than as data.
+  assert.strictEqual(
+    fencedFacts({ title: "Use ```code``` blocks", canonical: "https://www.remiforge.dev/x" }),
+    '````yaml\ntitle: "Use ```code``` blocks"\ncanonical: "https://www.remiforge.dev/x"\n````'
+  );
+
+  // A shorter run never could close the fence, so it keeps the three-backtick block every other
+  // surface pins
+  assert.strictEqual(fencedFacts({ title: "Use `inline` code" }), '```yaml\ntitle: "Use `inline` code"\n```');
+});
+
 it("escapeMd neutralizes structure-building characters everywhere", () => {
   assert.strictEqual(escapeMd("# Hello\n\n\nWorld *bold* [link]"), "\\# Hello\n\nWorld \\*bold\\* \\[link\\]");
   assert.strictEqual(escapeMd("Title\n====="), "Title\n\\=====");
@@ -153,4 +177,40 @@ it("escapeMdInline flattens newlines before escaping", () => {
 it("escapeMd preserves literal backslashes while escaping adjacent Markdown punctuation", () => {
   assert.strictEqual(escapeMd(String.raw`C:\src\test`), String.raw`C:\\src\\test`);
   assert.strictEqual(escapeMdInline(String.raw`literal \* text`), String.raw`literal \\\* text`);
+});
+
+it("escapeMd leaves markers that cannot build structure at their indentation untouched", () => {
+  // Four spaces — or a tab — open an indented code block, where a backslash is content rather than
+  // an escape: neutralising the marker there prints a stray "\" the author never wrote. The
+  // regression-guards invariant (only ever add a backslash) cuts both ways.
+  assert.strictEqual(escapeMd("Led the migration.\n\n    # indented heading"), "Led the migration.\n\n    # indented heading");
+  assert.strictEqual(escapeMd("Signed\n    Jane Doe"), "Signed\n    Jane Doe");
+  assert.strictEqual(escapeMd("para\n\t- tab indented bullet"), "para\n\t- tab indented bullet");
+  assert.strictEqual(escapeMd("para\n    - lazy continuation"), "para\n    - lazy continuation");
+  // A lazy continuation line is still paragraph text, and an inner line a strikethrough needs no run
+  assert.strictEqual(escapeMd("text\n# interrupt"), "text\n\\# interrupt");
+  // Three spaces is the most a real ATX heading may carry, so it stays neutralised
+  assert.strictEqual(escapeMd("para\n\n   # heading"), "para\n\n   \\# heading");
+  // The thematic-break and setext rules carry the same bound: an indented code block's content is
+  // not structure, so its rows come back exactly as authored rather than one backslash heavier
+  assert.strictEqual(escapeMd("para\n\n\t---"), "para\n\n\t---");
+  assert.strictEqual(escapeMd("para\n\n    ---"), "para\n\n    ---");
+  assert.strictEqual(escapeMd("para\n\n\t==="), "para\n\n\t===");
+  assert.strictEqual(escapeMd("para\n\n   ---"), "para\n\n   \\---");
+  assert.strictEqual(escapeMd("para\n\n\t=="), "para\n\n\t==");
+  // A delimiter row is the same: at most three spaces of indent claims it, four leaves it literal
+  assert.strictEqual(escapeMd("| a | b |\n    | - | - |"), "| a | b |\n    | - | - |");
+  assert.strictEqual(escapeMd("| a | b |\n   | - | - |"), "| a | b |\n   | \\- | - |");
+});
+
+it("escapeMd neutralizes only a real GFM delimiter row, never prose that starts with a pipe", () => {
+  // The pipe is prose punctuation ("the ratio A | B mattered"), so the row is what gets escaped;
+  // requiring the whole line to be dashes, colons and pipes keeps a pipe-leading sentence intact.
+  assert.strictEqual(escapeMd("|- item|"), "|- item|");
+  assert.strictEqual(escapeMd("|- a table row that starts with a pipe"), "|- a table row that starts with a pipe");
+  // A genuine delimiter row still loses its leading cell, in every spelling
+  assert.strictEqual(escapeMd("| --- |"), "| \\--- |");
+  assert.strictEqual(escapeMd(":--|--:"), ":\\--|--:");
+  assert.strictEqual(escapeMd("|-|-|"), "|\\-|-|");
+  assert.strictEqual(escapeMd("table\n\n| a | b |\n| - | - |"), "table\n\n| a | b |\n| \\- | - |");
 });

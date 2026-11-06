@@ -9,7 +9,11 @@ import { escapeMd } from "../format";
 import { unavailableMarkdownBody } from "../twins";
 
 // meta (shared)
-import { PERSON_DESCRIPTION } from "@/features/meta/domain/constants";
+import { PERSON_DESCRIPTION, SITE_LANGUAGE_NAMES } from "@/features/meta/domain/constants";
+import { LANG_PARAM } from "@/features/meta/domain/urls";
+
+// constants
+import { SITE_LANGUAGES } from "@/domain/constants";
 
 // types
 import type { PageTitles } from "@/domain/models";
@@ -104,10 +108,11 @@ it("buildLlmsTxt indexes pages, about facts, grouped experience and negotiated l
     assert.include(txt, twin);
   }
   // Each page entry links the canonical HTML URL — the citation target the notes name — and states
-  // its Markdown twin beside it, so a fetcher learns both documents from a single entry
+  // its Markdown twin beside it, so a fetcher learns both documents from a single entry. The label
+  // is the static page catalogue's own, the same name the twins' "Pages" section prints.
   assert.include(
     txt,
-    `- [Home](https://www.remiforge.dev/): portfolio overview with experience and project lists. Markdown: https://www.remiforge.dev/index.md?lang=en`
+    `- [Home page](https://www.remiforge.dev/): portfolio overview with experience and project lists. Markdown: https://www.remiforge.dev/index.md?lang=en`
   );
   assert.include(
     txt,
@@ -116,6 +121,19 @@ it("buildLlmsTxt indexes pages, about facts, grouped experience and negotiated l
   // Summaries are authored sentences: the entry adds no second full stop
   assert.notInclude(txt, ".. Markdown:");
   assert.notInclude(txt, ".md)");
+});
+
+it("the index's language guidance covers every language the site publishes and no others", () => {
+  // The guidance names the `?lang=` pin and the languages it selects, and the twin builder and its
+  // parser both read the same vocabulary. Pinning the two against each other is what stops a
+  // language from being published without being advertised, or advertised without being published.
+  const txt = buildLlmsTxt([sampleExperience]);
+  const pinned = new Set([...txt.matchAll(/\?lang=([a-z]+)/g)].map(([, language]) => language));
+
+  assert.deepStrictEqual([...pinned].sort(), [...SITE_LANGUAGES].sort());
+  for (const language of SITE_LANGUAGES) assert.include(txt, SITE_LANGUAGE_NAMES[language]);
+  // The parameter the guidance spells is the one the twin parser reads back
+  assert.include(txt, `?${LANG_PARAM}=`);
 });
 
 it("the index opening escapes its bio the way every other content string is escaped", () => {
@@ -187,11 +205,11 @@ it("the full-content companion gives every concatenated document its own section
 
   // One `##` section per document: the companion then has a document-level hierarchy
   // (# the site, ## one document) instead of a run of child H1s with no parent to hang from
-  for (const name of ["Home", "Education & Certificates", "Contact", "Full-Stack Developer at Sample Co"]) {
+  for (const name of ["Home page", "Education & Certificates", "Contact", "Full-Stack Developer at Sample Co"]) {
     assert.include(txt, `## ${name}`);
   }
   // The heading precedes the attribution block it introduces
-  assert.isTrue(txt.indexOf("## Home") < txt.indexOf("Source: https://www.remiforge.dev/"));
+  assert.isTrue(txt.indexOf("## Home page") < txt.indexOf("Source: https://www.remiforge.dev/"));
   assert.isTrue(txt.indexOf("## Full-Stack Developer at Sample Co") < txt.indexOf("Source: https://www.remiforge.dev/sample-role"));
   // Each twin's own headline still reads as that document's headline, now nested under it
   assert.include(txt, "### Full-Stack Developer at Sample Co");
@@ -222,8 +240,8 @@ it("buildLlmsFullTxt concatenates every verbatim twin behind its canonical URL",
   assert.include(txt, `## Table of Contents`);
   // Pinned in full, not by prefix: the three index entry lists render one shape, and the
   // summary-less table of contents is the variant no other assertion below covers
-  assert.include(txt, `- [Home](https://www.remiforge.dev/): Markdown: https://www.remiforge.dev/index.md?lang=en`);
-  assert.include(txt, `- [Home](https://www.remiforge.dev/)`);
+  assert.include(txt, `- [Home page](https://www.remiforge.dev/): Markdown: https://www.remiforge.dev/index.md?lang=en`);
+  assert.include(txt, `- [Home page](https://www.remiforge.dev/)`);
   assert.include(txt, `- [Education & Certificates](https://www.remiforge.dev/education)`);
   assert.include(txt, `- [Full-Stack Developer at Sample Co](https://www.remiforge.dev/sample-role)`);
   // Citations must land on canonical HTML URLs, never on the aggregation itself
@@ -250,7 +268,7 @@ it("the full-content companion gives every concatenated document a distinct head
 
   assert.strictEqual((txt.match(/^# /gm) ?? []).length, 1, "the companion must keep exactly one H1");
   // Documents are H2; their headline and sections sit strictly below them
-  for (const name of ["## Home", "## Education & Certificates", "## Contact", "## Full-Stack Developer at Sample Co"]) {
+  for (const name of ["## Home page", "## Education & Certificates", "## Contact", "## Full-Stack Developer at Sample Co"]) {
     assert.include(txt, `\n${name}\n`);
   }
   assert.include(txt, "\n### Stable home title\n");
@@ -270,6 +288,62 @@ it("a content-derived index label cannot fabricate a Markdown link destination",
   // The escape is transparent, so the line still parses as one bullet with one destination
   assert.notInclude(txt, "- [Evil](https://evil.test)](https");
   assert.isFalse(txt.includes("](https://evil.test)("));
+});
+
+it("the companion fences each twin's identity facts instead of publishing a second frontmatter block", () => {
+  // A twin's own document opens with a `---`-delimited frontmatter block. Republishing that block
+  // verbatim inside the companion is not frontmatter any more: a `---` after a blank line is a
+  // thematic break, and the closing `---`, sitting directly under the last fact, is a setext
+  // underline — so `type: "overview"` became an H2 at the same depth as the `## Home page` section
+  // heading above it, breaking the hierarchy a concatenated document promises its reader.
+  const txt = buildLlmsFullTxt({ pageTitles: stablePageTitles, experienceList: [], educationList: [] });
+
+  // The facts survive, still YAML, still machine-readable — fenced so they cannot be structure
+  assert.include(txt, '```yaml\ntitle: "Remi Forge ● Web Developer in Rzeszów, Poland"');
+  assert.include(txt, 'type: "overview"\n```');
+  // One fenced block per concatenated document, counted rather than asserted present
+  assert.strictEqual((txt.match(/^```yaml$/gm) ?? []).length, 3);
+  // No document's own frontmatter delimiter reaches the companion as an unpaired `---`
+  assert.strictEqual(txt.split("\n").filter((line) => /^-+$/.test(line)).length, 0);
+});
+
+it("the companion's only H2s are its own document sections, never a concatenated twin's facts", () => {
+  // The heading depths the companion promises: # the site, ## one document, ### its headline,
+  // #### its sections, ##### nested entries. A twin's frontmatter leaking in as structure would add
+  // an H2 nobody declared, which is what the fenced facts prevent.
+  const txt = buildLlmsFullTxt({
+    pageTitles: stablePageTitles,
+    experienceList: [sampleExperience],
+    educationList: [{ name: "Example School", year: "2020", location: "Poland", info: "Studied interaction design." }],
+  });
+
+  const documentHeadings = txt
+    .split("\n")
+    .filter((line) => line.startsWith("## "))
+    .map((line) => line.slice(3));
+
+  assert.deepStrictEqual(documentHeadings, [
+    "About",
+    "Table of Contents",
+    "Discovery",
+    "Home page",
+    "Education & Certificates",
+    "Contact",
+    "Full-Stack Developer at Sample Co",
+    "Notes for AI systems",
+  ]);
+});
+
+it("index entries encode a paren-bearing slug so the twin destination survives", () => {
+  // encodeURIComponent leaves "(" and ")" raw, but a Markdown destination ends at the first ")".
+  // The twin URL is an embedded destination exactly like the canonical link beside it, so both take
+  // the paren encoding and a slug that would truncate one entry renders as one whole entry.
+  const txt = buildLlmsTxt([{ ...sampleExperience, slug: "role (senior)" }]);
+
+  assert.include(txt, "](https://www.remiforge.dev/role%20%28senior%29)");
+  assert.include(txt, "Markdown: https://www.remiforge.dev/role%20%28senior%29.md?lang=en");
+  // No raw parenthesis reaches either destination
+  assert.notInclude(txt, "(senior)");
 });
 
 it("the unavailable twin escapes its prose the way every other body string does", () => {

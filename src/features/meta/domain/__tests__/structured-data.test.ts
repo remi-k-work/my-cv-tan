@@ -85,14 +85,14 @@ const stablePageTitles: PageTitles = {
 };
 
 // The site entities every page merges into its own single block; the head carries no script of its
-// own because TanStack concatenates rather than replaces them (see pageHead in heads.ts)
+// own because TanStack concatenates rather than replaces them (see pageHead in page-head.ts)
 const siteGraph = graphOf(jsonLdGraph(siteNodes).children);
 
 it("the root head carries no JSON-LD, so a page's single block is not duplicated", () => {
   // TanStack concatenates the scripts of every match in the chain rather than replacing them, so a
   // root-level graph would render beside a page's own. Asserting the root declares none is what
   // keeps the "exactly one block per page" invariant below from silently regressing (the compile
-  // guard for it lives on RootHeadContract in heads.ts).
+  // guard for it lives on RootHeadContract in root-head.ts).
   assert.notInclude(JSON.stringify(ROOT_HEAD), "ld+json");
   // The root still declares the site-wide facts every page shares: icons, identity links, and the
   // AI discovery documents an unmatched route needs to point AI fetchers at the document graph

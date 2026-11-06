@@ -7,11 +7,8 @@ import type { PreferredLanguage } from "@/domain/models";
 
 // constants
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW, NO_STORE } from "@/domain/http";
-import { CONTENT_SIGNAL } from "../domain/constants";
+import { CONTENT_SIGNAL, NEGOTIATION_VARY_TOKENS } from "../domain/constants";
 import { AI_INDEX_LINK_HEADER } from "../domain/link-tags";
-
-// Language-negotiated documents must vary on both inputs.
-const LANGUAGE_VARY = "Cookie, Accept-Language";
 
 // The reuse signal and AI-index advertisements every response repeats.
 export const MACHINE_HEADERS = { "Content-Signal": CONTENT_SIGNAL, Link: AI_INDEX_LINK_HEADER } as const;
@@ -33,5 +30,5 @@ export const INDEXABLE_HEADERS = { "X-Robots-Tag": INDEXABLE_ROBOTS } as const;
 export const documentHeaders = (preferredLanguage: PreferredLanguage): Readonly<Record<string, string>> => ({
   ...MACHINE_HEADERS,
   "Content-Language": preferredLanguage,
-  Vary: LANGUAGE_VARY,
+  Vary: NEGOTIATION_VARY_TOKENS.join(", "),
 });
