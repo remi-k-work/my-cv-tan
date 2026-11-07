@@ -10,7 +10,7 @@ import type { PreferredLanguage } from "@/domain/models";
 // meta (shared)
 import { AI_INDEX_LINK_HEADER, AI_INDEX_LINKS, canonicalLink, joinLinkHeader, languageVariantLinks } from "@/features/meta/domain/link-tags";
 import { markdownTwinUrl } from "@/features/meta/domain/urls";
-import { CACHEABLE_HEADERS, documentHeaders, INDEXABLE_HEADERS, UNAVAILABLE_HEADERS } from "@/features/meta/services/headers";
+import { CACHEABLE_HEADERS, documentHeaders, INDEXABLE_HEADERS, SERVICE_UNAVAILABLE_HEADERS, UNAVAILABLE_HEADERS } from "@/features/meta/services/headers";
 import { withoutNegotiationVary } from "../domain/cache-variant";
 
 const MD_CONTENT_TYPE = "text/markdown; charset=utf-8";
@@ -62,13 +62,14 @@ export const mdResponse = (input: {
 
 // Both failure envelopes share one contract: the AI indexes stay advertised, nothing caches and
 // nothing indexes. A 404 alone names the representation that was asked for — there is no location to
-// name for a path the route could not even parse.
+// name for a path the route could not even parse — and, being permanent, never advertises retry
+// timing; only a 503 tells the fetcher when to come back.
 const mdFailureResponse = (body: string, preferredLanguage: PreferredLanguage, status: 404 | 503, contentLocation?: string) =>
   new Response(body, {
     status,
     headers: {
       ...markdownHeaders(preferredLanguage, AI_INDEX_LINK_HEADER),
-      ...UNAVAILABLE_HEADERS,
+      ...(status === 503 ? SERVICE_UNAVAILABLE_HEADERS : UNAVAILABLE_HEADERS),
       ...(contentLocation === undefined ? {} : { "Content-Location": contentLocation }),
     },
   });

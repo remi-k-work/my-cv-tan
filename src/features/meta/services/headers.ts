@@ -6,7 +6,7 @@
 import type { PreferredLanguage } from "@/domain/models";
 
 // constants
-import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW, NO_STORE } from "@/domain/http";
+import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW, NO_STORE, RETRY_AFTER } from "@/domain/http";
 import { CONTENT_SIGNAL } from "../domain/discovery";
 import { NEGOTIATION_VARY_TOKENS } from "../domain/languages";
 import { AI_INDEX_LINK_HEADER } from "../domain/link-tags";
@@ -20,6 +20,10 @@ export const CACHEABLE_HEADERS = { "Cache-Control": CACHE_CONTROL } as const;
 // Documents crawlers may read but must not list as results, while still following their links.
 export const NOINDEX_HEADERS = { "X-Robots-Tag": NOINDEX_FOLLOW } as const;
 export const UNAVAILABLE_HEADERS = { "Cache-Control": NO_STORE, ...NOINDEX_HEADERS } as const;
+// A temporary outage additionally tells the fetcher when to come back. Kept apart from
+// UNAVAILABLE_HEADERS so a 404 — a resource that will not reappear — never advertises retry timing,
+// which would invite crawlers to keep re-requesting a permanently dead URL.
+export const SERVICE_UNAVAILABLE_HEADERS = { ...UNAVAILABLE_HEADERS, "Retry-After": RETRY_AFTER } as const;
 // Indexable documents opt into full snippets and large previews.
 export const INDEXABLE_HEADERS = { "X-Robots-Tag": INDEXABLE_ROBOTS } as const;
 

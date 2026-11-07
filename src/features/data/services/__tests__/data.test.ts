@@ -66,6 +66,8 @@ it("required HTML data failures preserve the rendered error page and return a no
   assert.strictEqual(response.headers.get("Content-Type"), "text/html; charset=utf-8");
   assert.strictEqual(response.headers.get("Cache-Control"), "no-store");
   assert.strictEqual(response.headers.get("X-Robots-Tag"), "noindex, follow");
+  // The downgraded page is a temporary data-layer outage, so it tells the crawler when to retry
+  assert.strictEqual(response.headers.get("Retry-After"), "300");
   assert.strictEqual(await response.text(), "<!doctype html><title>Error</title>");
 });
 
@@ -74,5 +76,8 @@ it("ordinary HTML 404 responses keep their status and headers", () => {
   const notFound = new Response("Not found", { status: 404, headers: { "Content-Type": "text/html; charset=utf-8" } });
 
   markHtmlDataUnavailable(request, new Error("missing slug"));
-  assert.strictEqual(applyHtmlDataUnavailableResponse(request, notFound), notFound);
+  const returned = applyHtmlDataUnavailableResponse(request, notFound);
+  assert.strictEqual(returned, notFound);
+  // A 404 is not a retryable outage, so no retry timing is attached
+  assert.isNull(returned.headers.get("Retry-After"));
 });

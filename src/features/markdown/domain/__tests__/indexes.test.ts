@@ -213,7 +213,8 @@ it("the index and the home twin render one experience list, differing only in th
   assert.include(twin, "\\*\\*");
 });
 
-it("both AI indexes carry the same single-sourced reuse notes", () => {  const index = buildLlmsTxt([sampleExperience]);
+it("both AI indexes carry the same single-sourced reuse notes", () => {
+  const index = buildLlmsTxt([sampleExperience]);
   const full = buildLlmsFullTxt({
     pageTitles: stablePageTitles,
     experienceList: [sampleExperience],
@@ -469,13 +470,15 @@ it("the unavailable twin escapes its prose the way every other body string does"
   assert.include(unavailableMarkdownBody(translateEn), "The required portfolio content could not be loaded. Please try again shortly.");
 });
 
-it("the index fallback body names the document that is unavailable", () => {
+it("the index fallback body names the document and restates the reuse policy", () => {
   // The indexes are plain text, so their fallback is prose rather than an escaped Markdown
   // document: naming the document tells a fetcher which of the two requests failed, and the
-  // reuse policy is restated so a degraded read still learns what reuse is permitted.
+  // reuse policy is restated so a degraded read still learns what reuse is permitted. The note is
+  // the indexes' own first reuse note, so the two surfaces cannot state different policies.
   const body = unavailableIndexBody("llms-full.txt");
 
   assert.include(body, "llms-full.txt is temporarily unavailable");
   assert.include(body, "required portfolio content could not be loaded");
+  assert.include(body, AI_NOTES[0]);
   assert.isTrue(body.endsWith("\n"));
 });

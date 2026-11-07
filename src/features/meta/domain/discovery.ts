@@ -10,12 +10,6 @@ import { matchPreferredLanguage } from "@/domain/helpers";
 // types
 import type { PreferredLanguage } from "@/domain/models";
 
-// --- Which document the reader gets ---
-
-// Resolves the visitor's own CV file; both languages are advertised site-wide, but the header
-// nav offers the one that matches the reader.
-export const cvPdfHref = (preferredLanguage: PreferredLanguage) => matchPreferredLanguage(preferredLanguage, CV_EN_HREF, CV_PL_HREF);
-
 // --- Machine-readable discovery documents (GEO) ---
 
 // Content signal defining crawler permissions across robots.txt and HTTP headers.
@@ -32,6 +26,10 @@ export const ROBOTS_TXT_HREF = "/robots.txt";
 export const CV_EN_HREF = "/my-cv.pdf";
 export const CV_PL_HREF = "/my-cv-pl.pdf";
 export const CERTIFICATES_HREF = "/my-certificates.pdf";
+
+// Resolves the visitor's own CV file; both languages are advertised site-wide, but the header
+// nav offers the one that matches the reader.
+export const cvPdfHref = (preferredLanguage: PreferredLanguage) => matchPreferredLanguage(preferredLanguage, CV_EN_HREF, CV_PL_HREF);
 
 // Downloadable files advertised by Markdown pages, discovery indexes and the sitemap.
 export const DOWNLOADABLE_DOCUMENTS = [

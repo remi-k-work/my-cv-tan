@@ -3,7 +3,7 @@
 // these response contracts without importing the sitemap runtime.
 
 // headers
-import { CACHEABLE_HEADERS, MACHINE_HEADERS, NOINDEX_HEADERS, UNAVAILABLE_HEADERS } from "./headers";
+import { CACHEABLE_HEADERS, MACHINE_HEADERS, NOINDEX_HEADERS, SERVICE_UNAVAILABLE_HEADERS } from "./headers";
 
 // domain
 import { DEFAULT_LANGUAGE } from "../domain/languages";
@@ -31,8 +31,8 @@ const instructionsHeaders = (contentLocation?: string) => ({
 
 export const txtResponse = (body: string, contentLocation?: string) => new Response(body, { status: 200, headers: instructionsHeaders(contentLocation) });
 
-export const txtUnavailableResponse = (body: string) => new Response(body, { status: 503, headers: { ...TXT_HEADERS, ...UNAVAILABLE_HEADERS } });
+export const txtUnavailableResponse = (body: string) => new Response(body, { status: 503, headers: { ...TXT_HEADERS, ...SERVICE_UNAVAILABLE_HEADERS } });
 
 export const sitemapResponse = (xml: string) => new Response(xml, { status: 200, headers: { ...SITEMAP_HEADERS, ...CACHEABLE_HEADERS, ...NOINDEX_HEADERS } });
 
-export const sitemapUnavailableResponse = () => new Response(SITEMAP_UNAVAILABLE_XML, { status: 503, headers: { ...SITEMAP_HEADERS, ...UNAVAILABLE_HEADERS } });
+export const sitemapUnavailableResponse = () => new Response(SITEMAP_UNAVAILABLE_XML, { status: 503, headers: { ...SITEMAP_HEADERS, ...SERVICE_UNAVAILABLE_HEADERS } });

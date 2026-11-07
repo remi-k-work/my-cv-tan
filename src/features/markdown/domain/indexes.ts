@@ -177,6 +177,11 @@ export const buildLlmsFullTxt = ({ pageTitles, experienceList, educationList }: 
   ]);
 };
 
+// The first note is the reuse policy, and it is repeated verbatim in the index fallback below: a
+// degraded read must still learn what reuse is permitted, rather than depending on a header a proxy
+// or intermediate cache may strip from the response it forwards.
+const REUSE_NOTE = AI_NOTES[0];
+
 // Plain-text 503 fallback body for AI index files.
 export const unavailableIndexBody = (name: string) =>
-  `${name} is temporarily unavailable because required portfolio content could not be loaded. Please try again shortly.\n`;
+  `${name} is temporarily unavailable because required portfolio content could not be loaded. Please try again shortly.\n\n${REUSE_NOTE}\n`;

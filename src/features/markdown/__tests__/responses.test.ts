@@ -99,6 +99,8 @@ it("response helpers set content types, indexing, cache, canonical, and language
   assert.strictEqual(missing.headers.get("Content-Type"), "text/markdown; charset=utf-8");
   assert.strictEqual(missing.headers.get("Content-Location"), "https://www.remiforge.dev/gone.md?lang=pl");
   assert.strictEqual(missing.headers.get("X-Robots-Tag"), "noindex, follow");
+  // A 404 is permanent, so it never invites a retry the way a transient 503 does
+  assert.isNull(missing.headers.get("Retry-After"));
   assert.strictEqual(
     missing.headers.get("Link"),
     '<https://www.remiforge.dev/llms.txt>; rel="alternate"; type="text/plain"; title="llms.txt", <https://www.remiforge.dev/llms-full.txt>; rel="alternate"; type="text/plain"; title="llms-full.txt"'
@@ -116,6 +118,8 @@ it("response helpers set content types, indexing, cache, canonical, and language
   assert.strictEqual(unavailable.headers.get("Content-Language"), "pl");
   assert.strictEqual(unavailable.headers.get("Cache-Control"), "no-store");
   assert.strictEqual(unavailable.headers.get("X-Robots-Tag"), "noindex, follow");
+  // The twin's data-layer outage is temporary, so it names when the fetcher should retry
+  assert.strictEqual(unavailable.headers.get("Retry-After"), "300");
   // An outage keeps advertising the retrieval surface, the same way the 404 twin does: a failure is
   // the response where a fetcher most needs to be told the rest of the site is still reachable,
   // and the twins' whole design premise is that the index is reachable from any surface.
@@ -141,6 +145,12 @@ it("response helpers set content types, indexing, cache, canonical, and language
   assert.strictEqual(unavailableTxt.headers.get("Content-Type"), "text/plain; charset=utf-8");
   assert.strictEqual(unavailableTxt.headers.get("Cache-Control"), "no-store");
   assert.strictEqual(unavailableTxt.headers.get("X-Robots-Tag"), "noindex, follow");
+  // A failed index is likewise a temporary outage and advertises retry timing
+  assert.strictEqual(unavailableTxt.headers.get("Retry-After"), "300");
+  // A failed index keeps the reuse signal and the retrieval-surface advertisements: the fallback
+  // body restates the policy too, but a fetcher that reads only headers must not lose it either.
+  assert.strictEqual(unavailableTxt.headers.get("Content-Signal"), CONTENT_SIGNAL);
+  assert.include(unavailableTxt.headers.get("Link") ?? "", "https://www.remiforge.dev/llms.txt");
 
   // llms.txt indexes serve AI fetchers, not search results: noindex, but still crawlable
   const discovery = txtResponse("# Index", absoluteUrl("/llms.txt"));

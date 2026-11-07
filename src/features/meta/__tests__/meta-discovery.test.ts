@@ -56,7 +56,7 @@ it("sitemap lists every advertised downloadable document", () => {
   }
 });
 
-it("sitemap lists canonical HTML pages only — never the Markdown twins", () => {
+it("sitemap lists canonical site URLs only — never the Markdown twins", () => {
   const xml = buildSitemapXml([sampleExperience.slug]);
   assert.notInclude(xml, ".md");
 });
@@ -108,6 +108,8 @@ it("sitemap data failures return non-cacheable noindex XML with status 503", asy
   assert.strictEqual(response.headers.get("Content-Type"), "application/xml; charset=utf-8");
   assert.strictEqual(response.headers.get("Cache-Control"), "no-store");
   assert.strictEqual(response.headers.get("X-Robots-Tag"), "noindex, follow");
+  // A temporary outage names when the crawler should retry, unlike a permanently missing resource
+  assert.strictEqual(response.headers.get("Retry-After"), "300");
   // A crawler that reaches the failure still receives a well-formed XML document, not an empty body
   assert.include(await response.text(), "<error>Sitemap is temporarily unavailable.</error>");
 });

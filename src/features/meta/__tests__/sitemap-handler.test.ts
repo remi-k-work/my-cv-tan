@@ -39,6 +39,6 @@ it("sitemap route resolves the real portfolio assets into one canonical URL per 
     assert.strictEqual(xml.split(loc).length - 1, 1, `expected exactly one ${loc}`);
   }
 
-  // A sitemap lists canonical HTML only, never the Markdown twins.
+  // A sitemap lists canonical site URLs only, never the Markdown twins.
   assert.notInclude(xml, ".md");
 });
