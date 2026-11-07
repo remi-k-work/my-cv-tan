@@ -18,10 +18,11 @@ import { CONTACT_PATH } from "@/domain/constants";
 
 export const Route = createFileRoute("/contact")({
   loader: () => loaderContact(),
-  head: ({ loaderData, matches }) =>
+  head: ({ loaderData, matches, match }) =>
     routeHead({
       loaderData,
       matches,
+      matchStatus: match.status,
       fallbackPath: CONTACT_PATH,
       build: (data, preferredLanguage) => contactHead({ pageTitles: data.stablePageTitles, preferredLanguage }),
     }),

@@ -158,7 +158,7 @@ export const buildLlmsFullTxt = ({ pageTitles, experienceList, educationList }: 
 
   return mdDocument([
     ...SITE_OPENING,
-    `Complete Markdown content of every page, concatenated for single-request ingestion. Each section begins with its canonical HTML URL after "Source:", its Markdown twin after "Markdown:", its identity facts as YAML, and ends with the twin body verbatim. Cite the canonical HTML URL, not this file.`,
+    `Complete Markdown content of every page, concatenated for single-request ingestion. Each section begins with its canonical HTML URL after "Source:", its Markdown twin after "Markdown:", and its identity facts as YAML, then includes the twin content with headings demoted to preserve one document hierarchy. Cite the canonical HTML URL, not this file.`,
     ABOUT_SECTION,
     mdTitledSection("Table of Contents", mdBulletList(documents.map(({ name, canonical, twinUrl }) => mdIndexEntry(name, canonical, twinUrl)))),
     DISCOVERY_SECTION,

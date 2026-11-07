@@ -7,7 +7,7 @@ import { assert, it } from "@effect/vitest";
 import { Option, Schema, pipe } from "effect";
 
 // domain
-import { educationCollectionId, educationJsonLd, contactJsonLd, experienceCollections, experienceJsonLd, homeJsonLd, schoolSubgraph } from "../page-graphs";
+import { educationJsonLd, contactJsonLd, experienceCollections, experienceJsonLd, homeJsonLd, schoolSubgraph } from "../page-graphs";
 import { EXPERIENCE_LIST_ID, PERSON_ID, PORTFOLIO_LIST_ID, PROFILE_ID, WEBSITE_ID } from "../nodes";
 import { jsonLdGraph } from "../graph";
 
@@ -55,12 +55,10 @@ it("educationJsonLd assembles a CollectionPage with its school subgraph", () => 
   assert.isDefined(page);
   assert.deepStrictEqual(page?.isPartOf, { "@id": "https://www.remiforge.dev/#website" });
   assert.deepStrictEqual(page?.breadcrumb, { "@id": "https://www.remiforge.dev/education#breadcrumb" });
-  assert.deepStrictEqual(page?.mainEntity, { "@id": "https://www.remiforge.dev/education#education-list" });
+  assert.deepStrictEqual(page?.mainEntity, { "@id": "https://www.remiforge.dev/#person" });
 
-  // Schools are nested inside the collection's hasPart, not top-level nodes
-  const collection = findByType(nodes, "Collection");
-  assert.isDefined(collection);
-  const school = (collection as { readonly hasPart?: ReadonlyArray<Record<string, unknown>> })?.hasPart?.[0];
+  // Schools are organizations, not CreativeWorks, so they stay top-level and connect through alumni edges.
+  const school = findByType(nodes, "EducationalOrganization");
   assert.isDefined(school);
   assert.strictEqual(school?.name, "Pratt Institute");
   assert.deepStrictEqual(school?.alumni, { "@id": "https://www.remiforge.dev/#person" });
@@ -80,7 +78,7 @@ it("educationJsonLd omits the collection when the school list is empty", () => {
 
   assert.isTrue(nodes.some((node) => node["@type"] === "CollectionPage"));
   assert.isFalse(nodes.some((node) => node["@type"] === "Collection"));
-  assert.isUndefined(findByType(nodes, "CollectionPage")?.mainEntity);
+  assert.deepStrictEqual(findByType(nodes, "CollectionPage")?.mainEntity, { "@id": "https://www.remiforge.dev/#person" });
 });
 
 it("contactJsonLd assembles a ContactPage with a ContactPoint and person edge", () => {
@@ -264,33 +262,25 @@ it("experienceCollections omits empty collections", () => {
   assert.strictEqual(collections.length, 0);
 });
 
-it("schoolSubgraph builds a school collection plus the Person alumniOf edge", () => {
+it("schoolSubgraph builds school nodes plus the Person alumniOf edge", () => {
   const url = "https://www.remiforge.dev/education";
-  const nodes = schoolSubgraph(url, schools, language);
+  const nodes = schoolSubgraph(url, schools);
 
-  const collection = nodes.find((node) => node["@type"] === "Collection");
-  assert.deepStrictEqual(collection?.name, "Remi Forge — Education");
-  assert.deepStrictEqual(collection?.hasPart, [
-    {
-      "@type": "EducationalOrganization",
-      "@id": `${url}#school-1`,
-      name: "Pratt Institute",
-      description: "Interactive Media.",
-      address: "New York, US",
-      alumni: { "@id": "https://www.remiforge.dev/#person" },
-    },
-  ]);
+  assert.deepStrictEqual(nodes[0], {
+    "@type": "EducationalOrganization",
+    "@id": `${url}#school-1`,
+    name: "Pratt Institute",
+    description: "Interactive Media.",
+    address: "New York, US",
+    alumni: { "@id": "https://www.remiforge.dev/#person" },
+  });
 
   const edge = nodes.find((node) => node["@type"] === "Person" && node["alumniOf"]);
   assert.deepStrictEqual(edge?.alumniOf, [{ "@id": `${url}#school-1` }]);
 });
 
 it("schoolSubgraph returns nothing for an empty list", () => {
-  assert.deepStrictEqual(schoolSubgraph("https://www.remiforge.dev/education", [], language), []);
-});
-
-it("educationCollectionId derives a stable fragment id from the page url", () => {
-  assert.strictEqual(educationCollectionId("https://www.remiforge.dev/education"), "https://www.remiforge.dev/education#education-list");
+  assert.deepStrictEqual(schoolSubgraph("https://www.remiforge.dev/education", []), []);
 });
 
 // --- The shared page-node pair ---
@@ -365,7 +355,7 @@ it("a page node keeps the site membership, language and main entity every route 
 
   assert.deepStrictEqual(page?.isPartOf, { "@id": "https://www.remiforge.dev/#website" });
   assert.strictEqual(page?.inLanguage, "pl");
-  assert.deepStrictEqual(page?.mainEntity, { "@id": "https://www.remiforge.dev/education#education-list" });
+  assert.deepStrictEqual(page?.mainEntity, { "@id": "https://www.remiforge.dev/#person" });
   assert.strictEqual(page?.url, "https://www.remiforge.dev/education");
   // The same string as the @id, so the two spellings of the page can never disagree
   assert.strictEqual(page?.["url"], page?.["@id"]);

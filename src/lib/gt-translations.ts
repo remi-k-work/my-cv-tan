@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Option, Predicate, Record, pipe } from "effect";
+import { Option, Predicate, Record, Schema, pipe } from "effect";
 import { getTranslationsSnapshot } from "gt-tanstack-start";
 import { hashSource } from "generaltranslation/id";
 import { preferredLanguageFromLocale } from "@/domain/helpers";
@@ -14,18 +14,21 @@ const TRANSLATION_LOADERS = {
   pl: () => import("../_gt/pl.json"),
 } as const;
 
-export async function loadTranslations(locale: string): Promise<unknown> {
-  return (await TRANSLATION_LOADERS[preferredLanguageFromLocale(locale)]()).default;
+const TranslationDictionary = Schema.Record(Schema.String, Schema.String);
+const decodeTranslationDictionary = Schema.decodeUnknownSync(TranslationDictionary);
+
+export async function loadTranslations(locale: string) {
+  return decodeTranslationDictionary((await TRANSLATION_LOADERS[preferredLanguageFromLocale(locale)]()).default);
 }
 
 // A sync translate function bound to one explicit language. getGT() follows the request
 // locale, so for a ?lang= override we read the language's local snapshot directly: hash
 // the source string (ICU, as gt() does at runtime) and look it up in the loaded dictionary
 export const translateForLanguage = async (preferredLanguage: PreferredLanguage): Promise<Translate> => {
-  // getTranslationsSnapshot() omits the locale entirely when its loader fails, so the
-  // dictionary itself is optional — hence Option.fromNullishOr rather than a raw lookup,
-  // which would throw on the missing entry
-  const translations = Option.fromNullishOr((await getTranslationsSnapshot(preferredLanguage))[preferredLanguage]);
+  // A snapshot may be unavailable before GT initializes or while its cache is recovering. The
+  // committed dictionary keeps a pinned document in its declared language in either case.
+  const snapshot = await getTranslationsSnapshot(preferredLanguage).catch(() => undefined);
+  const translations = Option.fromNullishOr(snapshot?.[preferredLanguage] ?? (await loadTranslations(preferredLanguage)));
 
   return (source: string): string =>
     pipe(

@@ -193,6 +193,8 @@ it("escapeMd only escapes what can actually build markup, leaving authored punct
   assert.strictEqual(escapeMd("roughly ~30% of the time"), "roughly ~30% of the time");
   assert.strictEqual(escapeMd("the ratio A | B mattered"), "the ratio A | B mattered");
   assert.strictEqual(escapeMd("~~deprecated~~ in favour of the new one"), "\\~\\~deprecated\\~\\~ in favour of the new one");
+  // Entity references change rendered text unless their ampersands are escaped.
+  assert.strictEqual(escapeMd("&copy; &amp; &#169;"), "\\&copy; \\&amp; \\&#169;");
   // Raw HTML is the one thing an author string must never reach the document, so "<" is always escaped
   assert.strictEqual(escapeMdInline("evil </script><script>alert(1)</script>"), "evil \\</script>\\<script>alert(1)\\</script>");
 });
@@ -495,9 +497,9 @@ it("every static twin links its siblings and both AI indexes (the GEO crawl grap
   assert.include(education, "[Home page](https://www.remiforge.dev/index.md?lang=en)");
   assert.include(education, "[Contact](https://www.remiforge.dev/contact.md?lang=en)");
   // A twin never advertises itself
-  assert.notInclude(education, "[Education & Certificates](");
+  assert.notInclude(education, "[Education \\& Certificates](");
   assert.include(contact, "[Home page](https://www.remiforge.dev/index.md?lang=en)");
-  assert.include(contact, "[Education & Certificates](https://www.remiforge.dev/education.md?lang=en)");
+  assert.include(contact, "[Education \\& Certificates](https://www.remiforge.dev/education.md?lang=en)");
   assert.include(detail, "[Home page](https://www.remiforge.dev/index.md?lang=en)");
 });
 

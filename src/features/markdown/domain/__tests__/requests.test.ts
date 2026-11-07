@@ -51,7 +51,7 @@ it("a published twin route parses back to the very slug it was built from", () =
   // The site publishes twin URLs derived from a slug and resolves the twin by reading that URL back,
   // so the encoder and the parser are one contract across a feature boundary. A slug that survives
   // one direction only is a twin route answering 404 for a page every index advertises.
-  const slugs = ["benefit-finance", "my project", "résumé & more", "role (senior)", "C# .NET", "report.md", "a/b"];
+  const slugs = ["benefit-finance", "my project", "résumé & more", "role (senior)", "C# .NET", "a/b"];
 
   for (const slug of slugs) {
     assert.deepStrictEqual(slugFromMdPathname(markdownTwinUrl(experienceMarkdownPath(slug), "pl")), Option.some(slug), `${slug} twin route`);

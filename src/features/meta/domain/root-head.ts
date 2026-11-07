@@ -14,7 +14,7 @@ import { fallbackHead } from "./fallback";
 import { AUTHOR_URL, AVATAR, BRANDED_TITLE, HOME_TITLE, SITE_DESCRIPTION, SITE_NAME, SOCIAL_LINKS } from "./identity";
 
 // types
-import type { LinkTag, PageHead } from "./models";
+import type { LinkTag, MetaTag, PageHead } from "./models";
 import type { MatchChain } from "./route-head";
 
 // The root's site-wide head. It carries no `scripts`: TanStack concatenates every match's scripts,
@@ -22,7 +22,10 @@ import type { MatchChain } from "./route-head";
 // compile guard for that — a `scripts` key added here is an excess property.
 // The arrays are readonly so no consumer of the shared declaration can reach into it, and every
 // `rootHead()` result hands back its own copies (see below), honouring the PageHead contract.
-type RootHead = Omit<PageHead, "scripts">;
+interface RootHead {
+  readonly meta: ReadonlyArray<MetaTag>;
+  readonly links: ReadonlyArray<LinkTag>;
+}
 
 const ME_LINKS: ReadonlyArray<LinkTag> = SOCIAL_LINKS.map((href) => ({ rel: "me", href }));
 

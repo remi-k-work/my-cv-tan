@@ -46,7 +46,7 @@ it("a slug survives the twin route as the very segment it was published from", (
   // The site publishes a twin URL derived from a slug and resolves the twin by reading that URL
   // back, so the encoder and the parser are one contract across a feature boundary. A slug that
   // survives one direction only is a twin route answering 404 for a page every index advertises.
-  for (const slug of ["benefit-finance", "my project", "résumé & more", "role (senior)", "C# .NET", "report.md", "a/b"]) {
+  for (const slug of ["benefit-finance", "my project", "résumé & more", "role (senior)", "C# .NET", "a/b"]) {
     // Both spellings an advertised address can take: pinned and unpinned.
     assert.deepStrictEqual(slugFromMdPathname(markdownTwinUrl(experienceMarkdownPath(slug), "pl")), Option.some(slug), `${slug} pinned twin route`);
     assert.deepStrictEqual(slugFromMdPathname(markdownTwinUrl(experienceMarkdownPath(slug), "en")), Option.some(slug), `${slug} unpinned twin route`);

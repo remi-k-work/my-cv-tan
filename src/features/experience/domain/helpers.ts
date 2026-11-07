@@ -9,6 +9,8 @@ import type { Experience, ExperienceList } from "./models";
 // constants
 import { EXCERPT_SUFFIX } from "./constants";
 
+const GRAPHEME_SEGMENTER = new Intl.Segmenter(undefined, { granularity: "grapheme" });
+
 // Locate one experience by slug inside a decoded list (None = clean 404 candidate);
 // shared by the route loaders and the Markdown twins so the lookup can never drift
 export const experienceFromList = (experienceList: ExperienceList, slug: string) => Array.findFirst(experienceList, (experience) => experience.slug === slug);
@@ -45,15 +47,17 @@ export const experienceHeadline = (experience: Pick<Experience, "type" | "role" 
 // The truncation suffix is part of the budget, so the returned summary — ellipsis included — never
 // exceeds the limit a search engine or social card enforces.
 export const excerpt = (text: string, maxLength: number) => {
-  // Split into code points so the cut below can never fall inside a surrogate pair; `maxLength`
-  // counts user-visible characters, matching the unit the typewriter types and deletes in
-  const chars = Array.fromIterable(text);
+  const limit = Math.floor(maxLength);
+  if (limit <= 0) return "";
+
+  // Count grapheme clusters so a combining mark or joined emoji stays with its base character.
+  const chars = Array.map(Array.fromIterable(GRAPHEME_SEGMENTER.segment(text)), ({ segment }) => segment);
 
   // Return early if text fits within limits
-  if (chars.length <= maxLength) return text;
+  if (chars.length <= limit) return text;
 
   // Reserve room for the suffix so the appended ellipsis cannot push the result past the budget
-  const budget = Math.max(0, maxLength - EXCERPT_SUFFIX.length);
+  const budget = Math.max(0, limit - EXCERPT_SUFFIX.length);
 
   // Take the first `budget` characters from the left
   const cut = Array.join(Array.take(chars, budget), "");

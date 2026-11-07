@@ -18,9 +18,11 @@ import type { PageHead } from "./models";
 
 // TanStack route head match chain providing loader data. It is the router's shape rather than a head
 // contract, so it lives with the adapter that reads it instead of beside the head models.
+type RouteStatus = "pending" | "success" | "error" | "notFound";
+
 export type MatchChain = ReadonlyArray<{
   readonly loaderData?: unknown;
-  readonly status?: "pending" | "success" | "error" | "notFound";
+  readonly status?: RouteStatus;
   readonly _notFound?: boolean;
 }>;
 
@@ -47,21 +49,23 @@ export const isNotFoundMatch = (match: MatchChain[number]): boolean => match.sta
 interface RouteHeadSpec<TData> {
   readonly loaderData: TData;
   readonly matches: MatchChain;
+  // TanStack can project a route head while its match is pending, with prior loader data still attached.
+  readonly matchStatus: RouteStatus;
   // The canonical this route publishes when its loader data is missing or stale.
   readonly fallbackPath: string;
   readonly build: (loaderData: NonNullable<TData>, preferredLanguage: PreferredLanguage) => PageHead;
 }
 
-export const routeHead = <TData>({ loaderData, matches, fallbackPath, build }: RouteHeadSpec<TData>): PageHead => {
+export const routeHead = <TData>({ loaderData, matches, matchStatus, fallbackPath, build }: RouteHeadSpec<TData>): PageHead => {
   // The root route owns not-found metadata, including for a matched route. Do not let a stale
   // loader payload override its noindex fallback with the previous page's canonical or graph.
-  if (matches.some(isNotFoundMatch)) return { meta: [], links: [], scripts: [] };
+  if (matchStatus === "notFound" || matches.some(isNotFoundMatch)) return { meta: [], links: [], scripts: [] };
 
   // One negotiation feeds both the failure fallback and the successful build.
   const preferredLanguage = headLanguage(matches);
 
   // Failed revalidation can leave loaderData populated. A failure head must not reuse that data.
-  if (loaderData == null || matches.some(({ status }) => status === "error")) {
+  if (matchStatus !== "success" || loaderData == null || matches.some(({ status }) => status === "error")) {
     return fallbackHead(fallbackPath, preferredLanguage);
   }
 

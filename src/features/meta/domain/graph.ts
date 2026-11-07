@@ -26,12 +26,12 @@ import {
 import { SITE_LANGUAGES } from "@/domain/constants";
 
 // types
-import type { JsonLdNode, JsonLdScript } from "./models";
+import type { JsonLdNode, JsonLdObject, JsonLdScript } from "./models";
 
 // --- Merge and serialization ---
 
 // Escapes '<' so serialized content can never close the script tag.
-const jsonLdScript = (data: unknown): JsonLdScript => ({
+const jsonLdScript = (data: JsonLdObject): JsonLdScript => ({
   type: "application/ld+json",
   children: JSON.stringify(data).replace(/</g, "\\u003C"),
 });
@@ -89,8 +89,6 @@ export const siteNodes: ReadonlyArray<JsonLdNode> = [
     "@type": "Person",
     "@id": PERSON_ID,
     name: SITE_NAME,
-    // The brand and the person share one identity, so the alias restates the same constant.
-    alternateName: SITE_NAME,
     description: PERSON_DESCRIPTION,
     url: HOME_URL,
     image: AVATAR_IMAGE_OBJECT,

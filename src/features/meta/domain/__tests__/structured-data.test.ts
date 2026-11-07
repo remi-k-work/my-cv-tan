@@ -99,11 +99,19 @@ it("the root head carries no JSON-LD, so a page's single block is not duplicated
   assert.include(JSON.stringify(ROOT_HEAD.links), "https://www.remiforge.dev/llms.txt");
 });
 
+it("escapes JSON-LD text before embedding it in a script element", () => {
+  const unsafeText = "</script><script>alert(1)</script>";
+  const script = jsonLdGraph([{ "@type": "Thing", name: unsafeText }]);
+
+  assert.notInclude(script.children, "<");
+  assert.strictEqual(nodeOf(graphOf(script.children), "Thing")?.name, unsafeText);
+});
+
 it("site graph declares the bilingual audience on WebSite and Person", () => {
   assert.deepStrictEqual(nodeOf(siteGraph, "WebSite")?.inLanguage, ["en", "pl"]);
   assert.deepStrictEqual(nodeOf(siteGraph, "Person")?.knowsLanguage, ["en", "pl"]);
-  // alternateName helps knowledge-graph disambiguation
-  assert.strictEqual(nodeOf(siteGraph, "Person")?.alternateName, "Remi Forge");
+  // Do not publish an alias unless it differs from the primary name.
+  assert.isUndefined(nodeOf(siteGraph, "Person")?.alternateName);
   // Every site entity carries an extractable description, single-sourced with the meta tags
   assert.strictEqual(nodeOf(siteGraph, "WebSite")?.description, SITE_DESCRIPTION);
   assert.strictEqual(nodeOf(siteGraph, "Person")?.description, PERSON_DESCRIPTION);
@@ -387,15 +395,16 @@ it("home structured data splits employment from portfolio projects with localize
   assert.strictEqual(collections[0]?.inLanguage, "pl");
 });
 
-it("education structured data describes attended schools, not credentials, inside a breadcrumb graph", () => {
+it("education structured data links its page to the Person and the Person to attended schools", () => {
   const head = educationHead({ pageTitles: stablePageTitles, educationList: sampleEducation, preferredLanguage: "en" });
   const graph = graphOf(head.scripts?.[0]?.children);
-  // The page node gives the school list a container the way every other content page has one
+  // The page is about the Person. Schools are organizations, not CreativeWorks, so they do not go in Collection.hasPart.
   const collection = nodeOf(graph, "CollectionPage");
   assert.deepStrictEqual(collection?.isPartOf, { "@id": "https://www.remiforge.dev/#website" });
   assert.deepStrictEqual(collection?.breadcrumb, { "@id": "https://www.remiforge.dev/education#breadcrumb" });
-  assert.deepStrictEqual(collection?.mainEntity, { "@id": "https://www.remiforge.dev/education#education-list" });
-  const school = collectionParts(nodeOf(graph, "Collection"))?.[0];
+  assert.deepStrictEqual(collection?.mainEntity, { "@id": "https://www.remiforge.dev/#person" });
+  assert.isUndefined(nodeOf(graph, "Collection"));
+  const school = nodeOf(graph, "EducationalOrganization");
   assert.strictEqual(school?.["@type"], "EducationalOrganization");
   assert.strictEqual(school?.name, "Pratt Institute");
   // Each school has a stable fragment id the person's alumniOf edges reference
@@ -414,7 +423,7 @@ it("education structured data describes attended schools, not credentials, insid
   // The site Person is still present, but carries no alumni edge — an empty list adds no "studied at"
   assert.isDefined(personOf(empty));
   assert.isUndefined(personOf(empty)?.alumniOf);
-  assert.isUndefined(nodeOf(empty, "CollectionPage")?.mainEntity);
+  assert.deepStrictEqual(nodeOf(empty, "CollectionPage")?.mainEntity, { "@id": "https://www.remiforge.dev/#person" });
 });
 
 it("contact structured data describes the visible ContactPage inside a breadcrumb graph", () => {

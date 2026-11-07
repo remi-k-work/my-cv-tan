@@ -11,7 +11,7 @@ import { HOME_URL } from "./identity";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
-import type { JsonLdNode } from "./models";
+import type { JsonLdNode, JsonLdObject } from "./models";
 
 // --- Graph identity ---
 
@@ -170,7 +170,7 @@ export const experienceItemNode = ({
       };
 
 // Extends the site Person entity with an additional edge during graph merging.
-export const personEdge = <Fields extends Readonly<Record<string, unknown>>>(fields: Fields): JsonLdNode => ({
+export const personEdge = (fields: JsonLdObject): JsonLdNode => ({
   "@type": "Person",
   "@id": PERSON_ID,
   ...fields,

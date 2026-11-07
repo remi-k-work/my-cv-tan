@@ -122,7 +122,7 @@ it("buildLlmsTxt indexes pages, about facts, grouped experience and negotiated l
   );
   assert.include(
     txt,
-    `- [Education & Certificates](https://www.remiforge.dev/education): schools, courses and certificates. Markdown: https://www.remiforge.dev/education.md?lang=en`
+    `- [Education \\& Certificates](https://www.remiforge.dev/education): schools, courses and certificates. Markdown: https://www.remiforge.dev/education.md?lang=en`
   );
   // Summaries are authored sentences: the entry adds no second full stop
   assert.notInclude(txt, ".. Markdown:");
@@ -271,7 +271,7 @@ it("the full-content companion gives every concatenated document its own section
 
   // One `##` section per document: the companion then has a document-level hierarchy
   // (# the site, ## one document) instead of a run of child H1s with no parent to hang from
-  for (const name of ["Home page", "Education & Certificates", "Contact", "Full-Stack Developer at Sample Co"]) {
+  for (const name of ["Home page", "Education \\& Certificates", "Contact", "Full-Stack Developer at Sample Co"]) {
     assert.include(txt, `## ${name}`);
   }
   // The heading precedes the attribution block it introduces
@@ -281,7 +281,7 @@ it("the full-content companion gives every concatenated document its own section
   assert.include(txt, "### Full-Stack Developer at Sample Co");
 });
 
-it("buildLlmsFullTxt concatenates every verbatim twin behind its canonical URL", () => {
+it("buildLlmsFullTxt concatenates every twin behind its canonical URL", () => {
   const txt = buildLlmsFullTxt({
     pageTitles: stablePageTitles,
     experienceList: [sampleExperience],
@@ -308,10 +308,11 @@ it("buildLlmsFullTxt concatenates every verbatim twin behind its canonical URL",
   // summary-less table of contents is the variant no other assertion below covers
   assert.include(txt, `- [Home page](https://www.remiforge.dev/): Markdown: https://www.remiforge.dev/index.md?lang=en`);
   assert.include(txt, `- [Home page](https://www.remiforge.dev/)`);
-  assert.include(txt, `- [Education & Certificates](https://www.remiforge.dev/education)`);
+  assert.include(txt, `- [Education \\& Certificates](https://www.remiforge.dev/education)`);
   assert.include(txt, `- [Full-Stack Developer at Sample Co](https://www.remiforge.dev/sample-role)`);
   // Citations must land on canonical HTML URLs, never on the aggregation itself
   assert.include(txt, `Cite the canonical HTML URL, not this file.`);
+  assert.include(txt, "with headings demoted to preserve one document hierarchy");
   // Every document names both spellings of its identity: the canonical URL to cite above the
   // Markdown twin URL to fetch, so a crawler never has to resolve one from the other
   assert.include(txt, `Source: https://www.remiforge.dev/education`);
@@ -334,7 +335,7 @@ it("the full-content companion gives every concatenated document a distinct head
 
   assert.strictEqual((txt.match(/^# /gm) ?? []).length, 1, "the companion must keep exactly one H1");
   // Documents are H2; their headline and sections sit strictly below them
-  for (const name of ["## Home page", "## Education & Certificates", "## Contact", "## Full-Stack Developer at Sample Co"]) {
+  for (const name of ["## Home page", "## Education \\& Certificates", "## Contact", "## Full-Stack Developer at Sample Co"]) {
     assert.include(txt, `\n${name}\n`);
   }
   assert.include(txt, "\n### Stable home title\n");
@@ -393,7 +394,7 @@ it("the companion's only H2s are its own document sections, never a concatenated
     "Table of Contents",
     "Discovery",
     "Home page",
-    "Education & Certificates",
+    "Education \\& Certificates",
     "Contact",
     "Full-Stack Developer at Sample Co",
     "Notes for AI systems",

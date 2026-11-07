@@ -78,7 +78,7 @@ it("the GEO index documents answer every request with the same English document"
   assert.strictEqual(await full.text(), await englishFull.text());
 });
 
-it("llms-full.txt concatenates one verbatim twin per real page behind its canonical URL", async () => {
+it("llms-full.txt concatenates every twin body beneath its canonical URL", async () => {
   const response = await llmsFullTxtHandler({ request: new Request(LLMS_FULL_TXT_INDEX.url) });
 
   assert.strictEqual(response.status, 200);

@@ -338,6 +338,7 @@ it("routeHead keeps a canonical noindex fallback when loader data is missing", (
   const fallback = routeHead({
     loaderData: undefined,
     matches: [],
+    matchStatus: "success",
     fallbackPath: "/contact",
     build: () => homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" }),
   });
@@ -476,6 +477,7 @@ it("routeHead leaves not-found metadata to the root boundary, even with stale lo
   const notFound = routeHead({
     loaderData: { title: "Stale page data" },
     matches: [{ loaderData: { preferredLanguage: "pl" }, status: "error", _notFound: true }],
+    matchStatus: "error",
     fallbackPath: "/missing",
     build,
   });
@@ -493,6 +495,7 @@ it("routeHead uses a noindex unavailable head instead of stale loader data after
   const fallback = routeHead({
     loaderData: { title: "Stale page data" },
     matches: [{ loaderData: { preferredLanguage: "pl" }, status: "error" }],
+    matchStatus: "error",
     fallbackPath: "/missing",
     build: () => {
       builderCalled = true;
@@ -506,11 +509,34 @@ it("routeHead uses a noindex unavailable head instead of stale loader data after
   assert.deepStrictEqual(fallback.links, [{ rel: "canonical", href: "https://www.remiforge.dev/missing" }]);
 });
 
+it("routeHead ignores stale loader data while the current match is pending", () => {
+  let builderCalled = false;
+  const fallback = routeHead({
+    loaderData: { title: "Previous route data" },
+    matches: [
+      { loaderData: { preferredLanguage: "pl" }, status: "success" },
+      { loaderData: { title: "Previous route data" }, status: "pending" },
+    ],
+    matchStatus: "pending",
+    fallbackPath: "/contact",
+    build: () => {
+      builderCalled = true;
+      return pageHeadFromInput("Previous route data", "pl");
+    },
+  });
+
+  assert.isFalse(builderCalled);
+  assert.include(JSON.stringify(fallback.meta), '"title":"Remi Forge ● Strona niedostępna"');
+  assert.include(JSON.stringify(fallback.meta), NOINDEX_FOLLOW);
+  assert.deepStrictEqual(fallback.links, [{ rel: "canonical", href: "https://www.remiforge.dev/contact" }]);
+  assert.strictEqual(fallback.scripts?.length, 1);
+});
+
 it("routeHead delegates to the builder when loader data is present, resolving language from matches", () => {
   const build = (loaderData: { readonly title: string }, preferredLanguage: "en" | "pl") => pageHeadFromInput(loaderData.title, preferredLanguage);
   const matches = [{ loaderData: { preferredLanguage: "pl" } }];
 
-  const head = routeHead({ loaderData: { title: "Custom" }, matches, fallbackPath: "/contact", build });
+  const head = routeHead({ loaderData: { title: "Custom" }, matches, matchStatus: "success", fallbackPath: "/contact", build });
 
   // The builder received the loader data and the resolved language
   assert.include(JSON.stringify(head.meta), '"title":"Remi Forge ● Custom"');

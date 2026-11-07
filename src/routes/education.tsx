@@ -18,10 +18,11 @@ import { EDUCATION_PATH } from "@/domain/constants";
 
 export const Route = createFileRoute("/education")({
   loader: () => loaderEducation(),
-  head: ({ loaderData, matches }) =>
+  head: ({ loaderData, matches, match }) =>
     routeHead({
       loaderData,
       matches,
+      matchStatus: match.status,
       fallbackPath: EDUCATION_PATH,
       build: (data, preferredLanguage) => educationHead({ pageTitles: data.stablePageTitles, educationList: data.educationList, preferredLanguage }),
     }),

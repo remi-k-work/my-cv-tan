@@ -28,11 +28,18 @@ export interface JsonLdScript {
   readonly children: string;
 }
 
+// JSON-LD values stay within JSON's value set. Undefined is allowed only on object fields, where
+// JSON.stringify omits it; inside arrays it would silently become null and change the graph.
+export type JsonLdValue = string | number | boolean | null | JsonLdObject | ReadonlyArray<JsonLdValue>;
+
+export interface JsonLdObject {
+  readonly [property: string]: JsonLdValue | undefined;
+}
+
 // Open-ended schema.org node; `@id` is what makes it mergeable in a graph.
-export interface JsonLdNode {
+export interface JsonLdNode extends JsonLdObject {
   readonly "@type"?: string;
   readonly "@id"?: string;
-  readonly [property: string]: unknown;
 }
 
 export type JsonLdNodes = ReadonlyArray<JsonLdNode>;

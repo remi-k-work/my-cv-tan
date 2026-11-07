@@ -21,14 +21,18 @@ describe("excerpt", () => {
   });
 
   it("counts astral characters as one and never splits a surrogate pair", () => {
-    // Each emoji is one code point but two UTF-16 code units; slicing by code point keeps every
-    // emoji whole instead of cutting one in half into an invalid lone surrogate. The suffix counts
-    // as one character in the budget, so four emoji plus it fill a five-character limit exactly.
+    // The suffix counts as one grapheme, so four emoji plus it fill a five-character limit exactly.
     const result = excerpt("😀😀😀😀😀😀", 5);
 
     assert.strictEqual(result, `😀😀😀😀${EXCERPT_SUFFIX}`);
     assert.strictEqual(Array.from(result).length, 5);
     assert.isFalse(result.includes("\uFFFD"));
+  });
+
+  it("keeps combining marks and joined emoji intact and handles an empty limit", () => {
+    assert.strictEqual(excerpt("e\u0301e\u0301e\u0301", 2), `e\u0301${EXCERPT_SUFFIX}`);
+    assert.strictEqual(excerpt("👩‍💻👩‍💻👩‍💻", 2), `👩‍💻${EXCERPT_SUFFIX}`);
+    assert.strictEqual(excerpt("Some text", 0), "");
   });
 });
 

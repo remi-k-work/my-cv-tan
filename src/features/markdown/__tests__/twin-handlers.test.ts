@@ -112,6 +112,8 @@ it("a pinned Polish request localizes the document envelope and its frontmatter"
   // The twin copy follows the pin: the page's authored Polish identity, not the English source
   assert.include(body, `lang: "pl"`);
   assert.include(body, `title: "Remi Forge ● Kontakt"`);
+  // If the runtime snapshot is unavailable, the committed dictionary keeps the sections in Polish
+  assert.include(body, "## Kanały");
 });
 
 it("the experience twin renders the real page identity behind its canonical URL", async () => {

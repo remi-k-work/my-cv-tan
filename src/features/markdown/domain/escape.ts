@@ -19,7 +19,7 @@ const NORMALIZE_RULES: ReadonlyArray<readonly [RegExp, string]> = [
 
 const INLINE_RULES: ReadonlyArray<readonly [RegExp, string]> = [
   [/!(?=\[)/g, "\\!"],
-  [/([`*[\]<])/g, "\\$1"],
+  [/([`*[\]<&])/g, "\\$1"],
 ];
 
 // Headings, blockquotes and list markers bind at a line start indented by at most three spaces.

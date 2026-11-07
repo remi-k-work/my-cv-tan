@@ -149,6 +149,7 @@ it("a not-found document carries the root's fallback copy and no canonical, whil
   const leaf = routeHead({
     loaderData: { stale: "data" },
     matches: notFoundMatches,
+    matchStatus: "notFound",
     fallbackPath: "/missing",
     build: () => homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" }),
   });
@@ -173,6 +174,7 @@ it("a page whose data is unavailable publishes its own fallback beside the site-
   const unavailable = routeHead({
     loaderData: undefined,
     matches: successMatches,
+    matchStatus: "success",
     fallbackPath: "/contact",
     build: () => homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" }),
   });

@@ -29,10 +29,11 @@ import { HOME_PATH } from "@/domain/constants";
 export const Route = createFileRoute("/{-$slug}")({
   notFoundComponent: NotFoundPage,
   loader: ({ params }) => loaderIndex(Option.fromNullishOr(params.slug)),
-  head: ({ loaderData, matches, params }) =>
+  head: ({ loaderData, matches, match, params }) =>
     routeHead({
       loaderData,
       matches,
+      matchStatus: match.status,
       fallbackPath: params.slug ? experiencePath(params.slug) : HOME_PATH,
       build: (data, preferredLanguage) => {
         // The loader resolves either an item or a list; both branches produce a full head.

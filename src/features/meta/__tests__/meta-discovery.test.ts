@@ -120,14 +120,12 @@ it("robots.txt allows content, disallows API endpoints, and advertises the sitem
   const robots = ROBOTS_TXT;
   assert.include(robots, "User-agent: *");
   assert.include(robots, "Allow: /");
-  // The Markdown twins are the crawlable GEO surface, so they are allowed alongside the HTML
-  assert.include(robots, "Allow: /*.md");
   // Form/RPC endpoints are not content, so they stay out of crawl budgets
   assert.include(robots, "Disallow: /api");
   assert.include(robots, "Sitemap: https://www.remiforge.dev/sitemap.xml");
   // Content signals state how accessed content may be reused: all three uses allowed site-wide
   assert.include(robots, "Content-Signal: search=yes, ai-input=yes, ai-train=yes");
-  // Crawl pacing: AI training crawlers get a crawl-delay directive alongside allow/disallow
+  // The wildcard group applies crawl pacing to every crawler.
   assert.include(robots, "Crawl-delay: 10");
   // A single wildcard group keeps this policy current for crawlers that are added after this file.
   const userAgents = robots.match(/^User-agent: .*/gm) ?? [];

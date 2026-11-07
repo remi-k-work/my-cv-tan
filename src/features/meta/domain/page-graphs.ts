@@ -12,7 +12,7 @@ import { absoluteUrl, experiencePath, validatedHref } from "./urls";
 
 // constants
 import { SITE_LANGUAGES, CONTACT_PATH, EDUCATION_PATH } from "@/domain/constants";
-import { HOME_URL, META_DESCRIPTION_LENGTH, SITE_NAME } from "./identity";
+import { HOME_URL, META_DESCRIPTION_LENGTH } from "./identity";
 
 // types
 import type { ExperienceGraphInput } from "./experience-seo";
@@ -103,11 +103,8 @@ export const experienceCollections = (employment: ExperienceList, projects: Expe
   }),
 ];
 
-// Each school gets a stable fragment id the person's alumniOf edges reference.
-export const educationCollectionId = (url: string) => `${url}#education-list`;
-
-// Builds the school collection plus the Person alumniOf edge for the education page.
-export const schoolSubgraph = (url: string, educationList: EducationList, preferredLanguage: PreferredLanguage): JsonLdNodes => {
+// Each school gets a stable fragment id the person's alumniOf edge references.
+export const schoolSubgraph = (url: string, educationList: EducationList): JsonLdNodes => {
   if (educationList.length === 0) return [];
 
   const schoolNodes = educationList.map(({ name, info, location }, index) => ({
@@ -119,16 +116,7 @@ export const schoolSubgraph = (url: string, educationList: EducationList, prefer
     alumni: { "@id": PERSON_ID },
   }));
 
-  return [
-    collectionNode({
-      id: educationCollectionId(url),
-      url,
-      name: `${SITE_NAME} — ${matchPreferredLanguage(preferredLanguage, "Education", "Edukacja")}`,
-      preferredLanguage,
-      parts: schoolNodes,
-    }),
-    personEdge({ alumniOf: schoolNodes.map(({ "@id": id }) => ({ "@id": id })) }),
-  ];
+  return [...schoolNodes, personEdge({ alumniOf: schoolNodes.map(({ "@id": id }) => ({ "@id": id })) })];
 };
 
 // --- Page graphs ---
@@ -141,7 +129,7 @@ export const educationJsonLd = ({
   preferredLanguage,
 }: LocalizedCopy & { readonly educationList: EducationList }): JsonLdNodes => {
   const url = absoluteUrl(EDUCATION_PATH);
-  const schools = schoolSubgraph(url, educationList, preferredLanguage);
+  const schools = schoolSubgraph(url, educationList);
 
   return [
     ...pageGraph({
@@ -150,7 +138,7 @@ export const educationJsonLd = ({
       name: pageName,
       description,
       preferredLanguage,
-      mainEntity: schools.length > 0 ? { "@id": educationCollectionId(url) } : undefined,
+      mainEntity: { "@id": PERSON_ID },
     }),
     ...schools,
   ];
