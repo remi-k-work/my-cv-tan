@@ -17,7 +17,7 @@ const MD_CONTENT_TYPE = "text/markdown; charset=utf-8";
 
 // An explicit language pin makes the URL the complete cache key. Keep unrelated Vary tokens,
 // such as compression, while removing only the inputs the pin replaces.
-export const pinCacheVariant = (response: Response): Response => {
+export const pinCacheVariant = (response: Response) => {
   const headers = new Headers(response.headers);
   const vary = withoutNegotiationVary(headers.get("vary"));
 
@@ -75,11 +75,6 @@ const mdFailureResponse = (body: string, preferredLanguage: PreferredLanguage, s
   });
 
 export const mdNotFoundResponse = (body: string, preferredLanguage: PreferredLanguage, markdownPath: Option.Option<string>) =>
-  mdFailureResponse(
-    body,
-    preferredLanguage,
-    404,
-    Option.isSome(markdownPath) ? markdownTwinUrl(markdownPath.value, preferredLanguage) : undefined
-  );
+  mdFailureResponse(body, preferredLanguage, 404, Option.isSome(markdownPath) ? markdownTwinUrl(markdownPath.value, preferredLanguage) : undefined);
 
 export const mdUnavailableResponse = (body: string, preferredLanguage: PreferredLanguage) => mdFailureResponse(body, preferredLanguage, 503);

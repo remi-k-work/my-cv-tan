@@ -11,7 +11,7 @@ const NEGOTIATION_VARY = new Set(NEGOTIATION_VARY_TOKENS.map((token) => token.to
 
 // Removes the negotiation tokens from a Vary header value, returning null when none remain so the
 // caller can drop the header entirely. An absent header stays absent.
-export const withoutNegotiationVary = (vary: string | null): string | null => {
+export const withoutNegotiationVary = (vary: string | null) => {
   if (vary === null) return null;
 
   const remaining = vary

@@ -4,13 +4,15 @@
 // the <head> and the Link header so the two surfaces can never disagree.
 
 // services, features, and other libraries
+import { absoluteUrl, markdownTwinUrl, withLanguageParam } from "./urls";
+
+// types
 import type { LinkTag } from "./models";
 import type { PreferredLanguage } from "@/domain/models";
 
 // constants
 import { LLMS_FULL_TXT_HREF, LLMS_TXT_HREF, SITEMAP_HREF } from "./discovery";
 import { DEFAULT_LANGUAGE } from "./languages";
-import { absoluteUrl, markdownTwinUrl, withLanguageParam } from "./urls";
 import { SITE_LANGUAGES } from "@/domain/constants";
 
 // --- RFC 8288 Link formatting ---
@@ -53,14 +55,8 @@ export const LLMS_TXT_INDEX = { name: "llms.txt", url: absoluteUrl(LLMS_TXT_HREF
 export const LLMS_FULL_TXT_INDEX = { name: "llms-full.txt", url: absoluteUrl(LLMS_FULL_TXT_HREF) } as const;
 export const AI_INDEXES = [LLMS_TXT_INDEX, LLMS_FULL_TXT_INDEX] as const;
 
-export const SITEMAP_LINK: LinkTag = { rel: "sitemap", href: absoluteUrl(SITEMAP_HREF) };
+export const SITEMAP_LINK = { rel: "sitemap", href: absoluteUrl(SITEMAP_HREF) };
 export const LLMS_DISCOVERY_LINK: LinkTag = { rel: "llms", href: LLMS_TXT_INDEX.url };
 
-export const AI_INDEX_LINKS: ReadonlyArray<LinkTag> = AI_INDEXES.map(({ name, url }) => ({
-  rel: "alternate",
-  type: "text/plain",
-  title: name,
-  href: url,
-}));
-
+export const AI_INDEX_LINKS: ReadonlyArray<LinkTag> = AI_INDEXES.map(({ name, url }) => ({ rel: "alternate", type: "text/plain", title: name, href: url }));
 export const AI_INDEX_LINK_HEADER = joinLinkHeader(AI_INDEX_LINKS);

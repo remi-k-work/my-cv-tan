@@ -10,12 +10,12 @@ import { absoluteUrl, experienceMarkdownPath, experiencePath } from "./urls";
 
 // constants
 import { META_DESCRIPTION_LENGTH } from "./identity";
-import type { SocialImageFacts } from "./identity";
 import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain/constants";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
 import type { Experience } from "@/features/experience/domain/models";
+import type { SocialImageFacts } from "./identity";
 
 // Input for the experience detail page head builder and the SEO record below.
 export interface ExperienceHeadInput {

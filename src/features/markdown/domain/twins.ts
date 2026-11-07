@@ -30,10 +30,7 @@ import type { ContactMdInput, EducationMdInput, HomeMdInput, LocalizedMdInput, M
 
 // --- Sections the static twins print ---
 
-const profileLinks = (translate: Translate) => [
-  ...mdProfileLinks(SOCIAL_PROFILES),
-  mdFact(translate("Base"), translate(HOME_LOCATION)),
-];
+const profileLinks = (translate: Translate) => [...mdProfileLinks(SOCIAL_PROFILES), mdFact(translate("Base"), translate(HOME_LOCATION))];
 
 const schoolSections = (educationList: EducationList, translate: Translate) =>
   mdTitledSection(
@@ -70,7 +67,13 @@ const staticTwinDocument = (
 
   return {
     facts: pageFacts(copy),
-    body: mdBody([mdHeading(1, copy.pageName), mdQuote(copy.description), escapeMd(copy.intro), ...sections(copy), pagesSection(copy.path, copy.preferredLanguage, input.translate)]),
+    body: mdBody([
+      mdHeading(1, copy.pageName),
+      mdQuote(copy.description),
+      escapeMd(copy.intro),
+      ...sections(copy),
+      pagesSection(copy.path, copy.preferredLanguage, input.translate),
+    ]),
   };
 };
 

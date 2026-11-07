@@ -7,15 +7,9 @@
 // types
 import type { PreferredLanguage } from "@/domain/models";
 
-export const SITE_LANGUAGE_NAMES = {
-  en: "English",
-  pl: "Polish",
-} as const satisfies Readonly<Record<PreferredLanguage, string>>;
-
-export const OPEN_GRAPH_LOCALES = {
-  en: "en_US",
-  pl: "pl_PL",
-} as const satisfies Record<PreferredLanguage, string>;
+// constants
+export const SITE_LANGUAGE_NAMES = { en: "English", pl: "Polish" } as const satisfies Readonly<Record<PreferredLanguage, string>>;
+export const OPEN_GRAPH_LOCALES = { en: "en_US", pl: "pl_PL" } as const satisfies Record<PreferredLanguage, string>;
 
 // The one language a document falls back to when a request publishes no supported preference.
 export const DEFAULT_LANGUAGE = "en" as const satisfies PreferredLanguage;
