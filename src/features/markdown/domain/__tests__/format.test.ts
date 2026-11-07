@@ -153,9 +153,10 @@ it("demoteHeadings appends two levels to every heading", () => {
   assert.strictEqual(demoteHeadings("no headings here"), "no headings here");
 });
 
-it("mdBody filters out falsy blocks and joins the rest with blank lines", () => {
-  assert.strictEqual(mdBody(["a", "", "b", "c"]), "a\n\nb\n\nc");
+it("mdBody drops empty and whitespace-only blocks and joins the rest with blank lines", () => {
+  assert.strictEqual(mdBody(["a", "", " \n\t ", "b", "c"]), "a\n\nb\n\nc");
   assert.strictEqual(mdBody(["only"]), "only");
+  assert.strictEqual(mdBody([" \n\t "]), "");
   assert.strictEqual(mdBody([]), "");
 });
 

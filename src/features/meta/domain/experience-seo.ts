@@ -5,7 +5,7 @@
 
 // services, features, and other libraries
 import { Option, String } from "effect";
-import { excerpt, experienceHeadline } from "@/features/experience/domain/helpers";
+import { excerpt, experienceHeadline, experienceImagePath } from "@/features/experience/domain/helpers";
 import { absoluteUrl, experienceMarkdownPath, experiencePath } from "./urls";
 
 // constants
@@ -29,7 +29,7 @@ export const experienceScreenshot = (imageName: string): Option.Option<SocialIma
 
   return String.isNonEmpty(name)
     ? Option.some({
-        src: absoluteUrl(`/images/${encodeURIComponent(name)}-a.webp`),
+        src: absoluteUrl(experienceImagePath(name, "a")),
         mime: "image/webp",
         width: SCREENSHOT_WIDTH,
         height: SCREENSHOT_HEIGHT,

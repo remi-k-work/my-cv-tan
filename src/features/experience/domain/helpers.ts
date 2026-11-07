@@ -42,6 +42,9 @@ export const experienceHeadline = (experience: Pick<Experience, "type" | "role" 
     ? matchPreferredLanguage(preferredLanguage, experience.role, `Projekt osobisty: ${experience.role}`)
     : matchPreferredLanguage(preferredLanguage, `${experience.role} at ${experience.company}`, `${experience.role} w ${experience.company}`);
 
+// The page and its social card use the same encoded frame path, so an image name stays one URL segment on both surfaces.
+export const experienceImagePath = (imageName: string, suffix: "a" | "b" | "c") => `/images/${encodeURIComponent(imageName)}-${suffix}.webp`;
+
 // Bounds prose to `maxLength` user-visible characters, preferring the last word boundary so a
 // summary never ends mid-word; shared by meta descriptions, JSON-LD, Markdown twins and the slider.
 // The truncation suffix is part of the budget, so the returned summary — ellipsis included — never

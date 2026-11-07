@@ -2,7 +2,7 @@
 import { assert, describe, it } from "@effect/vitest";
 
 // domain
-import { excerpt, haveSameExperienceSlugs, isEmployment } from "../helpers";
+import { excerpt, experienceImagePath, haveSameExperienceSlugs, isEmployment } from "../helpers";
 
 // constants
 import { EXCERPT_SUFFIX } from "../constants";
@@ -57,5 +57,12 @@ describe("isEmployment", () => {
     // the two kinds, so the label they read has to answer for both and for nothing else.
     assert.isTrue(isEmployment({ type: "e" }));
     assert.isFalse(isEmployment({ type: "p" }));
+  });
+});
+
+describe("experienceImagePath", () => {
+  it("encodes the image name as one path segment and appends the requested frame", () => {
+    assert.strictEqual(experienceImagePath("01", "a"), "/images/01-a.webp");
+    assert.strictEqual(experienceImagePath("shot/name?dark#crop", "b"), "/images/shot%2Fname%3Fdark%23crop-b.webp");
   });
 });

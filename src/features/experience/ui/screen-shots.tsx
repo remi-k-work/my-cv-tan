@@ -3,6 +3,7 @@ import { Option } from "effect";
 import { cn } from "@/lib/utils";
 import { useGT } from "gt-tanstack-start";
 import { httpUrlOption } from "@/features/meta/domain/urls";
+import { experienceImagePath } from "@/features/experience/domain/helpers";
 
 // types
 import type { Experience } from "@/features/experience/domain/models";
@@ -38,7 +39,7 @@ export function ScreenShots({ experience: { role, company, imageName, liveLink, 
         <img
           key={suffix}
           className={cn("col-span-full row-span-full aspect-video animate-fade-in-out opacity-0", className)}
-          src={`/images/${imageName}-${suffix}.webp`}
+          src={experienceImagePath(imageName, suffix)}
           width={SCREENSHOT_WIDTH}
           height={SCREENSHOT_HEIGHT}
           // The empty alt on the later frames already keeps them out of the accessibility tree; no aria-hidden needed

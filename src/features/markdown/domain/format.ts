@@ -69,7 +69,7 @@ export const mdHeading = (level: 1 | 2 | 3, text: string) => (isBlank(text) ? ""
 export const mdQuote = (text: string) => (isBlank(text) ? "" : `> ${escapeMdInline(text)}`);
 export const mdBulletList = (items: ReadonlyArray<string>) => items.map((item) => `- ${item}`).join("\n");
 export const mdFact = (label: string, value: string) => `${escapeMdInline(label)}: ${escapeMdInline(value)}`;
-export const mdBody = (blocks: ReadonlyArray<string>) => blocks.filter(Boolean).join("\n\n");
+export const mdBody = (blocks: ReadonlyArray<string>) => blocks.filter((block) => !isBlank(block)).join("\n\n");
 export const mdTitledSection = (title: string, body: string) => mdBody([mdHeading(2, title), body]);
 export const mdDocument = (blocks: ReadonlyArray<string>) => `${mdBody(blocks)}\n`;
 export const mdEmptyMarker = (translate: Translate) => `_${escapeMdInline(translate("No entries."))}_`;
