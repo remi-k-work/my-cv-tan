@@ -10,19 +10,23 @@ import { assert, it } from "@effect/vitest";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { experienceSeo } from "@/features/meta/domain/experience-seo";
+import { BRANDED_TITLE } from "@/features/meta/domain/identity";
 import { contactHead, educationHead, experienceHead, homeHead } from "@/features/meta/domain/page-head";
-import { STATIC_PAGES, staticPageCopy } from "@/features/meta/domain/pages";
+import { STATIC_PAGES, STATIC_PAGE_PATHS, staticPageCopy } from "@/features/meta/domain/pages";
 import { ExperienceIdentity } from "@/features/experience/ui/experience-identity";
-import { DOWNLOADABLE_DOCUMENTS } from "@/features/meta/domain/constants";
+import { DOWNLOADABLE_DOCUMENTS } from "@/features/meta/domain/discovery";
 import { absoluteUrl } from "@/features/meta/domain/urls";
-import { buildSitemapXml } from "@/features/meta/domain/discovery";
+import { buildSitemapXml } from "@/features/meta/domain/sitemap";
+import { mdResponse } from "../../services/responses";
 import { buildLlmsTxt } from "../indexes";
-import { buildContactMd, buildEducationMd, buildExperienceMd, buildHomeMd } from "../twins";
+import { buildContactMd, buildEducationMd, buildHomeMd } from "../twins";
+import { buildExperienceMd } from "../detail-twin";
 import { twinDocument } from "../format";
 
 // types
-import type { PageTitles } from "@/domain/models";
+import type { PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
 import type { Experience } from "@/features/experience/domain/models";
+import type { PageHead } from "@/features/meta/domain/models";
 
 const sampleExperience: Experience = {
   type: "p",
@@ -113,9 +117,11 @@ it("each static page's head and twin publish the same canonical, title and descr
     assert.strictEqual(metaContent("description"), copy.description, `${path} description`);
     assert.include(twin, `description: ${JSON.stringify(copy.description)}`, `${path} twin description`);
 
-    // The branded document title is one template applied to the catalogue's own SEO title.
-    assert.include(JSON.stringify(head.meta), JSON.stringify({ title: `Remi Forge ● ${copy.seoTitle}` }));
-    assert.include(twin, `title: ${JSON.stringify(`Remi Forge ● ${copy.seoTitle}`)}`);
+    // The branded document title is one template applied to the catalogue's own SEO title. Both
+    // surfaces read it from BRANDED_TITLE, so a separator change cannot leave the twin's frontmatter
+    // spelling the head's <title> a different way.
+    assert.include(JSON.stringify(head.meta), JSON.stringify({ title: BRANDED_TITLE(copy.seoTitle) }));
+    assert.include(twin, `title: ${JSON.stringify(BRANDED_TITLE(copy.seoTitle))}`);
     // The twin route the head advertises is the route the catalogue declares.
     assert.strictEqual(
       head.links?.find(({ rel }) => rel === "alternate")?.href,
@@ -145,4 +151,40 @@ it("every advertised download is published by the sitemap, the AI index and the 
 
   // Exactly three downloads, so a surface cannot quietly parse a longer or shorter list
   assert.strictEqual(DOWNLOADABLE_DOCUMENTS.length, 3);
+});
+
+it("a page's advertised twin URL is the very URL the twin route answers on", async () => {
+  // The <head> names its twin with `link rel=alternate`; the twin response names itself with
+  // Content-Location. The two are computed on opposite sides of the feature boundary — the head
+  // builds the URL from the page's twin path, the twin response builds it from its own route — so
+  // only comparing them catches a crawler following the head's link onto a document that denies
+  // being the one that page advertised.
+  const twinLocationOf = (head: PageHead) => head.links?.find(({ rel }) => rel === "alternate")?.href;
+
+  for (const preferredLanguage of ["en", "pl"] as const satisfies ReadonlyArray<PreferredLanguage>) {
+    // Keyed by PagePath rather than listed by hand, so a page added to the catalogue is a compile
+    // error here until this test names its head too.
+    const heads: Readonly<Record<PagePath, PageHead>> = {
+      "/": homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage }),
+      "/education": educationHead({ pageTitles: stablePageTitles, educationList: [], preferredLanguage }),
+      "/contact": contactHead({ pageTitles: stablePageTitles, preferredLanguage }),
+    };
+
+    for (const path of STATIC_PAGE_PATHS) {
+      const response = mdResponse({ body: "", preferredLanguage, canonical: absoluteUrl(path), markdownPath: STATIC_PAGES[path].mdHref });
+
+      assert.strictEqual(twinLocationOf(heads[path]), response.headers.get("Content-Location"), `${path} (${preferredLanguage}) advertised twin URL`);
+    }
+  }
+
+  // The detail page does the same off its SEO record, so the two surfaces agree for every page kind.
+  const detail = experienceHead({ experience: sampleExperience, preferredLanguage: "en" });
+  const detailResponse = mdResponse({
+    body: "",
+    preferredLanguage: "en",
+    canonical: experienceSeo({ experience: sampleExperience, preferredLanguage: "en" }).canonical,
+    markdownPath: experienceSeo({ experience: sampleExperience, preferredLanguage: "en" }).markdownPath,
+  });
+
+  assert.strictEqual(twinLocationOf(detail), detailResponse.headers.get("Content-Location"), "detail page advertised twin URL");
 });

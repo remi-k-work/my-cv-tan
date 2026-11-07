@@ -8,7 +8,7 @@ import { GitHubIcon } from "@/assets/icons/github";
 import { LinkedInIcon } from "@/assets/icons/linked-in";
 
 // meta (shared)
-import { SOCIAL_PROFILES } from "@/features/meta/domain/constants";
+import { SOCIAL_PROFILES } from "@/features/meta/domain/identity";
 
 // types
 import type { ReactNode } from "react";

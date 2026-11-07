@@ -7,7 +7,8 @@ import type { PreferredLanguage } from "@/domain/models";
 
 // constants
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW, NO_STORE } from "@/domain/http";
-import { CONTENT_SIGNAL, NEGOTIATION_VARY_TOKENS } from "../domain/constants";
+import { CONTENT_SIGNAL } from "../domain/discovery";
+import { NEGOTIATION_VARY_TOKENS } from "../domain/languages";
 import { AI_INDEX_LINK_HEADER } from "../domain/link-tags";
 
 // The reuse signal and AI-index advertisements every response repeats.

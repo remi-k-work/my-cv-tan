@@ -1,16 +1,15 @@
-// Direct unit tests for the Markdown serialization toolkit in ./format.
-// These primitives are security-sensitive: authored or translated content must never be able to
-// fabricate Markdown structure, so each builder's escaping is pinned here rather than only
-// indirectly through the twin and index builder tests.
+// Direct unit tests for the Markdown serialization toolkit in ./format and the escape engine it
+// applies in ./escape. These primitives are security-sensitive: authored or translated content must
+// never be able to fabricate Markdown structure, so each builder's escaping is pinned here rather
+// than only indirectly through the twin and index builder tests.
 
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 
 // domain
+import { escapeMd, escapeMdInline } from "../escape";
 import {
   demoteHeadings,
-  escapeMd,
-  escapeMdInline,
   fencedFacts,
   frontmatter,
   mdBody,
@@ -43,6 +42,19 @@ it("mdQuote prefixes an escaped blockquote line", () => {
   // A leading `>` escapes at line start (block rule); mdQuote adds its own `> ` prefix
   assert.strictEqual(mdQuote("> quoted"), "> \\> quoted");
   assert.strictEqual(mdQuote("plain"), "> plain");
+});
+
+it("a blank pull quote or heading is dropped rather than left as a stray marker", () => {
+  // Both builders guard against an empty block: `> ` and `# ` render as a marker with no content,
+  // which is a block a parser has to reconcile against nothing. Whitespace-only text renders the
+  // same stray marker, so it counts as empty too — mdBody filters the result out of the document.
+  for (const empty of ["", " ", "\t", "\n"]) {
+    assert.strictEqual(mdQuote(empty), "", `a quote over ${JSON.stringify(empty)} must not render`);
+    assert.strictEqual(mdHeading(1, empty), "", `a heading over ${JSON.stringify(empty)} must not render`);
+  }
+  // Padding around real content is still content: the escape pass trims it, the block keeps it
+  assert.strictEqual(mdHeading(2, "  padded  "), "## padded");
+  assert.strictEqual(mdQuote("  padded  "), "> padded");
 });
 
 it("mdBulletList prefixes each item and joins with newlines", () => {
@@ -121,6 +133,19 @@ it("mdLink escapes the label and percent-encodes parens in the href", () => {
   assert.strictEqual(mdLink("Label", "https://x.test/a(b)"), "[Label](https://x.test/a%28b%29)");
 });
 
+it("mdLink keeps a raw destination intact by encoding the whitespace that would end it early", () => {
+  // A raw Markdown destination ends at the first whitespace character, which is legal inside a URL.
+  // The href a caller hands over can carry one — it is authored content wherever it is not
+  // site-derived — so the destination encoder closes the gap the paren encoding already covered,
+  // and every embedded destination takes both.
+  assert.strictEqual(mdLink("Label", "https://x.test/a b"), "[Label](https://x.test/a%20b)");
+  assert.strictEqual(mdLink("Label", "https://x.test/a(b) c"), "[Label](https://x.test/a%28b%29%20c)");
+  // The paren encoding is unchanged on its own, and a tab is as terminating as a space
+  assert.strictEqual(mdLink("Label", "https://x.test/a\tb"), "[Label](https://x.test/a%20b)");
+  // A destination with neither character is byte-identical to the input
+  assert.strictEqual(mdLink("Label", "https://x.test/a-b"), "[Label](https://x.test/a-b)");
+});
+
 it("demoteHeadings appends two levels to every heading", () => {
   // The companion document wraps twins under a site H1, so each twin heading is demoted by two
   // (H1 document title → H3, H2 section → H4, etc.) to keep a single-document hierarchy.
@@ -159,6 +184,14 @@ it("fencedFacts widens its fence past any backtick run the facts themselves carr
   // A shorter run never could close the fence, so it keeps the three-backtick block every other
   // surface pins
   assert.strictEqual(fencedFacts({ title: "Use `inline` code" }), '```yaml\ntitle: "Use `inline` code"\n```');
+});
+
+it("fencedFacts measures the longest run, not the number of runs", () => {
+  // The width is the longest run plus one, never the count of runs: Array.reduce also passes its
+  // index to the callback, and Math.max absorbed it — so a value carrying N backtick runs widened
+  // its fence by the run count instead of by its longest run (eight single-backtick runs once
+  // produced an eight-backtick fence).
+  assert.strictEqual(fencedFacts({ title: "a `1` b `2` c `3` d `4` e `5`" }), '```yaml\ntitle: "a `1` b `2` c `3` d `4` e `5`"\n```');
 });
 
 it("escapeMd neutralizes structure-building characters everywhere", () => {

@@ -1,44 +1,33 @@
 // The root route's HTML head: charset/viewport/theme, branded title, description, author,
-// noindex fallback, and the discovery links advertised on every page.
-// Also resolves the negotiated language from the TanStack match chain.
+// noindex fallback, and the discovery links advertised on every page. The root owns the
+// not-found fallback because TanStack renders it even when a route-level head callback is skipped.
 
 // services, features, and other libraries
-import { Array, Option, Schema, pipe } from "effect";
 import { NOINDEX_FOLLOW } from "@/domain/http";
-import { matchPreferredLanguage } from "@/domain/helpers";
-import { PreferredLanguage } from "@/domain/models";
 
 // domain
-import { siteGraphScript } from "./entities";
-import { AI_INDEX_LINKS, LLMS_DISCOVERY_LINK, SITEMAP_LINK, authorLink, canonicalLink } from "./link-tags";
-import { absoluteUrl } from "./urls";
+import { AI_INDEX_LINKS, LLMS_DISCOVERY_LINK, SITEMAP_LINK, authorLink } from "./link-tags";
+import { headLanguage, isNotFoundMatch } from "./route-head";
+import { fallbackHead } from "./fallback";
 
 // constants
-import { AUTHOR_URL, AVATAR, BRANDED_TITLE, DEFAULT_LANGUAGE, HOME_TITLE, SITE_DESCRIPTION, SITE_NAME, SOCIAL_LINKS } from "./constants";
+import { AUTHOR_URL, AVATAR, BRANDED_TITLE, HOME_TITLE, SITE_DESCRIPTION, SITE_NAME, SOCIAL_LINKS } from "./identity";
 
 // types
-import type { LinkTag, MatchChain, MetaTag, PageHead } from "./models";
+import type { LinkTag, PageHead } from "./models";
+import type { MatchChain } from "./route-head";
 
-interface RootHeadContract {
-  readonly meta: ReadonlyArray<MetaTag>;
-  readonly links: ReadonlyArray<LinkTag>;
-  readonly scripts?: undefined;
-}
+// The root's site-wide head. It carries no `scripts`: TanStack concatenates every match's scripts,
+// so a root-level graph would render beside the leaf's own single block. Omitting the key is the
+// compile guard for that — a `scripts` key added here is an excess property.
+// The arrays are readonly so no consumer of the shared declaration can reach into it, and every
+// `rootHead()` result hands back its own copies (see below), honouring the PageHead contract.
+type RootHead = Omit<PageHead, "scripts">;
 
 const ME_LINKS: ReadonlyArray<LinkTag> = SOCIAL_LINKS.map((href) => ({ rel: "me", href }));
 
-const decodeRootLoaderData = Schema.decodeUnknownOption(Schema.Struct({ preferredLanguage: PreferredLanguage }));
-
-export const headLanguage = (matches: MatchChain): PreferredLanguage =>
-  pipe(
-    Array.head(matches),
-    Option.flatMap(({ loaderData }) => decodeRootLoaderData(loaderData)),
-    Option.map(({ preferredLanguage }) => preferredLanguage),
-    Option.getOrElse(() => DEFAULT_LANGUAGE)
-  );
-
 // The root owns fallbacks and discovery links; leaf routes add their canonical and JSON-LD.
-export const ROOT_HEAD = {
+export const ROOT_HEAD: RootHead = {
   meta: [
     { charSet: "utf-8" },
     { name: "viewport", content: "width=device-width, initial-scale=1" },
@@ -57,31 +46,12 @@ export const ROOT_HEAD = {
     ...ME_LINKS,
     ...AI_INDEX_LINKS,
   ],
-} satisfies RootHeadContract;
-
-export const isNotFoundMatch = (match: MatchChain[number]): boolean => match.status === "notFound" || match._notFound === true;
-
-// Fallback documents stay out of search results while identifying the failed route and language.
-// A route the head has no path for is one the site does not know, which is exactly the not-found
-// fallback, so the copy is decided by the same fact that decides the canonical.
-export const fallbackHead = (pagePath: string | undefined, preferredLanguage: PreferredLanguage = DEFAULT_LANGUAGE): PageHead => {
-  const notFound = pagePath === undefined;
-  const title = matchPreferredLanguage(preferredLanguage, notFound ? "Not Found" : "Page unavailable", notFound ? "Nie znaleziono" : "Strona niedostępna");
-  const description = matchPreferredLanguage(
-    preferredLanguage,
-    notFound ? "The requested page could not be found." : "This page is temporarily unavailable.",
-    notFound ? "Nie znaleziono żądanej strony." : "Ta strona jest tymczasowo niedostępna."
-  );
-
-  return {
-    meta: [{ title: BRANDED_TITLE(title) }, { name: "robots", content: NOINDEX_FOLLOW }, { name: "description", content: description }],
-    links: notFound ? [] : [canonicalLink(absoluteUrl(pagePath))],
-    scripts: [siteGraphScript],
-  };
 };
 
 // The root boundary renders not-found pages even when a route-level head callback is skipped.
 export const rootHead = (matches: MatchChain): PageHead => {
+  // Every result is the root's own arrays: a shared head object handed to each document could be
+  // reached by one caller and leak into every other page rendered from the same declaration.
   if (!matches.some(isNotFoundMatch)) return { meta: [...ROOT_HEAD.meta], links: [...ROOT_HEAD.links], scripts: [] };
 
   const fallback = fallbackHead(undefined, headLanguage(matches));

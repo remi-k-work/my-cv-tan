@@ -8,7 +8,7 @@ import { Option } from "effect";
 import type { PreferredLanguage } from "@/domain/models";
 
 // meta (shared)
-import { AI_INDEX_LINKS, canonicalLink, joinLinkHeader, languageVariantLinks } from "@/features/meta/domain/link-tags";
+import { AI_INDEX_LINK_HEADER, AI_INDEX_LINKS, canonicalLink, joinLinkHeader, languageVariantLinks } from "@/features/meta/domain/link-tags";
 import { markdownTwinUrl } from "@/features/meta/domain/urls";
 import { CACHEABLE_HEADERS, documentHeaders, INDEXABLE_HEADERS, UNAVAILABLE_HEADERS } from "@/features/meta/services/headers";
 import { withoutNegotiationVary } from "../domain/cache-variant";
@@ -27,10 +27,15 @@ export const pinCacheVariant = (response: Response): Response => {
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 };
 
-// A twin is a language-negotiated document: everything `documentHeaders` carries, plus its media type.
-const markdownHeaders = (preferredLanguage: PreferredLanguage) => ({
+// A twin is a language-negotiated document: everything `documentHeaders` carries, plus its media
+// type. The Link header is passed in rather than composed here, so each envelope names the one
+// link set it publishes instead of inheriting `documentHeaders`' AI-index list and then replacing
+// it silently — a failure envelope would keep advertisements a success envelope had widened, and
+// dropping the AI indexes from the wider set would go unnoticed.
+const markdownHeaders = (preferredLanguage: PreferredLanguage, links: string) => ({
   ...documentHeaders(preferredLanguage),
   "Content-Type": MD_CONTENT_TYPE,
+  Link: links,
 });
 
 const markdownLinks = (canonical: string, markdownUrl: string) =>
@@ -47,20 +52,33 @@ export const mdResponse = (input: {
   return new Response(input.body, {
     status: 200,
     headers: {
-      ...markdownHeaders(input.preferredLanguage),
+      ...markdownHeaders(input.preferredLanguage, markdownLinks(input.canonical, markdownUrl)),
       ...CACHEABLE_HEADERS,
       ...INDEXABLE_HEADERS,
       "Content-Location": markdownUrl,
-      Link: markdownLinks(input.canonical, markdownUrl),
     },
   });
 };
 
-export const mdNotFoundResponse = (body: string, preferredLanguage: PreferredLanguage, markdownPath: Option.Option<string>) => {
-  const location = Option.isSome(markdownPath) ? { "Content-Location": markdownTwinUrl(markdownPath.value, preferredLanguage) } : undefined;
+// Both failure envelopes share one contract: the AI indexes stay advertised, nothing caches and
+// nothing indexes. A 404 alone names the representation that was asked for — there is no location to
+// name for a path the route could not even parse.
+const mdFailureResponse = (body: string, preferredLanguage: PreferredLanguage, status: 404 | 503, contentLocation?: string) =>
+  new Response(body, {
+    status,
+    headers: {
+      ...markdownHeaders(preferredLanguage, AI_INDEX_LINK_HEADER),
+      ...UNAVAILABLE_HEADERS,
+      ...(contentLocation === undefined ? {} : { "Content-Location": contentLocation }),
+    },
+  });
 
-  return new Response(body, { status: 404, headers: { ...markdownHeaders(preferredLanguage), ...UNAVAILABLE_HEADERS, ...location } });
-};
+export const mdNotFoundResponse = (body: string, preferredLanguage: PreferredLanguage, markdownPath: Option.Option<string>) =>
+  mdFailureResponse(
+    body,
+    preferredLanguage,
+    404,
+    Option.isSome(markdownPath) ? markdownTwinUrl(markdownPath.value, preferredLanguage) : undefined
+  );
 
-export const mdUnavailableResponse = (body: string, preferredLanguage: PreferredLanguage) =>
-  new Response(body, { status: 503, headers: { ...markdownHeaders(preferredLanguage), ...UNAVAILABLE_HEADERS } });
+export const mdUnavailableResponse = (body: string, preferredLanguage: PreferredLanguage) => mdFailureResponse(body, preferredLanguage, 503);

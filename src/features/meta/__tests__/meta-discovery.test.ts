@@ -1,13 +1,14 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-import { buildSitemapXml, ROBOTS_TXT } from "../domain/discovery";
+import { ROBOTS_TXT } from "../domain/robots";
+import { buildSitemapXml } from "../domain/sitemap";
 import { documentHeaders } from "../services/headers";
 import { robotsHandler } from "../services/handlers";
 import { sitemapResponse, sitemapUnavailableResponse, txtResponse } from "../services/responses";
 import { STATIC_PAGE_PATHS } from "../domain/pages";
 
 // constants
-import { CONTENT_SIGNAL, DOWNLOADABLE_DOCUMENTS } from "../domain/constants";
+import { CONTENT_SIGNAL, DOWNLOADABLE_DOCUMENTS } from "../domain/discovery";
 
 // types
 import type { Experience } from "@/features/experience/domain/models";

@@ -13,6 +13,11 @@ import { EXCERPT_SUFFIX } from "./constants";
 // shared by the route loaders and the Markdown twins so the lookup can never drift
 export const experienceFromList = (experienceList: ExperienceList, slug: string) => Array.findFirst(experienceList, (experience) => experience.slug === slug);
 
+// Employment or portfolio project — the one kind question the HTML head's article section, the
+// JSON-LD subject node, the Markdown twin's fact type and the collection grouping all ask. Reading
+// it from one place keeps a second spelling of "e" from labelling the same experience two ways.
+export const isEmployment = (experience: Pick<Experience, "type">) => experience.type === "e";
+
 // Localized records share canonical URLs, so every language must publish the same unique slugs.
 export const haveSameExperienceSlugs = (left: ReadonlyArray<Pick<Experience, "slug">>, right: ReadonlyArray<Pick<Experience, "slug">>) => {
   const leftSlugs = new Set(left.map(({ slug }) => slug));
@@ -22,11 +27,11 @@ export const haveSameExperienceSlugs = (left: ReadonlyArray<Pick<Experience, "sl
 };
 
 // One-pass split of the mixed list into employment ("e") and portfolio projects ("p"):
-// "e" and "p" are the only experience types, so whatever is not employment is exactly
-// the project list. Shared so the home sliders, the home JSON-LD collections and any
-// future consumer group the two kinds identically and can never drift apart
+// the two types are the only kinds of experience, so the split and the `isEmployment`
+// predicate above can never disagree; shared so the home sliders, the home JSON-LD
+// collections and any future consumer group the two kinds identically
 export const partitionExperiences = (experienceList: ExperienceList) =>
-  Array.partition(experienceList, (experience) => (experience.type === "e" ? Result.succeed(experience) : Result.fail(experience)));
+  Array.partition(experienceList, (experience) => (isEmployment(experience) ? Result.succeed(experience) : Result.fail(experience)));
 
 // Keep translated headlines consistent across route metadata, JSON-LD, and Markdown twins;
 // the language switch delegates to the shared helper so every surface branches the same way

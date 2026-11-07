@@ -1,13 +1,15 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
+import { Effect } from "effect";
 import { CONTACT_TWIN, EDUCATION_TWIN, HOME_TWIN, PAGE_TWINS, PAGE_ENTRIES, allEntries } from "../catalogue";
-import { SOURCE_COPY } from "../twins";
+import { SOURCE_COPY } from "../copy";
 import { twinDocument } from "../format";
 
 // meta (shared)
 import { STATIC_PAGES } from "@/features/meta/domain/pages";
 import { absoluteUrl, markdownTwinUrl } from "@/features/meta/domain/urls";
 import { experienceSeo } from "@/features/meta/domain/experience-seo";
+import { Datasets } from "@/features/data/services/datasets";
 
 // types
 import type { ExperienceList } from "@/features/experience/domain/models";
@@ -68,6 +70,25 @@ it("the contact twin still renders: a body that reads no portfolio dataset is no
   assert.include(md, "## Channels");
   assert.strictEqual((md.match(/^# /gm) ?? []).length, 1);
 });
+
+// The resolver is part of the twin's declaration, so the bundle a render reads and the bundle the
+// route resolves are one record: a dataset added to one side cannot go missing from the other.
+it.effect("each static twin resolves only the datasets its body declares", () =>
+  Effect.gen(function* () {
+    const datasets = yield* Datasets;
+
+    const home = yield* HOME_TWIN.resolveData(datasets, "en");
+    assert.deepStrictEqual(Object.keys(home), ["pageTitles", "experienceList"]);
+
+    const education = yield* EDUCATION_TWIN.resolveData(datasets, "en");
+    assert.deepStrictEqual(Object.keys(education), ["pageTitles", "educationList"]);
+
+    // The contact twin reads no portfolio data, so it resolves only the titles its heading needs
+    // rather than the two lists it would discard
+    const contact = yield* CONTACT_TWIN.resolveData(datasets, "en");
+    assert.deepStrictEqual(Object.keys(contact), ["pageTitles"]);
+  }).pipe(Effect.provide(Datasets.layer))
+);
 
 it("allEntries concatenates the page twins and then every detail twin in portfolio order", () => {
   // Annotated so the non-empty `skillsUsed` tuples are inferred from ExperienceList rather than

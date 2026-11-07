@@ -7,8 +7,9 @@ import { assert, it } from "@effect/vitest";
 import { Option, Schema, pipe } from "effect";
 
 // domain
-import { educationJsonLd, contactJsonLd, experienceJsonLd, homeJsonLd } from "../page-graphs";
-import { jsonLdGraph } from "../merge";
+import { educationCollectionId, educationJsonLd, contactJsonLd, experienceCollections, experienceJsonLd, homeJsonLd, schoolSubgraph } from "../page-graphs";
+import { EXPERIENCE_LIST_ID, PERSON_ID, PORTFOLIO_LIST_ID, PROFILE_ID, WEBSITE_ID } from "../nodes";
+import { jsonLdGraph } from "../graph";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
@@ -16,7 +17,7 @@ import type { EducationList } from "@/features/education/domain/models";
 import type { Experience, ExperienceList } from "@/features/experience/domain/models";
 
 // constants
-import { EXPERIENCE_LIST_ID, HOME_URL, PERSON_ID, PORTFOLIO_LIST_ID, PROFILE_ID, WEBSITE_ID } from "../constants";
+import { HOME_URL } from "../identity";
 
 const language: PreferredLanguage = "en";
 
@@ -222,6 +223,74 @@ it("homeJsonLd builds a ProfilePage linking site entities plus grouped collectio
     collections.map((node) => node["@id"]),
     [EXPERIENCE_LIST_ID, PORTFOLIO_LIST_ID]
   );
+});
+
+// --- The collection subgraphs ---
+
+// The two experience collections and the school list group content beside a page node. Each is
+// exercised directly here and again through the page that renders it, so the grouping cannot drift
+// between the two call sites.
+
+const schools: EducationList = [{ name: "Pratt Institute", year: "• 2002 — 2004 •", location: "New York, US", info: "Interactive Media." }];
+
+it("experienceCollections builds employment then portfolio collections", () => {
+  const nodes = experienceCollections(employment, projects, language);
+
+  const collections = nodes.filter((node) => node["@type"] === "Collection");
+  assert.strictEqual(collections.length, 2);
+  assert.deepStrictEqual(
+    collections.map((node) => node.name),
+    ["Experience", "Portfolio Projects"]
+  );
+  assert.deepStrictEqual(
+    collections.map((node) => node["@id"]),
+    [EXPERIENCE_LIST_ID, PORTFOLIO_LIST_ID]
+  );
+  assert.deepStrictEqual(
+    collections.map((node) => node.inLanguage),
+    [language, language]
+  );
+
+  // Each part references the detail page by @id and url with the translated headline, so the
+  // collection and the page it names describe the same entity
+  assert.deepStrictEqual(collections[0]?.hasPart, [
+    { "@type": "WebPage", "@id": "https://www.remiforge.dev/job-1", url: "https://www.remiforge.dev/job-1", name: "Dev at Co" },
+  ]);
+});
+
+it("experienceCollections omits empty collections", () => {
+  const nodes = experienceCollections([], [], language);
+  const collections = nodes.filter((node) => node["@type"] === "Collection");
+  assert.strictEqual(collections.length, 0);
+});
+
+it("schoolSubgraph builds a school collection plus the Person alumniOf edge", () => {
+  const url = "https://www.remiforge.dev/education";
+  const nodes = schoolSubgraph(url, schools, language);
+
+  const collection = nodes.find((node) => node["@type"] === "Collection");
+  assert.deepStrictEqual(collection?.name, "Remi Forge — Education");
+  assert.deepStrictEqual(collection?.hasPart, [
+    {
+      "@type": "EducationalOrganization",
+      "@id": `${url}#school-1`,
+      name: "Pratt Institute",
+      description: "Interactive Media.",
+      address: "New York, US",
+      alumni: { "@id": "https://www.remiforge.dev/#person" },
+    },
+  ]);
+
+  const edge = nodes.find((node) => node["@type"] === "Person" && node["alumniOf"]);
+  assert.deepStrictEqual(edge?.alumniOf, [{ "@id": `${url}#school-1` }]);
+});
+
+it("schoolSubgraph returns nothing for an empty list", () => {
+  assert.deepStrictEqual(schoolSubgraph("https://www.remiforge.dev/education", [], language), []);
+});
+
+it("educationCollectionId derives a stable fragment id from the page url", () => {
+  assert.strictEqual(educationCollectionId("https://www.remiforge.dev/education"), "https://www.remiforge.dev/education#education-list");
 });
 
 // --- The shared page-node pair ---

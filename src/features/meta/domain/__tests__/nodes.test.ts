@@ -6,13 +6,13 @@
 import { assert, it } from "@effect/vitest";
 
 // domain
-import { articleNode, webPageNode, collectionNode, experienceItemNode, imageObject, breadcrumb, personEdge } from "../nodes";
+import { articleNode, breadcrumb, collectionNode, experienceItemNode, imageObject, PERSON_ID, personEdge, PUBLISHER_ID, webPageNode, WEBSITE_ID } from "../nodes";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
 
 // constants
-import { HOME_URL, PERSON_ID, PUBLISHER_ID, WEBSITE_ID } from "../constants";
+import { HOME_URL } from "../identity";
 
 const language: PreferredLanguage = "en";
 

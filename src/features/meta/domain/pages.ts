@@ -6,11 +6,32 @@ import { pageField } from "@/domain/helpers";
 
 // types
 import type { PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
-import type { StaticPageCopy, StaticPageType } from "./models";
 
 // constants
-import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH, HOME_TITLE, PERSON_DESCRIPTION, SITE_DESCRIPTION } from "./constants";
+import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/domain/constants";
+import { HOME_TITLE, PERSON_DESCRIPTION, SITE_DESCRIPTION } from "./identity";
 import { absoluteUrl } from "./urls";
+
+// --- Page copy models ---
+
+export type StaticPageType = "overview" | "education" | "contact";
+
+// Localized identity shared by every static page surface (head, twin, JSON-LD).
+export interface LocalizedCopy {
+  readonly pageName: string;
+  readonly description: string;
+  readonly preferredLanguage: PreferredLanguage;
+}
+
+// Fully resolved copy for one static page in one language.
+export interface StaticPageCopy extends LocalizedCopy {
+  readonly path: PagePath;
+  readonly mdHref: string;
+  readonly type: StaticPageType;
+  readonly seoTitle: string;
+  readonly intro: string;
+  readonly canonical: string;
+}
 
 interface StaticPageCopySource {
   readonly heading: string;

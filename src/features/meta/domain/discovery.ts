@@ -1,44 +1,44 @@
-// Discovery document content (robots.txt and sitemap.xml) as plain strings.
-// Purely generative: response envelopes and route handlers live in ../services/responses and
-// ../services/handlers.
+// The crawler-facing document surface this site publishes: the machine-readable discovery files,
+// the reusable content policy every one of them repeats, and the downloadable documents the
+// sitemap and the Markdown pages advertise. Declared in one module so no surface has to restate a
+// path, and so the policy that governs these documents lives beside the documents themselves.
+// The generated bodies live beside their own builders (./sitemap, ./robots).
 
-// constants
-import { CONTENT_SIGNAL, CRAWL_DELAY, DOWNLOADABLE_DOCUMENTS, LLMS_TXT_HREF, SITEMAP_HREF } from "./constants";
-import { STATIC_PAGE_PATHS } from "./pages";
-import { absoluteUrl, experiencePath } from "./urls";
+// services, features, and other libraries
+import { matchPreferredLanguage } from "@/domain/helpers";
 
-// --- robots.txt ---
+// types
+import type { PreferredLanguage } from "@/domain/models";
 
-const CONTENT_DIRECTIVES = ["Allow: /", "Allow: /*.md", "Disallow: /api", `Content-Signal: ${CONTENT_SIGNAL}`, `Crawl-delay: ${CRAWL_DELAY}`] as const;
+// --- Which document the reader gets ---
 
-export const ROBOTS_TXT = [
-  "# The same public-content and reuse policy applies to current and future crawlers",
-  "User-agent: *",
-  ...CONTENT_DIRECTIVES,
-  "",
-  `# See ${LLMS_TXT_HREF} for the Markdown page index`,
-  `Sitemap: ${absoluteUrl(SITEMAP_HREF)}`,
-  "",
-].join("\n");
+// Resolves the visitor's own CV file; both languages are advertised site-wide, but the header
+// nav offers the one that matches the reader.
+export const cvPdfHref = (preferredLanguage: PreferredLanguage) => matchPreferredLanguage(preferredLanguage, CV_EN_HREF, CV_PL_HREF);
 
-// --- sitemap.xml ---
+// --- Machine-readable discovery documents (GEO) ---
 
-// Static pages come from the shared catalogue; downloads are exactly the advertised documents.
-const STATIC_URLS = [...STATIC_PAGE_PATHS, ...DOWNLOADABLE_DOCUMENTS.map(({ href }) => href)].map((path) => absoluteUrl(path));
-const XML_ENTITIES: Readonly<Record<string, string>> = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" };
-const escapeXml = (value: string) => value.replace(/[&<>"']/g, (character) => XML_ENTITIES[character] ?? character);
+// Content signal defining crawler permissions across robots.txt and HTTP headers.
+export const CONTENT_SIGNAL = "search=yes, ai-input=yes, ai-train=yes";
 
-// No lastmod is emitted: authored dates are display strings, not trustworthy modification times.
-export const buildSitemapXml = (slugs: ReadonlyArray<string>) => {
-  const locs = new Set([...STATIC_URLS, ...slugs.map((slug) => absoluteUrl(experiencePath(slug)))]);
+export const LLMS_TXT_HREF = "/llms.txt";
+export const LLMS_FULL_TXT_HREF = "/llms-full.txt";
+export const SITEMAP_HREF = "/sitemap.xml";
+export const ROBOTS_TXT_HREF = "/robots.txt";
 
-  return [
-    '<?xml version="1.0" encoding="UTF-8"?>',
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-    ...Array.from(locs, (loc) => `<url><loc>${escapeXml(loc)}</loc></url>`),
-    "</urlset>",
-  ].join("\n");
-};
+// --- Downloadable documents ---
 
-// 503 fallback body served when experience slugs cannot be loaded.
-export const SITEMAP_UNAVAILABLE_XML = '<?xml version="1.0" encoding="UTF-8"?><error>Sitemap is temporarily unavailable.</error>';
+// Downloadable document links exposed to crawlers.
+export const CV_EN_HREF = "/my-cv.pdf";
+export const CV_PL_HREF = "/my-cv-pl.pdf";
+export const CERTIFICATES_HREF = "/my-certificates.pdf";
+
+// Downloadable files advertised by Markdown pages, discovery indexes and the sitemap.
+export const DOWNLOADABLE_DOCUMENTS = [
+  { label: "CV (English)", href: CV_EN_HREF },
+  { label: "CV (Polish)", href: CV_PL_HREF },
+  { label: "Certificates", href: CERTIFICATES_HREF },
+] as const;
+
+// The download paths alone, for the sitemap that lists every addressable document by URL.
+export const DOWNLOADABLE_DOCUMENT_PATHS = DOWNLOADABLE_DOCUMENTS.map(({ href }) => href);

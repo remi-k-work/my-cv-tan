@@ -6,15 +6,16 @@
 import { CACHEABLE_HEADERS, MACHINE_HEADERS, NOINDEX_HEADERS, UNAVAILABLE_HEADERS } from "./headers";
 
 // domain
-import { DEFAULT_LANGUAGE } from "../domain/constants";
-import { SITEMAP_UNAVAILABLE_XML } from "../domain/discovery";
+import { DEFAULT_LANGUAGE } from "../domain/languages";
+import { SITEMAP_UNAVAILABLE_XML } from "../domain/sitemap";
 
 const TXT_CONTENT_TYPE = "text/plain; charset=utf-8";
 const XML_CONTENT_TYPE = "application/xml; charset=utf-8";
 
 // These documents are the site's crawler instructions, published once in the source language the
 // AI indexes are built in — so the header names that language rather than repeating an independent
-// guess about it.
+// guess about it. The sitemap carries no such header: it lists URLs only, with no prose a reader
+// could be handed in the wrong language.
 const TXT_HEADERS = { ...MACHINE_HEADERS, "Content-Type": TXT_CONTENT_TYPE, "Content-Language": DEFAULT_LANGUAGE } as const;
 const SITEMAP_HEADERS = { ...MACHINE_HEADERS, "Content-Type": XML_CONTENT_TYPE } as const;
 

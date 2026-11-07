@@ -8,7 +8,7 @@ import { Effect, Option } from "effect";
 
 // meta (shared)
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
-import { CONTENT_SIGNAL } from "@/features/meta/domain/constants";
+import { CONTENT_SIGNAL } from "@/features/meta/domain/discovery";
 import { absoluteUrl } from "@/features/meta/domain/urls";
 import { txtResponse, txtUnavailableResponse } from "@/features/meta/services/responses";
 import { requireData, recoverDataFailure } from "@/features/data/domain/required";
@@ -52,8 +52,9 @@ it("pins a response to its URL language while retaining other cache metadata", a
 });
 
 it("a response that carries no Vary header stays Vary-free", async () => {
-  // Failure envelopes (404/503) are built without a Vary before pinning; the absent header must
-  // stay absent rather than being resurrected as an empty value
+  // A failure envelope inherits the negotiated document's Vary, so pinning has to strip it for a
+  // 404 exactly as it does for a 200 — and an absent header must stay absent rather than being
+  // resurrected as an empty value
   const bare = pinCacheVariant(new Response("# Gone", { status: 404, headers: { "Content-Type": "text/markdown; charset=utf-8" } }));
 
   assert.strictEqual(bare.status, 404);
@@ -184,7 +185,7 @@ it.effect("required-content failures map to non-cacheable 503s and valid missing
     assert.strictEqual(unavailableMarkdown.headers.get("X-Robots-Tag"), "noindex, follow");
 
     // The discovery documents recover through the same shared recovery, with a plain-text 503
-    const unavailableIndex = yield* recoverDataFailure("[LLMS.TXT]", () => txtUnavailableResponse("Unavailable"))(
+    const unavailableIndex = yield* recoverDataFailure(() => "[LLMS.TXT]", () => txtUnavailableResponse("Unavailable"))(
       requireData(Option.none(), "experience list")
     );
     assert.strictEqual(unavailableIndex.status, 503);

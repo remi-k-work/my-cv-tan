@@ -10,11 +10,10 @@ import { globalSocialImage, socialMeta } from "../social-meta";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
-import type { SocialImage } from "../models";
-import type { SocialMetaInput } from "../social-meta";
+import type { SocialImage, SocialMetaInput } from "../social-meta";
 
 // constants
-import { AUTHOR_URL, GLOBAL_SOCIAL_IMAGE, PUBLISHER_URL, SITE_NAME } from "../constants";
+import { AUTHOR_URL, GLOBAL_SOCIAL_IMAGE, PUBLISHER_URL, SITE_NAME } from "../identity";
 
 const language: PreferredLanguage = "en";
 

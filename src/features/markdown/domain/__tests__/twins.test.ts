@@ -1,17 +1,22 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
-import { buildContactMd, buildEducationMd, buildExperienceMd, buildHomeMd, buildNotFoundMd } from "../twins";
-import { AI_INDEX_MARKDOWN_LINKS, twinIndexLinks } from "../twin-nav";
-import { escapeMd, escapeMdInline, frontmatter, mdEmptyMarker, mdLink, twinDocument } from "../format";
+import { buildContactMd, buildEducationMd, buildHomeMd } from "../twins";
+import { buildExperienceMd, buildNotFoundMd } from "../detail-twin";
+import { AI_INDEX_MARKDOWN_LINKS, detailPagesSection, pagesSection } from "../twin-nav";
+import { escapeMd, escapeMdInline } from "../escape";
+import { frontmatter, mdEmptyMarker, mdLink, twinDocument } from "../format";
 
 import { STATIC_PAGES } from "@/features/meta/domain/pages";
 import { experienceSeo } from "@/features/meta/domain/experience-seo";
 
 // types
 import type { PagePath, PageTitles, PreferredLanguage, Translate } from "@/domain/models";
-import type { Experience } from "@/features/experience/domain/models";
+import type { Experience, ExperienceList } from "@/features/experience/domain/models";
 import type { ContactMdInput, EducationMdInput, HomeMdInput, NotFoundMdInput } from "../models";
+
+// meta (shared)
+import { experienceMarkdownPath, markdownTwinUrl } from "@/features/meta/domain/urls";
 
 const sampleExperience: Experience = {
   type: "e",
@@ -296,6 +301,41 @@ it("buildHomeMd groups work and projects and links to .md twins", () => {
   assert.notInclude(md, "Footer");
 });
 
+it("the home twin's two experience listings are one split: every experience exactly once", () => {
+  // Both listings are rendered from one partition, so the document advertises every experience in
+  // the list exactly once, under the kind it belongs to, in catalogue order. Splitting per section
+  // instead is how a listing could drop an entry, repeat one, or file it under the wrong kind
+  // without the other section being able to notice.
+  const experienceList: ExperienceList = [
+    { type: "e", slug: "job-a", year: "2024", role: "Dev", company: "Co", txt: "Work.", skillsUsed: ["TypeScript"], imageName: "" },
+    { type: "p", slug: "project-b", year: "2025", role: "Art", company: "Co", txt: "Play.", skillsUsed: ["React"], imageName: "" },
+    { type: "p", slug: "project-c", year: "2026", role: "Song", company: "Co", txt: "Sang.", skillsUsed: ["Effect"], imageName: "" },
+  ];
+  const md = homeTwin({ pageTitles: stablePageTitles, experienceList, preferredLanguage: "en", translate: translateEn });
+
+  const sectionOf = (title: string) => md.split(`## ${title}\n`)[1]?.split("\n## ")[0] ?? "";
+  const employment = sectionOf("Experience");
+  const projects = sectionOf("Portfolio Projects");
+
+  for (const { slug, type } of experienceList) {
+    const twin = `](${markdownTwinUrl(experienceMarkdownPath(slug), "en")})`;
+    const own = type === "e" ? employment : projects;
+    const other = type === "e" ? projects : employment;
+
+    assert.include(own, twin, `${slug} is listed under its own kind`);
+    assert.notInclude(other, twin, `${slug} is not filed under the other kind`);
+    // Exactly once in the whole document: the sibling index and the escape links never repeat it
+    assert.strictEqual(md.split(twin).length - 1, 1, `${slug} is advertised exactly once`);
+  }
+
+  // And nothing else: the two listings publish the whole list, so no section grew a third kind
+  const listed = [...employment.matchAll(/]\((https:\/\/[^)]+)\)/g), ...projects.matchAll(/]\((https:\/\/[^)]+)\)/g)].map(([, href]) => href);
+  assert.deepStrictEqual(
+    listed,
+    experienceList.map(({ slug }) => markdownTwinUrl(experienceMarkdownPath(slug), "en"))
+  );
+});
+
 it("home Markdown links encode experience slugs consistently", () => {
   const experience = { ...sampleExperience, slug: "my project" };
   const md = homeTwin({ pageTitles: stablePageTitles, experienceList: [experience], preferredLanguage: "en", translate: translateEn });
@@ -422,6 +462,9 @@ it("the contact twin advertises the same social profiles as the HTML page", () =
   assert.include(md, "Contact Form: https://www.remiforge.dev/contact (same page in HTML)");
   assert.include(md, `GitHub: https://github.com/remi-k-work`);
   assert.include(md, `LinkedIn: https://linkedin.com/in/remi-k-work`);
+  // The base location is one authored string routed through the dictionary, so the English twin and
+  // the AI index's "Based in" fact state the same constant and a Polish reader gets its own spelling
+  assert.include(md, "- Base: Rzeszów, Poland");
 
   const polish = contactTwin({ pageTitles: stablePageTitles, preferredLanguage: "pl", translate: translatePl });
   assert.include(polish, "## Kanały");
@@ -458,8 +501,8 @@ it("every static twin links its siblings and both AI indexes (the GEO crawl grap
   assert.include(detail, "[Home page](https://www.remiforge.dev/index.md?lang=en)");
 });
 
-it("twinIndexLinks excludes the linking page itself", () => {
-  const links = twinIndexLinks("/", "en", translateEn);
+it("pagesSection excludes the linking page itself", () => {
+  const links = pagesSection("/", "en", translateEn);
   assert.notInclude(links, "index.md");
   assert.include(links, "education.md?lang=en");
   assert.include(links, "contact.md?lang=en");
@@ -472,7 +515,7 @@ it("the twin graph enumerates the static pages from the one declaration every su
   const staticPaths = Object.keys(STATIC_PAGES) as ReadonlyArray<PagePath>;
 
   for (const path of staticPaths) {
-    const links = twinIndexLinks(path, "en", translateEn);
+    const links = pagesSection(path, "en", translateEn);
     // Every other static page plus the two AI indexes — nothing else, exactly once
     assert.strictEqual((links.match(/^- \[/gm) ?? []).length, staticPaths.length - 1 + AI_INDEX_MARKDOWN_LINKS.length);
     // The two indexes are exactly the advertised links, not a longer or shorter list
@@ -484,4 +527,21 @@ it("the twin graph enumerates the static pages from the one declaration every su
       assert.include(links, `${STATIC_PAGES[sibling].mdHref}?lang=en`);
     }
   }
+});
+
+it("every twin closes with the one shared Pages section, translated with the reader's language", () => {
+  // The section is the twin's only outbound crawl-graph edge set, and it is the same section both
+  // the static twins and the detail twin print: one heading key, one sibling rule, one link list.
+  const home = pagesSection("/", "pl", translatePl);
+  assert.include(home, "## Strony");
+  assert.notInclude(home, `${STATIC_PAGES["/"].mdHref}?lang=pl`);
+
+  const detail = detailPagesSection("pl", translatePl);
+  assert.include(detail, "## Strony");
+  assert.include(detail, "[Strona główna](https://www.remiforge.dev/index.md?lang=pl)");
+  for (const index of AI_INDEX_MARKDOWN_LINKS) assert.include(detail, `- ${index}`);
+
+  // A polish twin's own chapter never labels the section in English
+  assert.notInclude(home, "## Pages");
+  assert.notInclude(detail, "## Pages");
 });

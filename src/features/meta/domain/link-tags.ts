@@ -8,7 +8,8 @@ import type { LinkTag } from "./models";
 import type { PreferredLanguage } from "@/domain/models";
 
 // constants
-import { DEFAULT_LANGUAGE, LLMS_FULL_TXT_HREF, LLMS_TXT_HREF, SITEMAP_HREF } from "./constants";
+import { LLMS_FULL_TXT_HREF, LLMS_TXT_HREF, SITEMAP_HREF } from "./discovery";
+import { DEFAULT_LANGUAGE } from "./languages";
 import { absoluteUrl, markdownTwinUrl, withLanguageParam } from "./urls";
 import { SITE_LANGUAGES } from "@/domain/constants";
 

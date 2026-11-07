@@ -1,69 +1,32 @@
-// Security-sensitive Markdown serialization toolkit: the escape engine, YAML frontmatter
-// writer, inline/block builders, and the shared link projections every twin and AI index
-// document is assembled from. Twin declarations and page-specific builders live in ./twins.
+// The Markdown document-assembly toolkit: the YAML frontmatter writer, the inline/block builders,
+// and the shared link projections every twin and AI index document is assembled from. The
+// security-sensitive escape engine these builders apply lives in ./escape; each document builder
+// lives beside the family it publishes (./twins, ./detail-twin, ./indexes).
 
 // meta (shared)
-import { Array, pipe } from "effect";
-import { absoluteUrl, encodeParens } from "@/features/meta/domain/urls";
+import { absoluteUrl, encodeDestination } from "@/features/meta/domain/urls";
+
+// domain
+import { escapeMdInline } from "./escape";
 
 // types
 import type { Translate } from "@/domain/models";
-
-// --- Markdown formatting primitives ---
-
-// Each pass only ever inserts a backslash, so escaping can never delete an authored character —
-// the invariant the regression guards pin for every rule below.
-const NORMALIZE_RULES: ReadonlyArray<readonly [RegExp, string]> = [
-  [/\r\n?/g, "\n"],
-  [/\\/g, "\\\\"],
-];
-
-const INLINE_RULES: ReadonlyArray<readonly [RegExp, string]> = [
-  [/!(?=\[)/g, "\\!"],
-  [/([`*[\]<])/g, "\\$1"],
-];
-
-// Headings, blockquotes and list markers bind at a line start indented by at most three spaces.
-// Four spaces — or a tab — opens an indented code block instead, where a backslash is content
-// rather than an escape: neutralising a marker there would print a stray "\" the author never
-// wrote. The thematic-break and setext rules below already carry the same bound.
-const BLOCK_RULES: ReadonlyArray<readonly [RegExp, string]> = [
-  [/^( {0,3})([#>])/gm, "$1\\$2"],
-  [/^( {0,3})([-+])(?=\s|$)/gm, "$1\\$2"],
-  [/^( {0,3})(\d+)([.)])(?=\s|$)/gm, "$1$2\\$3"],
-  [/^( {0,3})([-_])(?=(?:\s*\2){2,}\s*$)/gm, "$1\\$2"],
-  [/^( {0,3})([-=])(?=\2*\s*$)/gm, "$1\\$2"],
-  // A GFM delimiter row is a line of only dashes, colons, pipes and whitespace; escaping its
-  // first dash makes that row's leading cell invalid, so no table can form. Requiring the rest
-  // of the line to be delimiter characters too leaves prose that merely starts with "|" alone.
-  // A row indented four spaces is an indented code block, where a backslash is content rather
-  // than an escape.
-  [/^(?! {4})([ |:]*)(-)(?=[ \t|:-]*$)/gm, "$1\\$2"],
-];
-
-// Emphasis markers bind at a word boundary rather than at a line start, so they are escaped per
-// word: a strikethrough run keeps every tilde the author wrote, and an intraword underscore stays
-// literal the way CommonMark reads it.
-const EMPHASIS_RULES: ReadonlyArray<readonly [RegExp, string]> = [
-  [/(?<![\p{L}\p{N}])_|_(?![\p{L}\p{N}])/gu, "\\$&"],
-  [/~~/g, "\\~\\~"],
-];
-
-// Authored prose is normalized to one blank line between blocks, after every escape pass has run.
-const BLANK_LINE_RULE: readonly [RegExp, string] = [/\n{3,}/g, "\n\n"];
-
-const MD_ESCAPE_RULES = [...NORMALIZE_RULES, ...INLINE_RULES, ...BLOCK_RULES, ...EMPHASIS_RULES, BLANK_LINE_RULE];
-const DEMOTE_HEADINGS = /^(#{1,4})(?= )/gm;
-
-export const escapeMd = (text: string) =>
-  Array.reduce(MD_ESCAPE_RULES, text, (escaped, [pattern, replacement]) => escaped.replace(pattern, replacement)).trim();
-
-export const escapeMdInline = (text: string) => escapeMd(text.replace(/[\r\n]+/g, " "));
-export const demoteHeadings = (markdown: string) => markdown.replace(DEMOTE_HEADINGS, (hashes) => `${hashes}##`);
+import type { MarkdownTwin } from "./models";
 
 const FRONTMATTER_DELIMITER = "---";
+const DEMOTE_HEADINGS = /^(#{1,4})(?= )/gm;
+
+// A block whose only content is whitespace still renders its opening marker — a stray `>` or a
+// heading with no text — which is a block a parser has to reconcile against no content. Both
+// forms count as empty, so mdBody's filter drops them instead.
+const isBlank = (text: string) => text.trim() === "";
+
+// JSON quoting is valid for YAML double-quoted scalars except for DEL, the C1 controls and the two
+// Unicode line separators: a value carrying one of them would produce frontmatter a YAML parser
+// rejects outright, which is a document an indexer cannot read at all.
 const YAML_UNSAFE_CHARACTERS = /[\u007f-\u009f\u2028\u2029]/g;
 
+// Quotes a value as a YAML double-quoted scalar, escaping the characters JSON.stringify leaves raw.
 const yamlValue = (value: string) => JSON.stringify(value).replace(YAML_UNSAFE_CHARACTERS, (char) => `\\u${char.charCodeAt(0).toString(16).padStart(4, "0")}`);
 
 const yamlFields = (fields: Readonly<Record<string, string>>) =>
@@ -74,31 +37,23 @@ const yamlFields = (fields: Readonly<Record<string, string>>) =>
 // The twin's identity block, delimited for a document that is the twin itself.
 export const frontmatter = (fields: Readonly<Record<string, string>>) => [FRONTMATTER_DELIMITER, yamlFields(fields), FRONTMATTER_DELIMITER].join("\n");
 
-// --- Twin documents ---
-
-// A twin in two parts: the identity facts every surface restates, and the body. They stay apart
-// because the two publishings of a twin need them apart — the served twin carries the facts as
-// YAML frontmatter above the body, while the concatenated companion republishes them fenced,
-// because a raw `---` block inside a document is not frontmatter: it parses as a thematic break,
-// and its closing line, sitting directly under the last fact, turns that fact into a setext
-// heading at the same depth as the companion's own section headings.
-export interface MarkdownTwin {
-  readonly facts: Readonly<Record<string, string>>;
-  readonly body: string;
-}
-
 // The twin as served: its facts as frontmatter, then its body.
 export const twinDocument = ({ facts, body }: MarkdownTwin) => mdDocument([frontmatter(facts), body]);
 
+// The demotion a twin's own headline takes when it is republished inside another document: the
+// companion wraps twins under its own site H1, so a twin heading is demoted two levels
+// (H1 → H3, H2 → H4) to keep a single-document hierarchy. `#{1,4}` is the closed set the twin
+// builders can emit, so nothing deeper is ever left sitting above a section it belongs to.
+export const demoteHeadings = (markdown: string) => markdown.replace(DEMOTE_HEADINGS, (hashes) => `${hashes}##`);
+
 // An embedded block must fence with more backticks than the longest run it contains, or an authored
 // value carrying that run closes the fence and the remaining facts publish as document prose.
-const fenceFor = (content: string) =>
-  pipe(
-    Array.fromIterable(content.matchAll(/`+/g)),
-    Array.map((match) => match[0].length),
-    Array.reduce(0, Math.max),
-    (longest) => "`".repeat(Math.max(3, longest + 1))
-  );
+const fenceFor = (content: string) => {
+  const runs = content.match(/`+/g) ?? [];
+  const longest = runs.reduce((longest, run) => Math.max(longest, run.length), 0);
+
+  return "`".repeat(Math.max(3, longest + 1));
+};
 
 // The twin's facts, fenced for embedding inside another document.
 export const fencedFacts = (facts: Readonly<Record<string, string>>) => {
@@ -108,8 +63,10 @@ export const fencedFacts = (facts: Readonly<Record<string, string>>) => {
   return `${fence}yaml\n${fields}\n${fence}`;
 };
 
-export const mdHeading = (level: 1 | 2 | 3, text: string) => `${"#".repeat(level)} ${escapeMdInline(text)}`;
-export const mdQuote = (text: string) => `> ${escapeMdInline(text)}`;
+export const mdHeading = (level: 1 | 2 | 3, text: string) => (isBlank(text) ? "" : `${"#".repeat(level)} ${escapeMdInline(text)}`);
+// A pull quote over an empty description is an empty blockquote, which reads as a stray `>` marker
+// a parser has to reconcile; mdBody drops the empty block instead.
+export const mdQuote = (text: string) => (isBlank(text) ? "" : `> ${escapeMdInline(text)}`);
 export const mdBulletList = (items: ReadonlyArray<string>) => items.map((item) => `- ${item}`).join("\n");
 export const mdFact = (label: string, value: string) => `${escapeMdInline(label)}: ${escapeMdInline(value)}`;
 export const mdBody = (blocks: ReadonlyArray<string>) => blocks.filter(Boolean).join("\n\n");
@@ -117,15 +74,15 @@ export const mdTitledSection = (title: string, body: string) => mdBody([mdHeadin
 export const mdDocument = (blocks: ReadonlyArray<string>) => `${mdBody(blocks)}\n`;
 export const mdEmptyMarker = (translate: Translate) => `_${escapeMdInline(translate("No entries."))}_`;
 
-export const mdLink = (label: string, href: string) => `[${escapeMdInline(label)}](${encodeParens(href)})`;
+export const mdLink = (label: string, href: string) => `[${escapeMdInline(label)}](${encodeDestination(href)})`;
 
 export const translatedLink = (label: string, href: string, translate: Translate) => mdLink(translate(label), href);
 
 export const mdIndexEntry = (label: string, canonical: string, twinUrl: string, summary?: string) => {
   const beforeTwin = summary === undefined ? "" : `${escapeMdInline(summary)} `;
   // The twin URL is an embedded destination exactly like mdLink's href, so it takes the same
-  // paren encoding: a raw ")" would otherwise close the destination and truncate the entry.
-  return `${mdLink(label, canonical)}: ${beforeTwin}Markdown: ${encodeParens(twinUrl)}`;
+  // encoding: a raw ")" or space would otherwise close or truncate the entry.
+  return `${mdLink(label, canonical)}: ${beforeTwin}Markdown: ${encodeDestination(twinUrl)}`;
 };
 
 // --- Shared link projections ---

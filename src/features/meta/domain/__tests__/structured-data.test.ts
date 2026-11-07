@@ -3,10 +3,10 @@ import { assert, it } from "@effect/vitest";
 import { Option, Schema, pipe } from "effect";
 import { contactHead, educationHead, experienceHead, homeHead } from "../page-head";
 import { ROOT_HEAD } from "../root-head";
-import { jsonLdGraph } from "../merge";
-import { siteNodes } from "../entities";
+import { jsonLdGraph, siteNodes } from "../graph";
+import { PERSON_ID, PROFILE_ID } from "../nodes";
 
-import { PERSON_DESCRIPTION, SITE_DESCRIPTION, PERSON_ID, PROFILE_ID } from "../constants";
+import { PERSON_DESCRIPTION, SITE_DESCRIPTION } from "../identity";
 
 // types
 import type { PageTitles } from "@/domain/models";
@@ -92,7 +92,7 @@ it("the root head carries no JSON-LD, so a page's single block is not duplicated
   // TanStack concatenates the scripts of every match in the chain rather than replacing them, so a
   // root-level graph would render beside a page's own. Asserting the root declares none is what
   // keeps the "exactly one block per page" invariant below from silently regressing (the compile
-  // guard for it lives on RootHeadContract in root-head.ts).
+  // guard for it lives on the RootHead type in root-head.ts).
   assert.notInclude(JSON.stringify(ROOT_HEAD), "ld+json");
   // The root still declares the site-wide facts every page shares: icons, identity links, and the
   // AI discovery documents an unmatched route needs to point AI fetchers at the document graph
@@ -158,6 +158,25 @@ it("every page head emits exactly one JSON-LD block, merging the site entities w
   const first = homeHead({ pageTitles: stablePageTitles, experienceList: [sampleExperience], preferredLanguage: "en" });
   const second = homeHead({ pageTitles: stablePageTitles, experienceList: [sampleExperience], preferredLanguage: "en" });
   assert.strictEqual(first.scripts?.[0]?.children, second.scripts?.[0]?.children);
+});
+
+it("merging a page edge into the site entities leaves the shared declaration untouched", () => {
+  // The invariance above runs the homepage, whose page graph declares no edge against an existing
+  // @id, so it never exercises the merge branch. Education does: its personEdge folds an alumniOf
+  // edge into the Person node siteNodes already declares. That merge must copy rather than write in
+  // place, or the shared module constant accumulates the edge and leaks it into the next document
+  // rendered from the same declaration — the one way a site-wide head could carry one page's
+  // structured data into another's.
+  const declaration = JSON.stringify(siteNodes);
+
+  const first = educationHead({ pageTitles: stablePageTitles, educationList: sampleEducation, preferredLanguage: "pl" });
+  const second = educationHead({ pageTitles: stablePageTitles, educationList: sampleEducation, preferredLanguage: "pl" });
+
+  assert.strictEqual(JSON.stringify(siteNodes), declaration);
+  // The merging page still renders byte-identical on a second request, edge included
+  assert.strictEqual(first.scripts?.[0]?.children, second.scripts?.[0]?.children);
+  // ...and the merged Person carries its edge exactly once, not once per render
+  assert.deepStrictEqual(personOf(graphOf(first.scripts?.[0]?.children))?.alumniOf, [{ "@id": "https://www.remiforge.dev/education#school-1" }]);
 });
 
 it("the @graph merge folds every repeated @id into one node, first declaration first", () => {

@@ -3,7 +3,7 @@
 // other token the runtime put in Vary (for example Accept-Encoding for compression) still applies.
 
 // meta (shared)
-import { NEGOTIATION_VARY_TOKENS } from "@/features/meta/domain/constants";
+import { NEGOTIATION_VARY_TOKENS } from "@/features/meta/domain/languages";
 
 // The negotiation tokens are single-sourced with documentHeaders, so this strip removes exactly the
 // Vary inputs the twin advertised — never a token a shared cache still needs, never one it doesn't.

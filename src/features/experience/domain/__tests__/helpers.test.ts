@@ -2,7 +2,7 @@
 import { assert, describe, it } from "@effect/vitest";
 
 // domain
-import { excerpt, haveSameExperienceSlugs } from "../helpers";
+import { excerpt, haveSameExperienceSlugs, isEmployment } from "../helpers";
 
 // constants
 import { EXCERPT_SUFFIX } from "../constants";
@@ -44,5 +44,14 @@ describe("haveSameExperienceSlugs", () => {
     assert.isFalse(haveSameExperienceSlugs(english, [...english, { slug: "project-c" }]));
     assert.isFalse(haveSameExperienceSlugs(english, [{ slug: "role-a" }, { slug: "role-a" }]));
     assert.isFalse(haveSameExperienceSlugs([{ slug: "role-a" }, { slug: "role-a" }], english));
+  });
+});
+
+describe("isEmployment", () => {
+  it("names the kind the two experience types stand for", () => {
+    // The head's article section, the JSON-LD subject node and the twin's fact type all label one of
+    // the two kinds, so the label they read has to answer for both and for nothing else.
+    assert.isTrue(isEmployment({ type: "e" }));
+    assert.isFalse(isEmployment({ type: "p" }));
   });
 });

@@ -12,11 +12,13 @@ export type PageTitlesList = typeof PageTitlesList.Type;
 export type Translate = (source: string) => string;
 
 // constants
-import { SITE_LANGUAGES } from "./constants";
+import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH, SITE_LANGUAGES } from "./constants";
 
 export const PreferredLanguage = Schema.Literals(SITE_LANGUAGES);
 
-const PagePath = Schema.Literals(["/", "/education", "/contact"]);
+// The route list above is the vocabulary, so a path the schema accepted but no constant names
+// would be a page no surface could address.
+const PagePath = Schema.Literals([HOME_PATH, EDUCATION_PATH, CONTACT_PATH]);
 const PageTitle = Schema.Struct({
   eyebrow: Schema.Trim.check(Schema.isNonEmpty()),
   heading: Schema.Trim.check(Schema.isNonEmpty()),

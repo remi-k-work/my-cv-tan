@@ -1,38 +1,40 @@
 // AI index documents (llms.txt / llms-full.txt) and their shared sections/copy.
-// Twin declarations and builders live in ./twins.
+// The experience listing sections both documents print live in ./experience-lines; twin
+// declarations and builders live there and in ./detail-twin.
 
 // services, features, and other libraries
+import { partitionExperiences } from "@/features/experience/domain/helpers";
+
+// types
 import type { ExperienceList } from "@/features/experience/domain/models";
 
 // meta (shared)
 import {
-  CONTENT_SIGNAL,
-  DEFAULT_LANGUAGE,
-  DOWNLOADABLE_DOCUMENTS,
-  HOME_LOCALITY,
   HOME_COUNTRY,
-  HOME_COUNTRY_NAME,
-  HOME_PATH,
+  HOME_LOCATION,
   HOME_TITLE,
   JOB_TITLE,
   KNOWS_ABOUT,
   PERSON_DESCRIPTION,
-  ROBOTS_TXT_HREF,
-  SITE_LANGUAGE_NAMES,
   SITE_NAME,
   SITE_URL,
-  SITEMAP_HREF,
   SOCIAL_PROFILES,
-} from "@/features/meta/domain/constants";
-import { SITE_LANGUAGES } from "@/domain/constants";
+} from "@/features/meta/domain/identity";
+import { CONTENT_SIGNAL, DOWNLOADABLE_DOCUMENTS, ROBOTS_TXT_HREF, SITEMAP_HREF } from "@/features/meta/domain/discovery";
+import { DEFAULT_LANGUAGE, SITE_LANGUAGE_NAMES } from "@/features/meta/domain/languages";
+import { HOME_PATH, SITE_LANGUAGES } from "@/domain/constants";
 import { STATIC_PAGES } from "@/features/meta/domain/pages";
-import { LANG_PARAM, absoluteUrl, markdownTwinUrl } from "@/features/meta/domain/urls";
+import { LANG_PARAM, absoluteUrl, encodeDestination, markdownTwinUrl } from "@/features/meta/domain/urls";
 import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/link-tags";
 
+// domain
+import { SOURCE_COPY } from "./copy";
+import { experienceLines } from "./experience-lines";
+
 // formatting primitives
+import { escapeMd, escapeMdInline } from "./escape";
 import {
   demoteHeadings,
-  escapeMd,
   fencedFacts,
   mdBody,
   mdBulletList,
@@ -46,11 +48,8 @@ import {
   mdQuote,
   mdTitledSection,
 } from "./format";
-
-// domain
 import type { TwinData } from "./models";
 import { PAGE_ENTRIES, allEntries } from "./catalogue";
-import { SOURCE_COPY, experienceLines } from "./twins";
 
 // --- Shared AI Index Sections and Copy ---
 
@@ -63,13 +62,16 @@ const LANGUAGE_PINS = PINNABLE_LANGUAGES.map(
   (language) => `Append \`?${LANG_PARAM}=${language}\` to any \`.md\` URL to request ${SITE_LANGUAGE_NAMES[language]} explicitly`
 );
 
-const AI_NOTES = [
+// The keys every twin's frontmatter carries, in the order `twinIdentity` writes them. The reuse
+// note below names them to an AI reader, so the set is compared against the built facts in
+// ./__tests__ rather than trusted to stay in step on its own.
+export const AI_NOTES = [
   `Reuse is permitted for search, AI input and AI training (\`Content-Signal: ${CONTENT_SIGNAL}\`).`,
   `Markdown responses follow the request's language preferences. ${LANGUAGE_PINS.join("; ")}; ${SITE_LANGUAGE_NAMES[DEFAULT_LANGUAGE]} is the fallback when no supported preference is present.`,
   "Every page has a machine-readable Markdown twin; fetch one linked `.md` page at a time, or the single-request full-content document for everything at once.",
   "Always cite the clean canonical HTML URL from each document's frontmatter (`canonical:`), not the `.md` URL.",
   "Structured data (JSON-LD) is embedded in every page head.",
-  "Every twin states its headline facts as frontmatter (`title`, `description`, `type`, `lang`, `canonical`), so a document can be indexed without reading the body.",
+  "Every twin states its headline facts as frontmatter (`title`, `description`, `author`, `canonical`, `lang`, `type`), so a document can be indexed without reading the body.",
 ] as const;
 
 const SINGLE_REQUEST_NOTE = `The complete content of every page is also available in a single request: ${LLMS_FULL_TXT_INDEX.url}.`;
@@ -82,7 +84,7 @@ const ABOUT_SECTION = mdTitledSection(
       mdFact("Name", SITE_NAME),
       mdFact("Website", SITE_URL),
       mdFact("Role", `${JOB_TITLE} (self-taught)`),
-      mdFact("Based in", `${HOME_LOCALITY}, ${HOME_COUNTRY_NAME} (${HOME_COUNTRY})`),
+      mdFact("Based in", `${HOME_LOCATION} (${HOME_COUNTRY})`),
       mdFact("Site languages", Object.values(SITE_LANGUAGE_NAMES).join(" and ")),
       mdFact("Focus", KNOWS_ABOUT.join(", ")),
     ]),
@@ -131,19 +133,24 @@ const LANGUAGE_VARIANTS_SECTION = mdTitledSection(
 );
 
 // Builds the llms.txt index document.
-export const buildLlmsTxt = (experienceList: ExperienceList) =>
-  mdDocument([
+export const buildLlmsTxt = (experienceList: ExperienceList) => {
+  // One split for both listings, under this document's own section titles: the same partition the
+  // home twin renders, so the two surfaces cannot group an experience differently.
+  const [employment, projects] = partitionExperiences(experienceList);
+
+  return mdDocument([
     ...SITE_OPENING,
     ABOUT_SECTION,
     PAGES_SECTION,
-    mdTitledSection("Work Experience", experienceLines({ experienceList, type: "e", ...SOURCE_COPY, entry: "canonical" })),
-    mdTitledSection("Portfolio Projects", experienceLines({ experienceList, type: "p", ...SOURCE_COPY, entry: "canonical" })),
+    mdTitledSection("Work Experience", experienceLines({ experiences: employment, ...SOURCE_COPY, entry: "canonical" })),
+    mdTitledSection("Portfolio Projects", experienceLines({ experiences: projects, ...SOURCE_COPY, entry: "canonical" })),
     LANGUAGE_VARIANTS_SECTION,
     PROFILES_SECTION,
     DISCOVERY_SECTION,
     OPTIONAL_SECTION,
     INDEX_NOTES_SECTION,
   ]);
+};
 
 // Builds the llms-full.txt single-request concatenated companion document.
 export const buildLlmsFullTxt = ({ pageTitles, experienceList, educationList }: TwinData) => {
@@ -161,7 +168,10 @@ export const buildLlmsFullTxt = ({ pageTitles, experienceList, educationList }: 
     ...documents.map(({ name, canonical, twinUrl, render }) => {
       const twin = render({ pageTitles, experienceList, educationList });
 
-      return mdBody([mdHeading(2, name), `Source: ${canonical}`, `Markdown: ${twinUrl}`, fencedFacts(twin.facts), demoteHeadings(twin.body)]);
+      // The canonical is a site-derived URL, so a slug whose first or last character is `_`
+      // would otherwise read as emphasis and put half the citation inside it: the same inline
+      // escape every other content line takes.
+      return mdBody([mdHeading(2, name), `Source: ${escapeMdInline(canonical)}`, `Markdown: ${encodeDestination(twinUrl)}`, fencedFacts(twin.facts), demoteHeadings(twin.body)]);
     }),
     COMPANION_NOTES_SECTION,
   ]);

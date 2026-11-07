@@ -13,7 +13,8 @@ import { sitemapResponse, sitemapUnavailableResponse, txtResponse } from "./resp
 
 // constants
 import { SITE_LANGUAGES } from "@/domain/constants";
-import { ROBOTS_TXT, buildSitemapXml } from "../domain/discovery";
+import { ROBOTS_TXT } from "../domain/robots";
+import { buildSitemapXml } from "../domain/sitemap";
 
 // robots.txt is a static document: no datasets, no async work — but it goes through the same
 // plumbing as the sitemap so the strip-visitor-state contract is decided in exactly one place.
@@ -31,7 +32,7 @@ const sitemapDocument = Effect.gen(function* () {
   const slugs = lists.flatMap((list) => list.map(({ slug }) => slug));
 
   return sitemapResponse(buildSitemapXml(slugs));
-}).pipe(recoverDataFailure("[SITEMAP.XML]", sitemapUnavailableResponse), Effect.withSpan("sitemapDocument"));
+}).pipe(recoverDataFailure(() => "[SITEMAP.XML]", sitemapUnavailableResponse), Effect.withSpan("sitemapDocument"));
 
 // The sitemap is one public, visitor-independent document, so its route never keeps the locale
 // cookie the negotiation middleware writes.

@@ -1,11 +1,10 @@
-// Strongly-typed head metadata and structured data models.
+// The HTML head element contract: the shapes TanStack Router's `head()` results are built from,
+// and nothing else. A head is a flat set of document elements, so this module has no dependencies
+// — the input contracts each builder consumes are declared by that builder, beside the head it
+// builds: the social card's in ./social-meta, the detail page's in ./experience-seo, and the
+// static pages' in ./page-head.
 
-// types
-import type { Experience } from "@/features/experience/domain/models";
-import type { PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
-import type { ExperienceSeo } from "./experience-seo";
-
-// --- HTML Head & Link Tags ---
+// --- HTML Head Elements ---
 
 // Discriminated union of valid <meta> tags.
 export type MetaTag =
@@ -38,67 +37,12 @@ export interface JsonLdNode {
 
 export type JsonLdNodes = ReadonlyArray<JsonLdNode>;
 
-// Head elements consumed by TanStack Router route head() functions.
+// Head elements consumed by TanStack Router route head() functions. The arrays are deliberately
+// mutable: the framework's expected head shape is `Array<...>`, so a readonly contract here would
+// be rejected at every route that returns this type. The builders still hand back fresh arrays,
+// so no caller can reach another page's elements through one head.
 export interface PageHead {
   readonly meta: Array<MetaTag>;
   readonly links: Array<LinkTag>;
   readonly scripts: Array<JsonLdScript>;
-}
-
-// TanStack route head match chain providing loader data.
-export type MatchChain = ReadonlyArray<{
-  readonly loaderData?: unknown;
-  readonly status?: "pending" | "success" | "error" | "notFound";
-  readonly _notFound?: boolean;
-}>;
-
-// Verified facts about a published image file.
-export interface SocialImageFacts {
-  readonly src: string;
-  readonly mime: "image/jpeg" | "image/webp";
-  readonly width: number;
-  readonly height: number;
-}
-
-// Image facts paired with alt text describing the specific card picture.
-export interface SocialImage extends SocialImageFacts {
-  readonly alt: string;
-}
-
-// Input for experience detail page head builder.
-export interface ExperienceHeadInput {
-  readonly experience: Experience;
-  readonly preferredLanguage: PreferredLanguage;
-}
-
-// Input for static page head builders.
-export interface StaticPageHeadInput {
-  readonly pageTitles: PageTitles;
-  readonly preferredLanguage: PreferredLanguage;
-}
-
-// The subset of a published experience identity the JSON-LD graph restates. Narrower than the
-// full ExperienceSeo so the graph cannot silently start depending on the twin's URL fields, and
-// derived from it so the two can never spell those fields differently.
-export type ExperienceGraphInput = Omit<ExperienceSeo, "canonical" | "markdownPath">;
-
-// --- Static page copy ---
-
-export type StaticPageType = "overview" | "education" | "contact";
-
-// Localized identity shared by every static page surface (head, twin, JSON-LD).
-export interface LocalizedCopy {
-  readonly pageName: string;
-  readonly description: string;
-  readonly preferredLanguage: PreferredLanguage;
-}
-
-// Fully resolved copy for one static page in one language.
-export interface StaticPageCopy extends LocalizedCopy {
-  readonly path: PagePath;
-  readonly mdHref: string;
-  readonly type: StaticPageType;
-  readonly seoTitle: string;
-  readonly intro: string;
-  readonly canonical: string;
 }

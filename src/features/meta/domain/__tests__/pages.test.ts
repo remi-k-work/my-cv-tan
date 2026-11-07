@@ -10,7 +10,7 @@ import { staticPageCopy } from "../pages";
 import { STATIC_PAGES, STATIC_PAGE_PATHS } from "../pages";
 
 // constants
-import { HOME_PATH, EDUCATION_PATH, CONTACT_PATH } from "../constants";
+import { HOME_PATH, EDUCATION_PATH, CONTACT_PATH } from "@/domain/constants";
 
 // types
 import type { PageTitles } from "@/domain/models";

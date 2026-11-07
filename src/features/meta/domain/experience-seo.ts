@@ -9,11 +9,19 @@ import { excerpt, experienceHeadline } from "@/features/experience/domain/helper
 import { absoluteUrl, experienceMarkdownPath, experiencePath } from "./urls";
 
 // constants
-import { META_DESCRIPTION_LENGTH } from "./constants";
+import { META_DESCRIPTION_LENGTH } from "./identity";
+import type { SocialImageFacts } from "./identity";
 import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain/constants";
 
 // types
-import type { ExperienceHeadInput, SocialImageFacts } from "./models";
+import type { PreferredLanguage } from "@/domain/models";
+import type { Experience } from "@/features/experience/domain/models";
+
+// Input for the experience detail page head builder and the SEO record below.
+export interface ExperienceHeadInput {
+  readonly experience: Experience;
+  readonly preferredLanguage: PreferredLanguage;
+}
 
 // Resolves screenshot dimensions and absolute URL when an image name is provided.
 export const experienceScreenshot = (imageName: string): Option.Option<SocialImageFacts> => {
@@ -40,6 +48,13 @@ export interface ExperienceSeo extends ExperienceHeadInput {
   // Verified screenshot facts, or none when the page publishes no image.
   readonly screenshot: Option.Option<SocialImageFacts>;
 }
+
+// The subset of a published experience identity the JSON-LD graph restates. Narrower than the
+// full ExperienceSeo so the graph cannot silently start depending on the twin's URL fields, and
+// derived from it so the two can never spell those fields differently. It lives beside the record
+// it is derived from, so the graph reads the identity from its owner rather than through the
+// shared model barrel.
+export type ExperienceGraphInput = Omit<ExperienceSeo, "canonical" | "markdownPath">;
 
 export const experienceSeo = ({ experience, preferredLanguage }: ExperienceHeadInput): ExperienceSeo => {
   const path = experiencePath(experience.slug);

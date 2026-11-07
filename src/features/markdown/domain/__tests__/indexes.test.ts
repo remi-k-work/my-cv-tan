@@ -4,13 +4,18 @@
 
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-import { buildLlmsFullTxt, buildLlmsTxt, DISCOVERY_LINES, SITE_OPENING, unavailableIndexBody } from "../indexes";
-import { escapeMd } from "../format";
-import { unavailableMarkdownBody } from "../twins";
+import { AI_NOTES, buildLlmsFullTxt, buildLlmsTxt, DISCOVERY_LINES, SITE_OPENING, unavailableIndexBody } from "../indexes";
+import { escapeMd } from "../escape";
+import { buildExperienceMd } from "../detail-twin";
+import { buildHomeMd, unavailableMarkdownBody } from "../twins";
+import { twinDocument } from "../format";
+import { SOURCE_COPY } from "../copy";
 
 // meta (shared)
-import { PERSON_DESCRIPTION, SITE_LANGUAGE_NAMES } from "@/features/meta/domain/constants";
+import { PERSON_DESCRIPTION } from "@/features/meta/domain/identity";
+import { SITE_LANGUAGE_NAMES } from "@/features/meta/domain/languages";
 import { LANG_PARAM } from "@/features/meta/domain/urls";
+import { experienceSeo } from "@/features/meta/domain/experience-seo";
 
 // constants
 import { SITE_LANGUAGES } from "@/domain/constants";
@@ -18,6 +23,7 @@ import { SITE_LANGUAGES } from "@/domain/constants";
 // types
 import type { PageTitles } from "@/domain/models";
 import type { Experience } from "@/features/experience/domain/models";
+import type { MarkdownTwin } from "../models";
 
 const sampleExperience: Experience = {
   type: "e",
@@ -147,8 +153,67 @@ it("the index opening escapes its bio the way every other content string is esca
   assert.include(buildLlmsTxt([]), PERSON_DESCRIPTION);
 });
 
-it("both AI indexes carry the same single-sourced reuse notes", () => {
-  const index = buildLlmsTxt([sampleExperience]);
+it("the reuse note names the frontmatter facts every twin actually publishes", () => {
+  // The note is the one place an AI reader is told which keys to read a document's facts from.
+  // A key it names that no twin publishes guides the reader to a field that is not there, and a
+  // key every twin publishes that the note omits is never read at all — so the claim in the note
+  // and the facts the builders emit are compared rather than trusted to agree.
+  const factsNote = AI_NOTES.find((note) => note.startsWith("Every twin states its headline facts"));
+  assert.isDefined(factsNote, "the reuse notes say nothing about frontmatter");
+
+  const claimedKeys = factsNote!.match(/`([^`]+)`/g)!.map((key) => key.slice(1, -1));
+  // The set both kinds of twin share: a static twin's own kind and the detail twin's role, company,
+  // year and skills are this document's own extras, not the headline facts the note describes.
+  const twins: ReadonlyArray<MarkdownTwin> = [
+    buildHomeMd({ ...SOURCE_COPY, pageTitles: stablePageTitles, experienceList: [sampleExperience] }),
+    buildExperienceMd({ seo: experienceSeo({ experience: sampleExperience, preferredLanguage: "en" }), translate: translateEn }),
+  ];
+
+  for (const key of claimedKeys) {
+    for (const twin of twins) assert.isTrue(key in twin.facts, `no twin publishes a "${key}" fact the note names`);
+  }
+
+  const sharedKeys = Object.keys(twins[0]!.facts).filter((key) => key in twins[1]!.facts);
+  assert.deepStrictEqual([...claimedKeys].sort(), [...sharedKeys].sort());
+});
+
+it("the index and the home twin render one experience list, differing only in the URL lead", () => {
+  // The index's listing and the home twin's listing are the same projection of the same dataset:
+  // the twin links its siblings' twin routes, the index links every page's canonical HTML URL and
+  // then names the twin. They are built by one shared builder, so the two surfaces cannot group,
+  // trim or order an experience differently — only the lead URL each surface exists to advertise.
+  const experienceList = [{ ...sampleExperience, type: "e" as const, slug: "sample-job", role: "Backend Developer", company: "Sample Co" }];
+  const index = buildLlmsTxt(experienceList);
+  const twin = twinDocument(
+    buildHomeMd({ ...SOURCE_COPY, pageTitles: stablePageTitles, experienceList })
+  );
+  const entry = "Backend Developer at Sample Co";
+  const canonical = `[${entry}](https://www.remiforge.dev/sample-job)`;
+  const twinRoute = "https://www.remiforge.dev/sample-job.md?lang=en";
+
+  // Read the index's own entry back and require the twin to carry the very same escaped summary,
+  // rather than restating the excerpt by hand: one builder, one grouping, one escape pass.
+  const indexEntry = index
+    .split("\n")
+    .map((line) => line.replace(/^-\s*/, ""))
+    .find((line) => line.startsWith(canonical));
+  assert.isDefined(indexEntry, "the index lists the employment experience under its canonical URL");
+  const summary = (indexEntry ?? "").slice(canonical.length + 2, (indexEntry ?? "").indexOf(" Markdown:"));
+  assert.isNotEmpty(summary);
+  assert.include(twin, `[${entry}](${twinRoute}): ${summary}`);
+
+  // The one readable difference: the twin leads with the twin route, the index names it
+  assert.notInclude(twin, `${canonical}:`);
+  assert.notInclude(index, `[${entry}](${twinRoute}):`);
+
+  // Both surfaces apply the same escape pass, so authored emphasis reaches both as text
+  assert.notInclude(index, "**");
+  assert.notInclude(twin, "**");
+  assert.include(index, "\\*\\*");
+  assert.include(twin, "\\*\\*");
+});
+
+it("both AI indexes carry the same single-sourced reuse notes", () => {  const index = buildLlmsTxt([sampleExperience]);
   const full = buildLlmsFullTxt({
     pageTitles: stablePageTitles,
     experienceList: [sampleExperience],
@@ -344,6 +409,53 @@ it("index entries encode a paren-bearing slug so the twin destination survives",
   assert.include(txt, "Markdown: https://www.remiforge.dev/role%20%28senior%29.md?lang=en");
   // No raw parenthesis reaches either destination
   assert.notInclude(txt, "(senior)");
+});
+
+it("the companion encodes every slug-derived twin URL exactly as its table of contents does", () => {
+  // The companion prints each twin URL twice: once in its table of contents, and once in the
+  // document's own attribution block above the fenced facts. A slug whose path carries parentheses
+  // truncates the second one at the first ")" unless it takes the same encoding the first did, so
+  // the two spellings of one twin are compared rather than assumed to agree.
+  const txt = buildLlmsFullTxt({
+    pageTitles: stablePageTitles,
+    experienceList: [{ ...sampleExperience, slug: "role (senior)" }],
+    educationList: [],
+  });
+
+  // Every attribution line spells its twin URL exactly as the table of contents entry for the same
+  // document does, so the one string is a destination a fetcher can resolve from either position.
+  for (const line of txt.split("\n").filter((line) => line.startsWith("Markdown: "))) {
+    const spelling = `Markdown: ${line.slice("Markdown: ".length)}`;
+
+    assert.strictEqual(txt.split(spelling).length - 1, 2, `${spelling} is not spelled the same way twice`);
+    assert.notInclude(line, "(", "a raw parenthesis would close the destination at the first one");
+  }
+
+  // The paren-bearing slug itself survives in both spellings, so the loop above is not vacuous:
+  // the encoded URL appears in the table of contents and in the document's own attribution block,
+  // beside the raw spelling the home twin's body embeds for the same page.
+  const encoded = "role%20%28senior%29.md";
+  assert.isAbove((txt.match(new RegExp(encoded, "g")) ?? []).length, 1);
+  assert.notInclude(txt.split("Markdown: https://www.remiforge.dev/" + encoded + "?lang=en").join(""), "(senior)");
+});
+
+it("the companion's Source line escapes an underscore-bearing slug from becoming emphasis", () => {
+  // The canonical is a site-derived URL, so a slug whose first and last character is `_` reads as an
+  // emphasis run: half of the citation URL ends up inside `<em>`. The `Markdown:` sibling beside it
+  // already encodes its destination, so the Source line takes the same inline escape every other
+  // content line in the feature takes — and the escape is transparent for the URLs the site publishes.
+  const underscore = { ...sampleExperience, slug: "_role_" };
+  const paren = { ...sampleExperience, slug: "role (senior)" };
+
+  const doc = buildLlmsFullTxt({ pageTitles: stablePageTitles, experienceList: [underscore], educationList: [] });
+  assert.include(doc, `Source: https://www.remiforge.dev/\\_role\\_`);
+  // The raw spelling would parse as emphasis and split the citation URL
+  assert.notInclude(doc, "Source: https://www.remiforge.dev/_role_");
+  // The rest of the document is untouched by the one escape
+  assert.include(doc, `Markdown: https://www.remiforge.dev/_role_.md?lang=en`);
+
+  const encoded = buildLlmsFullTxt({ pageTitles: stablePageTitles, experienceList: [paren], educationList: [] });
+  assert.include(encoded, "Source: https://www.remiforge.dev/role%20%28senior%29");
 });
 
 it("the unavailable twin escapes its prose the way every other body string does", () => {

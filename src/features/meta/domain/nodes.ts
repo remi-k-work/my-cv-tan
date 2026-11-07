@@ -1,15 +1,31 @@
-// Individual schema.org JSON-LD node builders. Each builds one kind of node
-// and is pure: no graph merge, no serialization, no dependencies on other builders.
+// Every schema.org node this site publishes: the per-kind node builders and the `@id`s the graph
+// merges by. Each builder is pure — a node is built without merging it, serializing it, or reading
+// another builder's output. How a node list becomes one document script, and the site-wide entity
+// set every page graph merges into, live in ./graph.
 
 // services, features, and other libraries
 import { matchPreferredLanguage } from "@/domain/helpers";
 
 // constants
-import { HOME_URL, PERSON_ID, PUBLISHER_ID, WEBSITE_ID } from "./constants";
+import { HOME_URL } from "./identity";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
 import type { JsonLdNode } from "./models";
+
+// --- Graph identity ---
+
+// The fragment identifiers the JSON-LD graph merges by. Every one is the canonical homepage with a
+// fragment, so a parser resolving a node from the page it is embedded in lands on a stable address,
+// and a page graph's `personEdge` folds into the same Person the site entity declares.
+export const WEBSITE_ID = `${HOME_URL}#website`;
+export const PERSON_ID = `${HOME_URL}#person`;
+export const PUBLISHER_ID = `${HOME_URL}#publisher`;
+export const PROFILE_ID = `${HOME_URL}#profile`;
+
+// Site-level content collections merged into page graphs.
+export const EXPERIENCE_LIST_ID = `${HOME_URL}#experience-list`;
+export const PORTFOLIO_LIST_ID = `${HOME_URL}#portfolio-list`;
 
 export type PageNodeType = "WebPage" | "ContactPage" | "CollectionPage" | "ProfilePage";
 

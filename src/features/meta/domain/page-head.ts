@@ -6,23 +6,36 @@
 import { Option } from "effect";
 import { INDEXABLE_ROBOTS } from "@/domain/http";
 import { matchPreferredLanguage } from "@/domain/helpers";
+import { isEmployment } from "@/features/experience/domain/helpers";
 import { canonicalLink, markdownAlternateLink } from "./link-tags";
 import { experienceSeo } from "./experience-seo";
 import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd } from "./page-graphs";
-import { jsonLdGraph } from "./merge";
-import { siteNodes } from "./entities";
+import { jsonLdGraph, siteNodes } from "./graph";
 import { globalSocialImage, socialMeta } from "./social-meta";
 import { staticPageCopy } from "./pages";
 
 // types
-import type { ExperienceHeadInput, JsonLdNodes, PageHead, SocialImage, SocialImageFacts, StaticPageCopy, StaticPageHeadInput } from "./models";
-import type { SocialMetaInput } from "./social-meta";
+import type { StaticPageCopy } from "./pages";
+import type { ExperienceHeadInput } from "./experience-seo";
+import type { JsonLdNodes, PageHead } from "./models";
+import type { SocialImage, SocialMetaInput } from "./social-meta";
+import type { SocialImageFacts } from "./identity";
 import type { PreferredLanguage } from "@/domain/models";
+import type { PageTitles } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
 
 // constants
-import { BRANDED_TITLE, CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "./constants";
+import { BRANDED_TITLE } from "./identity";
+import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/domain/constants";
+
+// Input for the three static page head builders. Each one pairs the page titles the loader
+// resolved with the language the document publishes, so a head cannot read one page's copy under
+// another page's locale.
+export interface StaticPageHeadInput {
+  readonly pageTitles: PageTitles;
+  readonly preferredLanguage: PreferredLanguage;
+}
 
 // Shared page head layout merging title, indexing directives, social cards, links and graph.
 // `social` carries the Open Graph / Twitter fields rendered by `socialMeta`; the remaining
@@ -71,7 +84,7 @@ export const experienceHead = (input: ExperienceHeadInput): PageHead => {
       image: experienceCardImage(seo.headline, seo.screenshot, seo.preferredLanguage),
       preferredLanguage: seo.preferredLanguage,
       ogType: "article",
-      articleSection: seo.experience.type === "e" ? "employment" : "portfolio",
+      articleSection: isEmployment(seo.experience) ? "employment" : "portfolio",
     },
     markdownPath: seo.markdownPath,
     graph: experienceJsonLd(seo),

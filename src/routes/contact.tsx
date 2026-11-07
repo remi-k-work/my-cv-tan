@@ -14,12 +14,17 @@ import { PagePanel } from "@/ui/page-panel";
 import { PageTitle } from "@/ui/page-title";
 
 // constants
-import { CONTACT_PATH } from "@/features/meta/domain/constants";
+import { CONTACT_PATH } from "@/domain/constants";
 
 export const Route = createFileRoute("/contact")({
   loader: () => loaderContact(),
   head: ({ loaderData, matches }) =>
-    routeHead(loaderData, matches, (data, preferredLanguage) => contactHead({ pageTitles: data.stablePageTitles, preferredLanguage }), CONTACT_PATH),
+    routeHead({
+      loaderData,
+      matches,
+      fallbackPath: CONTACT_PATH,
+      build: (data, preferredLanguage) => contactHead({ pageTitles: data.stablePageTitles, preferredLanguage }),
+    }),
   component: ContactPage,
 });
 

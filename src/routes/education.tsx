@@ -14,17 +14,17 @@ import { PagePanel } from "@/ui/page-panel";
 import { PageTitle } from "@/ui/page-title";
 
 // constants
-import { EDUCATION_PATH } from "@/features/meta/domain/constants";
+import { EDUCATION_PATH } from "@/domain/constants";
 
 export const Route = createFileRoute("/education")({
   loader: () => loaderEducation(),
   head: ({ loaderData, matches }) =>
-    routeHead(
+    routeHead({
       loaderData,
       matches,
-      (data, preferredLanguage) => educationHead({ pageTitles: data.stablePageTitles, educationList: data.educationList, preferredLanguage }),
-      EDUCATION_PATH
-    ),
+      fallbackPath: EDUCATION_PATH,
+      build: (data, preferredLanguage) => educationHead({ pageTitles: data.stablePageTitles, educationList: data.educationList, preferredLanguage }),
+    }),
   component: EducationPage,
 });
 

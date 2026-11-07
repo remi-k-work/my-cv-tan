@@ -1,7 +1,8 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-import { escapeMd, escapeMdInline as escapeInline, mdFact, mdIndexEntry, mdLink, twinDocument } from "../format";
-import { buildExperienceMd } from "../twins";
+import { escapeMd, escapeMdInline as escapeInline } from "../escape";
+import { mdFact, mdIndexEntry, mdLink, twinDocument } from "../format";
+import { buildExperienceMd } from "../detail-twin";
 import { experienceSeo } from "@/features/meta/domain/experience-seo";
 
 // types
@@ -44,6 +45,18 @@ it("mdFact neutralizes a hostile label without needing the caller to pre-escape 
   assert.strictEqual(mdFact("Evil]_# [", "value"), "Evil\\]\\_# \\[: value");
 });
 
+it("escapeMd neutralizes every marker of a tilde run, not only its first pair", () => {
+  // ~~ fences and ~~strike~~ are both runs of two or more, so the rule neutralizes each tilde in
+  // the run. The pair-only spelling of the rule left an odd run's last marker unescaped: an odd
+  // run cannot build markup either way, but a run whose members are neutralized inconsistently is
+  // one a later edit can get wrong, and the round-trip is the same either way.
+  for (const run of ["~~", "~~~", "~~~~", "~~~~~", "~~~~~~"]) {
+    assert.strictEqual(escapeMd(run), `\\~`.repeat(run.length), `a run of ${run.length}`);
+  }
+  // A lone marker still needs no run, so it stays literal
+  assert.strictEqual(escapeMd("roughly ~30% of the time"), "roughly ~30% of the time");
+});
+
 it("escapeMd never destroys an authored character, whatever the shape it arrives in", () => {
   // The strikethrough rule used to match a whole run and replace all of it with one "\~\~", so a
   // four-tilde run reached the twin as two tildes: authored characters deleted, not neutralized.
@@ -54,6 +67,23 @@ it("escapeMd never destroys an authored character, whatever the shape it arrives
   assert.strictEqual(escapeMd("~~~~~~"), "\\~\\~\\~\\~\\~\\~");
   // A lone marker still needs no run, so it stays literal
   assert.strictEqual(escapeMd("roughly ~30% of the time"), "roughly ~30% of the time");
+});
+
+it("authored prose beginning with an indent cannot revive the marker its indent was hiding", () => {
+  // The pass's own trim deletes a *leading* indent, because the published block is joined after a
+  // blank line and so always starts a line. That indent is the only reason the block rules leave a
+  // four-space or tab marker literal, so trimming it away published a live heading, bullet or
+  // delimiter row: authored prose beginning with "    # x" forged a second H1 in the twin body.
+  const twin = buildExperienceMd({
+    seo: experienceSeo({ experience: { ...sampleExperience, txt: "    # Injected heading\n\n    - forged bullet" }, preferredLanguage: "en" }),
+    translate: (source) => source,
+  });
+
+  assert.include(twin.body, "\\# Injected heading");
+  // One H1 per document: the forged heading is neutralized, not merely re-indented
+  assert.strictEqual((twin.body.match(/^# /gm) ?? []).length, 1);
+  // The later block keeps its indent, and so the code block the author actually wrote
+  assert.strictEqual(escapeMd("para\n\n    # indented heading"), "para\n\n    # indented heading");
 });
 
 it("mdLink neutralizes a hostile label without the caller pre-escaping it", () => {

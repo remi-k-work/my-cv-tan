@@ -1,8 +1,27 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-import { joinLinkHeader, languageVariantLinks } from "../link-tags";
-import { AI_INDEX_LINKS, AI_INDEX_LINK_HEADER } from "../link-tags";
+import { AI_INDEX_LINKS, AI_INDEX_LINK_HEADER, LLMS_DISCOVERY_LINK, SITEMAP_LINK, authorLink, canonicalLink, joinLinkHeader, languageVariantLinks, markdownAlternateLink } from "../link-tags";
 import { ROOT_HEAD } from "../root-head";
+
+// types
+import type { LinkTag } from "../models";
+
+// The three parameters the serializer writes, and nothing else: a link declaring a fourth would
+// have it silently dropped, so the declaration and the emitted header would disagree.
+const SERIALIZABLE_PARAMETERS = ["type", "title", "hreflang"] as const;
+
+// Every link the site publishes, from every declaration that emits one: the site-wide root head,
+// the AI-index advertisements, the twin language variants, and the page-level builders.
+const publishedLinks: ReadonlyArray<LinkTag> = [
+  ...ROOT_HEAD.links,
+  ...AI_INDEX_LINKS,
+  ...languageVariantLinks("https://www.remiforge.dev/index.md"),
+  canonicalLink("https://www.remiforge.dev/education"),
+  authorLink("https://www.remiforge.dev/"),
+  markdownAlternateLink("/index.md", "pl"),
+  SITEMAP_LINK,
+  LLMS_DISCOVERY_LINK,
+];
 
 // --- The Link header ---
 // The HTML <head> and the HTTP Link header are two projections of one declaration. These tests pin
@@ -56,15 +75,27 @@ it("language variants list every supported language and close with the x-default
 
 it("every link the site publishes carries only the three parameters the serializer knows", () => {
   // The parameter set is closed (type, title, hreflang). Anything else is a compile error at the
-  // declaration, but this pins the runtime side of that contract: no link the site emits reaches a
-  // serializer that would drop the parameter silently.
-  const published = [...AI_INDEX_LINKS, ...languageVariantLinks("https://www.remiforge.dev/index.md")];
-
-  const known: ReadonlyArray<string> = ["type", "title", "hreflang"];
-  for (const link of published) {
+  // declaration, but this pins the runtime side of that contract across every emitting site: no
+  // link the site publishes reaches a serializer that would drop the parameter silently.
+  for (const link of publishedLinks) {
     for (const parameter of Object.keys(link)) {
       if (parameter === "href" || parameter === "rel") continue;
-      assert.include(known, parameter);
+      assert.include(SERIALIZABLE_PARAMETERS, parameter, `${JSON.stringify(link)} declares an unknown parameter "${parameter}"`);
+    }
+  }
+
+  // And the other direction: a parameter a link does declare survives onto the wire. Walking only
+  // the closed set above cannot notice a builder that forgets to forward the value it was handed.
+  for (const link of publishedLinks) {
+    const header = joinLinkHeader([link]);
+
+    for (const parameter of SERIALIZABLE_PARAMETERS) {
+      const value = link[parameter];
+      if (value === undefined) {
+        assert.notInclude(header, `${parameter}="`, `${JSON.stringify(link)} declares no ${parameter} but the header emits one`);
+        continue;
+      }
+      assert.include(header, `${parameter}="${value}"`, `${JSON.stringify(link)} loses its ${parameter} in the header`);
     }
   }
 });

@@ -13,7 +13,7 @@ import { experienceSeo, experienceScreenshot } from "../experience-seo";
 import type { Experience } from "@/features/experience/domain/models";
 
 // constants
-import { META_DESCRIPTION_LENGTH } from "../constants";
+import { META_DESCRIPTION_LENGTH } from "../identity";
 import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain/constants";
 
 const sampleExperience: Experience = {

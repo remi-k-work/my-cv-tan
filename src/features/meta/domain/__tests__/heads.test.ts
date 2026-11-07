@@ -1,13 +1,14 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { contactHead, educationHead, experienceHead, homeHead } from "../page-head";
-import { headLanguage, rootHead, ROOT_HEAD, fallbackHead } from "../root-head";
-import { routeHead } from "../route-head";
+import { rootHead, ROOT_HEAD } from "../root-head";
+import { fallbackHead } from "../fallback";
+import { headLanguage, routeHead } from "../route-head";
 import { canonicalLink } from "../link-tags";
 import { withLanguageParam } from "../urls";
 import { STATIC_PAGES } from "../pages";
 
-import { PERSON_DESCRIPTION, SITE_DESCRIPTION, SITE_NAME, AUTHOR_URL } from "../constants";
+import { PERSON_DESCRIPTION, SITE_DESCRIPTION, SITE_NAME, AUTHOR_URL } from "../identity";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 
 // types
@@ -334,7 +335,12 @@ it("language-pinned Markdown URLs attach ?lang= and survive values the URL parse
 });
 
 it("routeHead keeps a canonical noindex fallback when loader data is missing", () => {
-  const fallback = routeHead(undefined, [], () => homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" }), "/contact");
+  const fallback = routeHead({
+    loaderData: undefined,
+    matches: [],
+    fallbackPath: "/contact",
+    build: () => homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" }),
+  });
 
   assert.deepStrictEqual(
     fallback.links?.map(({ rel, href }) => ({ rel, href })),
@@ -437,6 +443,29 @@ it("rootHead recognizes TanStack's internal not-found marker", () => {
   assert.notInclude(JSON.stringify(fallback.links), '"rel":"canonical"');
 });
 
+it("rootHead hands every document its own head arrays rather than sharing the site-wide ones", () => {
+  // The root head is one declaration rendered into every document on the site. Sharing its arrays
+  // would mean one caller's head reaching into another page's meta and links through the same
+  // reference, which is exactly the mutation the PageHead contract rules out (see domain/models).
+  const matches = [{ loaderData: { preferredLanguage: "en" }, status: "success" }] as const;
+  const first = rootHead(matches);
+  const second = rootHead(matches);
+
+  assert.notStrictEqual(first.meta, ROOT_HEAD.meta);
+  assert.notStrictEqual(first.links, ROOT_HEAD.links);
+  assert.notStrictEqual(first.meta, second.meta);
+  assert.notStrictEqual(first.links, second.links);
+  // The shared declaration itself is still intact, and the copies carry the same values
+  assert.deepStrictEqual(first.meta, [...ROOT_HEAD.meta]);
+  assert.deepStrictEqual(first.links, [...ROOT_HEAD.links]);
+  assert.deepStrictEqual(first.meta, second.meta);
+
+  // The not-found branch merges the fallback into fresh arrays too
+  const notFound = rootHead([{ loaderData: { preferredLanguage: "en" }, status: "success" }, { status: "notFound" }]);
+  assert.notStrictEqual(notFound.meta, ROOT_HEAD.meta);
+  assert.notStrictEqual(notFound.links, ROOT_HEAD.links);
+});
+
 it("routeHead leaves not-found metadata to the root boundary, even with stale loader data", () => {
   let builderCalled = false;
   const build = () => {
@@ -444,7 +473,12 @@ it("routeHead leaves not-found metadata to the root boundary, even with stale lo
     return homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" });
   };
 
-  const notFound = routeHead({ title: "Stale page data" }, [{ loaderData: { preferredLanguage: "pl" }, status: "error", _notFound: true }], build, "/missing");
+  const notFound = routeHead({
+    loaderData: { title: "Stale page data" },
+    matches: [{ loaderData: { preferredLanguage: "pl" }, status: "error", _notFound: true }],
+    fallbackPath: "/missing",
+    build,
+  });
   const rootFallback = rootHead([{ loaderData: { preferredLanguage: "pl" }, status: "success" }, { status: "notFound" }]);
 
   assert.deepStrictEqual(notFound, { meta: [], links: [], scripts: [] });
@@ -456,15 +490,15 @@ it("routeHead leaves not-found metadata to the root boundary, even with stale lo
 
 it("routeHead uses a noindex unavailable head instead of stale loader data after an error", () => {
   let builderCalled = false;
-  const fallback = routeHead(
-    { title: "Stale page data" },
-    [{ loaderData: { preferredLanguage: "pl" }, status: "error" }],
-    () => {
+  const fallback = routeHead({
+    loaderData: { title: "Stale page data" },
+    matches: [{ loaderData: { preferredLanguage: "pl" }, status: "error" }],
+    fallbackPath: "/missing",
+    build: () => {
       builderCalled = true;
       return pageHeadFromInput("Stale page data", "pl");
     },
-    "/missing"
-  );
+  });
 
   assert.isFalse(builderCalled);
   assert.include(JSON.stringify(fallback.meta), '"title":"Remi Forge ● Strona niedostępna"');
@@ -476,7 +510,7 @@ it("routeHead delegates to the builder when loader data is present, resolving la
   const build = (loaderData: { readonly title: string }, preferredLanguage: "en" | "pl") => pageHeadFromInput(loaderData.title, preferredLanguage);
   const matches = [{ loaderData: { preferredLanguage: "pl" } }];
 
-  const head = routeHead({ title: "Custom" }, matches, build, "/contact");
+  const head = routeHead({ loaderData: { title: "Custom" }, matches, fallbackPath: "/contact", build });
 
   // The builder received the loader data and the resolved language
   assert.include(JSON.stringify(head.meta), '"title":"Remi Forge ● Custom"');

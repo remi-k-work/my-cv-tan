@@ -5,23 +5,24 @@
 // services, features, and other libraries
 import { matchPreferredLanguage } from "@/domain/helpers";
 
-// types
-import type { PreferredLanguage } from "@/domain/models";
-import type { MetaTag, SocialImage } from "./models";
-
 // constants
-import { AUTHOR_URL, GLOBAL_SOCIAL_IMAGE, OPEN_GRAPH_LOCALES, PUBLISHER_URL, SITE_NAME } from "./constants";
+import { AUTHOR_URL, GLOBAL_SOCIAL_IMAGE, PUBLISHER_URL, SITE_NAME } from "./identity";
+import type { SocialImageFacts } from "./identity";
+import { OPEN_GRAPH_LOCALES } from "./languages";
 import { SITE_LANGUAGES } from "@/domain/constants";
 
-export const globalSocialImage = (preferredLanguage: PreferredLanguage): SocialImage => ({
-  ...GLOBAL_SOCIAL_IMAGE,
-  alt: matchPreferredLanguage(
-    preferredLanguage,
-    "Portfolio collage showing web development skills and project screenshots",
-    "Kolaż portfolio przedstawiający umiejętności tworzenia stron i zrzuty projektów"
-  ),
-});
+// types
+import type { PreferredLanguage } from "@/domain/models";
+import type { MetaTag } from "./models";
 
+// A published card image: the verified file facts plus the alt text describing this page's card.
+export interface SocialImage extends SocialImageFacts {
+  readonly alt: string;
+}
+
+// The Open Graph / Twitter card every page head publishes. It is the page's social contract
+// declared apart from its structural links and graph, so a head cannot inherit one surface's
+// fields into another that reads them differently.
 export interface SocialMetaInput {
   readonly title: string;
   readonly description: string;
@@ -31,6 +32,15 @@ export interface SocialMetaInput {
   readonly ogType?: "website" | "article";
   readonly articleSection?: "employment" | "portfolio";
 }
+
+export const globalSocialImage = (preferredLanguage: PreferredLanguage): SocialImage => ({
+  ...GLOBAL_SOCIAL_IMAGE,
+  alt: matchPreferredLanguage(
+    preferredLanguage,
+    "Portfolio collage showing web development skills and project screenshots",
+    "Kolaż portfolio przedstawiający umiejętności tworzenia stron i zrzuty projektów"
+  ),
+});
 
 const alternateLocales = (preferredLanguage: PreferredLanguage) => SITE_LANGUAGES.filter((language) => language !== preferredLanguage);
 
@@ -43,8 +53,8 @@ export const socialMeta = ({
   ogType = "website",
   articleSection,
 }: SocialMetaInput): ReadonlyArray<MetaTag> => {
-  // The Twitter card always shows the JPEG banner (X rejects WebP), so its image and alt name
-  // the banner regardless of the og:image the page publishes.
+  // The Twitter card always shows the JPEG banner (X rejects WebP), so its image and alt describe
+  // the banner regardless of which picture og:image publishes.
   const banner = globalSocialImage(preferredLanguage);
 
   return [

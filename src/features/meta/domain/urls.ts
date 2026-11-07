@@ -1,15 +1,15 @@
 // URL addressing shared by HTML heads, Markdown twins, discovery documents and HTTP responses.
-// Pure string computation: no network, no layer, no framework types.
+// Pure string computation: no network, no layer, no framework types — and no knowledge of which
+// documents exist, which the document surface itself decides (see ./discovery).
 
 // services, features, and other libraries
 import { Option, Schema, pipe } from "effect";
-import { matchPreferredLanguage } from "@/domain/helpers";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
 
 // constants
-import { CV_EN_HREF, CV_PL_HREF, SITE_URL } from "./constants";
+import { SITE_URL } from "./identity";
 
 // --- URL helpers ---
 
@@ -51,13 +51,16 @@ export const withLanguageParam = (url: string, preferredLanguage: PreferredLangu
 // Canonical absolute URL for a localized markdown twin endpoint.
 export const markdownTwinUrl = (mdPath: string, preferredLanguage: PreferredLanguage) => withLanguageParam(absoluteUrl(mdPath), preferredLanguage);
 
-// Resolves the visitor's own CV file; both languages are advertised site-wide, but the header
-// nav offers the one that matches the reader.
-export const cvPdfHref = (preferredLanguage: PreferredLanguage) => matchPreferredLanguage(preferredLanguage, CV_EN_HREF, CV_PL_HREF);
-
-// `encodeURIComponent` leaves parentheses unescaped, so apply `encodeParens` wherever a path is
-// embedded in Markdown or XML to keep them from changing the destination's structure.
+// `encodeURIComponent` leaves parentheses unescaped, so a path embedded in XML or as a Markdown
+// link destination needs them encoded or the destination's structure changes. Paths take this on
+// their own; a Markdown destination takes `encodeDestination` below, which adds the whitespace one.
 export const encodeParens = (value: string) => value.replace(/\(/g, "%28").replace(/\)/g, "%29");
+
+// A raw Markdown link destination also ends at the first whitespace character, which is legal
+// inside a URL path or query. Every href a Markdown document embeds is a destination, so it takes
+// the paren encoding plus this one: a destination that stops early truncates the link it was
+// built for.
+export const encodeDestination = (value: string) => encodeParens(value).replace(/\s/g, "%20");
 
 // Resolves experience route and markdown twin path from slug.
 export const experiencePath = (slug: string) => `/${encodeParens(encodeURIComponent(slug))}`;

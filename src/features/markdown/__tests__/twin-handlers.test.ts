@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { INDEXABLE_ROBOTS } from "@/domain/http";
-import { absoluteUrl, experiencePath } from "@/features/meta/domain/urls";
+import { absoluteUrl, experienceMarkdownPath, experiencePath } from "@/features/meta/domain/urls";
 import { CACHEABLE_HEADERS } from "@/features/meta/services/headers";
 
 // handlers under test
@@ -133,6 +133,10 @@ it("an unknown slug is a noindex 404 that still names the queried twin", async (
   // AI index advertisement beside it is actionable
   assert.strictEqual(response.headers.get("Cache-Control"), "no-store");
   assert.strictEqual(response.headers.get("Content-Location"), "https://www.remiforge.dev/no-such-page.md?lang=en");
+  // The strip the pin performs on a 200 applies to a failure too: its body inherits the negotiated
+  // document's Vary, and a language-pinned 404 that kept it would leave a shared cache keying a
+  // visitor's language on a URL that already selects the document outright
+  assert.isNull(response.headers.get("Vary"));
   // The 404 body is a real twin with the escape links, not an empty body
   const body = await response.text();
   assert.include(body, "# Not Found");
@@ -150,6 +154,26 @@ it("paths the twin route cannot represent are 404s without a fabricated location
   const malformed = await experienceHandler({ request: pinned("/%zz.md", "en") });
   assert.strictEqual(malformed.status, 404);
   assert.isNull(malformed.headers.get("Content-Location"));
+});
+
+it("the detail twin the home page links to is the document the detail route answers", async () => {
+  // The home twin is a detail twin's only inbound crawl-graph edge: a crawler never navigates to
+  // one and then finds the link it just followed resolves to a 404 or a different page. Comparing
+  // the two routes directly is the only way to notice that drift, because each side computes the
+  // URL from a different feature module.
+  const home = await (await homeHandler({ request: pinned("/index.md", "en") })).text();
+  const slug = experienceEn[0]!.slug;
+  const advertised = `${absoluteUrl(experienceMarkdownPath(slug))}?lang=en`;
+
+  assert.include(home, advertised, "the home twin must advertise the detail twin a crawler can fetch");
+
+  const detail = await experienceHandler({ request: pinned(`/${encodeURIComponent(slug)}.md`, "en") });
+
+  assert.strictEqual(detail.status, 200);
+  // The document served on that URL is the one the entry describes: the same canonical, and the
+  // same Content-Location the URL itself names
+  assert.include(await detail.text(), `canonical: ${JSON.stringify(absoluteUrl(experiencePath(slug)))}`);
+  assert.strictEqual(detail.headers.get("Content-Location"), advertised);
 });
 
 // `removeResponseHeader` only has an effect inside the framework's response context, so the policy
