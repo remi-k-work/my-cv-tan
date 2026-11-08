@@ -5,7 +5,7 @@
 // crawler can parse.
 
 // services, features, and other libraries
-import { Predicate } from "effect";
+import { Array, Predicate, Record } from "effect";
 
 // domain
 import { imageObject, PERSON_ID, PUBLISHER_ID, WEBSITE_ID } from "./nodes";
@@ -37,33 +37,30 @@ const jsonLdScript = (data: JsonLdObject): JsonLdScript => ({
 });
 
 // Strips undefined fields so they never erase an existing value during a merge.
-const definedNode = (node: JsonLdNode): JsonLdNode => Object.fromEntries(Object.entries(node).filter(([, value]) => value !== undefined)) as JsonLdNode;
+const definedNode = (node: JsonLdNode): JsonLdNode => Record.filter(node, Predicate.isNotUndefined);
 
 // Merges nodes by @id, preserving order and letting defined fields override.
-// Nodes without an @id are emitted exactly as written. The working array and index map are
-// local to the call, so the merge is pure at its boundary while avoiding a new array per node.
+// Nodes without an @id are emitted exactly as written.
 export const jsonLdGraph = (nodes: ReadonlyArray<JsonLdNode>): JsonLdScript => {
-  const graph: Array<JsonLdNode> = [];
-  const indexById = new Map<string, number>();
-
-  for (const node of nodes) {
+  const { graph } = Array.reduce(nodes, { graph: [] as Array<JsonLdNode>, indexById: new Map<string, number>() }, (acc, node) => {
     const defined = definedNode(node);
     const id = defined["@id"];
 
     if (!Predicate.isString(id)) {
-      graph.push(defined);
-      continue;
+      acc.graph.push(defined);
+      return acc;
     }
 
-    const existingIndex = indexById.get(id);
+    const existingIndex = acc.indexById.get(id);
     if (existingIndex === undefined) {
-      indexById.set(id, graph.length);
-      graph.push(defined);
-      continue;
+      acc.indexById.set(id, acc.graph.length);
+      acc.graph.push(defined);
+    } else {
+      acc.graph[existingIndex] = { ...acc.graph[existingIndex], ...defined };
     }
 
-    graph[existingIndex] = { ...graph[existingIndex], ...defined };
-  }
+    return acc;
+  });
 
   return jsonLdScript({ "@context": "https://schema.org", "@graph": graph });
 };

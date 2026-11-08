@@ -3,6 +3,9 @@
 // security-sensitive escape engine these builders apply lives in ./escape; each document builder
 // lives beside the family it publishes (./twins, ./detail-twin, ./indexes).
 
+// services, features, and other libraries
+import { Array, pipe, Record } from "effect";
+
 // meta (shared)
 import { absoluteUrl, encodeDestination } from "@/features/meta/domain/urls";
 
@@ -30,9 +33,11 @@ const YAML_UNSAFE_CHARACTERS = /[\u007f-\u009f\u2028\u2029]/g;
 const yamlValue = (value: string) => JSON.stringify(value).replace(YAML_UNSAFE_CHARACTERS, (char) => `\\u${char.charCodeAt(0).toString(16).padStart(4, "0")}`);
 
 const yamlFields = (fields: Readonly<Record<string, string>>) =>
-  Object.entries(fields)
-    .map(([key, value]) => `${key}: ${yamlValue(value)}`)
-    .join("\n");
+  pipe(
+    Record.toEntries(fields),
+    Array.map(([key, value]) => `${key}: ${yamlValue(value)}`),
+    Array.join("\n")
+  );
 
 // The twin's identity block, delimited for a document that is the twin itself.
 export const frontmatter = (fields: Readonly<Record<string, string>>) => [FRONTMATTER_DELIMITER, yamlFields(fields), FRONTMATTER_DELIMITER].join("\n");
@@ -50,7 +55,7 @@ export const demoteHeadings = (markdown: string) => markdown.replace(DEMOTE_HEAD
 // value carrying that run closes the fence and the remaining facts publish as document prose.
 const fenceFor = (content: string) => {
   const runs = content.match(/`+/g) ?? [];
-  const longest = runs.reduce((longest, run) => Math.max(longest, run.length), 0);
+  const longest = Array.reduce(runs, 0, (max, run) => Math.max(max, run.length));
 
   return "`".repeat(Math.max(3, longest + 1));
 };
@@ -67,9 +72,9 @@ export const mdHeading = (level: 1 | 2 | 3, text: string) => (isBlank(text) ? ""
 // A pull quote over an empty description is an empty blockquote, which reads as a stray `>` marker
 // a parser has to reconcile; mdBody drops the empty block instead.
 export const mdQuote = (text: string) => (isBlank(text) ? "" : `> ${escapeMdInline(text)}`);
-export const mdBulletList = (items: ReadonlyArray<string>) => items.map((item) => `- ${item}`).join("\n");
+export const mdBulletList = (items: ReadonlyArray<string>) => Array.map(items, (item) => `- ${item}`).join("\n");
 export const mdFact = (label: string, value: string) => `${escapeMdInline(label)}: ${escapeMdInline(value)}`;
-export const mdBody = (blocks: ReadonlyArray<string>) => blocks.filter((block) => !isBlank(block)).join("\n\n");
+export const mdBody = (blocks: ReadonlyArray<string>) => Array.filter(blocks, (block) => !isBlank(block)).join("\n\n");
 export const mdTitledSection = (title: string, body: string) => mdBody([mdHeading(2, title), body]);
 export const mdDocument = (blocks: ReadonlyArray<string>) => `${mdBody(blocks)}\n`;
 export const mdEmptyMarker = (translate: Translate) => `_${escapeMdInline(translate("No entries."))}_`;

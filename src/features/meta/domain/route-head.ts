@@ -44,6 +44,9 @@ export const headLanguage = (matches: MatchChain): PreferredLanguage =>
 // whether the route threw `notFound()` or the loader could not resolve at all.
 export const isNotFoundMatch = (match: MatchChain[number]): boolean => match.status === "notFound" || match._notFound === true;
 
+// Reusable empty head for suppressed or not-found route matches.
+const EMPTY_PAGE_HEAD: PageHead = { meta: [], links: [], scripts: [] };
+
 // Route adapter for loader-backed heads: resolve locale, suppress stale metadata on failure, and
 // leave not-found metadata to the root boundary. Page-specific SEO stays in page-head.
 interface RouteHeadSpec<TData> {
@@ -59,13 +62,15 @@ interface RouteHeadSpec<TData> {
 export const routeHead = <TData>({ loaderData, matches, matchStatus, fallbackPath, build }: RouteHeadSpec<TData>): PageHead => {
   // The root route owns not-found metadata, including for a matched route. Do not let a stale
   // loader payload override its noindex fallback with the previous page's canonical or graph.
-  if (matchStatus === "notFound" || matches.some(isNotFoundMatch)) return { meta: [], links: [], scripts: [] };
+  if (matchStatus === "notFound" || Array.some(matches, isNotFoundMatch)) {
+    return EMPTY_PAGE_HEAD;
+  }
 
   // One negotiation feeds both the failure fallback and the successful build.
   const preferredLanguage = headLanguage(matches);
 
   // Failed revalidation can leave loaderData populated. A failure head must not reuse that data.
-  if (matchStatus !== "success" || loaderData == null || matches.some(({ status }) => status === "error")) {
+  if (matchStatus !== "success" || loaderData == null || Array.some(matches, ({ status }) => status === "error")) {
     return fallbackHead(fallbackPath, preferredLanguage);
   }
 

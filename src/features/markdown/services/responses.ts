@@ -19,10 +19,12 @@ const MD_CONTENT_TYPE = "text/markdown; charset=utf-8";
 // such as compression, while removing only the inputs the pin replaces.
 export const pinCacheVariant = (response: Response) => {
   const headers = new Headers(response.headers);
-  const vary = withoutNegotiationVary(headers.get("vary"));
+  const varyOption = Option.fromNullishOr(withoutNegotiationVary(headers.get("vary")));
 
-  if (vary !== null) headers.set("vary", vary);
-  else headers.delete("vary");
+  Option.match(varyOption, {
+    onNone: () => headers.delete("vary"),
+    onSome: (vary) => headers.set("vary", vary),
+  });
 
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 };

@@ -4,6 +4,7 @@
 // the <head> and the Link header so the two surfaces can never disagree.
 
 // services, features, and other libraries
+import { Array, Option, pipe } from "effect";
 import { absoluteUrl, markdownTwinUrl, withLanguageParam } from "./urls";
 
 // types
@@ -17,12 +18,16 @@ import { SITE_LANGUAGES } from "@/domain/constants";
 
 // --- RFC 8288 Link formatting ---
 
+// Formats a single link parameter if defined.
+const linkParam = (key: string, value: string | undefined): Option.Option<string> =>
+  pipe(
+    Option.fromNullishOr(value),
+    Option.map((v) => `${key}="${v}"`)
+  );
+
 // Formats a single link as an RFC 8288 header value in fixed parameter order (rel, type, title, hreflang).
-const linkHeader = ({ href, rel, type, title, hreflang }: LinkTag) => {
-  const parts = [`rel="${rel}"`];
-  if (type !== undefined) parts.push(`type="${type}"`);
-  if (title !== undefined) parts.push(`title="${title}"`);
-  if (hreflang !== undefined) parts.push(`hreflang="${hreflang}"`);
+const linkHeader = ({ href, rel, type, title, hreflang }: LinkTag): string => {
+  const parts = Array.getSomes([Option.some(`rel="${rel}"`), linkParam("type", type), linkParam("title", title), linkParam("hreflang", hreflang)]);
   return `<${href}>; ${parts.join("; ")}`;
 };
 

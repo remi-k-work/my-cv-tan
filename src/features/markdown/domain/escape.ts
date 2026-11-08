@@ -5,7 +5,7 @@
 // primitives are assembled into live in ./twins and ./detail-twin.
 
 // services, features, and other libraries
-import { Array } from "effect";
+import { Array, pipe, String } from "effect";
 
 // Line endings are collapsed and a literal backslash doubled before any escape rule runs, so
 // every rule below reads the author's own text rather than an earlier rule's output. Normalizing
@@ -65,6 +65,9 @@ const MD_ESCAPE_RULES = [...NORMALIZE_RULES, ...INLINE_RULES, ...EMPHASIS_RULES,
 // place would let the trim erase the very indent the block rules read as an indented code block,
 // un-neutralizing a heading, list marker or table the author never meant as one.
 export const escapeMd = (text: string) =>
-  Array.reduce(MD_ESCAPE_RULES, text.trimStart(), (escaped, [pattern, replacement]) => escaped.replace(pattern, replacement)).trim();
+  pipe(
+    Array.reduce(MD_ESCAPE_RULES, String.trimStart(text), (escaped, [pattern, replacement]) => escaped.replace(pattern, replacement)),
+    String.trim
+  );
 
 export const escapeMdInline = (text: string) => escapeMd(text.replace(/[\r\n]+/g, " "));

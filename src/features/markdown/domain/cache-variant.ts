@@ -2,6 +2,9 @@
 // document from the URL alone, so the inputs the site negotiates on stop being variants; every
 // other token the runtime put in Vary (for example Accept-Encoding for compression) still applies.
 
+// services, features, and other libraries
+import { Array, Option, pipe, String } from "effect";
+
 // meta (shared)
 import { NEGOTIATION_VARY_TOKENS } from "@/features/meta/domain/languages";
 
@@ -11,13 +14,17 @@ const NEGOTIATION_VARY = new Set(NEGOTIATION_VARY_TOKENS.map((token) => token.to
 
 // Removes the negotiation tokens from a Vary header value, returning null when none remain so the
 // caller can drop the header entirely. An absent header stays absent.
-export const withoutNegotiationVary = (vary: string | null) => {
-  if (vary === null) return null;
-
-  const remaining = vary
-    .split(",")
-    .map((token) => token.trim())
-    .filter((token) => token.length > 0 && !NEGOTIATION_VARY.has(token.toLowerCase()));
-
-  return remaining.length > 0 ? remaining.join(", ") : null;
-};
+export const withoutNegotiationVary = (vary: string | null) =>
+  pipe(
+    Option.fromNullishOr(vary),
+    Option.map((v) =>
+      pipe(
+        String.split(v, ","),
+        Array.map(String.trim),
+        Array.filter((token) => String.isNonEmpty(token) && !NEGOTIATION_VARY.has(token.toLowerCase()))
+      )
+    ),
+    Option.filter((tokens) => tokens.length > 0),
+    Option.map(Array.join(", ")),
+    Option.getOrNull
+  );

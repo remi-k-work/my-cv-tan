@@ -3,15 +3,16 @@
 // never disagree about a page's title, description, image, or language.
 
 // services, features, and other libraries
+import { Array, Option, pipe } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
 
 // constants
 import { AUTHOR_URL, GLOBAL_SOCIAL_IMAGE, PUBLISHER_URL, SITE_NAME } from "./identity";
-import type { SocialImageFacts } from "./identity";
 import { OPEN_GRAPH_LOCALES } from "./languages";
 import { SITE_LANGUAGES } from "@/domain/constants";
 
 // types
+import type { SocialImageFacts } from "./identity";
 import type { PreferredLanguage } from "@/domain/models";
 import type { MetaTag } from "./models";
 
@@ -42,7 +43,19 @@ export const globalSocialImage = (preferredLanguage: PreferredLanguage): SocialI
   ),
 });
 
-const alternateLocales = (preferredLanguage: PreferredLanguage) => SITE_LANGUAGES.filter((language) => language !== preferredLanguage);
+const alternateLocales = (preferredLanguage: PreferredLanguage) => Array.filter(SITE_LANGUAGES, (language) => language !== preferredLanguage);
+
+const articleMetaTags = (ogType: "website" | "article", articleSection?: "employment" | "portfolio"): ReadonlyArray<MetaTag> =>
+  ogType === "article"
+    ? Array.getSomes([
+        Option.some<MetaTag>({ property: "article:author", content: AUTHOR_URL }),
+        Option.some<MetaTag>({ property: "article:publisher", content: PUBLISHER_URL }),
+        pipe(
+          Option.fromNullishOr(articleSection),
+          Option.map((section): MetaTag => ({ property: "article:section", content: section }))
+        ),
+      ])
+    : [];
 
 export const socialMeta = ({
   title,
@@ -71,17 +84,11 @@ export const socialMeta = ({
     { property: "og:url", content: canonical },
     { property: "og:site_name", content: SITE_NAME },
     { property: "og:locale", content: OPEN_GRAPH_LOCALES[preferredLanguage] },
-    ...alternateLocales(preferredLanguage).map((language) => ({
+    ...Array.map(alternateLocales(preferredLanguage), (language) => ({
       property: "og:locale:alternate",
       content: OPEN_GRAPH_LOCALES[language],
     })),
-    ...(ogType === "article"
-      ? [
-          { property: "article:author", content: AUTHOR_URL },
-          { property: "article:publisher", content: PUBLISHER_URL },
-          ...(articleSection ? [{ property: "article:section", content: articleSection }] : []),
-        ]
-      : []),
+    ...articleMetaTags(ogType, articleSection),
     { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:title", content: title },
     { name: "twitter:description", content: description },
