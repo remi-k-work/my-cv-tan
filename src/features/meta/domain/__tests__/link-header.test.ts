@@ -1,7 +1,7 @@
 import { assert, it } from "@effect/vitest";
 import { AI_INDEX_LINKS, AI_INDEX_LINK_HEADER, LLMS_DISCOVERY_LINK, SITEMAP_LINK } from "../constants";
 import { ROOT_HEAD } from "../root-head";
-import { authorLink, canonicalLink, joinLinkHeader, languageVariantLinks, markdownAlternateLink } from "../helpers";
+import { authorLink, canonicalLink, joinLinkHeader, languageVariantLinks, markdownAlternateLink } from "../link-tags";
 import type { LinkTag } from "../models";
 
 // The three parameters the serializer writes, and nothing else: a link declaring a fourth would

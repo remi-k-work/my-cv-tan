@@ -3,7 +3,6 @@ import { contactHead, educationHead, experienceHead, homeHead } from "../page-he
 import { rootHead, ROOT_HEAD } from "../root-head";
 import { fallbackHead } from "../helpers";
 import { headLanguage, routeHead } from "../route-head";
-import { canonicalLink } from "../helpers";
 import { withLanguageParam } from "../urls";
 import { STATIC_PAGES } from "../pages";
 import { PERSON_DESCRIPTION, SITE_DESCRIPTION, SITE_NAME, AUTHOR_URL } from "../constants";
@@ -11,6 +10,7 @@ import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 import type { PageTitles } from "@/domain/models";
 import type { Experience } from "@/features/experience/domain/models";
 import type { MetaTag, PageHead } from "../models";
+import { canonicalLink } from "../link-tags";
 
 const sampleExperience: Experience = {
   type: "p",

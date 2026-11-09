@@ -1,14 +1,12 @@
 // services, features, and other libraries
-import { joinLinkHeader } from "./helpers";
-import { imageObject } from "./nodes";
-import { absoluteUrl } from "./urls";
+import { joinLinkHeader } from "./link-tags";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
 import type { DegradedCopy, JsonLdNode, LinkTag, PageHead, SocialImageFacts } from "./models";
 
 // constants
-import { SITE_LANGUAGES } from "@/domain/constants";
+import { DEFAULT_LANGUAGE, SITE_LANGUAGES } from "@/domain/constants";
 import { INDEXABLE_ROBOTS, NO_STORE, NOINDEX_FOLLOW, RETRY_AFTER } from "@/domain/http";
 
 export const SITE_URL = "https://www.remiforge.dev";
@@ -86,7 +84,7 @@ export const UNAVAILABLE_COPY: Readonly<Record<PreferredLanguage, DegradedCopy>>
 };
 
 export const POSTAL_ADDRESS = { "@type": "PostalAddress", addressLocality: HOME_LOCALITY, addressCountry: HOME_COUNTRY } as const;
-export const AVATAR_IMAGE_OBJECT = imageObject(AVATAR.src, AVATAR.width, AVATAR.height);
+export const AVATAR_IMAGE_OBJECT = { "@type": "ImageObject", url: AVATAR.src, width: AVATAR.width, height: AVATAR.height } as const;
 
 // Site-wide root entities included in every page graph
 export const SITE_NODES: ReadonlyArray<JsonLdNode> = [
@@ -126,18 +124,15 @@ export const SITE_NODES: ReadonlyArray<JsonLdNode> = [
   },
 ] as const;
 
-export const SITE_LANGUAGE_NAMES = { en: "English", pl: "Polish" } as const satisfies Readonly<Record<PreferredLanguage, string>>;
 export const OPEN_GRAPH_LOCALES = { en: "en_US", pl: "pl_PL" } as const satisfies Record<PreferredLanguage, string>;
-
-export const DEFAULT_LANGUAGE = "en" as const satisfies PreferredLanguage;
 export const NEGOTIATION_VARY_TOKENS = ["Cookie", "Accept-Language"] as const;
 
 // Discovery indexes projected into <head> and Link headers
-export const LLMS_TXT_INDEX = { name: "llms.txt", url: absoluteUrl(LLMS_TXT_HREF) } as const;
-export const LLMS_FULL_TXT_INDEX = { name: "llms-full.txt", url: absoluteUrl(LLMS_FULL_TXT_HREF) } as const;
+export const LLMS_TXT_INDEX = { name: "llms.txt", url: `${SITE_URL}${LLMS_TXT_HREF}` } as const;
+export const LLMS_FULL_TXT_INDEX = { name: "llms-full.txt", url: `${SITE_URL}${LLMS_FULL_TXT_HREF}` } as const;
 export const AI_INDEXES = [LLMS_TXT_INDEX, LLMS_FULL_TXT_INDEX] as const;
 
-export const SITEMAP_LINK = { rel: "sitemap", href: absoluteUrl(SITEMAP_HREF) };
+export const SITEMAP_LINK = { rel: "sitemap", href: `${SITE_URL}${SITEMAP_HREF}` } as const;
 export const LLMS_DISCOVERY_LINK: LinkTag = { rel: "llms", href: LLMS_TXT_INDEX.url };
 
 export const AI_INDEX_LINKS: ReadonlyArray<LinkTag> = AI_INDEXES.map(({ name, url }) => ({ rel: "alternate", type: "text/plain", title: name, href: url }));

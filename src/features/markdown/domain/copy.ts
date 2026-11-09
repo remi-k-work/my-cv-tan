@@ -3,7 +3,8 @@ import type { PreferredLanguage, Translate } from "@/domain/models";
 import type { StaticPageCopy } from "@/features/meta/domain/models";
 
 // constants
-import { BRANDED_TITLE, DEFAULT_LANGUAGE, SITE_NAME } from "@/features/meta/domain/constants";
+import { BRANDED_TITLE, SITE_NAME } from "@/features/meta/domain/constants";
+import { DEFAULT_LANGUAGE } from "@/domain/constants";
 
 export const translateSource: Translate = (source) => source;
 export const SOURCE_COPY = { preferredLanguage: DEFAULT_LANGUAGE, translate: translateSource } as const;

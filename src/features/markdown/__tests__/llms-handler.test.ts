@@ -3,7 +3,8 @@ import { contactHandler, educationHandler, experienceHandler, homeHandler, llmsF
 import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/constants";
 import { absoluteUrl, experienceMarkdownPath, experiencePath, markdownTwinUrl } from "@/features/meta/domain/urls";
 import { STATIC_PAGES, STATIC_PAGE_PATHS } from "@/features/meta/domain/pages";
-import { DEFAULT_LANGUAGE, CONTENT_SIGNAL } from "@/features/meta/domain/constants";
+import { CONTENT_SIGNAL } from "@/features/meta/domain/constants";
+import { DEFAULT_LANGUAGE } from "@/domain/constants";
 import experienceEn from "@/assets/data/en/experience.json";
 import experiencePl from "@/assets/data/pl/experience.json";
 

@@ -26,7 +26,6 @@ import type { TwinData } from "./models";
 
 // constants
 import {
-  DEFAULT_LANGUAGE,
   HOME_COUNTRY,
   HOME_LOCATION,
   HOME_TITLE,
@@ -36,19 +35,17 @@ import {
   LLMS_FULL_TXT_INDEX,
   LLMS_TXT_INDEX,
   PERSON_DESCRIPTION,
-  SITE_LANGUAGE_NAMES,
   SITE_NAME,
   SITE_URL,
   SOCIAL_PROFILES,
 } from "@/features/meta/domain/constants";
 import { PAGE_ENTRIES } from "./catalogue";
 import { CONTENT_SIGNAL, DOWNLOADABLE_DOCUMENTS, ROBOTS_TXT_HREF, SITEMAP_HREF } from "@/features/meta/domain/constants";
-import { HOME_PATH, SITE_LANGUAGES } from "@/domain/constants";
+import { DEFAULT_LANGUAGE, HOME_PATH, SITE_LANGUAGE_NAMES, SITE_LANGUAGES } from "@/domain/constants";
 import { STATIC_PAGES } from "@/features/meta/domain/pages";
 import { SOURCE_COPY } from "./copy";
 
 const PINNABLE_LANGUAGES = SITE_LANGUAGES.filter((language) => language !== DEFAULT_LANGUAGE);
-
 const LANGUAGE_PINS = PINNABLE_LANGUAGES.map(
   (language) => `Append \`?${LANG_PARAM}=${language}\` to any \`.md\` URL to request ${SITE_LANGUAGE_NAMES[language]} explicitly`
 );

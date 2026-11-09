@@ -14,8 +14,7 @@ type TwinEntrySpec = Omit<TwinEntry, "twinUrl"> & { readonly mdHref: string };
 
 // constants
 import { STATIC_PAGES } from "@/features/meta/domain/pages";
-import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/domain/constants";
-import { DEFAULT_LANGUAGE } from "@/features/meta/domain/constants";
+import { CONTACT_PATH, DEFAULT_LANGUAGE, EDUCATION_PATH, HOME_PATH } from "@/domain/constants";
 import { SOURCE_COPY } from "./copy";
 
 const staticTwin = <Data>(pagePath: PagePath, spec: Omit<PageTwin<Data>, "pagePath" | "mdHref" | "name" | "canonical">): PageTwin<Data> => ({

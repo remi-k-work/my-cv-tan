@@ -28,7 +28,8 @@ import {
   SOCIAL_PROFILES,
 } from "../constants";
 import { httpUrlOption } from "../urls";
-import { OPEN_GRAPH_LOCALES, SITE_LANGUAGE_NAMES } from "../constants";
+import { OPEN_GRAPH_LOCALES } from "../constants";
+import { SITE_LANGUAGE_NAMES } from "@/domain/constants";
 
 it("the canonical origin and every profile it publishes are absolute https URLs", () => {
   // `rel="me"` and JSON-LD `sameAs` are read as destinations, so a relative or non-http value

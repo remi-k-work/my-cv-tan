@@ -1,7 +1,7 @@
 import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
 import { absoluteUrl, encodeParens, experienceMarkdownPath, experiencePath, httpUrlOption, markdownTwinUrl, validatedHref, withLanguageParam } from "../urls";
-import { authorLink, canonicalLink, markdownAlternateLink } from "../helpers";
+import { authorLink, canonicalLink, markdownAlternateLink } from "../link-tags";
 import { CV_EN_HREF, CV_PL_HREF, SITEMAP_LINK, LLMS_DISCOVERY_LINK } from "../constants";
 import { cvPdfHref } from "../helpers";
 

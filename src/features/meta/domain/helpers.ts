@@ -1,12 +1,13 @@
 // services, features, and other libraries
-import { Array, Option, pipe, Predicate, Record, String } from "effect";
+import { Array, Option, Predicate, Record, String } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
 import { excerpt, experienceHeadline, experienceImagePath } from "@/features/experience/domain/helpers";
-import { absoluteUrl, experienceMarkdownPath, experiencePath, markdownTwinUrl, withLanguageParam } from "./urls";
+import { absoluteUrl, experienceMarkdownPath, experiencePath } from "./urls";
+import { canonicalLink } from "./link-tags";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
-import type { ExperienceHeadInput, ExperienceSeo, JsonLdNode, JsonLdObject, JsonLdScript, LinkTag, PageHead, SocialImageFacts } from "./models";
+import type { ExperienceHeadInput, ExperienceSeo, JsonLdNode, JsonLdObject, JsonLdScript, PageHead, SocialImageFacts } from "./models";
 
 // constants
 import {
@@ -14,7 +15,6 @@ import {
   CACHEABLE_HEADERS,
   CV_EN_HREF,
   CV_PL_HREF,
-  DEFAULT_LANGUAGE,
   MACHINE_HEADERS,
   META_DESCRIPTION_LENGTH,
   NEGOTIATION_VARY_TOKENS,
@@ -29,7 +29,7 @@ import {
 } from "./constants";
 import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain/constants";
 import { NOINDEX_FOLLOW } from "@/domain/http";
-import { SITE_LANGUAGES } from "@/domain/constants";
+import { DEFAULT_LANGUAGE } from "@/domain/constants";
 
 export const cvPdfHref = (preferredLanguage: PreferredLanguage) => matchPreferredLanguage(preferredLanguage, CV_EN_HREF, CV_PL_HREF);
 
@@ -105,37 +105,6 @@ export const jsonLdGraph = (nodes: ReadonlyArray<JsonLdNode>): JsonLdScript => {
 
   return jsonLdScript({ "@context": "https://schema.org", "@graph": graph });
 };
-
-const linkParam = (key: string, value: string | undefined): Option.Option<string> =>
-  pipe(
-    Option.fromNullishOr(value),
-    Option.map((v) => `${key}="${v}"`)
-  );
-
-// Serializes a link tag in RFC 8288 parameter order: rel, type, title, hreflang.
-const linkHeader = ({ href, rel, type, title, hreflang }: LinkTag): string => {
-  const parts = Array.getSomes([Option.some(`rel="${rel}"`), linkParam("type", type), linkParam("title", title), linkParam("hreflang", hreflang)]);
-  return `<${href}>; ${parts.join("; ")}`;
-};
-
-export const joinLinkHeader = (links: ReadonlyArray<LinkTag>) => links.map(linkHeader).join(", ");
-export const canonicalLink = (href: string): LinkTag => ({ rel: "canonical", href });
-export const authorLink = (href: string): LinkTag => ({ rel: "author", href });
-
-const markdownLink = (href: string, hreflang?: string): LinkTag => ({
-  rel: "alternate",
-  type: "text/markdown",
-  ...(hreflang !== undefined ? { hreflang } : {}),
-  href,
-});
-
-export const markdownAlternateLink = (mdPath: string, preferredLanguage: PreferredLanguage): LinkTag =>
-  markdownLink(markdownTwinUrl(mdPath, preferredLanguage));
-
-export const languageVariantLinks = (markdownUrl: string): ReadonlyArray<LinkTag> => [
-  ...SITE_LANGUAGES.map((language) => markdownLink(withLanguageParam(markdownUrl, language), language)),
-  markdownLink(withLanguageParam(markdownUrl, DEFAULT_LANGUAGE), "x-default"),
-];
 
 // Base response headers for rendered HTML documents
 export const documentHeaders = (preferredLanguage: PreferredLanguage) =>

@@ -2,10 +2,11 @@
 import { Option } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
 import { isEmployment } from "@/features/experience/domain/helpers";
-import { canonicalLink, experienceSeo, jsonLdGraph, markdownAlternateLink } from "./helpers";
+import { experienceSeo, jsonLdGraph } from "./helpers";
 import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd } from "./page-graphs";
 import { globalSocialImage, socialMeta } from "./social-meta";
 import { staticPageCopy } from "./pages";
+import { canonicalLink, markdownAlternateLink } from "./link-tags";
 
 // types
 import type { ExperienceHeadInput, JsonLdNodes, PageHead, PageHeadSpec, SocialImage, SocialImageFacts, StaticPageCopy, StaticPageHeadInput } from "./models";

@@ -1,8 +1,9 @@
 // services, features, and other libraries
 import { Option } from "effect";
-import { canonicalLink, documentHeaders, joinLinkHeader, languageVariantLinks } from "@/features/meta/domain/helpers";
+import { documentHeaders } from "@/features/meta/domain/helpers";
 import { markdownTwinUrl } from "@/features/meta/domain/urls";
 import { withoutNegotiationVary } from "@/features/markdown/domain/cache-variant";
+import { canonicalLink, joinLinkHeader, languageVariantLinks } from "@/features/meta/domain/link-tags";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";

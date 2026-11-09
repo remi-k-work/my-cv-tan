@@ -1,6 +1,7 @@
 // services, features, and other libraries
-import { authorLink, fallbackHead } from "./helpers";
+import { fallbackHead } from "./helpers";
 import { headLanguage, isNotFoundMatch } from "./route-head";
+import { authorLink } from "./link-tags";
 
 // types
 import type { PageHead, RootHead } from "./models";

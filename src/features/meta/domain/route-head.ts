@@ -7,7 +7,8 @@ import { fallbackHead } from "./helpers";
 import type { MatchChain, PageHead, RouteHeadSpec } from "./models";
 
 // constants
-import { DEFAULT_LANGUAGE, EMPTY_PAGE_HEAD } from "./constants";
+import { EMPTY_PAGE_HEAD } from "./constants";
+import { DEFAULT_LANGUAGE } from "@/domain/constants";
 
 const decodeRootLoaderData = Schema.decodeUnknownOption(Schema.Struct({ preferredLanguage: PreferredLanguage }));
 

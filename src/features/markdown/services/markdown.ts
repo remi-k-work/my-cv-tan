@@ -26,8 +26,9 @@ type DocumentBody = (request: Request, context: LocalizedMdInput) => Effect.Effe
 type DocumentResponse = (request: Request) => Effect.Effect<Response, never>;
 
 // constants
-import { DEFAULT_LANGUAGE, LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/constants";
+import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/constants";
 import { CONTACT_TWIN, EDUCATION_TWIN, HOME_TWIN } from "@/features/markdown/domain/catalogue";
+import { DEFAULT_LANGUAGE } from "@/domain/constants";
 
 const translateFor = (preferredLanguage: PreferredLanguage) =>
   preferredLanguage === DEFAULT_LANGUAGE
