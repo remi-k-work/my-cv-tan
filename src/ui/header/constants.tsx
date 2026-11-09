@@ -7,11 +7,11 @@ import VideoCameraIcon from "@heroicons/react/24/solid/VideoCameraIcon";
 import { GitHubIcon } from "@/assets/icons/github";
 import { LinkedInIcon } from "@/assets/icons/linked-in";
 
-// meta (shared)
-import { SOCIAL_PROFILES } from "@/features/meta/domain/identity";
-
 // types
 import type { ReactNode } from "react";
+
+// constants
+import { SOCIAL_PROFILES } from "@/features/meta/domain/constants";
 
 // Static icons hoisted to module scope so re-rendering the nav reuses the same elements instead of recreating them
 const ICON_HOME = <HomeIcon />;

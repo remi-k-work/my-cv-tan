@@ -1,38 +1,6 @@
-// AI index documents (llms.txt / llms-full.txt) and their shared sections/copy.
-// The experience listing sections both documents print live in ./experience-lines; twin
-// declarations and builders live there and in ./detail-twin.
-
 // services, features, and other libraries
 import { partitionExperiences } from "@/features/experience/domain/helpers";
-
-// types
-import type { ExperienceList } from "@/features/experience/domain/models";
-
-// meta (shared)
-import {
-  HOME_COUNTRY,
-  HOME_LOCATION,
-  HOME_TITLE,
-  JOB_TITLE,
-  KNOWS_ABOUT,
-  PERSON_DESCRIPTION,
-  SITE_NAME,
-  SITE_URL,
-  SOCIAL_PROFILES,
-} from "@/features/meta/domain/identity";
-import { CONTENT_SIGNAL, DOWNLOADABLE_DOCUMENTS, ROBOTS_TXT_HREF, SITEMAP_HREF } from "@/features/meta/domain/discovery";
-import { DEFAULT_LANGUAGE, SITE_LANGUAGE_NAMES } from "@/features/meta/domain/languages";
-import { HOME_PATH, SITE_LANGUAGES } from "@/domain/constants";
-import { STATIC_PAGES } from "@/features/meta/domain/pages";
-import { LANG_PARAM, absoluteUrl, encodeDestination, markdownTwinUrl } from "@/features/meta/domain/urls";
-import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/link-tags";
-
-// domain
-import { SOURCE_COPY } from "./copy";
 import { experienceLines } from "./experience-lines";
-
-// formatting primitives
-import { escapeMd, escapeMdInline } from "./escape";
 import {
   demoteHeadings,
   fencedFacts,
@@ -48,23 +16,43 @@ import {
   mdQuote,
   mdTitledSection,
 } from "./format";
+import { escapeMd, escapeMdInline } from "./escape";
+import { allEntries } from "./catalogue";
+import { absoluteUrl, encodeDestination, markdownTwinUrl } from "@/features/meta/domain/urls";
+
+// types
+import type { ExperienceList } from "@/features/experience/domain/models";
 import type { TwinData } from "./models";
-import { PAGE_ENTRIES, allEntries } from "./catalogue";
 
-// --- Shared AI Index Sections and Copy ---
+// constants
+import {
+  DEFAULT_LANGUAGE,
+  HOME_COUNTRY,
+  HOME_LOCATION,
+  HOME_TITLE,
+  JOB_TITLE,
+  KNOWS_ABOUT,
+  LANG_PARAM,
+  LLMS_FULL_TXT_INDEX,
+  LLMS_TXT_INDEX,
+  PERSON_DESCRIPTION,
+  SITE_LANGUAGE_NAMES,
+  SITE_NAME,
+  SITE_URL,
+  SOCIAL_PROFILES,
+} from "@/features/meta/domain/constants";
+import { PAGE_ENTRIES } from "./catalogue";
+import { CONTENT_SIGNAL, DOWNLOADABLE_DOCUMENTS, ROBOTS_TXT_HREF, SITEMAP_HREF } from "@/features/meta/domain/constants";
+import { HOME_PATH, SITE_LANGUAGES } from "@/domain/constants";
+import { STATIC_PAGES } from "@/features/meta/domain/pages";
+import { SOURCE_COPY } from "./copy";
 
-// The languages a twin may be pinned to beside the source language. Derived from the same
-// vocabulary the twin builder writes and its request parser reads, so the guidance below can never
-// name a parameter, or a language, this site does not actually publish.
 const PINNABLE_LANGUAGES = SITE_LANGUAGES.filter((language) => language !== DEFAULT_LANGUAGE);
 
 const LANGUAGE_PINS = PINNABLE_LANGUAGES.map(
   (language) => `Append \`?${LANG_PARAM}=${language}\` to any \`.md\` URL to request ${SITE_LANGUAGE_NAMES[language]} explicitly`
 );
 
-// The keys every twin's frontmatter carries, in the order `twinIdentity` writes them. The reuse
-// note below names them to an AI reader, so the set is compared against the built facts in
-// ./__tests__ rather than trusted to stay in step on its own.
 export const AI_NOTES = [
   `Reuse is permitted for search, AI input and AI training (\`Content-Signal: ${CONTENT_SIGNAL}\`).`,
   `Markdown responses follow the request's language preferences. ${LANGUAGE_PINS.join("; ")}; ${SITE_LANGUAGE_NAMES[DEFAULT_LANGUAGE]} is the fallback when no supported preference is present.`,
@@ -107,8 +95,6 @@ const DISCOVERY_SECTION = mdTitledSection("Discovery", mdBulletList(DISCOVERY_LI
 
 export const SITE_OPENING: ReadonlyArray<string> = [mdHeading(1, SITE_NAME), mdQuote(HOME_TITLE), escapeMd(PERSON_DESCRIPTION)];
 
-// --- AI Index document sections ---
-
 const PAGES_SECTION = mdTitledSection(
   "Pages",
   mdBulletList([
@@ -120,8 +106,6 @@ const PAGES_SECTION = mdTitledSection(
 const OPTIONAL_SECTION = mdTitledSection("Optional", mdDocumentLinks(DOWNLOADABLE_DOCUMENTS, SOURCE_COPY.translate));
 const PROFILES_SECTION = mdTitledSection("Profiles", mdBulletList(mdProfileLinks(SOCIAL_PROFILES)));
 
-// One pinned document per language beside the English source, walked from the home twin so a
-// reader sees the shape of the pin before fetching any page.
 const LANGUAGE_VARIANTS_SECTION = mdTitledSection(
   "Language Variants",
   mdBulletList(
@@ -132,10 +116,8 @@ const LANGUAGE_VARIANTS_SECTION = mdTitledSection(
   )
 );
 
-// Builds the llms.txt index document.
+// Builds the concise llms.txt discovery index
 export const buildLlmsTxt = (experienceList: ExperienceList) => {
-  // One split for both listings, under this document's own section titles: the same partition the
-  // home twin renders, so the two surfaces cannot group an experience differently.
   const [employment, projects] = partitionExperiences(experienceList);
 
   return mdDocument([
@@ -152,7 +134,7 @@ export const buildLlmsTxt = (experienceList: ExperienceList) => {
   ]);
 };
 
-// Builds the llms-full.txt single-request concatenated companion document.
+// Builds the full concatenated llms-full.txt document for single-request ingestion
 export const buildLlmsFullTxt = ({ pageTitles, experienceList, educationList }: TwinData) => {
   const documents = allEntries(experienceList);
 
@@ -162,26 +144,19 @@ export const buildLlmsFullTxt = ({ pageTitles, experienceList, educationList }: 
     ABOUT_SECTION,
     mdTitledSection("Table of Contents", mdBulletList(documents.map(({ name, canonical, twinUrl }) => mdIndexEntry(name, canonical, twinUrl)))),
     DISCOVERY_SECTION,
-    // The facts are fenced rather than published as a second frontmatter block: inside one
-    // document a raw `---` is a thematic break, and its closing line turns the last fact into a
-    // setext heading that would collide with the section heading above it.
     ...documents.map(({ name, canonical, twinUrl, render }) => {
       const twin = render({ pageTitles, experienceList, educationList });
-
-      // The canonical is a site-derived URL, so a slug whose first or last character is `_`
-      // would otherwise read as emphasis and put half the citation inside it: the same inline
-      // escape every other content line takes.
-      return mdBody([mdHeading(2, name), `Source: ${escapeMdInline(canonical)}`, `Markdown: ${encodeDestination(twinUrl)}`, fencedFacts(twin.facts), demoteHeadings(twin.body)]);
+      return mdBody([
+        mdHeading(2, name),
+        `Source: ${escapeMdInline(canonical)}`,
+        `Markdown: ${encodeDestination(twinUrl)}`,
+        fencedFacts(twin.facts),
+        demoteHeadings(twin.body),
+      ]);
     }),
     COMPANION_NOTES_SECTION,
   ]);
 };
 
-// The first note is the reuse policy, and it is repeated verbatim in the index fallback below: a
-// degraded read must still learn what reuse is permitted, rather than depending on a header a proxy
-// or intermediate cache may strip from the response it forwards.
-const REUSE_NOTE = AI_NOTES[0];
-
-// Plain-text 503 fallback body for AI index files.
 export const unavailableIndexBody = (name: string) =>
-  `${name} is temporarily unavailable because required portfolio content could not be loaded. Please try again shortly.\n\n${REUSE_NOTE}\n`;
+  `${name} is temporarily unavailable because required portfolio content could not be loaded. Please try again shortly.\n\n${AI_NOTES[0]}\n`;

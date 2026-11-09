@@ -5,8 +5,8 @@ import { useId } from "react";
 import { useLocale } from "gt-tanstack-start";
 import { matchPreferredLanguage, preferredLanguageFromLocale } from "@/domain/helpers";
 
-// meta (shared)
-import { NOT_FOUND_COPY } from "@/features/meta/domain/fallback";
+// constants
+import { NOT_FOUND_COPY } from "@/features/meta/domain/constants";
 
 export function NotFoundPage() {
   const headingId = useId();
