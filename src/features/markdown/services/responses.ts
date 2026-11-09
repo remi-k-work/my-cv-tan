@@ -2,8 +2,8 @@
 import { Option } from "effect";
 import { documentHeaders } from "@/features/meta/domain/helpers";
 import { markdownTwinUrl } from "@/features/meta/domain/urls";
-import { withoutNegotiationVary } from "@/features/markdown/domain/cache-variant";
 import { canonicalLink, joinLinkHeader, languageVariantLinks } from "@/features/meta/domain/link-tags";
+import { withoutNegotiationVary } from "@/features/markdown/domain/helpers";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";

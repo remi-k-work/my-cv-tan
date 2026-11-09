@@ -1,5 +1,5 @@
 import { assert, describe, it } from "@effect/vitest";
-import { withoutNegotiationVary } from "../cache-variant";
+import { withoutNegotiationVary } from "../helpers";
 import { documentHeaders } from "@/features/meta/domain/helpers";
 
 describe("withoutNegotiationVary", () => {

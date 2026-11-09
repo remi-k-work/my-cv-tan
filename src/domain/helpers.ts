@@ -6,7 +6,7 @@ import { RpcLogger } from "@/services/rpc-logger";
 
 // types
 import type { Rpc } from "effect/rpc";
-import type { PagePath, PageTitles, PreferredLanguage } from "./models";
+import type { PagePath, PageTitles, PreferredLanguage, Translate } from "./models";
 
 // Builds a class-style RPC client service backed by an HTTP protocol layer for a given RPC group
 export const makeRpcClient = <Rpcs extends Rpc.Any>(serviceName: string, group: RpcGroup.RpcGroup<Rpcs>, path: string) => {
@@ -63,3 +63,5 @@ export const pageField = (pageTitles: PageTitles | null, pagePath: PagePath, key
     Option.map((page) => page[key]),
     Option.getOrElse(() => fallback)
   );
+
+export const translateSource: Translate = (source) => source;

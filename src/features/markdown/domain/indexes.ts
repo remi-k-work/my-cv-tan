@@ -17,7 +17,7 @@ import {
   mdTitledSection,
 } from "./format";
 import { escapeMd, escapeMdInline } from "./escape";
-import { allEntries } from "./catalogue";
+import { allEntries } from "./helpers";
 import { absoluteUrl, encodeDestination, markdownTwinUrl } from "@/features/meta/domain/urls";
 
 // types
@@ -39,11 +39,11 @@ import {
   SITE_URL,
   SOCIAL_PROFILES,
 } from "@/features/meta/domain/constants";
-import { PAGE_ENTRIES } from "./catalogue";
+import { PAGE_ENTRIES } from "./constants";
 import { CONTENT_SIGNAL, DOWNLOADABLE_DOCUMENTS, ROBOTS_TXT_HREF, SITEMAP_HREF } from "@/features/meta/domain/constants";
 import { DEFAULT_LANGUAGE, HOME_PATH, SITE_LANGUAGE_NAMES, SITE_LANGUAGES } from "@/domain/constants";
 import { STATIC_PAGES } from "@/features/meta/domain/pages";
-import { SOURCE_COPY } from "./copy";
+import { SOURCE_COPY } from "./constants";
 
 const PINNABLE_LANGUAGES = SITE_LANGUAGES.filter((language) => language !== DEFAULT_LANGUAGE);
 const LANGUAGE_PINS = PINNABLE_LANGUAGES.map(

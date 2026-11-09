@@ -43,7 +43,7 @@ export const socialMeta = ({
   ogType = "website",
   articleSection,
 }: SocialMetaInput): ReadonlyArray<MetaTag> => {
-  // Twitter Card uses JPEG banner for universal preview compatibility.
+  // Twitter Card uses JPEG banner for universal preview compatibility
   const banner = globalSocialImage(preferredLanguage);
 
   return [

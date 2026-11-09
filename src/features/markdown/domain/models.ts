@@ -72,3 +72,5 @@ export interface TwinEntry {
   readonly summary?: string;
   readonly render: (data: TwinData) => MarkdownTwin;
 }
+
+export type TwinEntrySpec = Omit<TwinEntry, "twinUrl"> & { readonly mdHref: string };

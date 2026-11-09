@@ -4,7 +4,7 @@ import { escapeMd } from "../escape";
 import { buildExperienceMd } from "../detail-twin";
 import { buildHomeMd, unavailableMarkdownBody } from "../twins";
 import { twinDocument } from "../format";
-import { SOURCE_COPY } from "../copy";
+import { SOURCE_COPY } from "../constants";
 import { PERSON_DESCRIPTION, LANG_PARAM } from "@/features/meta/domain/constants";
 import { experienceSeo } from "@/features/meta/domain/helpers";
 import { SITE_LANGUAGE_NAMES, SITE_LANGUAGES } from "@/domain/constants";

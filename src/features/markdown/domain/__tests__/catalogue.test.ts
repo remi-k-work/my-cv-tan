@@ -1,7 +1,7 @@
 import { assert, it } from "@effect/vitest";
 import { Effect } from "effect";
-import { CONTACT_TWIN, EDUCATION_TWIN, HOME_TWIN, PAGE_TWINS, PAGE_ENTRIES, allEntries } from "../catalogue";
-import { SOURCE_COPY } from "../copy";
+import { CONTACT_TWIN, EDUCATION_TWIN, HOME_TWIN, PAGE_TWINS, PAGE_ENTRIES, SOURCE_COPY } from "../constants";
+import { allEntries } from "../helpers";
 import { twinDocument } from "../format";
 import { STATIC_PAGES } from "@/features/meta/domain/pages";
 import { absoluteUrl, markdownTwinUrl } from "@/features/meta/domain/urls";

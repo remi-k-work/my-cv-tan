@@ -7,13 +7,13 @@ import { experienceFromList } from "@/features/experience/domain/helpers";
 import { decodeUrlOption, experienceMarkdownPath } from "@/features/meta/domain/urls";
 import { translateForLanguage } from "@/lib/gt-translations";
 import { mdNotFoundResponse, mdResponse, mdUnavailableResponse, pinCacheVariant } from "./responses";
-import { translateSource } from "@/features/markdown/domain/copy";
 import { buildExperienceMd, buildNotFoundMd } from "@/features/markdown/domain/detail-twin";
 import { twinDocument } from "@/features/markdown/domain/format";
 import { buildLlmsFullTxt, buildLlmsTxt, unavailableIndexBody } from "@/features/markdown/domain/indexes";
 import { parseLangParam, slugFromMdPathname } from "@/features/markdown/domain/requests";
 import { unavailableMarkdownBody } from "@/features/markdown/domain/twins";
 import { experienceSeo, txtResponse, txtUnavailableResponse } from "@/features/meta/domain/helpers";
+import { translateSource } from "@/domain/helpers";
 
 // types
 import type { LocalizedMdInput, MarkdownTwin, PageTwin } from "@/features/markdown/domain/models";
@@ -27,7 +27,7 @@ type DocumentResponse = (request: Request) => Effect.Effect<Response, never>;
 
 // constants
 import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/constants";
-import { CONTACT_TWIN, EDUCATION_TWIN, HOME_TWIN } from "@/features/markdown/domain/catalogue";
+import { CONTACT_TWIN, EDUCATION_TWIN, HOME_TWIN } from "@/features/markdown/domain/constants";
 import { DEFAULT_LANGUAGE } from "@/domain/constants";
 
 const translateFor = (preferredLanguage: PreferredLanguage) =>
