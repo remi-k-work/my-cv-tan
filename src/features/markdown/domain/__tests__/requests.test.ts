@@ -1,8 +1,8 @@
 import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
-import { parseLangParam, slugFromMdPathname } from "../requests";
 import { absoluteUrl, experienceMarkdownPath, markdownTwinUrl, withLanguageParam } from "@/features/meta/domain/urls";
 import { SITE_LANGUAGES } from "@/domain/constants";
+import { parseLangParam, slugFromMdPathname } from "../helpers";
 
 it("parseLangParam honors ?lang= and rejects unknown values", () => {
   for (const language of SITE_LANGUAGES) {

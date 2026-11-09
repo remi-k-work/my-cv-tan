@@ -1,7 +1,7 @@
 import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
-import { parseLangParam, slugFromMdPathname } from "../requests";
 import { experienceMarkdownPath, markdownTwinUrl } from "@/features/meta/domain/urls";
+import { parseLangParam, slugFromMdPathname } from "../helpers";
 
 it("a pin round-trips through the one parameter every publisher writes and the parser reads", () => {
   // The site advertises twin URLs with `?lang=` in heads, twins, index entries and Link headers.

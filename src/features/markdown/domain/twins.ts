@@ -2,10 +2,10 @@
 import { partitionExperiences } from "@/features/experience/domain/helpers";
 import { staticPageCopy } from "@/features/meta/domain/pages";
 import { experienceLines } from "./experience-lines";
-import { pageFacts } from "./copy";
 import { pagesSection } from "./twin-nav";
 import { mdBody, mdBulletList, mdDocument, mdDocumentLinks, mdEmptyMarker, mdFact, mdHeading, mdProfileLinks, mdQuote, mdTitledSection } from "./format";
 import { escapeMd } from "./escape";
+import { pageFacts } from "./helpers";
 
 // types
 import type { StaticPageCopy } from "@/features/meta/domain/models";

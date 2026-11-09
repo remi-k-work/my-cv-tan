@@ -10,10 +10,10 @@ import { mdNotFoundResponse, mdResponse, mdUnavailableResponse, pinCacheVariant 
 import { buildExperienceMd, buildNotFoundMd } from "@/features/markdown/domain/detail-twin";
 import { twinDocument } from "@/features/markdown/domain/format";
 import { buildLlmsFullTxt, buildLlmsTxt, unavailableIndexBody } from "@/features/markdown/domain/indexes";
-import { parseLangParam, slugFromMdPathname } from "@/features/markdown/domain/requests";
 import { unavailableMarkdownBody } from "@/features/markdown/domain/twins";
 import { experienceSeo, txtResponse, txtUnavailableResponse } from "@/features/meta/domain/helpers";
 import { translateSource } from "@/domain/helpers";
+import { parseLangParam, slugFromMdPathname } from "@/features/markdown/domain/helpers";
 
 // types
 import type { LocalizedMdInput, MarkdownTwin, PageTwin } from "@/features/markdown/domain/models";

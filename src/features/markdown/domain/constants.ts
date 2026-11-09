@@ -47,14 +47,8 @@ export const CONTACT_TWIN: PageTwin<ContactTwinData> = staticTwin(CONTACT_PATH, 
 
 export const PAGE_TWINS = [HOME_TWIN, EDUCATION_TWIN, CONTACT_TWIN] as const;
 
-export const twinEntry = ({ mdHref, ...entry }: TwinEntrySpec): TwinEntry => ({ ...entry, twinUrl: markdownTwinUrl(mdHref, DEFAULT_LANGUAGE) });
+export const TWIN_ENTRY = ({ mdHref, ...entry }: TwinEntrySpec): TwinEntry => ({ ...entry, twinUrl: markdownTwinUrl(mdHref, DEFAULT_LANGUAGE) });
 
-export const PAGE_ENTRIES: ReadonlyArray<TwinEntry> = PAGE_TWINS.map((twin) =>
-  twinEntry({
-    name: twin.name,
-    canonical: twin.canonical,
-    mdHref: twin.mdHref,
-    summary: twin.summary,
-    render: (data) => twin.render(data, SOURCE_COPY),
-  })
+export const PAGE_ENTRIES: ReadonlyArray<TwinEntry> = PAGE_TWINS.map(({ name, canonical, mdHref, summary, render }) =>
+  TWIN_ENTRY({ name, canonical, mdHref, summary, render: (data) => render(data, SOURCE_COPY) })
 );

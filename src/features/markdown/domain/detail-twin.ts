@@ -3,10 +3,10 @@ import { Array, Option } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
 import { isEmployment } from "@/features/experience/domain/helpers";
 import { experiencePath, validatedHref } from "@/features/meta/domain/urls";
-import { twinIdentity } from "./copy";
 import { deadEndEscapeLine, detailPagesSection } from "./twin-nav";
 import { mdBody, mdBulletList, mdFact, mdHeading, mdLink, mdQuote, mdTitledSection } from "./format";
 import { escapeMd, escapeMdInline } from "./escape";
+import { twinIdentity } from "./helpers";
 
 // types
 import type { ExperienceMdInput, MarkdownTwin, NotFoundMdInput } from "./models";
@@ -29,7 +29,7 @@ export const buildExperienceMd = ({ seo, translate }: ExperienceMdInput): Markdo
 
   return {
     facts: {
-      ...twinIdentity({ title: headline, description, canonical, preferredLanguage }),
+      ...twinIdentity(headline, description, canonical, preferredLanguage),
       type: isEmployment(experience) ? "work-experience" : "project",
       role,
       company,

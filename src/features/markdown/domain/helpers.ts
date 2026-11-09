@@ -1,16 +1,19 @@
 // services, features, and other libraries
-import { Array, Option, pipe, String } from "effect";
+import { Array, flow, Option, pipe, Schema, String } from "effect";
 import { experienceSeo } from "@/features/meta/domain/helpers";
 import { buildExperienceMd } from "./detail-twin";
+import { PreferredLanguage } from "@/domain/models";
+import { decodeUrlOption } from "@/features/meta/domain/urls";
 
 // types
 import type { ExperienceList } from "@/features/experience/domain/models";
 import type { TwinEntry } from "./models";
+import type { StaticPageCopy } from "@/features/meta/domain/models";
 
 // constants
-import { NEGOTIATION_VARY_TOKENS } from "@/features/meta/domain/constants";
+import { BRANDED_TITLE, LANG_PARAM, NEGOTIATION_VARY_TOKENS, SITE_NAME } from "@/features/meta/domain/constants";
 import { DEFAULT_LANGUAGE } from "@/domain/constants";
-import { PAGE_ENTRIES, SOURCE_COPY, twinEntry } from "./constants";
+import { PAGE_ENTRIES, SOURCE_COPY, TWIN_ENTRY } from "./constants";
 
 const NEGOTIATION_VARY = new Set(NEGOTIATION_VARY_TOKENS.map((token) => token.toLowerCase()));
 
@@ -34,7 +37,7 @@ const experienceEntries = (experienceList: ExperienceList): ReadonlyArray<TwinEn
   experienceList.map((experience) => {
     const seo = experienceSeo({ experience, preferredLanguage: DEFAULT_LANGUAGE });
 
-    return twinEntry({
+    return TWIN_ENTRY({
       name: seo.headline,
       canonical: seo.canonical,
       mdHref: seo.markdownPath,
@@ -43,3 +46,41 @@ const experienceEntries = (experienceList: ExperienceList): ReadonlyArray<TwinEn
   });
 
 export const allEntries = (experienceList: ExperienceList): ReadonlyArray<TwinEntry> => [...PAGE_ENTRIES, ...experienceEntries(experienceList)];
+
+export const twinIdentity = (title: string, description: string, canonical: string, preferredLanguage: PreferredLanguage) =>
+  ({
+    title: BRANDED_TITLE(title),
+    description,
+    author: SITE_NAME,
+    canonical,
+    lang: preferredLanguage,
+  }) as const;
+
+export const pageFacts = ({ seoTitle, description, canonical, preferredLanguage, type }: StaticPageCopy) => ({
+  ...twinIdentity(seoTitle, description, canonical, preferredLanguage),
+  type,
+});
+
+const decodePreferredLanguage = Schema.decodeUnknownOption(PreferredLanguage);
+const decodeUrlComponent = Option.liftThrowable(decodeURIComponent);
+
+// Parses and validates the ?lang= query parameter from a request URL
+export const parseLangParam = (url: string) =>
+  pipe(
+    decodeUrlOption(url),
+    Option.flatMap(({ searchParams }) => Option.fromNullishOr(searchParams.get(LANG_PARAM))),
+    Option.map(flow(String.trim, String.toLowerCase)),
+    Option.flatMap(decodePreferredLanguage)
+  );
+
+// Extracts the experience slug from a markdown route pathname (e.g., /my-experience.md -> "my-experience")
+export const slugFromMdPathname = (url: string) =>
+  pipe(
+    decodeUrlOption(url),
+    Option.map(({ pathname }) => pathname.slice(1)),
+    Option.filter((path) => !path.includes("/")),
+    Option.filter((segment) => segment.endsWith(".md")),
+    Option.map((segment) => segment.slice(0, -".md".length)),
+    Option.flatMap(decodeUrlComponent),
+    Option.filter(String.isNonEmpty)
+  );

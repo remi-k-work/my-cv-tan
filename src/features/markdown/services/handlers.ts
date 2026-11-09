@@ -1,8 +1,8 @@
 // services, features, and other libraries
 import { Effect, Option } from "effect";
 import { documentRoute } from "@/lib/server-route";
-import { parseLangParam } from "@/features/markdown/domain/requests";
 import { Markdown } from "./markdown";
+import { parseLangParam } from "@/features/markdown/domain/helpers";
 
 const markdownRoute = (name: keyof Markdown["Service"]) => (request: Request) => Effect.flatMap(Markdown, (markdown) => markdown[name](request));
 
