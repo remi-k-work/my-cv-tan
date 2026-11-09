@@ -2,17 +2,10 @@
 // `staticPageCopy` is the single source of truth for localized static page SEO data,
 // shared by HTML heads, Markdown twins, and the sitemap.
 
-// services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-
-// domain
 import { staticPageCopy } from "../pages";
 import { STATIC_PAGES, STATIC_PAGE_PATHS } from "../pages";
-
-// constants
 import { HOME_PATH, EDUCATION_PATH, CONTACT_PATH } from "@/domain/constants";
-
-// types
 import type { PageTitles } from "@/domain/models";
 
 const stablePageTitles: PageTitles = {

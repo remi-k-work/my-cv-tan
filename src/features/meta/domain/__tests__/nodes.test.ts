@@ -2,17 +2,10 @@
 // Each builder is pure, so these tests assert the exact node shape without
 // needing graph merge or serialization.
 
-// services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-
-// domain
-import { articleNode, breadcrumb, collectionNode, experienceItemNode, imageObject, PERSON_ID, personEdge, PUBLISHER_ID, webPageNode, WEBSITE_ID } from "../nodes";
-
-// types
+import { articleNode, breadcrumb, collectionNode, experienceItemNode, imageObject, personEdge, webPageNode } from "../nodes";
+import { HOME_URL, PERSON_ID, PUBLISHER_ID, WEBSITE_ID } from "../constants";
 import type { PreferredLanguage } from "@/domain/models";
-
-// constants
-import { HOME_URL } from "../identity";
 
 const language: PreferredLanguage = "en";
 

@@ -1,14 +1,9 @@
-// services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { Option, Schema, pipe } from "effect";
 import { contactHead, educationHead, experienceHead, homeHead } from "../page-head";
 import { ROOT_HEAD } from "../root-head";
-import { jsonLdGraph, siteNodes } from "../graph";
-import { PERSON_ID, PROFILE_ID } from "../nodes";
-
-import { PERSON_DESCRIPTION, SITE_DESCRIPTION } from "../identity";
-
-// types
+import { jsonLdGraph } from "../helpers";
+import { PERSON_ID, PROFILE_ID, PERSON_DESCRIPTION, SITE_DESCRIPTION, SITE_NODES } from "../constants";
 import type { PageTitles } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { Experience } from "@/features/experience/domain/models";
@@ -86,7 +81,7 @@ const stablePageTitles: PageTitles = {
 
 // The site entities every page merges into its own single block; the head carries no script of its
 // own because TanStack concatenates rather than replaces them (see pageHead in page-head.ts)
-const siteGraph = graphOf(jsonLdGraph(siteNodes).children);
+const siteGraph = graphOf(jsonLdGraph(SITE_NODES).children);
 
 it("the root head carries no JSON-LD, so a page's single block is not duplicated", () => {
   // TanStack concatenates the scripts of every match in the chain rather than replacing them, so a
@@ -175,12 +170,12 @@ it("merging a page edge into the site entities leaves the shared declaration unt
   // place, or the shared module constant accumulates the edge and leaks it into the next document
   // rendered from the same declaration — the one way a site-wide head could carry one page's
   // structured data into another's.
-  const declaration = JSON.stringify(siteNodes);
+  const declaration = JSON.stringify(SITE_NODES);
 
   const first = educationHead({ pageTitles: stablePageTitles, educationList: sampleEducation, preferredLanguage: "pl" });
   const second = educationHead({ pageTitles: stablePageTitles, educationList: sampleEducation, preferredLanguage: "pl" });
 
-  assert.strictEqual(JSON.stringify(siteNodes), declaration);
+  assert.strictEqual(JSON.stringify(SITE_NODES), declaration);
   // The merging page still renders byte-identical on a second request, edge included
   assert.strictEqual(first.scripts?.[0]?.children, second.scripts?.[0]?.children);
   // ...and the merged Person carries its edge exactly once, not once per render

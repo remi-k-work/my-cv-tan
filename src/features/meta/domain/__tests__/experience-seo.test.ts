@@ -2,19 +2,12 @@
 // The HTML head, JSON-LD graph and Markdown twin all derive from this one record,
 // so its fields must be correct and consistent on their own.
 
-// services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
-
-// domain
-import { experienceSeo, experienceScreenshot } from "../experience-seo";
-
-// types
-import type { Experience } from "@/features/experience/domain/models";
-
-// constants
-import { META_DESCRIPTION_LENGTH } from "../identity";
 import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain/constants";
+import { experienceScreenshot, experienceSeo } from "../helpers";
+import { META_DESCRIPTION_LENGTH } from "../constants";
+import type { Experience } from "@/features/experience/domain/models";
 
 const sampleExperience: Experience = {
   type: "p",

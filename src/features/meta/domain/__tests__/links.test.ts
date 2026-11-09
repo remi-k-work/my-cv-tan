@@ -1,11 +1,9 @@
-// services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
 import { absoluteUrl, encodeParens, experienceMarkdownPath, experiencePath, httpUrlOption, markdownTwinUrl, validatedHref, withLanguageParam } from "../urls";
-import { authorLink, canonicalLink, LLMS_DISCOVERY_LINK, markdownAlternateLink, SITEMAP_LINK } from "../link-tags";
-
-// constants
-import { CV_EN_HREF, CV_PL_HREF, cvPdfHref } from "../discovery";
+import { authorLink, canonicalLink, markdownAlternateLink } from "../helpers";
+import { CV_EN_HREF, CV_PL_HREF, SITEMAP_LINK, LLMS_DISCOVERY_LINK } from "../constants";
+import { cvPdfHref } from "../helpers";
 
 // These tests pin the URL math the HTML heads, Markdown twins, discovery documents and HTTP
 // responses share. The Link-header serialization itself is covered in link-header.test.ts.

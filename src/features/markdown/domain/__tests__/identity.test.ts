@@ -1,20 +1,10 @@
-// A crawler may read any one of three surfaces on its own: the HTML <head>, the JSON-LD graph,
-// or the Markdown twin. Each surface restates a page's SEO identity, and each is built from the
-// one record that owns it — `experienceSeo` for a detail page, the static page catalogue for the
-// three list pages — so the headline, description, canonical and image can never disagree about
-// which page and subject they describe. This pins that agreement directly instead of relying on
-// each surface's own test to notice a drift by hand.
-
-// services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { experienceSeo } from "@/features/meta/domain/experience-seo";
-import { BRANDED_TITLE } from "@/features/meta/domain/identity";
 import { contactHead, educationHead, experienceHead, homeHead } from "@/features/meta/domain/page-head";
 import { STATIC_PAGES, STATIC_PAGE_PATHS, staticPageCopy } from "@/features/meta/domain/pages";
 import { ExperienceIdentity } from "@/features/experience/ui/experience-identity";
-import { DOWNLOADABLE_DOCUMENTS } from "@/features/meta/domain/discovery";
+import { BRANDED_TITLE, DOWNLOADABLE_DOCUMENTS } from "@/features/meta/domain/constants";
 import { absoluteUrl } from "@/features/meta/domain/urls";
 import { buildSitemapXml } from "@/features/meta/domain/sitemap";
 import { mdResponse } from "../../services/responses";
@@ -22,11 +12,10 @@ import { buildLlmsTxt } from "../indexes";
 import { buildContactMd, buildEducationMd, buildHomeMd } from "../twins";
 import { buildExperienceMd } from "../detail-twin";
 import { twinDocument } from "../format";
-
-// types
 import type { PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
 import type { Experience } from "@/features/experience/domain/models";
 import type { PageHead } from "@/features/meta/domain/models";
+import { experienceSeo } from "@/features/meta/domain/helpers";
 
 const sampleExperience: Experience = {
   type: "p",

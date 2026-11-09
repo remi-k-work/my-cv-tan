@@ -1,16 +1,9 @@
-// services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { escapeMd, escapeMdInline as escapeInline } from "../escape";
 import { mdFact, mdIndexEntry, mdLink, twinDocument } from "../format";
 import { buildExperienceMd } from "../detail-twin";
-import { experienceSeo } from "@/features/meta/domain/experience-seo";
-
-// types
+import { experienceSeo } from "@/features/meta/domain/helpers";
 import type { Experience } from "@/features/experience/domain/models";
-
-// These assertions pin the two defects the GEO/Markdown refactor fixed. Both corrupted rendered
-// text rather than breaking it outright, so neither could ever surface as a failing diff — only as
-// a stray backslash an AI indexer has to strip before it can quote the content.
 
 const sampleExperience: Experience = {
   type: "e",

@@ -4,30 +4,26 @@
 // canonical link, one JSON-LD block, and the site-wide discovery links declared exactly once — are
 // properties of that merged document. These replay the router's own merge to pin them.
 
-// services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { GTProvider, initializeGT } from "gt-tanstack-start";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import gtConfig from "../../../../../gt.config.json";
 import { loadTranslations } from "@/lib/gt-translations";
-import { NOT_FOUND_COPY, UNAVAILABLE_COPY, fallbackHead } from "../fallback";
 import { contactHead, educationHead, experienceHead, homeHead } from "../page-head";
 import { rootHead } from "../root-head";
 import { routeHead } from "../route-head";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
-import { BRANDED_TITLE, SITE_DESCRIPTION, SOCIAL_LINKS } from "../identity";
 import { NotFoundPage } from "@/ui/not-found-page";
+import { BRANDED_TITLE, NOT_FOUND_COPY, SITE_DESCRIPTION, SOCIAL_LINKS, UNAVAILABLE_COPY } from "../constants";
+import { fallbackHead } from "../helpers";
+import type { PageTitles } from "@/domain/models";
+import type { Experience } from "@/features/experience/domain/models";
+import type { LinkTag, MatchChain, MetaTag, PageHead } from "../models";
 
 // The not-found page reads the request locale through GT, so the runtime has to be initialized
 // before it renders — exactly as the twin-localization tests do for the same reason.
 initializeGT({ ...gtConfig, loadTranslations, _reload: () => {} });
-
-// types
-import type { PageTitles } from "@/domain/models";
-import type { Experience } from "@/features/experience/domain/models";
-import type { LinkTag, MetaTag, PageHead } from "../models";
-import type { MatchChain } from "../route-head";
 
 const stablePageTitles: PageTitles = {
   "/": { eyebrow: "Home", heading: "Stable home title", intro: "Stable home description." },
@@ -197,9 +193,7 @@ it("the not-found head and the not-found page tell a crawler and a visitor the s
     const head = fallbackHead(undefined, preferredLanguage);
     const copy = NOT_FOUND_COPY[preferredLanguage];
     // The page reads its language from the GT provider, the same way the document shell hands it one
-    const page = renderToStaticMarkup(
-      createElement(GTProvider, { locale: preferredLanguage, translations: {} }, createElement(NotFoundPage))
-    );
+    const page = renderToStaticMarkup(createElement(GTProvider, { locale: preferredLanguage, translations: {} }, createElement(NotFoundPage)));
 
     assert.include(JSON.stringify(head.meta), JSON.stringify({ title: BRANDED_TITLE(copy.title) }));
     assert.include(JSON.stringify(head.meta), JSON.stringify({ name: "description", content: copy.description }));

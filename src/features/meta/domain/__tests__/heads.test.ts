@@ -1,17 +1,13 @@
-// services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { contactHead, educationHead, experienceHead, homeHead } from "../page-head";
 import { rootHead, ROOT_HEAD } from "../root-head";
-import { fallbackHead } from "../fallback";
+import { fallbackHead } from "../helpers";
 import { headLanguage, routeHead } from "../route-head";
-import { canonicalLink } from "../link-tags";
+import { canonicalLink } from "../helpers";
 import { withLanguageParam } from "../urls";
 import { STATIC_PAGES } from "../pages";
-
-import { PERSON_DESCRIPTION, SITE_DESCRIPTION, SITE_NAME, AUTHOR_URL } from "../identity";
+import { PERSON_DESCRIPTION, SITE_DESCRIPTION, SITE_NAME, AUTHOR_URL } from "../constants";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
-
-// types
 import type { PageTitles } from "@/domain/models";
 import type { Experience } from "@/features/experience/domain/models";
 import type { MetaTag, PageHead } from "../models";

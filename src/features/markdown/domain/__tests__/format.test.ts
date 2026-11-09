@@ -1,12 +1,4 @@
-// Direct unit tests for the Markdown serialization toolkit in ./format and the escape engine it
-// applies in ./escape. These primitives are security-sensitive: authored or translated content must
-// never be able to fabricate Markdown structure, so each builder's escaping is pinned here rather
-// than only indirectly through the twin and index builder tests.
-
-// services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-
-// domain
 import { escapeMd, escapeMdInline } from "../escape";
 import {
   demoteHeadings,
@@ -25,8 +17,6 @@ import {
   mdTitledSection,
   translatedLink,
 } from "../format";
-
-// types
 import type { Translate } from "@/domain/models";
 
 const translateEn: Translate = (source) => source;

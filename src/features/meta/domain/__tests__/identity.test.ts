@@ -4,7 +4,6 @@
 // what they hand over, so the invariants those publications depend on are pinned here, once,
 // against the constants themselves rather than against one surface's reading of them.
 
-// services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
 import {
@@ -27,9 +26,9 @@ import {
   SITE_URL,
   SOCIAL_LINKS,
   SOCIAL_PROFILES,
-} from "../identity";
+} from "../constants";
 import { httpUrlOption } from "../urls";
-import { OPEN_GRAPH_LOCALES, SITE_LANGUAGE_NAMES } from "../languages";
+import { OPEN_GRAPH_LOCALES, SITE_LANGUAGE_NAMES } from "../constants";
 
 it("the canonical origin and every profile it publishes are absolute https URLs", () => {
   // `rel="me"` and JSON-LD `sameAs` are read as destinations, so a relative or non-http value
@@ -50,7 +49,10 @@ it("the canonical origin and every profile it publishes are absolute https URLs"
     assert.deepStrictEqual(httpUrlOption(href), Option.some(href), `${name} publishes an unpublished destination`);
   }
   // SOCIAL_LINKS is the projection the graph publishes, so it is the same set in the same order.
-  assert.deepStrictEqual(SOCIAL_LINKS, SOCIAL_PROFILES.map(({ href }) => href));
+  assert.deepStrictEqual(
+    SOCIAL_LINKS,
+    SOCIAL_PROFILES.map(({ href }) => href)
+  );
 });
 
 it("the share image satisfies the Open Graph standard size and the avatar satisfies a square logo", () => {

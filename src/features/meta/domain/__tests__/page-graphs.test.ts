@@ -2,22 +2,14 @@
 // owns the shared page-node pair every content page leads with. Each assembler combines that pair
 // with its own nodes and the collection subgraphs.
 
-// services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { Option, Schema, pipe } from "effect";
-
-// domain
 import { educationJsonLd, contactJsonLd, experienceCollections, experienceJsonLd, homeJsonLd, schoolSubgraph } from "../page-graphs";
-import { EXPERIENCE_LIST_ID, PERSON_ID, PORTFOLIO_LIST_ID, PROFILE_ID, WEBSITE_ID } from "../nodes";
-import { jsonLdGraph } from "../graph";
-
-// types
+import { EXPERIENCE_LIST_ID, HOME_URL, PERSON_ID, PORTFOLIO_LIST_ID, PROFILE_ID, WEBSITE_ID } from "../constants";
+import { jsonLdGraph } from "../helpers";
 import type { PreferredLanguage } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { Experience, ExperienceList } from "@/features/experience/domain/models";
-
-// constants
-import { HOME_URL } from "../identity";
 
 const language: PreferredLanguage = "en";
 
@@ -377,8 +369,10 @@ it("the page-node pair merges into the site entities as one document when a page
   // The real usage: pageHead calls jsonLdGraph([...siteNodes, ...contactJsonLd(...)]), and the pair
   // must survive the merge as two distinct nodes rather than folding into one another.
   const merged = graphOf(
-    jsonLdGraph([{ "@type": "WebSite", "@id": "https://www.remiforge.dev/#website" }, ...contactJsonLd({ pageName: "Contact", description: "Get in touch.", preferredLanguage: language })])
-      .children
+    jsonLdGraph([
+      { "@type": "WebSite", "@id": "https://www.remiforge.dev/#website" },
+      ...contactJsonLd({ pageName: "Contact", description: "Get in touch.", preferredLanguage: language }),
+    ]).children
   );
 
   assert.strictEqual(merged.filter((node) => node["@type"] === "BreadcrumbList").length, 1);

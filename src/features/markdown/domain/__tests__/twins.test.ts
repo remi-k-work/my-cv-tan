@@ -1,4 +1,3 @@
-// services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
 import { buildContactMd, buildEducationMd, buildHomeMd } from "../twins";
@@ -6,16 +5,11 @@ import { buildExperienceMd, buildNotFoundMd } from "../detail-twin";
 import { AI_INDEX_MARKDOWN_LINKS, detailPagesSection, pagesSection } from "../twin-nav";
 import { escapeMd, escapeMdInline } from "../escape";
 import { frontmatter, mdEmptyMarker, mdLink, twinDocument } from "../format";
-
 import { STATIC_PAGES } from "@/features/meta/domain/pages";
-import { experienceSeo } from "@/features/meta/domain/experience-seo";
-
-// types
+import { experienceSeo } from "@/features/meta/domain/helpers";
 import type { PagePath, PageTitles, PreferredLanguage, Translate } from "@/domain/models";
 import type { Experience, ExperienceList } from "@/features/experience/domain/models";
 import type { ContactMdInput, EducationMdInput, HomeMdInput, NotFoundMdInput } from "../models";
-
-// meta (shared)
 import { experienceMarkdownPath, markdownTwinUrl } from "@/features/meta/domain/urls";
 
 const sampleExperience: Experience = {

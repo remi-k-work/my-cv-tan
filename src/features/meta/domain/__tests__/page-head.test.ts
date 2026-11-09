@@ -3,22 +3,14 @@
 // JSON-LD graph into one PageHead. `experienceHead` and the static page
 // heads all build on it.
 
-// services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-
-// domain
 import { pageHead, experienceHead, contactHead } from "../page-head";
 import { globalSocialImage } from "../social-meta";
-import type { SocialMetaInput } from "../social-meta";
-
-// types
-import type { JsonLdNodes, PageHead } from "../models";
+import { BRANDED_TITLE, GLOBAL_SOCIAL_IMAGE } from "../constants";
+import { INDEXABLE_ROBOTS } from "@/domain/http";
+import type { JsonLdNodes, PageHead, SocialMetaInput } from "../models";
 import type { PageTitles, PreferredLanguage } from "@/domain/models";
 import type { Experience } from "@/features/experience/domain/models";
-
-// constants
-import { BRANDED_TITLE, GLOBAL_SOCIAL_IMAGE } from "../identity";
-import { INDEXABLE_ROBOTS } from "@/domain/http";
 
 const language: PreferredLanguage = "en";
 

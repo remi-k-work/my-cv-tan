@@ -1,16 +1,6 @@
-// The twin request contract: the ?lang= pin and the slug the twin route resolves. These are the
-// GEO surface's own guarantees — the twin route answers only what the site publishes, and a
-// published slug survives the route as the very segment it was advertised from — so they are
-// pinned here, where a fabricated destination would otherwise look like an ordinary request.
-
-// services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
-
-// domain
 import { parseLangParam, slugFromMdPathname } from "../requests";
-
-// meta (shared)
 import { experienceMarkdownPath, markdownTwinUrl } from "@/features/meta/domain/urls";
 
 it("a pin round-trips through the one parameter every publisher writes and the parser reads", () => {

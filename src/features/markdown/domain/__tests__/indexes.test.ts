@@ -1,8 +1,3 @@
-// Direct unit tests for the AI index builders in ./indexes: the llms.txt index, the llms-full.txt
-// single-request companion, and the fallback copy both the twins and the indexes degrade to.
-// The response envelopes those documents are served through live in ../../__tests__/responses.
-
-// services, features, and other libraries
 import { assert, it } from "@effect/vitest";
 import { AI_NOTES, buildLlmsFullTxt, buildLlmsTxt, DISCOVERY_LINES, SITE_OPENING, unavailableIndexBody } from "../indexes";
 import { escapeMd } from "../escape";
@@ -10,17 +5,9 @@ import { buildExperienceMd } from "../detail-twin";
 import { buildHomeMd, unavailableMarkdownBody } from "../twins";
 import { twinDocument } from "../format";
 import { SOURCE_COPY } from "../copy";
-
-// meta (shared)
-import { PERSON_DESCRIPTION } from "@/features/meta/domain/identity";
-import { SITE_LANGUAGE_NAMES } from "@/features/meta/domain/languages";
-import { LANG_PARAM } from "@/features/meta/domain/urls";
-import { experienceSeo } from "@/features/meta/domain/experience-seo";
-
-// constants
+import { PERSON_DESCRIPTION, SITE_LANGUAGE_NAMES, LANG_PARAM } from "@/features/meta/domain/constants";
+import { experienceSeo } from "@/features/meta/domain/helpers";
 import { SITE_LANGUAGES } from "@/domain/constants";
-
-// types
 import type { PageTitles } from "@/domain/models";
 import type { Experience } from "@/features/experience/domain/models";
 import type { MarkdownTwin } from "../models";
@@ -184,9 +171,7 @@ it("the index and the home twin render one experience list, differing only in th
   // trim or order an experience differently — only the lead URL each surface exists to advertise.
   const experienceList = [{ ...sampleExperience, type: "e" as const, slug: "sample-job", role: "Backend Developer", company: "Sample Co" }];
   const index = buildLlmsTxt(experienceList);
-  const twin = twinDocument(
-    buildHomeMd({ ...SOURCE_COPY, pageTitles: stablePageTitles, experienceList })
-  );
+  const twin = twinDocument(buildHomeMd({ ...SOURCE_COPY, pageTitles: stablePageTitles, experienceList }));
   const entry = "Backend Developer at Sample Co";
   const canonical = `[${entry}](https://www.remiforge.dev/sample-job)`;
   const twinRoute = "https://www.remiforge.dev/sample-job.md?lang=en";

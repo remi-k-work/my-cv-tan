@@ -2,18 +2,11 @@
 // All tags are pure functions of a SocialMetaInput. Tags are located by key
 // and deep-compared, since assert.include uses reference equality for objects.
 
-// services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-
-// domain
 import { globalSocialImage, socialMeta } from "../social-meta";
-
-// types
+import { AUTHOR_URL, GLOBAL_SOCIAL_IMAGE, PUBLISHER_URL, SITE_NAME } from "../constants";
+import { SocialImage, SocialMetaInput } from "../models";
 import type { PreferredLanguage } from "@/domain/models";
-import type { SocialImage, SocialMetaInput } from "../social-meta";
-
-// constants
-import { AUTHOR_URL, GLOBAL_SOCIAL_IMAGE, PUBLISHER_URL, SITE_NAME } from "../identity";
 
 const language: PreferredLanguage = "en";
 
