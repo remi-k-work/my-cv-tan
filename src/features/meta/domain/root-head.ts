@@ -1,35 +1,26 @@
-// The root route's HTML head: charset/viewport/theme, branded title, description, author,
-// noindex fallback, and the discovery links advertised on every page. The root owns the
-// not-found fallback because TanStack renders it even when a route-level head callback is skipped.
-
 // services, features, and other libraries
-import { NOINDEX_FOLLOW } from "@/domain/http";
-
-// domain
-import { AI_INDEX_LINKS, LLMS_DISCOVERY_LINK, SITEMAP_LINK, authorLink } from "./link-tags";
+import { authorLink, fallbackHead } from "./helpers";
 import { headLanguage, isNotFoundMatch } from "./route-head";
-import { fallbackHead } from "./fallback";
-
-// constants
-import { AUTHOR_URL, AVATAR, BRANDED_TITLE, HOME_TITLE, SITE_DESCRIPTION, SITE_NAME, SOCIAL_LINKS } from "./identity";
 
 // types
-import type { LinkTag, MetaTag, PageHead } from "./models";
-import type { MatchChain } from "./route-head";
+import type { PageHead, RootHead } from "./models";
+import type { MatchChain } from "./models";
 
-// The root's site-wide head. It carries no `scripts`: TanStack concatenates every match's scripts,
-// so a root-level graph would render beside the leaf's own single block. Omitting the key is the
-// compile guard for that — a `scripts` key added here is an excess property.
-// The arrays are readonly so no consumer of the shared declaration can reach into it, and every
-// `rootHead()` result hands back its own copies (see below), honouring the PageHead contract.
-interface RootHead {
-  readonly meta: ReadonlyArray<MetaTag>;
-  readonly links: ReadonlyArray<LinkTag>;
-}
+// constants
+import {
+  AI_INDEX_LINKS,
+  AUTHOR_URL,
+  AVATAR,
+  BRANDED_TITLE,
+  HOME_TITLE,
+  LLMS_DISCOVERY_LINK,
+  ME_LINKS,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITEMAP_LINK,
+} from "./constants";
+import { NOINDEX_FOLLOW } from "@/domain/http";
 
-const ME_LINKS: ReadonlyArray<LinkTag> = SOCIAL_LINKS.map((href) => ({ rel: "me", href }));
-
-// The root owns fallbacks and discovery links; leaf routes add their canonical and JSON-LD.
 export const ROOT_HEAD: RootHead = {
   meta: [
     { charSet: "utf-8" },
@@ -51,10 +42,8 @@ export const ROOT_HEAD: RootHead = {
   ],
 };
 
-// The root boundary renders not-found pages even when a route-level head callback is skipped.
+// Builds the root head elements, handling root-level not-found fallbacks if matched.
 export const rootHead = (matches: MatchChain): PageHead => {
-  // Every result is the root's own arrays: a shared head object handed to each document could be
-  // reached by one caller and leak into every other page rendered from the same declaration.
   if (!matches.some(isNotFoundMatch)) return { meta: [...ROOT_HEAD.meta], links: [...ROOT_HEAD.links], scripts: [] };
 
   const fallback = fallbackHead(undefined, headLanguage(matches));

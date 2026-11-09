@@ -1,38 +1,15 @@
-// Open Graph and Twitter Card meta tags shared by every page head.
-// Built once from a SocialMetaInput so the HTML <head>, JSON-LD graph, and Markdown twins
-// never disagree about a page's title, description, image, or language.
-
 // services, features, and other libraries
 import { Array, Option, pipe } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
 
-// constants
-import { AUTHOR_URL, GLOBAL_SOCIAL_IMAGE, PUBLISHER_URL, SITE_NAME } from "./identity";
-import { OPEN_GRAPH_LOCALES } from "./languages";
-import { SITE_LANGUAGES } from "@/domain/constants";
-
 // types
-import type { SocialImageFacts } from "./identity";
 import type { PreferredLanguage } from "@/domain/models";
-import type { MetaTag } from "./models";
+import type { MetaTag, SocialImage, SocialMetaInput } from "./models";
 
-// A published card image: the verified file facts plus the alt text describing this page's card.
-export interface SocialImage extends SocialImageFacts {
-  readonly alt: string;
-}
-
-// The Open Graph / Twitter card every page head publishes. It is the page's social contract
-// declared apart from its structural links and graph, so a head cannot inherit one surface's
-// fields into another that reads them differently.
-export interface SocialMetaInput {
-  readonly title: string;
-  readonly description: string;
-  readonly canonical: string;
-  readonly image: SocialImage;
-  readonly preferredLanguage: PreferredLanguage;
-  readonly ogType?: "website" | "article";
-  readonly articleSection?: "employment" | "portfolio";
-}
+// constants
+import { AUTHOR_URL, GLOBAL_SOCIAL_IMAGE, PUBLISHER_URL, SITE_NAME } from "./constants";
+import { OPEN_GRAPH_LOCALES } from "./constants";
+import { SITE_LANGUAGES } from "@/domain/constants";
 
 export const globalSocialImage = (preferredLanguage: PreferredLanguage): SocialImage => ({
   ...GLOBAL_SOCIAL_IMAGE,
@@ -66,8 +43,7 @@ export const socialMeta = ({
   ogType = "website",
   articleSection,
 }: SocialMetaInput): ReadonlyArray<MetaTag> => {
-  // The Twitter card always shows the JPEG banner (X rejects WebP), so its image and alt describe
-  // the banner regardless of which picture og:image publishes.
+  // Twitter Card uses JPEG banner for universal preview compatibility.
   const banner = globalSocialImage(preferredLanguage);
 
   return [

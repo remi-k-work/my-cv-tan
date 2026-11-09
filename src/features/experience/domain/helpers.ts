@@ -16,8 +16,8 @@ const GRAPHEME_SEGMENTER = new Intl.Segmenter(undefined, { granularity: "graphem
 export const experienceFromList = (experienceList: ExperienceList, slug: string) => Array.findFirst(experienceList, (experience) => experience.slug === slug);
 
 // Employment or portfolio project — the one kind question the HTML head's article section, the
-// JSON-LD subject node, the Markdown twin's fact type and the collection grouping all ask. Reading
-// it from one place keeps a second spelling of "e" from labelling the same experience two ways.
+// JSON-LD subject node, the Markdown twin's fact type and the collection grouping all ask; reading
+// it from one place keeps a second spelling of "e" from labelling the same experience two ways
 export const isEmployment = (experience: Pick<Experience, "type">) => experience.type === "e";
 
 // Localized records share canonical URLs, so every language must publish the same unique slugs.

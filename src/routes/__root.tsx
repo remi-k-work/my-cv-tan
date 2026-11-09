@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { getLocale, getTranslationsSnapshot, useGT } from "gt-tanstack-start";
 import { rootHead } from "@/features/meta/domain/root-head";
 import { headLanguage } from "@/features/meta/domain/route-head";
-import { documentHeaders } from "@/features/meta/services/headers";
+import { documentHeaders } from "@/features/meta/domain/helpers";
 import { preferredLanguageFromLocale } from "@/domain/helpers";
 
 // components

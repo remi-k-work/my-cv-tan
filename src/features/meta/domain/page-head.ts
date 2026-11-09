@@ -1,55 +1,22 @@
-// HTML page head builders: the shared page head layout, the experience detail head, and the three
-// static page heads (home, education, contact). Each concrete head supplies its own social card,
-// Markdown twin path, and JSON-LD graph to the shared `pageHead` layout.
-
 // services, features, and other libraries
 import { Option } from "effect";
-import { INDEXABLE_ROBOTS } from "@/domain/http";
 import { matchPreferredLanguage } from "@/domain/helpers";
 import { isEmployment } from "@/features/experience/domain/helpers";
-import { canonicalLink, markdownAlternateLink } from "./link-tags";
-import { experienceSeo } from "./experience-seo";
+import { canonicalLink, experienceSeo, jsonLdGraph, markdownAlternateLink } from "./helpers";
 import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd } from "./page-graphs";
-import { jsonLdGraph, siteNodes } from "./graph";
 import { globalSocialImage, socialMeta } from "./social-meta";
 import { staticPageCopy } from "./pages";
 
 // types
-import type { StaticPageCopy } from "./pages";
-import type { ExperienceHeadInput } from "./experience-seo";
-import type { JsonLdNodes, PageHead } from "./models";
-import type { SocialImage, SocialMetaInput } from "./social-meta";
-import type { SocialImageFacts } from "./identity";
+import type { ExperienceHeadInput, JsonLdNodes, PageHead, PageHeadSpec, SocialImage, SocialImageFacts, StaticPageCopy, StaticPageHeadInput } from "./models";
 import type { PreferredLanguage } from "@/domain/models";
-import type { PageTitles } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
 
 // constants
-import { BRANDED_TITLE } from "./identity";
+import { INDEXABLE_ROBOTS } from "@/domain/http";
 import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/domain/constants";
-
-// Input for the three static page head builders. Each one pairs the page titles the loader
-// resolved with the language the document publishes, so a head cannot read one page's copy under
-// another page's locale.
-export interface StaticPageHeadInput {
-  readonly pageTitles: PageTitles;
-  readonly preferredLanguage: PreferredLanguage;
-}
-
-// Shared page head layout merging title, indexing directives, social cards, links and graph.
-// `social` carries the Open Graph / Twitter fields rendered by `socialMeta`; the remaining
-// fields are page-structural. Composition keeps the social contract explicit instead of
-// inheriting it into the page spec.
-//
-// Only the page's own canonical and Markdown alternate are declared here: the site-wide
-// discovery and identity links (llms, sitemap, author, rel=me) live on the root head and are
-// merged into every page's head by the router, so restating them here would only duplicate them.
-interface PageHeadSpec {
-  readonly social: SocialMetaInput;
-  readonly markdownPath: string;
-  readonly graph: JsonLdNodes;
-}
+import { BRANDED_TITLE, SITE_NODES } from "./constants";
 
 export const pageHead = ({ social, markdownPath, graph }: PageHeadSpec): PageHead => ({
   meta: [
@@ -59,11 +26,9 @@ export const pageHead = ({ social, markdownPath, graph }: PageHeadSpec): PageHea
     ...socialMeta(social),
   ],
   links: [canonicalLink(social.canonical), markdownAlternateLink(markdownPath, social.preferredLanguage)],
-  scripts: [jsonLdGraph([...siteNodes, ...graph])],
+  scripts: [jsonLdGraph([...SITE_NODES, ...graph])],
 });
 
-// The detail page's card image: its own verified screenshot with a localized alt, or the global
-// banner when the page publishes no image. Both cards then describe the picture they actually show.
 const experienceCardImage = (headline: string, image: Option.Option<SocialImageFacts>, preferredLanguage: PreferredLanguage): SocialImage =>
   Option.match(image, {
     onNone: () => globalSocialImage(preferredLanguage),
@@ -91,7 +56,6 @@ export const experienceHead = (input: ExperienceHeadInput): PageHead => {
   });
 };
 
-// Shared layout for the three static pages; only the page graph differs.
 const staticPageHead = (copy: StaticPageCopy, graph: JsonLdNodes): PageHead =>
   pageHead({
     social: {

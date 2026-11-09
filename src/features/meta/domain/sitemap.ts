@@ -1,33 +1,39 @@
-// The sitemap.xml body, beside the robots.txt body in ./robots: both are generated documents. The
-// declarations the body resolves against — the static pages and the downloadable documents every
-// discovery surface advertises — live in ./pages and ./discovery, the module every other discovery
-// path is read from, so a page or a download added there is listed without a second place to edit.
-
 // services, features, and other libraries
-import { Array, pipe } from "effect";
-
-// domain
-import { DOWNLOADABLE_DOCUMENT_PATHS } from "./discovery";
-import { STATIC_PAGE_PATHS } from "./pages";
+import { Array, Effect, pipe } from "effect";
+import { documentRoute } from "@/lib/server-route";
+import { recoverDataFailure } from "@/features/data/domain/required";
+import { Datasets } from "@/features/data/services/datasets";
 import { absoluteUrl, experiencePath } from "./urls";
 
-// Static pages come from the shared catalogue; downloads are exactly the advertised documents,
-// so a page or a download added to either is advertised here without a third list to keep in step.
-const STATIC_URLS = Array.map([...STATIC_PAGE_PATHS, ...DOWNLOADABLE_DOCUMENT_PATHS], absoluteUrl);
+// constants
+import { DOWNLOADABLE_DOCUMENT_PATHS } from "./constants";
+import { STATIC_PAGE_PATHS } from "./pages";
+import { SITE_LANGUAGES } from "@/domain/constants";
+import { sitemapResponse, sitemapUnavailableResponse, txtResponse } from "./helpers";
+import { ROBOTS_TXT } from "./robots";
 
+const STATIC_URLS = Array.map([...STATIC_PAGE_PATHS, ...DOWNLOADABLE_DOCUMENT_PATHS], absoluteUrl);
 const XML_ENTITIES: Readonly<Record<string, string>> = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" };
 
-// The character class only ever matches the five predefined entities, so the pass-through arm is
-// unreachable today; reading the lookup as optional keeps it honest rather than resting on the
-// regex and this table having to agree by hand.
 const escapeXml = (value: string) => value.replace(/[&<>"']/g, (character) => XML_ENTITIES[character] ?? character);
 
-// A sitemap lists canonical site URLs only — the HTML pages plus the downloadable documents the
-// rest of the site advertises — and never the Markdown twins. Experience slugs arrive already
-// encoded the one way the canonicals and the twins encode them, so the surfaces name one address
-// per page. No lastmod is emitted: authored dates are display strings, not trustworthy modification
-// times.
-export const buildSitemapXml = (slugs: ReadonlyArray<string>): string => {
+const sitemapDocument = Effect.gen(function* () {
+  const { experienceList } = yield* Datasets;
+
+  const lists = yield* Effect.all(
+    SITE_LANGUAGES.map((language) => experienceList(language)),
+    { concurrency: "unbounded" }
+  );
+
+  const slugs = lists.flatMap((list) => list.map(({ slug }) => slug));
+  return sitemapResponse(buildSitemapXml(slugs));
+}).pipe(
+  recoverDataFailure(() => "[SITEMAP.XML]", sitemapUnavailableResponse),
+  Effect.withSpan("sitemapDocument")
+);
+
+// Generates XML sitemap containing canonical URLs for static pages, downloads, and experience items
+export const buildSitemapXml = (slugs: ReadonlyArray<string>) => {
   const locs = pipe([...STATIC_URLS, ...Array.map(slugs, (slug) => absoluteUrl(experiencePath(slug)))], Array.dedupe);
 
   return [
@@ -38,5 +44,5 @@ export const buildSitemapXml = (slugs: ReadonlyArray<string>): string => {
   ].join("\n");
 };
 
-// 503 fallback body served when experience slugs cannot be loaded.
-export const SITEMAP_UNAVAILABLE_XML = '<?xml version="1.0" encoding="UTF-8"?><error>Sitemap is temporarily unavailable.</error>';
+export const robotsHandler = documentRoute(() => Effect.succeed(txtResponse(ROBOTS_TXT)));
+export const sitemapHandler = documentRoute(() => sitemapDocument);

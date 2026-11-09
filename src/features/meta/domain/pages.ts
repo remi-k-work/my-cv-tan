@@ -1,53 +1,16 @@
-// Static page catalogue: the single source of truth for the site's three static pages
-// (home, education, contact). Shared by HTML heads, Markdown twins, and the sitemap.
-
 // services, features, and other libraries
 import { pageField } from "@/domain/helpers";
+import { absoluteUrl } from "./urls";
 
 // types
 import type { PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
+import type { StaticPageCopy, StaticPageSettings } from "./models";
 
 // constants
 import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/domain/constants";
-import { HOME_TITLE, PERSON_DESCRIPTION, SITE_DESCRIPTION } from "./identity";
-import { absoluteUrl } from "./urls";
+import { HOME_TITLE, PERSON_DESCRIPTION, SITE_DESCRIPTION } from "./constants";
 
-// --- Page copy models ---
-
-export type StaticPageType = "overview" | "education" | "contact";
-
-// Localized identity shared by every static page surface (head, twin, JSON-LD).
-export interface LocalizedCopy {
-  readonly pageName: string;
-  readonly description: string;
-  readonly preferredLanguage: PreferredLanguage;
-}
-
-// Fully resolved copy for one static page in one language.
-export interface StaticPageCopy extends LocalizedCopy {
-  readonly path: PagePath;
-  readonly mdHref: string;
-  readonly type: StaticPageType;
-  readonly seoTitle: string;
-  readonly intro: string;
-  readonly canonical: string;
-}
-
-interface StaticPageCopySource {
-  readonly heading: string;
-  readonly intro: string;
-  readonly title: string;
-  readonly description: string;
-}
-
-interface StaticPageSettings {
-  readonly mdHref: string;
-  readonly label: string;
-  readonly type: StaticPageType;
-  readonly copy: Readonly<Record<PreferredLanguage, StaticPageCopySource>>;
-}
-
-// Static page definitions shared between HTML heads and Markdown frontmatter.
+// Static page definitions shared between HTML heads and Markdown frontmatter
 export const STATIC_PAGES = {
   [HOME_PATH]: {
     mdHref: "/index.md",
@@ -105,7 +68,7 @@ export const STATIC_PAGES = {
 
 export const STATIC_PAGE_PATHS = Object.keys(STATIC_PAGES) as ReadonlyArray<keyof typeof STATIC_PAGES>;
 
-// Resolves localized static page content and SEO summaries.
+// Resolves localized static page copy, falling back to static strings if loader titles are missing
 export const staticPageCopy = (pageTitles: PageTitles, pagePath: PagePath, preferredLanguage: PreferredLanguage): StaticPageCopy => {
   const { mdHref, type, copy } = STATIC_PAGES[pagePath];
   const { heading, intro, title, description } = copy[preferredLanguage];
