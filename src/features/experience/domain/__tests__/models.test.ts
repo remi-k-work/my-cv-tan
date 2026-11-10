@@ -27,17 +27,7 @@ it("rejects route slugs that URL parsing would normalize to another page", () =>
 });
 
 it("rejects slugs reserved by static routes or the Markdown twin suffix", () => {
-  for (const slug of [
-    "education",
-    "CONTACT",
-    "exp",
-    "llms.txt",
-    "llms-full.txt",
-    "robots.txt",
-    "sitemap.xml",
-    "report.md",
-    "REPORT.MD",
-  ]) {
+  for (const slug of ["education", "CONTACT", "exp", "llms.txt", "llms-full.txt", "robots.txt", "sitemap.xml", "report.md", "REPORT.MD"]) {
     assert.deepStrictEqual(decodeExperience(experience(slug)), Option.none(), `${slug} is reserved`);
   }
 
