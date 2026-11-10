@@ -26,9 +26,9 @@ import {
   SITE_URL,
   SOCIAL_LINKS,
   SOCIAL_PROFILES,
-} from "../constants";
+} from "../site";
 import { httpUrlOption } from "../urls";
-import { OPEN_GRAPH_LOCALES } from "../constants";
+import { OPEN_GRAPH_LOCALES } from "../site";
 import { SITE_LANGUAGE_NAMES } from "@/domain/constants";
 
 it("the canonical origin and every profile it publishes are absolute https URLs", () => {

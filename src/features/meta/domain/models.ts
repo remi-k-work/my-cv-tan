@@ -1,8 +1,13 @@
+// The meta feature's cross-module contracts: the flat head elements every head projection returns,
+// the JSON-LD values it serializes, the site-identity shapes the SEO/Markdown surfaces share, and
+// the small slice of the TanStack match chain the head resolvers read. Module-local input structs
+// live beside the builders that consume them; only what crosses a module or feature boundary is here.
+
 // services, features, and other libraries
 import { Option } from "effect";
 
 // types
-import type { PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
+import type { PagePath, PreferredLanguage } from "@/domain/models";
 import type { Experience } from "@/features/experience/domain/models";
 
 export type MetaTag =
@@ -37,11 +42,17 @@ export interface JsonLdNode extends JsonLdObject {
 
 export type JsonLdNodes = ReadonlyArray<JsonLdNode>;
 
-// Flat head elements consumed by TanStack Router route head() functions.
+// Flat head elements consumed by TanStack Router route head() functions
 export interface PageHead {
   readonly meta: Array<MetaTag>;
   readonly links: Array<LinkTag>;
   readonly scripts: Array<JsonLdScript>;
+}
+
+// The site-shell head: the same elements as a page head, minus the JSON-LD graph the root omits
+export interface RootHead {
+  readonly meta: ReadonlyArray<MetaTag>;
+  readonly links: ReadonlyArray<LinkTag>;
 }
 
 export interface SocialImageFacts {
@@ -49,141 +60,6 @@ export interface SocialImageFacts {
   readonly mime: "image/jpeg" | "image/webp";
   readonly width: number;
   readonly height: number;
-}
-
-export interface ExperienceHeadInput {
-  readonly experience: Experience;
-  readonly preferredLanguage: PreferredLanguage;
-}
-
-export interface ExperienceSeo extends ExperienceHeadInput {
-  readonly path: string;
-  readonly canonical: string;
-  readonly markdownPath: string;
-  readonly headline: string;
-  readonly description: string;
-  readonly screenshot: Option.Option<SocialImageFacts>;
-}
-
-export type ExperienceGraphInput = Omit<ExperienceSeo, "canonical" | "markdownPath">;
-
-export interface DegradedCopy {
-  readonly title: string;
-  readonly description: string;
-}
-
-export type PageNodeType = "WebPage" | "ContactPage" | "CollectionPage" | "ProfilePage";
-
-export interface ArticleNodeInput {
-  readonly id: string;
-  readonly headline: string;
-  readonly description: string;
-  readonly preferredLanguage: PreferredLanguage;
-  readonly about: string;
-  readonly mainEntityOfPage: string;
-  readonly image?: JsonLdNode;
-}
-
-export interface WebPageNodeInput {
-  readonly type: PageNodeType;
-  readonly id: string;
-  readonly url: string;
-  readonly name: string;
-  readonly description: string;
-  readonly preferredLanguage: PreferredLanguage;
-  readonly breadcrumb?: boolean;
-  readonly mainEntity?: JsonLdNode;
-  readonly primaryImageOfPage?: JsonLdNode;
-}
-
-export interface CollectionNodeInput {
-  readonly id: string;
-  readonly name: string;
-  readonly preferredLanguage: PreferredLanguage;
-  readonly parts: ReadonlyArray<JsonLdNode>;
-  readonly url?: string;
-}
-
-export interface ExperienceItemNodeInput {
-  readonly employment: boolean;
-  readonly id: string;
-  readonly url: string;
-  readonly role: string;
-  readonly description: string;
-  readonly preferredLanguage: PreferredLanguage;
-  readonly keywords: ReadonlyArray<string>;
-  readonly image?: JsonLdNode;
-  readonly repository?: string;
-}
-
-export interface PageGraphSpec {
-  readonly type: PageNodeType;
-  readonly path: string;
-  readonly name: string;
-  readonly description: string;
-  readonly preferredLanguage: PreferredLanguage;
-  readonly mainEntity?: JsonLdNode;
-  readonly primaryImageOfPage?: JsonLdNode;
-}
-
-export interface StaticPageHeadInput {
-  readonly pageTitles: PageTitles;
-  readonly preferredLanguage: PreferredLanguage;
-}
-
-export interface PageHeadSpec {
-  readonly social: SocialMetaInput;
-  readonly markdownPath: string;
-  readonly graph: JsonLdNodes;
-}
-
-export type StaticPageType = "overview" | "education" | "contact";
-
-export interface LocalizedCopy {
-  readonly pageName: string;
-  readonly description: string;
-  readonly preferredLanguage: PreferredLanguage;
-}
-
-export interface StaticPageCopy extends LocalizedCopy {
-  readonly path: PagePath;
-  readonly mdHref: string;
-  readonly type: StaticPageType;
-  readonly seoTitle: string;
-  readonly intro: string;
-  readonly canonical: string;
-}
-
-export interface StaticPageCopySource {
-  readonly heading: string;
-  readonly intro: string;
-  readonly title: string;
-  readonly description: string;
-}
-
-export interface StaticPageSettings {
-  readonly mdHref: string;
-  readonly label: string;
-  readonly type: StaticPageType;
-  readonly indexSummary: string;
-  readonly copy: Readonly<Record<PreferredLanguage, StaticPageCopySource>>;
-}
-
-export type RouteStatus = "pending" | "success" | "error" | "notFound";
-
-export type MatchChain = ReadonlyArray<{ readonly loaderData?: unknown; readonly status?: RouteStatus; readonly _notFound?: boolean }>;
-
-export interface RootHead {
-  readonly meta: ReadonlyArray<MetaTag>;
-  readonly links: ReadonlyArray<LinkTag>;
-}
-
-export interface RouteHeadSpec<TData> {
-  readonly loaderData: TData;
-  readonly matches: MatchChain;
-  readonly matchStatus: RouteStatus;
-  readonly fallbackPath: string;
-  readonly build: (loaderData: NonNullable<TData>, preferredLanguage: PreferredLanguage) => PageHead;
 }
 
 export interface SocialImage extends SocialImageFacts {
@@ -199,3 +75,38 @@ export interface SocialMetaInput {
   readonly ogType?: "website" | "article";
   readonly articleSection?: "employment" | "portfolio";
 }
+
+// The SEO identity of one experience: the single record the HTML head, the JSON-LD graph and the
+// Markdown twin all derive from, so their canonical URL, headline and description can never drift.
+export interface ExperienceSeo {
+  readonly experience: Experience;
+  readonly preferredLanguage: PreferredLanguage;
+  readonly path: string;
+  readonly canonical: string;
+  readonly markdownPath: string;
+  readonly headline: string;
+  readonly description: string;
+  readonly screenshot: Option.Option<SocialImageFacts>;
+}
+
+export type StaticPageType = "overview" | "education" | "contact";
+
+// A static page resolved for one reader: the localized copy the HTML head, Markdown twin and
+// sitemap all publish.
+export interface StaticPageCopy {
+  readonly path: PagePath;
+  readonly mdHref: string;
+  readonly type: StaticPageType;
+  readonly pageName: string;
+  readonly description: string;
+  readonly preferredLanguage: PreferredLanguage;
+  readonly seoTitle: string;
+  readonly intro: string;
+  readonly canonical: string;
+}
+
+export type RouteStatus = "pending" | "success" | "error" | "notFound";
+
+// The slice of a TanStack match chain the head resolvers read. `_notFound` is router-private, but
+// it is the only signal available when a loader throws notFound()
+export type MatchChain = ReadonlyArray<{ readonly loaderData?: unknown; readonly status?: RouteStatus; readonly _notFound?: boolean }>;

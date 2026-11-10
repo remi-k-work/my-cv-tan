@@ -3,7 +3,7 @@ import { Option } from "effect";
 import { buildExperienceMd, buildNotFoundMd } from "../detail-twin";
 import { twinDocument } from "../format";
 import { escapeMd } from "../escape";
-import { experienceSeo } from "@/features/meta/domain/helpers";
+import { experienceSeo } from "@/features/meta/domain/seo";
 import { sampleExperience, translateEn, translatePl } from "@/features/markdown/__tests__/fixtures";
 
 it("the experience twin renders frontmatter, H1, skills and links without repeated crawler instructions", () => {

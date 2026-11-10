@@ -5,13 +5,17 @@
 import { assert, it } from "@effect/vitest";
 import { Option, Schema, pipe } from "effect";
 import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain/constants";
-import { experienceScreenshot, experienceSeo, documentHeaders, fallbackHead, jsonLdGraph } from "../helpers";
+import { experienceScreenshot, experienceSeo } from "../seo";
 import { experienceHead } from "../page-head";
-import { META_DESCRIPTION_LENGTH, CONTENT_SIGNAL, SITE_NODES, PERSON_DESCRIPTION, SITE_DESCRIPTION } from "../constants";
+import { documentHeaders } from "../responses";
+import { fallbackHead } from "../fallback";
+import { jsonLdGraph } from "../jsonld";
+import { META_DESCRIPTION_LENGTH, PERSON_DESCRIPTION, SITE_DESCRIPTION, SITE_NODES } from "../site";
+import { CONTENT_SIGNAL } from "../discovery";
 import { NOINDEX_FOLLOW } from "@/domain/http";
 import type { Experience } from "@/features/experience/domain/models";
 
-// Minimal JSON-LD graph reader for structured-data assertions.
+// Minimal JSON-LD graph reader for graph-shape assertions.
 const JsonLdNode = Schema.Record(Schema.String, Schema.Unknown);
 const decodeGraph = Schema.decodeUnknownOption(Schema.fromJsonString(Schema.Struct({ "@graph": Schema.Array(JsonLdNode) })));
 

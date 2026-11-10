@@ -11,7 +11,7 @@ import { LinkedInIcon } from "@/assets/icons/linked-in";
 import type { ReactNode } from "react";
 
 // constants
-import { SOCIAL_PROFILES } from "@/features/meta/domain/constants";
+import { SOCIAL_PROFILES } from "@/features/meta/domain/site";
 
 // Static icons hoisted to module scope so re-rendering the nav reuses the same elements instead of recreating them
 const ICON_HOME = <HomeIcon />;

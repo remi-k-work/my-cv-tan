@@ -1,10 +1,10 @@
 import { assert, it } from "@effect/vitest";
 import { STATIC_PAGE_PATHS } from "../pages";
-import { CONTENT_SIGNAL, DOWNLOADABLE_DOCUMENTS } from "../constants";
+import { CONTENT_SIGNAL, DOWNLOADABLE_DOCUMENTS } from "../discovery";
 import { experiencePath } from "../urls";
 import { sitemapHandler } from "../sitemap";
 import { buildSitemapXml } from "../sitemap";
-import { sitemapResponse, sitemapUnavailableResponse } from "../helpers";
+import { sitemapResponse, sitemapUnavailableResponse } from "../responses";
 import experienceEn from "@/assets/data/en/experience.json";
 import experiencePl from "@/assets/data/pl/experience.json";
 

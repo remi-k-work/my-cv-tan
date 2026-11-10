@@ -20,7 +20,8 @@ type ContactMdInput = TwinContext & { readonly pageTitles: PageTitles };
 
 // constants
 import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/domain/constants";
-import { DOWNLOADABLE_DOCUMENTS, HOME_LOCATION, SOCIAL_PROFILES } from "@/features/meta/domain/constants";
+import { DOWNLOADABLE_DOCUMENTS } from "@/features/meta/domain/discovery";
+import { HOME_LOCATION, SOCIAL_PROFILES } from "@/features/meta/domain/site";
 
 const profileLinks = (translate: Translate) => [...mdProfileLinks(SOCIAL_PROFILES), mdFact(translate("Base"), translate(HOME_LOCATION))];
 

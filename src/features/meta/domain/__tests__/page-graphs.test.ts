@@ -5,8 +5,8 @@
 import { assert, it } from "@effect/vitest";
 import { Option, Schema, pipe } from "effect";
 import { educationJsonLd, contactJsonLd, experienceCollections, experienceJsonLd, homeJsonLd, schoolSubgraph } from "../page-graphs";
-import { EXPERIENCE_LIST_ID, HOME_URL, PERSON_ID, PORTFOLIO_LIST_ID, PROFILE_ID, WEBSITE_ID } from "../constants";
-import { jsonLdGraph } from "../helpers";
+import { EXPERIENCE_LIST_ID, HOME_URL, PERSON_ID, PORTFOLIO_LIST_ID, PROFILE_ID, WEBSITE_ID } from "../site";
+import { jsonLdGraph } from "../jsonld";
 import type { PreferredLanguage } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { Experience, ExperienceList } from "@/features/experience/domain/models";
@@ -281,7 +281,7 @@ it("schoolSubgraph returns nothing for an empty list", () => {
 // isPartOf edge are decided in one place. These tests pin the invariant the four of them rely on:
 // the page node, its trail and the site entity they both reference stay one addressable graph.
 
-// Minimal reader, mirroring the one in structured-data.test.ts: a node is an open record because the
+// Minimal reader, mirroring the one in helpers.test.ts: a node is an open record because the
 // assertions probe arbitrary fields, and a payload that fails to decode reads as an empty graph so
 // the assertions below fail loudly instead of quietly reading `undefined` off a cast.
 const JsonLdNode = Schema.Record(Schema.String, Schema.Unknown);

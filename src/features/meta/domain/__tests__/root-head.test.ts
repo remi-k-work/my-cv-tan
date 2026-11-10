@@ -2,7 +2,7 @@ import { assert, it } from "@effect/vitest";
 import { ROOT_HEAD } from "../root-head";
 import { rootHead } from "../root-head";
 import { homeHead, contactHead, educationHead, experienceHead } from "../page-head";
-import { AI_INDEX_LINKS, AI_INDEX_LINK_HEADER } from "../constants";
+import { AI_INDEX_LINKS, AI_INDEX_LINK_HEADER } from "../discovery";
 import { joinLinkHeader } from "../link-tags";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 import type { PageTitles } from "@/domain/models";
@@ -69,7 +69,7 @@ it("root metadata defaults to noindex and complete page heads explicitly allow i
 
 it("root metadata carries the authored site description on every surface", () => {
   assert.include(JSON.stringify(ROOT_HEAD.meta), "Remi Forge is a web developer in Rzeszów, Poland");
-  // The same bio feeds the Person node (see structured-data.test.ts): one fact, many surfaces
+  // The same bio feeds the Person node (see helpers.test.ts): one fact, many surfaces
   assert.strictEqual("Passionate, self-taught web developer".length > 0, true);
 });
 

@@ -4,11 +4,28 @@ import { absoluteUrl } from "./urls";
 
 // types
 import type { PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
-import type { StaticPageCopy, StaticPageSettings } from "./models";
+import type { StaticPageCopy, StaticPageType } from "./models";
+
+// The authored copy for one language, before loader overrides
+interface StaticPageCopySource {
+  readonly heading: string;
+  readonly intro: string;
+  readonly title: string;
+  readonly description: string;
+}
+
+// One catalogue entry: the page identity plus its per-language copy
+interface StaticPageSettings {
+  readonly mdHref: string;
+  readonly label: string;
+  readonly type: StaticPageType;
+  readonly indexSummary: string;
+  readonly copy: Readonly<Record<PreferredLanguage, StaticPageCopySource>>;
+}
 
 // constants
 import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/domain/constants";
-import { HOME_TITLE, PERSON_DESCRIPTION, SITE_DESCRIPTION } from "./constants";
+import { HOME_TITLE, PERSON_DESCRIPTION, SITE_DESCRIPTION } from "./site";
 
 // Static page definitions shared between HTML heads and Markdown frontmatter
 export const STATIC_PAGES = {

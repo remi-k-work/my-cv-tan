@@ -29,7 +29,7 @@ interface NotFoundCopy {
 }
 
 // constants
-import { SITE_NAME } from "@/features/meta/domain/constants";
+import { SITE_NAME } from "@/features/meta/domain/site";
 
 // 404 prose is not dictionary copy: it is resolved from this exhaustive record so a new language
 // cannot silently fall through to another language's message

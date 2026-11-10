@@ -22,7 +22,7 @@ interface CertificateSheetProps {
 }
 
 // constants
-import { CERTIFICATES_HREF } from "@/features/meta/domain/constants";
+import { CERTIFICATES_HREF } from "@/features/meta/domain/discovery";
 
 const CERTIFICATES = [
   { src: artcom, width: 1222, height: 870, alt: "ARTCOM" },

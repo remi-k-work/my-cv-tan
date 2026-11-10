@@ -1,9 +1,9 @@
 import { assert, describe, it } from "@effect/vitest";
 import { Effect, Option } from "effect";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
-import { CONTENT_SIGNAL } from "@/features/meta/domain/constants";
+import { CONTENT_SIGNAL } from "@/features/meta/domain/discovery";
 import { absoluteUrl } from "@/features/meta/domain/urls";
-import { documentHeaders, txtResponse, txtUnavailableResponse } from "@/features/meta/domain/helpers";
+import { documentHeaders, txtResponse, txtUnavailableResponse } from "@/features/meta/domain/responses";
 import { requireData, recoverDataFailure } from "@/features/data/domain/required";
 import { experienceFromList } from "@/features/experience/domain/helpers";
 import { mdNotFoundResponse, mdResponse, mdUnavailableResponse, pinCacheVariant, withoutCaching, withoutNegotiationVary } from "../responses";

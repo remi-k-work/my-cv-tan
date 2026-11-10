@@ -5,7 +5,7 @@ import { Option, Schema, pipe } from "effect";
 import type { PreferredLanguage } from "@/domain/models";
 
 // constants
-import { LANG_PARAM, SITE_URL } from "./constants";
+import { LANG_PARAM, SITE_URL } from "./site";
 
 export const decodeUrlOption = Schema.decodeUnknownOption(Schema.URLFromString);
 

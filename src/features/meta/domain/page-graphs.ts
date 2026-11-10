@@ -9,11 +9,34 @@ import { articleNode, breadcrumb, collectionNode, experienceItemNode, imageObjec
 import type { PreferredLanguage } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
-import type { ExperienceGraphInput, JsonLdNodes, LocalizedCopy, PageGraphSpec } from "./models";
+import type { ExperienceSeo, JsonLdNode, JsonLdNodes } from "./models";
+import type { PageNodeType } from "./nodes";
+
+// What the article/item graph reads from an experience's SEO identity; the full record is
+// assignable, but naming the subset keeps the coupling explicit and drift-free
+type ExperienceGraphInput = Pick<ExperienceSeo, "experience" | "preferredLanguage" | "path" | "headline" | "description" | "screenshot">;
+
+// The page node (and its trail) every content page leads with
+interface PageGraphSpec {
+  readonly type: PageNodeType;
+  readonly path: string;
+  readonly name: string;
+  readonly description: string;
+  readonly preferredLanguage: PreferredLanguage;
+  readonly mainEntity?: JsonLdNode;
+  readonly primaryImageOfPage?: JsonLdNode;
+}
+
+// The localized copy the static page graph assemblers read
+interface LocalizedCopy {
+  readonly pageName: string;
+  readonly description: string;
+  readonly preferredLanguage: PreferredLanguage;
+}
 
 // constants
 import { SITE_LANGUAGES, CONTACT_PATH, EDUCATION_PATH } from "@/domain/constants";
-import { EXPERIENCE_LIST_ID, HOME_URL, META_DESCRIPTION_LENGTH, PERSON_ID, PORTFOLIO_LIST_ID, PROFILE_ID } from "./constants";
+import { EXPERIENCE_LIST_ID, HOME_URL, META_DESCRIPTION_LENGTH, PERSON_ID, PORTFOLIO_LIST_ID, PROFILE_ID } from "./site";
 
 // Builds the page node and its breadcrumb trail using absolute URL as @id
 const pageGraph = ({ type, path, name, description, preferredLanguage, mainEntity, primaryImageOfPage }: PageGraphSpec): JsonLdNodes => {

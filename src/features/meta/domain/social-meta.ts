@@ -7,8 +7,7 @@ import type { PreferredLanguage } from "@/domain/models";
 import type { MetaTag, SocialImage, SocialMetaInput } from "./models";
 
 // constants
-import { AUTHOR_URL, GLOBAL_SOCIAL_IMAGE, PUBLISHER_URL, SITE_NAME } from "./constants";
-import { OPEN_GRAPH_LOCALES } from "./constants";
+import { AUTHOR_URL, GLOBAL_SOCIAL_IMAGE, OPEN_GRAPH_LOCALES, PUBLISHER_URL, SITE_NAME } from "./site";
 import { SITE_LANGUAGES } from "@/domain/constants";
 
 export const globalSocialImage = (preferredLanguage: PreferredLanguage): SocialImage => ({

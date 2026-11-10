@@ -3,10 +3,55 @@ import { matchPreferredLanguage } from "@/domain/helpers";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
-import type { ArticleNodeInput, CollectionNodeInput, ExperienceItemNodeInput, JsonLdNode, JsonLdObject, WebPageNodeInput } from "./models";
+import type { JsonLdNode, JsonLdObject } from "./models";
+
+// The page-node vocabulary this module's builders share with the graph assemblers
+export type PageNodeType = "WebPage" | "ContactPage" | "CollectionPage" | "ProfilePage";
+
+interface ArticleNodeInput {
+  readonly id: string;
+  readonly headline: string;
+  readonly description: string;
+  readonly preferredLanguage: PreferredLanguage;
+  readonly about: string;
+  readonly mainEntityOfPage: string;
+  readonly image?: JsonLdNode;
+}
+
+interface WebPageNodeInput {
+  readonly type: PageNodeType;
+  readonly id: string;
+  readonly url: string;
+  readonly name: string;
+  readonly description: string;
+  readonly preferredLanguage: PreferredLanguage;
+  readonly breadcrumb?: boolean;
+  readonly mainEntity?: JsonLdNode;
+  readonly primaryImageOfPage?: JsonLdNode;
+}
+
+interface CollectionNodeInput {
+  readonly id: string;
+  readonly name: string;
+  readonly preferredLanguage: PreferredLanguage;
+  readonly parts: ReadonlyArray<JsonLdNode>;
+  readonly url?: string;
+}
+
+interface ExperienceItemNodeInput {
+  readonly employment: boolean;
+  readonly id: string;
+  readonly url: string;
+  readonly role: string;
+  readonly description: string;
+  readonly preferredLanguage: PreferredLanguage;
+  readonly keywords: ReadonlyArray<string>;
+  readonly image?: JsonLdNode;
+  readonly repository?: string;
+}
 
 // constants
-import { HOME_URL, PERSON_ID, PUBLISHER_ID, WEBSITE_ID } from "./constants";
+import { HOME_URL, PERSON_ID, PUBLISHER_ID, WEBSITE_ID } from "./site";
 
 export const articleNode = ({ id, headline, description, preferredLanguage, about, mainEntityOfPage, image }: ArticleNodeInput): JsonLdNode => ({
   "@type": "Article",

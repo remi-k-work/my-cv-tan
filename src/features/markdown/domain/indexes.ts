@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { partitionExperiences } from "@/features/experience/domain/helpers";
-import { experienceSeo } from "@/features/meta/domain/helpers";
+import { experienceSeo } from "@/features/meta/domain/seo";
 import { absoluteUrl, encodeDestination, markdownTwinUrl } from "@/features/meta/domain/urls";
 import {
   demoteHeadings,
@@ -43,24 +43,19 @@ interface SourceDocument {
 }
 
 // constants
+import { CONTENT_SIGNAL, DOWNLOADABLE_DOCUMENTS, LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX, ROBOTS_TXT_HREF, SITEMAP_HREF } from "@/features/meta/domain/discovery";
 import {
-  CONTENT_SIGNAL,
-  DOWNLOADABLE_DOCUMENTS,
   HOME_COUNTRY,
   HOME_LOCATION,
   HOME_TITLE,
   JOB_TITLE,
   KNOWS_ABOUT,
   LANG_PARAM,
-  LLMS_FULL_TXT_INDEX,
-  LLMS_TXT_INDEX,
   PERSON_DESCRIPTION,
-  ROBOTS_TXT_HREF,
   SITE_NAME,
   SITE_URL,
-  SITEMAP_HREF,
   SOCIAL_PROFILES,
-} from "@/features/meta/domain/constants";
+} from "@/features/meta/domain/site";
 import { CONTACT_PATH, DEFAULT_LANGUAGE, EDUCATION_PATH, HOME_PATH, SITE_LANGUAGE_NAMES, SITE_LANGUAGES } from "@/domain/constants";
 import { STATIC_PAGES, STATIC_PAGE_PATHS } from "@/features/meta/domain/pages";
 import { PAGE_ENTRIES } from "./catalogue";

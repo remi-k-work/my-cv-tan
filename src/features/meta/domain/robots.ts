@@ -1,8 +1,11 @@
 // services, features, and other libraries
+import { Effect } from "effect";
+import { documentRoute } from "@/lib/server-route";
 import { absoluteUrl } from "./urls";
+import { txtResponse } from "./responses";
 
 // constants
-import { CONTENT_SIGNAL, LLMS_TXT_HREF, SITEMAP_HREF } from "./constants";
+import { CONTENT_SIGNAL, LLMS_TXT_HREF, SITEMAP_HREF } from "./discovery";
 
 const CRAWL_DELAY = "10";
 
@@ -18,3 +21,5 @@ export const ROBOTS_TXT = [
   `Sitemap: ${absoluteUrl(SITEMAP_HREF)}`,
   "",
 ].join("\n");
+
+export const robotsHandler = documentRoute(() => Effect.succeed(txtResponse(ROBOTS_TXT)));

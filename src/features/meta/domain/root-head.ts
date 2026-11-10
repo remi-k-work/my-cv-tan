@@ -1,25 +1,14 @@
 // services, features, and other libraries
-import { fallbackHead } from "./helpers";
+import { fallbackHead } from "./fallback";
 import { headLanguage, isNotFoundMatch } from "./route-head";
 import { authorLink } from "./link-tags";
 
 // types
-import type { PageHead, RootHead } from "./models";
-import type { MatchChain } from "./models";
+import type { MatchChain, PageHead, RootHead } from "./models";
 
 // constants
-import {
-  AI_INDEX_LINKS,
-  AUTHOR_URL,
-  AVATAR,
-  BRANDED_TITLE,
-  HOME_TITLE,
-  LLMS_DISCOVERY_LINK,
-  ME_LINKS,
-  SITE_DESCRIPTION,
-  SITE_NAME,
-  SITEMAP_LINK,
-} from "./constants";
+import { AI_INDEX_LINKS, LLMS_DISCOVERY_LINK, ME_LINKS, SITEMAP_LINK } from "./discovery";
+import { AUTHOR_URL, AVATAR, BRANDED_TITLE, HOME_TITLE, SITE_DESCRIPTION, SITE_NAME } from "./site";
 import { NOINDEX_FOLLOW } from "@/domain/http";
 
 export const ROOT_HEAD: RootHead = {
@@ -43,7 +32,7 @@ export const ROOT_HEAD: RootHead = {
   ],
 };
 
-// Builds the root head elements, handling root-level not-found fallbacks if matched.
+// Builds the root head elements, handling root-level not-found fallbacks if matched
 export const rootHead = (matches: MatchChain): PageHead => {
   if (!matches.some(isNotFoundMatch)) return { meta: [...ROOT_HEAD.meta], links: [...ROOT_HEAD.links], scripts: [] };
 

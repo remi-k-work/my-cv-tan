@@ -5,7 +5,8 @@ import { requestPreferredLanguage } from "@/features/data/services/request-langu
 import { recoverDataFailure } from "@/features/data/domain/required";
 import { experienceFromList } from "@/features/experience/domain/helpers";
 import { experienceMarkdownPath } from "@/features/meta/domain/urls";
-import { experienceSeo, txtResponse, txtUnavailableResponse } from "@/features/meta/domain/helpers";
+import { experienceSeo } from "@/features/meta/domain/seo";
+import { txtResponse, txtUnavailableResponse } from "@/features/meta/domain/responses";
 import { buildExperienceMd, buildNotFoundMd } from "@/features/markdown/domain/detail-twin";
 import { twinDocument } from "@/features/markdown/domain/format";
 import { buildLlmsFullTxt, buildLlmsTxt, unavailableIndexBody } from "@/features/markdown/domain/indexes";
@@ -20,13 +21,13 @@ import type { ExperienceList } from "@/features/experience/domain/models";
 import type { RequiredDataError } from "@/features/data/domain/required";
 import type { MarkdownTwin, TwinContext } from "@/features/markdown/domain/models";
 
-// constants
-import { DEFAULT_LANGUAGE } from "@/domain/constants";
-import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/constants";
-import { PAGE_TWINS } from "./pages";
-
 type DocumentBody = (request: Request, context: TwinContext) => Effect.Effect<Response, RequiredDataError, Datasets>;
 type Document = (request: Request) => Effect.Effect<Response, never, Datasets>;
+
+// constants
+import { DEFAULT_LANGUAGE } from "@/domain/constants";
+import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/discovery";
+import { PAGE_TWINS } from "./pages";
 
 // Handles language resolution, translation snapshot loading, rendering, and failure recovery
 const documentResponse = (render: DocumentBody): Document =>

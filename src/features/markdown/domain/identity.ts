@@ -1,5 +1,5 @@
 // constants
-import { BRANDED_TITLE, SITE_NAME } from "@/features/meta/domain/constants";
+import { BRANDED_TITLE, SITE_NAME } from "@/features/meta/domain/site";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";

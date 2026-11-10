@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { Array, Option, String, pipe } from "effect";
-import { documentHeaders } from "@/features/meta/domain/helpers";
+import { documentHeaders } from "@/features/meta/domain/responses";
 import { markdownTwinUrl } from "@/features/meta/domain/urls";
 import { canonicalLink, joinLinkHeader, languageVariantLinks } from "@/features/meta/domain/link-tags";
 
@@ -9,15 +9,14 @@ import type { PreferredLanguage } from "@/domain/models";
 
 // constants
 import { NO_STORE } from "@/domain/http";
+import { AI_INDEX_LINK_HEADER, AI_INDEX_LINKS } from "@/features/meta/domain/discovery";
 import {
-  AI_INDEX_LINK_HEADER,
-  AI_INDEX_LINKS,
   CACHEABLE_HEADERS,
   INDEXABLE_HEADERS,
   NEGOTIATION_VARY_TOKENS,
   SERVICE_UNAVAILABLE_HEADERS,
   UNAVAILABLE_HEADERS,
-} from "@/features/meta/domain/constants";
+} from "@/features/meta/domain/responses";
 
 const MD_CONTENT_TYPE = "text/markdown; charset=utf-8";
 const NEGOTIATION_VARY = new Set(NEGOTIATION_VARY_TOKENS.map((token) => token.toLowerCase()));

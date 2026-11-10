@@ -2,22 +2,37 @@
 import { Option } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
 import { isEmployment } from "@/features/experience/domain/helpers";
-import { experienceSeo, jsonLdGraph } from "./helpers";
+import { experienceSeo } from "./seo";
+import { jsonLdGraph } from "./jsonld";
 import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd } from "./page-graphs";
 import { globalSocialImage, socialMeta } from "./social-meta";
 import { staticPageCopy } from "./pages";
 import { canonicalLink, markdownAlternateLink } from "./link-tags";
 
 // types
-import type { ExperienceHeadInput, JsonLdNodes, PageHead, PageHeadSpec, SocialImage, SocialImageFacts, StaticPageCopy, StaticPageHeadInput } from "./models";
-import type { PreferredLanguage } from "@/domain/models";
+import type { ExperienceHeadInput } from "./seo";
+import type { JsonLdNodes, PageHead, SocialImage, SocialImageFacts, SocialMetaInput, StaticPageCopy } from "./models";
+import type { PageTitles, PreferredLanguage } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
+
+// The ingredients of one indexable page head: its social facts, its Markdown twin and its graph
+interface PageHeadSpec {
+  readonly social: SocialMetaInput;
+  readonly markdownPath: string;
+  readonly graph: JsonLdNodes;
+}
+
+// The loader-provided inputs every static page head shares
+interface StaticPageHeadInput {
+  readonly pageTitles: PageTitles;
+  readonly preferredLanguage: PreferredLanguage;
+}
 
 // constants
 import { INDEXABLE_ROBOTS } from "@/domain/http";
 import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/domain/constants";
-import { BRANDED_TITLE, SITE_NODES } from "./constants";
+import { BRANDED_TITLE, SITE_NODES } from "./site";
 
 export const pageHead = ({ social, markdownPath, graph }: PageHeadSpec): PageHead => ({
   meta: [

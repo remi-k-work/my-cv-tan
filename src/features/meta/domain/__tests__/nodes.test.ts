@@ -4,7 +4,7 @@
 
 import { assert, it } from "@effect/vitest";
 import { articleNode, breadcrumb, collectionNode, experienceItemNode, imageObject, personEdge, webPageNode } from "../nodes";
-import { HOME_URL, PERSON_ID, PUBLISHER_ID, WEBSITE_ID } from "../constants";
+import { HOME_URL, PERSON_ID, PUBLISHER_ID, WEBSITE_ID } from "../site";
 import type { PreferredLanguage } from "@/domain/models";
 
 const language: PreferredLanguage = "en";

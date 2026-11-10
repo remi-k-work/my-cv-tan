@@ -2,7 +2,7 @@ import { assert, it } from "@effect/vitest";
 import { PAGE_ENTRIES, experienceEntry, pageEntry } from "../catalogue";
 import { STATIC_PAGES, STATIC_PAGE_PATHS } from "@/features/meta/domain/pages";
 import { absoluteUrl, markdownTwinUrl } from "@/features/meta/domain/urls";
-import { experienceSeo } from "@/features/meta/domain/helpers";
+import { experienceSeo } from "@/features/meta/domain/seo";
 import { sampleExperience } from "@/features/markdown/__tests__/fixtures";
 
 it("the catalogue declares every static page exactly once", () => {

@@ -7,7 +7,7 @@ import { assert, it } from "@effect/vitest";
 import { Option, Schema, pipe } from "effect";
 import { pageHead, experienceHead, contactHead, educationHead, homeHead } from "../page-head";
 import { globalSocialImage } from "../social-meta";
-import { BRANDED_TITLE, GLOBAL_SOCIAL_IMAGE, SITE_NAME, AUTHOR_URL, PROFILE_ID } from "../constants";
+import { BRANDED_TITLE, GLOBAL_SOCIAL_IMAGE, SITE_NAME, AUTHOR_URL, PROFILE_ID } from "../site";
 import { INDEXABLE_ROBOTS } from "@/domain/http";
 import { STATIC_PAGES } from "../pages";
 import { withLanguageParam } from "../urls";
@@ -52,7 +52,7 @@ const metaOf = (head: PageHead) => JSON.parse(JSON.stringify(head.meta)) as Read
 // Finds a tag by its property or name and returns its content, or undefined when absent.
 const tagContent = (tags: ReadonlyArray<Record<string, string>>, key: "property" | "name", value: string) => tags.find((tag) => tag[key] === value)?.content;
 
-// JSON-LD graph reader mirroring structured-data.test.ts
+// JSON-LD graph reader mirroring the one in helpers.test.ts
 const JsonLdNode = Schema.Record(Schema.String, Schema.Unknown);
 const decodeGraph = Schema.decodeUnknownOption(Schema.fromJsonString(Schema.Struct({ "@graph": Schema.Array(JsonLdNode) })));
 
@@ -558,7 +558,7 @@ it("contact structured data describes the visible ContactPage inside a breadcrum
   });
 });
 
-// Helpers used by the structured-data tests above
+// Helpers used by the JSON-LD graph tests above
 const collectionParts = (node: Record<string, unknown> | undefined) =>
   pipe(
     Option.fromNullishOr(node),

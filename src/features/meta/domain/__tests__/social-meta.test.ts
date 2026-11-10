@@ -4,7 +4,7 @@
 
 import { assert, it } from "@effect/vitest";
 import { globalSocialImage, socialMeta } from "../social-meta";
-import { AUTHOR_URL, GLOBAL_SOCIAL_IMAGE, PUBLISHER_URL, SITE_NAME } from "../constants";
+import { AUTHOR_URL, GLOBAL_SOCIAL_IMAGE, PUBLISHER_URL, SITE_NAME } from "../site";
 import { SocialImage, SocialMetaInput } from "../models";
 import type { PreferredLanguage } from "@/domain/models";
 

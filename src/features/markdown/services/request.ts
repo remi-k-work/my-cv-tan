@@ -4,7 +4,7 @@ import { PreferredLanguage } from "@/domain/models";
 import { decodeUrlOption } from "@/features/meta/domain/urls";
 
 // constants
-import { LANG_PARAM } from "@/features/meta/domain/constants";
+import { LANG_PARAM } from "@/features/meta/domain/site";
 
 const decodePreferredLanguage = Schema.decodeUnknownOption(PreferredLanguage);
 const decodeUrlComponent = Option.liftThrowable(decodeURIComponent);

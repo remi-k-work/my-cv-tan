@@ -4,13 +4,12 @@ import { documentRoute } from "@/lib/server-route";
 import { recoverDataFailure } from "@/features/data/domain/required";
 import { Datasets } from "@/features/data/services/datasets";
 import { absoluteUrl, experiencePath } from "./urls";
+import { sitemapResponse, sitemapUnavailableResponse } from "./responses";
 
 // constants
-import { DOWNLOADABLE_DOCUMENT_PATHS } from "./constants";
+import { DOWNLOADABLE_DOCUMENT_PATHS } from "./discovery";
 import { STATIC_PAGE_PATHS } from "./pages";
 import { SITE_LANGUAGES } from "@/domain/constants";
-import { sitemapResponse, sitemapUnavailableResponse, txtResponse } from "./helpers";
-import { ROBOTS_TXT } from "./robots";
 
 const STATIC_URLS = Array.map([...STATIC_PAGE_PATHS, ...DOWNLOADABLE_DOCUMENT_PATHS], absoluteUrl);
 const XML_ENTITIES: Readonly<Record<string, string>> = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" };
@@ -44,5 +43,4 @@ export const buildSitemapXml = (slugs: ReadonlyArray<string>) => {
   ].join("\n");
 };
 
-export const robotsHandler = documentRoute(() => Effect.succeed(txtResponse(ROBOTS_TXT)));
 export const sitemapHandler = documentRoute(() => sitemapDocument);

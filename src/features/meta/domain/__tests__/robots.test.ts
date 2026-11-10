@@ -1,6 +1,5 @@
 import { assert, it } from "@effect/vitest";
-import { ROBOTS_TXT } from "../robots";
-import { robotsHandler } from "../sitemap";
+import { ROBOTS_TXT, robotsHandler } from "../robots";
 
 it("robots.txt allows content, disallows API endpoints, and advertises the sitemap", async () => {
   const robots = ROBOTS_TXT;
