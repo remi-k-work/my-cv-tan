@@ -1,17 +1,8 @@
 import { assert, it } from "@effect/vitest";
-import { pagesSection, detailPagesSection } from "../twin-nav";
-import { AI_INDEX_MARKDOWN_LINKS } from "../twin-nav";
+import { AI_INDEX_MARKDOWN_LINKS, detailPagesSection, pagesSection } from "../twin-nav";
 import { STATIC_PAGES } from "@/features/meta/domain/pages";
+import { translateEn, translatePl } from "@/features/markdown/__tests__/fixtures";
 import type { PagePath } from "@/domain/models";
-
-const translateEn = (source: string): string => source;
-
-const polishTranslations: Record<string, string> = {
-  Pages: "Strony",
-  "Home page": "Strona główna",
-};
-
-const translatePl = (source: string): string => polishTranslations[source] ?? source;
 
 it("pagesSection excludes the linking page itself", () => {
   const links = pagesSection("/", "en", translateEn);

@@ -1,5 +1,7 @@
 // services, features, and other libraries
 import { partitionExperiences } from "@/features/experience/domain/helpers";
+import { experienceSeo } from "@/features/meta/domain/helpers";
+import { absoluteUrl, encodeDestination, markdownTwinUrl } from "@/features/meta/domain/urls";
 import {
   demoteHeadings,
   fencedFacts,
@@ -16,15 +18,34 @@ import {
   mdTitledSection,
 } from "./format";
 import { escapeMd, escapeMdInline } from "./escape";
-import { allEntries, experienceLines } from "./helpers";
-import { absoluteUrl, encodeDestination, markdownTwinUrl } from "@/features/meta/domain/urls";
+import { experienceEntry, pageEntry } from "./catalogue";
+import { SOURCE_CONTEXT } from "./context";
+import { buildExperienceMd } from "./detail-twin";
+import { experienceLines } from "./listings";
+import { buildContactMd, buildEducationMd, buildHomeMd } from "./twins";
 
 // types
+import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
-import type { TwinData } from "./models";
+import type { PagePath, PageTitles } from "@/domain/models";
+import type { IndexEntry } from "./catalogue";
+import type { MarkdownTwin } from "./models";
+
+interface SourceContent {
+  readonly pageTitles: PageTitles;
+  readonly experienceList: ExperienceList;
+  readonly educationList: EducationList;
+}
+
+interface SourceDocument {
+  readonly entry: IndexEntry;
+  readonly twin: MarkdownTwin;
+}
 
 // constants
 import {
+  CONTENT_SIGNAL,
+  DOWNLOADABLE_DOCUMENTS,
   HOME_COUNTRY,
   HOME_LOCATION,
   HOME_TITLE,
@@ -34,15 +55,15 @@ import {
   LLMS_FULL_TXT_INDEX,
   LLMS_TXT_INDEX,
   PERSON_DESCRIPTION,
+  ROBOTS_TXT_HREF,
   SITE_NAME,
   SITE_URL,
+  SITEMAP_HREF,
   SOCIAL_PROFILES,
 } from "@/features/meta/domain/constants";
-import { PAGE_ENTRIES } from "./constants";
-import { CONTENT_SIGNAL, DOWNLOADABLE_DOCUMENTS, ROBOTS_TXT_HREF, SITEMAP_HREF } from "@/features/meta/domain/constants";
-import { DEFAULT_LANGUAGE, HOME_PATH, SITE_LANGUAGE_NAMES, SITE_LANGUAGES } from "@/domain/constants";
-import { STATIC_PAGES } from "@/features/meta/domain/pages";
-import { SOURCE_COPY } from "./constants";
+import { CONTACT_PATH, DEFAULT_LANGUAGE, EDUCATION_PATH, HOME_PATH, SITE_LANGUAGE_NAMES, SITE_LANGUAGES } from "@/domain/constants";
+import { STATIC_PAGES, STATIC_PAGE_PATHS } from "@/features/meta/domain/pages";
+import { PAGE_ENTRIES } from "./catalogue";
 
 const PINNABLE_LANGUAGES = SITE_LANGUAGES.filter((language) => language !== DEFAULT_LANGUAGE);
 const LANGUAGE_PINS = PINNABLE_LANGUAGES.map(
@@ -55,7 +76,7 @@ export const AI_NOTES = [
   "Every page has a machine-readable Markdown twin; fetch one linked `.md` page at a time, or the single-request full-content document for everything at once.",
   "Always cite the clean canonical HTML URL from each document's frontmatter (`canonical:`), not the `.md` URL.",
   "Structured data (JSON-LD) is embedded in every page head.",
-  "Every twin states its headline facts as frontmatter (`title`, `description`, `author`, `canonical`, `lang`, `type`), so a document can be indexed without reading the body.",
+  "Every page twin states its headline facts as frontmatter (`title`, `description`, `author`, `canonical`, `lang`, `type`), so a document can be indexed without reading the body.",
 ] as const;
 
 const SINGLE_REQUEST_NOTE = `The complete content of every page is also available in a single request: ${LLMS_FULL_TXT_INDEX.url}.`;
@@ -88,18 +109,20 @@ export const DISCOVERY_LINES: ReadonlyArray<string> = [
 ].map(({ name, summary, url }) => `${mdLink(name, url)}: ${summary}.`);
 
 const DISCOVERY_SECTION = mdTitledSection("Discovery", mdBulletList(DISCOVERY_LINES));
-
 export const SITE_OPENING: ReadonlyArray<string> = [mdHeading(1, SITE_NAME), mdQuote(HOME_TITLE), escapeMd(PERSON_DESCRIPTION)];
+const entryTwinUrl = (entry: IndexEntry) => markdownTwinUrl(entry.mdHref, SOURCE_CONTEXT.preferredLanguage);
 
 const PAGES_SECTION = mdTitledSection(
   "Pages",
   mdBulletList([
-    ...PAGE_ENTRIES.map(({ name, canonical, twinUrl, summary }) => mdIndexEntry(name, canonical, twinUrl, summary)),
+    ...PAGE_ENTRIES.map(({ name, canonical, mdHref, summary }) =>
+      mdIndexEntry(name, canonical, markdownTwinUrl(mdHref, SOURCE_CONTEXT.preferredLanguage), summary)
+    ),
     `${mdLink("Full site content", LLMS_FULL_TXT_INDEX.url)}: every page above in one document, for single-request ingestion.`,
   ])
 );
 
-const OPTIONAL_SECTION = mdTitledSection("Optional", mdDocumentLinks(DOWNLOADABLE_DOCUMENTS, SOURCE_COPY.translate));
+const OPTIONAL_SECTION = mdTitledSection("Optional", mdDocumentLinks(DOWNLOADABLE_DOCUMENTS, SOURCE_CONTEXT.translate));
 const PROFILES_SECTION = mdTitledSection("Profiles", mdBulletList(mdProfileLinks(SOCIAL_PROFILES)));
 
 const LANGUAGE_VARIANTS_SECTION = mdTitledSection(
@@ -112,6 +135,21 @@ const LANGUAGE_VARIANTS_SECTION = mdTitledSection(
   )
 );
 
+// The English source documents, keyed exhaustively so a page added to the catalogue must be built here too
+const SOURCE_PAGE_DOCUMENTS: Record<PagePath, (content: SourceContent) => MarkdownTwin> = {
+  [HOME_PATH]: ({ pageTitles, experienceList }) => buildHomeMd({ pageTitles, experienceList, ...SOURCE_CONTEXT }),
+  [EDUCATION_PATH]: ({ pageTitles, educationList }) => buildEducationMd({ pageTitles, educationList, ...SOURCE_CONTEXT }),
+  [CONTACT_PATH]: ({ pageTitles }) => buildContactMd({ pageTitles, ...SOURCE_CONTEXT }),
+};
+
+const sourceDocuments = (content: SourceContent): ReadonlyArray<SourceDocument> => [
+  ...STATIC_PAGE_PATHS.map((pagePath) => ({ entry: pageEntry(pagePath), twin: SOURCE_PAGE_DOCUMENTS[pagePath](content) })),
+  ...content.experienceList.map((experience) => {
+    const seo = experienceSeo({ experience, preferredLanguage: DEFAULT_LANGUAGE });
+    return { entry: experienceEntry(seo), twin: buildExperienceMd({ seo, translate: SOURCE_CONTEXT.translate }) };
+  }),
+];
+
 // Builds the concise llms.txt discovery index
 export const buildLlmsTxt = (experienceList: ExperienceList) => {
   const [employment, projects] = partitionExperiences(experienceList);
@@ -120,8 +158,8 @@ export const buildLlmsTxt = (experienceList: ExperienceList) => {
     ...SITE_OPENING,
     ABOUT_SECTION,
     PAGES_SECTION,
-    mdTitledSection("Work Experience", experienceLines({ experiences: employment, ...SOURCE_COPY, entry: "canonical" })),
-    mdTitledSection("Portfolio Projects", experienceLines({ experiences: projects, ...SOURCE_COPY, entry: "canonical" })),
+    mdTitledSection("Work Experience", experienceLines({ experiences: employment, ...SOURCE_CONTEXT, mode: "index" })),
+    mdTitledSection("Portfolio Projects", experienceLines({ experiences: projects, ...SOURCE_CONTEXT, mode: "index" })),
     LANGUAGE_VARIANTS_SECTION,
     PROFILES_SECTION,
     DISCOVERY_SECTION,
@@ -131,25 +169,24 @@ export const buildLlmsTxt = (experienceList: ExperienceList) => {
 };
 
 // Builds the full concatenated llms-full.txt document for single-request ingestion
-export const buildLlmsFullTxt = ({ pageTitles, experienceList, educationList }: TwinData) => {
-  const documents = allEntries(experienceList);
+export const buildLlmsFullTxt = (content: SourceContent) => {
+  const documents = sourceDocuments(content);
 
   return mdDocument([
     ...SITE_OPENING,
     `Complete Markdown content of every page, concatenated for single-request ingestion. Each section begins with its canonical HTML URL after "Source:", its Markdown twin after "Markdown:", and its identity facts as YAML, then includes the twin content with headings demoted to preserve one document hierarchy. Cite the canonical HTML URL, not this file.`,
     ABOUT_SECTION,
-    mdTitledSection("Table of Contents", mdBulletList(documents.map(({ name, canonical, twinUrl }) => mdIndexEntry(name, canonical, twinUrl)))),
+    mdTitledSection("Table of Contents", mdBulletList(documents.map(({ entry }) => mdIndexEntry(entry.name, entry.canonical, entryTwinUrl(entry))))),
     DISCOVERY_SECTION,
-    ...documents.map(({ name, canonical, twinUrl, render }) => {
-      const twin = render({ pageTitles, experienceList, educationList });
-      return mdBody([
-        mdHeading(2, name),
-        `Source: ${escapeMdInline(canonical)}`,
-        `Markdown: ${encodeDestination(twinUrl)}`,
+    ...documents.map(({ entry, twin }) =>
+      mdBody([
+        mdHeading(2, entry.name),
+        `Source: ${escapeMdInline(entry.canonical)}`,
+        `Markdown: ${encodeDestination(entryTwinUrl(entry))}`,
         fencedFacts(twin.facts),
         demoteHeadings(twin.body),
-      ]);
-    }),
+      ])
+    ),
     COMPANION_NOTES_SECTION,
   ]);
 };

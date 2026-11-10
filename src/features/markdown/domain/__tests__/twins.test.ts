@@ -1,75 +1,7 @@
 import { assert, it } from "@effect/vitest";
-import { buildContactMd, buildEducationMd, buildHomeMd } from "../twins";
-import { twinDocument } from "../format";
 import { STATIC_PAGES } from "@/features/meta/domain/pages";
-import type { PageTitles, PreferredLanguage, Translate } from "@/domain/models";
-import type { Experience, ExperienceList } from "@/features/experience/domain/models";
-
-const sampleExperience: Experience = {
-  type: "e",
-  slug: "sample-role",
-  year: "Mar 2026",
-  role: "Full-Stack Developer",
-  company: "Sample Co",
-  txt: "Built things with **care** and #hashtags.",
-  gitHubLink: "https://github.com/example/repo",
-  imageName: "01",
-  skillsUsed: ["TypeScript", "React"],
-};
-
-const stablePageTitles: PageTitles = {
-  "/": { eyebrow: "Home", heading: "Stable home title", intro: "Stable home summary." },
-  "/education": { eyebrow: "Education", heading: "Stable education title", intro: "Stable education summary." },
-  "/contact": { eyebrow: "Contact", heading: "Stable contact title", intro: "Stable contact summary." },
-};
-
-const translateEn = (source: string): string => source;
-
-const polishTranslations: Record<string, string> = {
-  Experience: "Doświadczenie",
-  "Portfolio Projects": "Projekty do Portfolio",
-  Education: "Edukacja",
-  Pages: "Strony",
-  "Home page": "Strona główna",
-  "Education & Certificates": "Edukacja i certyfikaty",
-  Contact: "Kontakt",
-  "No entries.": "Brak wpisów.",
-  Overview: "Opis",
-  Details: "Szczegóły",
-  Role: "Rola",
-  "Skills Used": "Wykorzystane Umiejętności",
-  Links: "Linki",
-  Documents: "Dokumenty",
-  Years: "Lata",
-  Location: "Lokalizacja",
-  Channels: "Kanały",
-  "Contact Form": "Formularz Kontaktowy",
-  Base: "Lokalizacja",
-  "Rzeszów, Poland": "Rzeszów, Polska",
-  "Not Found": "Nie znaleziono",
-  "GitHub Repo": "Repozytorium GitHub",
-  "Live Link": "Link na Żywo",
-  "Watch Video": "Zobacz Video",
-};
-
-const translatePl = (source: string): string => polishTranslations[source] ?? source;
-
-const homeTwin = (input: {
-  readonly pageTitles: PageTitles;
-  readonly experienceList: ExperienceList;
-  readonly preferredLanguage: PreferredLanguage;
-  readonly translate: Translate;
-}) => twinDocument(buildHomeMd(input));
-
-const educationTwin = (input: {
-  readonly pageTitles: PageTitles;
-  readonly educationList: ReadonlyArray<{ readonly name: string; readonly year: string; readonly location: string; readonly info: string }>;
-  readonly preferredLanguage: PreferredLanguage;
-  readonly translate: Translate;
-}) => twinDocument(buildEducationMd(input));
-
-const contactTwin = (input: { readonly pageTitles: PageTitles; readonly preferredLanguage: PreferredLanguage; readonly translate: Translate }) =>
-  twinDocument(buildContactMd(input));
+import { contactTwin, educationTwin, homeTwin, sampleExperience, stablePageTitles, translateEn, translatePl } from "@/features/markdown/__tests__/fixtures";
+import type { ExperienceList } from "@/features/experience/domain/models";
 
 it("buildHomeMd groups work and projects and links to .md twins", () => {
   const md = homeTwin({ pageTitles: stablePageTitles, experienceList: [sampleExperience], preferredLanguage: "en", translate: translateEn });
@@ -190,10 +122,10 @@ it("the education twin stays localized and a missing document has no canonical",
   assert.include(populated, "Lata: 2020");
   assert.include(populated, "Lokalizacja: Poland");
 
-  const missing = twinDocument(buildContactMd({ pageTitles: stablePageTitles, preferredLanguage: "en", translate: translateEn }));
+  const missing = contactTwin({ pageTitles: stablePageTitles, preferredLanguage: "en", translate: translateEn });
   assert.include(missing, `title: "Remi Forge ● ${STATIC_PAGES["/contact"].copy.en.title}"`);
 
-  const missingPl = twinDocument(buildContactMd({ pageTitles: stablePageTitles, preferredLanguage: "pl", translate: translatePl }));
+  const missingPl = contactTwin({ pageTitles: stablePageTitles, preferredLanguage: "pl", translate: translatePl });
   assert.include(missingPl, "## Kanały");
   assert.include(missingPl, "Formularz Kontaktowy:");
   assert.include(missingPl, "Lokalizacja: Rzeszów, Polska");

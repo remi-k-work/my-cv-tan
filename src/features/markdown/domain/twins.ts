@@ -4,13 +4,19 @@ import { staticPageCopy } from "@/features/meta/domain/pages";
 import { pagesSection } from "./twin-nav";
 import { mdBody, mdBulletList, mdDocument, mdDocumentLinks, mdEmptyMarker, mdFact, mdHeading, mdProfileLinks, mdQuote, mdTitledSection } from "./format";
 import { escapeMd } from "./escape";
-import { experienceLines, pageFacts } from "./helpers";
+import { pageFacts } from "./identity";
+import { experienceLines } from "./listings";
 
 // types
 import type { StaticPageCopy } from "@/features/meta/domain/models";
 import type { PagePath, PageTitles, Translate } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
-import type { ContactMdInput, EducationMdInput, HomeMdInput, LocalizedMdInput } from "./models";
+import type { ExperienceList } from "@/features/experience/domain/models";
+import type { TwinContext } from "./models";
+
+type HomeMdInput = TwinContext & { readonly pageTitles: PageTitles; readonly experienceList: ExperienceList };
+type EducationMdInput = TwinContext & { readonly pageTitles: PageTitles; readonly educationList: EducationList };
+type ContactMdInput = TwinContext & { readonly pageTitles: PageTitles };
 
 // constants
 import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/domain/constants";
@@ -39,7 +45,7 @@ const contactChannels = (canonical: string, translate: Translate) =>
   );
 
 const staticTwinDocument = (
-  input: LocalizedMdInput & { readonly pageTitles: PageTitles },
+  input: TwinContext & { readonly pageTitles: PageTitles },
   pagePath: PagePath,
   sections: (copy: StaticPageCopy) => ReadonlyArray<string>
 ) => {
@@ -62,8 +68,8 @@ export const buildHomeMd = (input: HomeMdInput) => {
   const [employment, projects] = partitionExperiences(experienceList);
 
   return staticTwinDocument(input, HOME_PATH, () => [
-    mdTitledSection(translate("Experience"), experienceLines({ experiences: employment, translate, preferredLanguage, entry: "twin" })),
-    mdTitledSection(translate("Portfolio Projects"), experienceLines({ experiences: projects, translate, preferredLanguage, entry: "twin" })),
+    mdTitledSection(translate("Experience"), experienceLines({ experiences: employment, translate, preferredLanguage, mode: "twin" })),
+    mdTitledSection(translate("Portfolio Projects"), experienceLines({ experiences: projects, translate, preferredLanguage, mode: "twin" })),
   ]);
 };
 

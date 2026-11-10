@@ -8,9 +8,11 @@ const sharedMemoMap = Layer.makeMemoMapUnsafe();
 
 const LoggerLayer = Logger.layer([Logger.consolePretty()]);
 
-// HTML loaders use Data directly; the sitemap document and the Markdown service read the
-// required-dataset adapter; the memo map keeps Data and Datasets singletons across the merge
-const MainLayer = Layer.mergeAll(LoggerLayer, Data.layer, Datasets.layer, Markdown.layer);
+// HTML loaders use Data directly; machine-readable documents read the required-dataset adapter.
+// Markdown resolves Datasets when its layer is built, so it must be provided after the base layers
+// rather than merged beside them; the memo map keeps Data and Datasets singletons across the merge
+const BaseLayer = Layer.mergeAll(LoggerLayer, Data.layer, Datasets.layer);
+const MainLayer = Markdown.layer.pipe(Layer.provideMerge(BaseLayer));
 
 export const RuntimeServer = ManagedRuntime.make(MainLayer, { memoMap: sharedMemoMap });
 

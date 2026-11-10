@@ -165,6 +165,7 @@ export interface StaticPageSettings {
   readonly mdHref: string;
   readonly label: string;
   readonly type: StaticPageType;
+  readonly indexSummary: string;
   readonly copy: Readonly<Record<PreferredLanguage, StaticPageCopySource>>;
 }
 

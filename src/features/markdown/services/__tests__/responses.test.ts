@@ -1,25 +1,39 @@
-import { assert, it } from "@effect/vitest";
+import { assert, describe, it } from "@effect/vitest";
 import { Effect, Option } from "effect";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 import { CONTENT_SIGNAL } from "@/features/meta/domain/constants";
 import { absoluteUrl } from "@/features/meta/domain/urls";
-import { txtResponse, txtUnavailableResponse } from "@/features/meta/domain/helpers";
+import { documentHeaders, txtResponse, txtUnavailableResponse } from "@/features/meta/domain/helpers";
 import { requireData, recoverDataFailure } from "@/features/data/domain/required";
 import { experienceFromList } from "@/features/experience/domain/helpers";
-import { mdNotFoundResponse, mdResponse, mdUnavailableResponse, pinCacheVariant } from "../responses";
-import type { Experience } from "@/features/experience/domain/models";
+import { mdNotFoundResponse, mdResponse, mdUnavailableResponse, pinCacheVariant, withoutCaching, withoutNegotiationVary } from "../responses";
+import { sampleExperience } from "@/features/markdown/__tests__/fixtures";
 
-const sampleExperience: Experience = {
-  type: "e",
-  slug: "sample-role",
-  year: "Mar 2026",
-  role: "Full-Stack Developer",
-  company: "Sample Co",
-  txt: "Built things with **care** and #hashtags.",
-  gitHubLink: "https://github.com/example/repo",
-  imageName: "01",
-  skillsUsed: ["TypeScript", "React"],
-};
+describe("withoutNegotiationVary", () => {
+  it("drops both negotiation tokens, leaving no Vary value", () => {
+    assert.isNull(withoutNegotiationVary("Cookie, Accept-Language"));
+    assert.isNull(withoutNegotiationVary("accept-language,Cookie"));
+  });
+
+  it("preserves unrelated tokens the runtime added", () => {
+    // Retains transport-level Vary tokens such as Accept-Encoding.
+    assert.strictEqual(withoutNegotiationVary("Cookie, Accept-Language, Accept-Encoding"), "Accept-Encoding");
+    assert.strictEqual(withoutNegotiationVary("Accept-Encoding"), "Accept-Encoding");
+  });
+
+  it("passes through an absent header and trims empty or padded tokens", () => {
+    assert.isNull(withoutNegotiationVary(null));
+    assert.strictEqual(withoutNegotiationVary(" Accept-Encoding ,  Origin "), "Accept-Encoding, Origin");
+    assert.strictEqual(withoutNegotiationVary("Cookie,,Accept-Encoding"), "Accept-Encoding");
+  });
+
+  it("strips exactly the negotiation tokens documentHeaders advertises, for both languages", () => {
+    for (const language of ["en", "pl"] as const) {
+      const vary = documentHeaders(language);
+      assert.isNull(withoutNegotiationVary(vary.Vary));
+    }
+  });
+});
 
 it("pins a response to its URL language while retaining other cache metadata", async () => {
   const response = new Response("# Portfolio", {
@@ -47,6 +61,24 @@ it("a response that carries no Vary header stays Vary-free", async () => {
   assert.strictEqual(bare.status, 404);
   assert.isNull(bare.headers.get("Vary"));
   assert.strictEqual(await bare.text(), "# Gone");
+});
+
+it("a translation fallback refuses shared caching without weakening its negotiation", async () => {
+  // A fallback is English at a URL that asked for another language. It must not be pinned as a
+  // public variant of that URL, so the response is marked no-store and the negotiated Vary stays.
+  const response = mdResponse({
+    body: "# English fallback",
+    preferredLanguage: "en",
+    canonical: "https://www.remiforge.dev/",
+    markdownPath: "/index.md",
+  });
+
+  const uncached = withoutCaching(response);
+
+  assert.strictEqual(uncached.status, 200);
+  assert.strictEqual(uncached.headers.get("Cache-Control"), "no-store");
+  assert.strictEqual(uncached.headers.get("Vary"), "Cookie, Accept-Language");
+  assert.strictEqual(await uncached.text(), "# English fallback");
 });
 
 it("response helpers set content types, indexing, cache, canonical, and language-variant headers", () => {

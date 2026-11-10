@@ -12,30 +12,10 @@ import { buildLlmsTxt } from "../indexes";
 import { buildContactMd, buildEducationMd, buildHomeMd } from "../twins";
 import { buildExperienceMd } from "../detail-twin";
 import { twinDocument } from "../format";
-import type { PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
-import type { Experience } from "@/features/experience/domain/models";
+import { sampleExperience, stablePageTitles, translateEn } from "@/features/markdown/__tests__/fixtures";
+import type { PagePath, PreferredLanguage } from "@/domain/models";
 import type { PageHead } from "@/features/meta/domain/models";
 import { experienceSeo } from "@/features/meta/domain/helpers";
-
-const sampleExperience: Experience = {
-  type: "p",
-  slug: "sample-role",
-  year: "Mar 2026",
-  role: "Full-Stack Developer",
-  company: "Sample Co",
-  txt: "Built things with care.",
-  gitHubLink: "https://github.com/example/repo",
-  imageName: "01",
-  skillsUsed: ["TypeScript", "React"],
-};
-
-const translateEn = (source: string): string => source;
-
-const stablePageTitles: PageTitles = {
-  "/": { eyebrow: "Home", heading: "Stable home title", intro: "Stable home description." },
-  "/education": { eyebrow: "Education", heading: "Stable education title", intro: "Stable education description." },
-  "/contact": { eyebrow: "Contact", heading: "Stable contact title", intro: "Stable contact description." },
-};
 
 it("the head, JSON-LD, Markdown twin and visible detail heading share one experience identity", () => {
   const preferredLanguage = "pl";

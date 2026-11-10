@@ -1,68 +1,54 @@
 // services, features, and other libraries
-import { Context, Effect, Layer, Option, pipe } from "effect";
+import { Context, Effect, Layer, Option } from "effect";
 import { Datasets } from "@/features/data/services/datasets";
 import { requestPreferredLanguage } from "@/features/data/services/request-language";
 import { recoverDataFailure } from "@/features/data/domain/required";
 import { experienceFromList } from "@/features/experience/domain/helpers";
-import { decodeUrlOption, experienceMarkdownPath } from "@/features/meta/domain/urls";
-import { translateForLanguage } from "@/lib/gt-translations";
-import { mdNotFoundResponse, mdResponse, mdUnavailableResponse, pinCacheVariant } from "./responses";
+import { experienceMarkdownPath } from "@/features/meta/domain/urls";
+import { experienceSeo, txtResponse, txtUnavailableResponse } from "@/features/meta/domain/helpers";
 import { buildExperienceMd, buildNotFoundMd } from "@/features/markdown/domain/detail-twin";
 import { twinDocument } from "@/features/markdown/domain/format";
 import { buildLlmsFullTxt, buildLlmsTxt, unavailableIndexBody } from "@/features/markdown/domain/indexes";
 import { unavailableMarkdownBody } from "@/features/markdown/domain/twins";
-import { experienceSeo, txtResponse, txtUnavailableResponse } from "@/features/meta/domain/helpers";
-import { translateSource } from "@/domain/helpers";
-import { parseLangParam, slugFromMdPathname } from "@/features/markdown/domain/helpers";
+import { documentName, parseLangParam, slugFromMdPathname } from "./request";
+import { mdNotFoundResponse, mdResponse, mdUnavailableResponse, pinCacheVariant, withoutCaching } from "./responses";
+import { resolveTranslation } from "./translation";
 
 // types
-import type { LocalizedMdInput, MarkdownTwin, PageTwin } from "@/features/markdown/domain/models";
-import type { DatasetsService, LocalizedAccessor } from "@/features/data/services/datasets";
+import type { PagePath } from "@/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
 import type { RequiredDataError } from "@/features/data/domain/required";
-import type { PreferredLanguage } from "@/domain/models";
-
-type DocumentBody = (request: Request, context: LocalizedMdInput) => Effect.Effect<Response, RequiredDataError>;
+import type { MarkdownTwin, TwinContext } from "@/features/markdown/domain/models";
 
 // constants
-import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/constants";
-import { CONTACT_TWIN, EDUCATION_TWIN, HOME_TWIN } from "@/features/markdown/domain/constants";
 import { DEFAULT_LANGUAGE } from "@/domain/constants";
+import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/constants";
+import { PAGE_TWINS } from "./pages";
 
-const translateFor = (preferredLanguage: PreferredLanguage) =>
-  preferredLanguage === DEFAULT_LANGUAGE
-    ? Effect.succeed(translateSource)
-    : Effect.tryPromise(() => translateForLanguage(preferredLanguage)).pipe(
-        Effect.catch((error) =>
-          Effect.logError(`[MARKDOWN]: translation snapshot unavailable for "${preferredLanguage}"`, error).pipe(Effect.as(translateSource))
-        )
-      );
-
-const documentName = (request: Request) =>
-  pipe(
-    decodeUrlOption(request.url),
-    Option.map(({ pathname }) => pathname),
-    Option.getOrElse(() => request.url)
-  );
+type DocumentBody = (request: Request, context: TwinContext) => Effect.Effect<Response, RequiredDataError, Datasets>;
+type Document = (request: Request) => Effect.Effect<Response, never, Datasets>;
 
 // Handles language resolution, translation snapshot loading, rendering, and failure recovery
-const documentResponse = (render: DocumentBody) =>
+const documentResponse = (render: DocumentBody): Document =>
   Effect.fnUntraced(function* (request: Request) {
     const langOverride = parseLangParam(request.url);
-    const preferredLanguage = requestPreferredLanguage(langOverride);
-    const translate = yield* translateFor(preferredLanguage);
+    const { context, fallback } = yield* resolveTranslation(requestPreferredLanguage(langOverride));
 
-    const response = yield* render(request, { preferredLanguage, translate }).pipe(
+    const rendered = yield* render(request, context).pipe(
       recoverDataFailure(
         () => `[${documentName(request)}]`,
-        () => mdUnavailableResponse(unavailableMarkdownBody(translate), preferredLanguage)
+        () => mdUnavailableResponse(unavailableMarkdownBody(context.translate), context.preferredLanguage)
       )
     );
 
-    return Option.isSome(langOverride) ? pinCacheVariant(response) : response;
+    // A fallback document is English at a URL that asked for another language: keep it out of
+    // shared caches and leave the negotiated Vary in place instead of pinning a misleading variant.
+    const stable = fallback ? withoutCaching(rendered) : rendered;
+
+    return Option.isSome(langOverride) && !fallback ? pinCacheVariant(stable) : stable;
   });
 
-const respond = (context: LocalizedMdInput, twin: MarkdownTwin, canonical: string, markdownPath: string) =>
+const respond = (context: TwinContext, twin: MarkdownTwin, canonical: string, markdownPath: string) =>
   mdResponse({
     body: twinDocument(twin),
     preferredLanguage: context.preferredLanguage,
@@ -70,76 +56,94 @@ const respond = (context: LocalizedMdInput, twin: MarkdownTwin, canonical: strin
     markdownPath,
   });
 
-const pageTwinDocument = <Data>(twin: PageTwin<Data>, datasets: DatasetsService) =>
-  documentResponse(
-    Effect.fnUntraced(function* (_request: Request, context: LocalizedMdInput) {
-      const data = yield* twin.resolveData(datasets, context.preferredLanguage);
-      return respond(context, twin.render(data, context), twin.canonical, twin.mdHref);
-    })
-  );
+const pageDocument = (pagePath: PagePath) =>
+  documentResponse((_request, context) => {
+    const twin = PAGE_TWINS[pagePath];
 
-const notFoundTwin = (slug: Option.Option<string>, context: LocalizedMdInput) =>
+    return Effect.map(twin.document(context), (document) => respond(context, document, twin.entry.canonical, twin.entry.mdHref));
+  });
+
+const notFoundTwin = (slug: Option.Option<string>, context: TwinContext) =>
   mdNotFoundResponse(twinDocument(buildNotFoundMd({ slug, ...context })), context.preferredLanguage, Option.map(slug, experienceMarkdownPath));
 
-const experienceTwin = (experienceList: LocalizedAccessor<ExperienceList>) =>
-  documentResponse(
-    Effect.fnUntraced(function* (request: Request, context: LocalizedMdInput) {
-      const slug = slugFromMdPathname(request.url);
-      if (Option.isNone(slug)) {
-        return notFoundTwin(Option.none(), context);
-      }
+const experienceTwin: Document = documentResponse(
+  Effect.fnUntraced(function* (request: Request, context: TwinContext) {
+    const slug = slugFromMdPathname(request.url);
+    if (Option.isNone(slug)) {
+      return notFoundTwin(Option.none(), context);
+    }
 
-      const slugValue = slug.value;
-      const list = yield* experienceList(context.preferredLanguage);
-      const found = experienceFromList(list, slugValue);
+    const slugValue = slug.value;
+    const datasets = yield* Datasets;
+    const list = yield* datasets.experienceList(context.preferredLanguage);
+    const found = experienceFromList(list, slugValue);
 
-      if (Option.isNone(found)) {
-        yield* Effect.logDebug(`[SLUG.MD]: no experience for slug "${slugValue}", emitting markdown 404`);
-        return notFoundTwin(Option.some(slugValue), context);
-      }
+    if (Option.isNone(found)) {
+      yield* Effect.logDebug(`[SLUG.MD]: no experience for slug "${slugValue}", emitting markdown 404`);
+      return notFoundTwin(Option.some(slugValue), context);
+    }
 
-      const experience = found.value;
-      const seo = experienceSeo({ experience, preferredLanguage: context.preferredLanguage });
+    const experience = found.value;
+    const seo = experienceSeo({ experience, preferredLanguage: context.preferredLanguage });
 
-      return respond(context, buildExperienceMd({ seo, translate: context.translate }), seo.canonical, seo.markdownPath);
-    })
+    return respond(context, buildExperienceMd({ seo, translate: context.translate }), seo.canonical, seo.markdownPath);
+  })
+);
+
+const discoveryDocument =
+  (index: { readonly name: string; readonly url: string }, content: Effect.Effect<string, RequiredDataError, Datasets>): Document =>
+  (_request: Request) =>
+    content.pipe(
+      Effect.map((body) => txtResponse(body, index.url)),
+      recoverDataFailure(
+        () => `[${index.name.toUpperCase()}]`,
+        () => txtUnavailableResponse(unavailableIndexBody(index.name))
+      )
+    );
+
+const siteIndexContent = Effect.gen(function* () {
+  const datasets = yield* Datasets;
+  const experienceList: ExperienceList = yield* datasets.experienceList(DEFAULT_LANGUAGE);
+
+  return buildLlmsTxt(experienceList);
+});
+
+const siteIndexFullContent = Effect.gen(function* () {
+  const datasets = yield* Datasets;
+  const content = yield* Effect.all(
+    {
+      pageTitles: datasets.pageTitles(DEFAULT_LANGUAGE),
+      experienceList: datasets.experienceList(DEFAULT_LANGUAGE),
+      educationList: datasets.educationList(DEFAULT_LANGUAGE),
+    },
+    { concurrency: "unbounded" }
   );
 
-const discoveryDocument = (index: { readonly name: string; readonly url: string }, content: Effect.Effect<string, RequiredDataError>) => (_request: Request) =>
-  content.pipe(
-    Effect.map((body) => txtResponse(body, index.url)),
-    recoverDataFailure(
-      () => `[${index.name.toUpperCase()}]`,
-      () => txtUnavailableResponse(unavailableIndexBody(index.name))
-    )
-  );
+  return buildLlmsFullTxt(content);
+});
+
+const siteIndex = discoveryDocument(LLMS_TXT_INDEX, siteIndexContent);
+const siteIndexFull = discoveryDocument(LLMS_FULL_TXT_INDEX, siteIndexFullContent);
+
+// The service's callers are document routes, not data pipelines: resolve the datasets once when
+// the layer is built so the public method types describe what the service does, not what it reads
+const provideDatasets =
+  (datasets: Datasets["Service"]) =>
+  <A, E>(effect: Effect.Effect<A, E, Datasets>): Effect.Effect<A, E> =>
+    Effect.provideService(effect, Datasets, datasets);
 
 export class Markdown extends Context.Service<Markdown>()("Markdown", {
   make: Effect.gen(function* () {
     const datasets = yield* Datasets;
+    const withDatasets = provideDatasets(datasets);
 
     return {
-      home: pageTwinDocument(HOME_TWIN, datasets),
-      education: pageTwinDocument(EDUCATION_TWIN, datasets),
-      contact: pageTwinDocument(CONTACT_TWIN, datasets),
-      experience: experienceTwin(datasets.experienceList),
-      siteIndex: discoveryDocument(LLMS_TXT_INDEX, Effect.map(datasets.experienceList(DEFAULT_LANGUAGE), buildLlmsTxt)),
-      siteIndexFull: discoveryDocument(
-        LLMS_FULL_TXT_INDEX,
-        Effect.map(
-          Effect.all(
-            {
-              pageTitles: datasets.pageTitles(DEFAULT_LANGUAGE),
-              experienceList: datasets.experienceList(DEFAULT_LANGUAGE),
-              educationList: datasets.educationList(DEFAULT_LANGUAGE),
-            },
-            { concurrency: "unbounded" }
-          ),
-          buildLlmsFullTxt
-        )
-      ),
+      page: (pagePath: PagePath) => (request: Request) => withDatasets(pageDocument(pagePath)(request)),
+      experience: (request: Request) => withDatasets(experienceTwin(request)),
+      siteIndex: (request: Request) => withDatasets(siteIndex(request)),
+      siteIndexFull: (request: Request) => withDatasets(siteIndexFull(request)),
     } as const;
   }),
 }) {
-  static readonly layer = Layer.effect(this, this.make).pipe(Layer.provide(Datasets.layer));
+  static readonly layer = Layer.effect(this, this.make);
 }

@@ -4,33 +4,12 @@ import { escapeMd } from "../escape";
 import { buildExperienceMd } from "../detail-twin";
 import { buildHomeMd, unavailableMarkdownBody } from "../twins";
 import { twinDocument } from "../format";
-import { SOURCE_COPY } from "../constants";
+import { SOURCE_CONTEXT } from "../context";
 import { PERSON_DESCRIPTION, LANG_PARAM } from "@/features/meta/domain/constants";
 import { experienceSeo } from "@/features/meta/domain/helpers";
 import { SITE_LANGUAGE_NAMES, SITE_LANGUAGES } from "@/domain/constants";
-import type { PageTitles } from "@/domain/models";
-import type { Experience } from "@/features/experience/domain/models";
+import { sampleExperience, stablePageTitles, translateEn } from "@/features/markdown/__tests__/fixtures";
 import type { MarkdownTwin } from "../models";
-
-const sampleExperience: Experience = {
-  type: "e",
-  slug: "sample-role",
-  year: "Mar 2026",
-  role: "Full-Stack Developer",
-  company: "Sample Co",
-  txt: "Built things with **care** and #hashtags.",
-  gitHubLink: "https://github.com/example/repo",
-  imageName: "01",
-  skillsUsed: ["TypeScript", "React"],
-};
-
-const stablePageTitles: PageTitles = {
-  "/": { eyebrow: "Home", heading: "Stable home title", intro: "Stable home summary." },
-  "/education": { eyebrow: "Education", heading: "Stable education title", intro: "Stable education summary." },
-  "/contact": { eyebrow: "Contact", heading: "Stable contact title", intro: "Stable contact summary." },
-};
-
-const translateEn = (source: string): string => source;
 
 it("buildLlmsTxt indexes pages, about facts, grouped experience and negotiated language guidance", () => {
   const txt = buildLlmsTxt([{ ...sampleExperience, slug: "my project" }]);
@@ -140,19 +119,20 @@ it("the index opening escapes its bio the way every other content string is esca
   assert.include(buildLlmsTxt([]), PERSON_DESCRIPTION);
 });
 
-it("the reuse note names the frontmatter facts every twin actually publishes", () => {
+it("the reuse note names the frontmatter facts every page twin actually publishes", () => {
   // The note is the one place an AI reader is told which keys to read a document's facts from.
-  // A key it names that no twin publishes guides the reader to a field that is not there, and a
-  // key every twin publishes that the note omits is never read at all — so the claim in the note
-  // and the facts the builders emit are compared rather than trusted to agree.
-  const factsNote = AI_NOTES.find((note) => note.startsWith("Every twin states its headline facts"));
+  // A key it names that no page twin publishes guides the reader to a field that is not there, and a
+  // key every page twin publishes that the note omits is never read at all — so the claim in the
+  // note and the facts the builders emit are compared rather than trusted to agree. (The 404 twin
+  // is deliberately outside the claim: it has no canonical URL or page type to publish.)
+  const factsNote = AI_NOTES.find((note) => note.startsWith("Every page twin states its headline facts"));
   assert.isDefined(factsNote, "the reuse notes say nothing about frontmatter");
 
   const claimedKeys = factsNote!.match(/`([^`]+)`/g)!.map((key) => key.slice(1, -1));
   // The set both kinds of twin share: a static twin's own kind and the detail twin's role, company,
   // year and skills are this document's own extras, not the headline facts the note describes.
   const twins: ReadonlyArray<MarkdownTwin> = [
-    buildHomeMd({ ...SOURCE_COPY, pageTitles: stablePageTitles, experienceList: [sampleExperience] }),
+    buildHomeMd({ ...SOURCE_CONTEXT, pageTitles: stablePageTitles, experienceList: [sampleExperience] }),
     buildExperienceMd({ seo: experienceSeo({ experience: sampleExperience, preferredLanguage: "en" }), translate: translateEn }),
   ];
 
@@ -171,7 +151,7 @@ it("the index and the home twin render one experience list, differing only in th
   // trim or order an experience differently — only the lead URL each surface exists to advertise.
   const experienceList = [{ ...sampleExperience, type: "e" as const, slug: "sample-job", role: "Backend Developer", company: "Sample Co" }];
   const index = buildLlmsTxt(experienceList);
-  const twin = twinDocument(buildHomeMd({ ...SOURCE_COPY, pageTitles: stablePageTitles, experienceList }));
+  const twin = twinDocument(buildHomeMd({ ...SOURCE_CONTEXT, pageTitles: stablePageTitles, experienceList }));
   const entry = "Backend Developer at Sample Co";
   const canonical = `[${entry}](https://www.remiforge.dev/sample-job)`;
   const twinRoute = "https://www.remiforge.dev/sample-job.md?lang=en";
@@ -273,12 +253,15 @@ it("buildLlmsFullTxt concatenates every twin behind its canonical URL", () => {
     educationList: [{ name: "Example School", year: "2020", location: "Poland", info: "Studied interaction design." }],
   });
 
-  // One Source marker per twin: the three pages plus the single experience
-  assert.strictEqual((txt.match(/^Source: /gm) ?? []).length, 4);
-  assert.include(txt, `Source: https://www.remiforge.dev/`);
-  assert.include(txt, `Source: https://www.remiforge.dev/education`);
-  assert.include(txt, `Source: https://www.remiforge.dev/contact`);
-  assert.include(txt, `Source: https://www.remiforge.dev/sample-role`);
+  // One Source marker per twin: the three pages plus the single experience, in catalogue order
+  // then portfolio order — the same order the table of contents advertises
+  const sources = [...txt.matchAll(/^Source: (.+)$/gm)].map(([, url]) => url);
+  assert.deepStrictEqual(sources, [
+    "https://www.remiforge.dev/",
+    "https://www.remiforge.dev/education",
+    "https://www.remiforge.dev/contact",
+    "https://www.remiforge.dev/sample-role",
+  ]);
   // Twins are verbatim in content: every word of the body survives concatenation, only the heading
   // depth shifts so the companion keeps exactly one H1 and four distinguishable levels below it
   assert.include(txt, `### Stable home title`);
@@ -300,7 +283,6 @@ it("buildLlmsFullTxt concatenates every twin behind its canonical URL", () => {
   assert.include(txt, "with headings demoted to preserve one document hierarchy");
   // Every document names both spellings of its identity: the canonical URL to cite above the
   // Markdown twin URL to fetch, so a crawler never has to resolve one from the other
-  assert.include(txt, `Source: https://www.remiforge.dev/education`);
   assert.include(txt, `Markdown: https://www.remiforge.dev/education.md?lang=en`);
   assert.include(txt, `Markdown: https://www.remiforge.dev/sample-role.md?lang=en`);
   // The concatenated twins stay UI-chrome free: only content and frontmatter are ingested

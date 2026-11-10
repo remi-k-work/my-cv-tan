@@ -4,21 +4,7 @@ import { buildExperienceMd, buildNotFoundMd } from "../detail-twin";
 import { twinDocument } from "../format";
 import { escapeMd } from "../escape";
 import { experienceSeo } from "@/features/meta/domain/helpers";
-import type { Experience } from "@/features/experience/domain/models";
-
-const sampleExperience: Experience = {
-  type: "e",
-  slug: "sample-role",
-  year: "Mar 2026",
-  role: "Full-Stack Developer",
-  company: "Sample Co",
-  txt: "Built things with **care** and #hashtags.",
-  gitHubLink: "https://github.com/example/repo",
-  imageName: "01",
-  skillsUsed: ["TypeScript", "React"],
-};
-
-const translateEn = (source: string): string => source;
+import { sampleExperience, translateEn, translatePl } from "@/features/markdown/__tests__/fixtures";
 
 it("the experience twin renders frontmatter, H1, skills and links without repeated crawler instructions", () => {
   const md = twinDocument(buildExperienceMd({ seo: experienceSeo({ experience: sampleExperience, preferredLanguage: "en" }), translate: translateEn }));
@@ -83,36 +69,6 @@ it("experience link builders drop destinations that are not http(s) URLs", () =>
 });
 
 it("the experience twin localizes fixed Polish section and fact labels", () => {
-  const polishTranslations: Record<string, string> = {
-    Experience: "Doświadczenie",
-    "Portfolio Projects": "Projekty do Portfolio",
-    Education: "Edukacja",
-    Pages: "Strony",
-    "Home page": "Strona główna",
-    "Education & Certificates": "Edukacja i certyfikaty",
-    Contact: "Kontakt",
-    "No entries.": "Brak wpisów.",
-    Overview: "Opis",
-    Details: "Szczegóły",
-    Role: "Rola",
-    "Skills Used": "Wykorzystane Umiejętności",
-    Links: "Linki",
-    Documents: "Dokumenty",
-    Years: "Lata",
-    Location: "Lokalizacja",
-    Channels: "Kanały",
-    "Contact Form": "Formularz Kontaktowy",
-    Base: "Lokalizacja",
-    "Rzeszów, Poland": "Rzeszów, Polska",
-    "Not Found": "Nie znaleziono",
-    // The link labels are the same source strings the HTML link chips translate, so the Polish
-    // twin prints the dictionary's Polish labels instead of English strings no key covers
-    "GitHub Repo": "Repozytorium GitHub",
-    "Live Link": "Link na Żywo",
-    "Watch Video": "Zobacz Video",
-  };
-  const translatePl = (source: string): string => polishTranslations[source] ?? source;
-
   const md = twinDocument(buildExperienceMd({ seo: experienceSeo({ experience: sampleExperience, preferredLanguage: "pl" }), translate: translatePl }));
   assert.include(md, "## Opis");
   assert.include(md, "## Szczegóły");
@@ -122,36 +78,6 @@ it("the experience twin localizes fixed Polish section and fact labels", () => {
 });
 
 it("experience link labels are the dictionary keys the HTML chips translate, so Polish gets Polish labels", () => {
-  const polishTranslations: Record<string, string> = {
-    Experience: "Doświadczenie",
-    "Portfolio Projects": "Projekty do Portfolio",
-    Education: "Edukacja",
-    Pages: "Strony",
-    "Home page": "Strona główna",
-    "Education & Certificates": "Edukacja i certyfikaty",
-    Contact: "Kontakt",
-    "No entries.": "Brak wpisów.",
-    Overview: "Opis",
-    Details: "Szczegóły",
-    Role: "Rola",
-    "Skills Used": "Wykorzystane Umiejętności",
-    Links: "Linki",
-    Documents: "Dokumenty",
-    Years: "Lata",
-    Location: "Lokalizacja",
-    Channels: "Kanały",
-    "Contact Form": "Formularz Kontaktowy",
-    Base: "Lokalizacja",
-    "Rzeszów, Poland": "Rzeszów, Polska",
-    "Not Found": "Nie znaleziono",
-    // The link labels are the same source strings the HTML link chips translate, so the Polish
-    // twin prints the dictionary's Polish labels instead of English strings no key covers
-    "GitHub Repo": "Repozytorium GitHub",
-    "Live Link": "Link na Żywo",
-    "Watch Video": "Zobacz Video",
-  };
-  const translatePl = (source: string): string => polishTranslations[source] ?? source;
-
   const everyLink = { ...sampleExperience, liveLink: "https://example.com/live", videoLink: "https://example.com/video" };
 
   const en = twinDocument(buildExperienceMd({ seo: experienceSeo({ experience: everyLink, preferredLanguage: "en" }), translate: translateEn }));
@@ -188,8 +114,16 @@ it("an unparseable twin address never quotes a fabricated slug", () => {
   assert.include(md, "No page for this address.");
   assert.notInclude(md, "unknown");
   // The language variants of the same fallback stay consistent for a Polish reader
-  const pl = twinDocument(buildNotFoundMd({ slug: Option.none(), preferredLanguage: "pl", translate: (source: string) => source }));
+  const pl = twinDocument(buildNotFoundMd({ slug: Option.none(), preferredLanguage: "pl", translate: translateEn }));
   assert.include(pl, "Dokument Markdown dla tego adresu nie istnieje.");
+});
+
+it("a 404 publishes only the identity facts it can honestly claim", () => {
+  // A missing page has no canonical URL and no page type, so the AI reuse note names the facts a
+  // page twin publishes, not facts every twin including this one carries.
+  const { facts } = buildNotFoundMd({ slug: Option.none(), preferredLanguage: "en", translate: translateEn });
+
+  assert.deepStrictEqual(Object.keys(facts).sort(), ["author", "description", "lang", "title"]);
 });
 
 // regression guards from regression-guards.test.ts

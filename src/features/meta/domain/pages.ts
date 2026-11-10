@@ -16,6 +16,7 @@ export const STATIC_PAGES = {
     mdHref: "/index.md",
     label: "Home page",
     type: "overview",
+    indexSummary: "portfolio overview with experience and project lists.",
     copy: {
       en: { heading: HOME_TITLE, intro: PERSON_DESCRIPTION, title: HOME_TITLE, description: SITE_DESCRIPTION },
       pl: {
@@ -30,6 +31,7 @@ export const STATIC_PAGES = {
     mdHref: "/education.md",
     label: "Education & Certificates",
     type: "education",
+    indexSummary: "schools, courses and certificates.",
     copy: {
       en: {
         heading: "Education",
@@ -49,6 +51,7 @@ export const STATIC_PAGES = {
     mdHref: "/contact.md",
     label: "Contact",
     type: "contact",
+    indexSummary: "contact form, location and social profiles.",
     copy: {
       en: {
         heading: "Contact",
