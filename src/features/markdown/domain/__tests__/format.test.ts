@@ -16,10 +16,38 @@ import {
   mdQuote,
   mdTitledSection,
   translatedLink,
+  twinDocument,
 } from "../format";
-import type { Translate } from "@/domain/models";
+import { buildContactMd, buildEducationMd, buildHomeMd } from "../twins";
+import { STATIC_PAGES } from "@/features/meta/domain/pages";
+import type { PageTitles, Translate } from "@/domain/models";
+import type { Experience, ExperienceList } from "@/features/experience/domain/models";
 
 const translateEn: Translate = (source) => source;
+
+const sampleExperience: Experience = {
+  type: "e",
+  slug: "sample-role",
+  year: "Mar 2026",
+  role: "Full-Stack Developer",
+  company: "Sample Co",
+  txt: "Built things with **care** and #hashtags.",
+  gitHubLink: "https://github.com/example/repo",
+  imageName: "01",
+  skillsUsed: ["TypeScript", "React"],
+};
+
+const stablePageTitles: PageTitles = {
+  "/": { eyebrow: "Home", heading: "Stable home title", intro: "Stable home summary." },
+  "/education": { eyebrow: "Education", heading: "Stable education title", intro: "Stable education summary." },
+  "/contact": { eyebrow: "Contact", heading: "Stable contact title", intro: "Stable contact summary." },
+};
+
+const homeTwin = (input: { readonly pageTitles: PageTitles; readonly experienceList: ExperienceList; readonly preferredLanguage: "en"; readonly translate: Translate }) =>
+  twinDocument(buildHomeMd(input));
+
+const educationTwin = (input: { readonly pageTitles: PageTitles; readonly educationList: ReadonlyArray<{ readonly name: string; readonly year: string; readonly location: string; readonly info: string }>; readonly preferredLanguage: "en"; readonly translate: Translate }) =>
+  twinDocument(buildEducationMd(input));
 
 it("mdHeading renders one level with the text escaped inline", () => {
   assert.strictEqual(mdHeading(1, "Hello *world*"), "# Hello \\*world\\*");
@@ -237,4 +265,64 @@ it("escapeMd neutralizes only a real GFM delimiter row, never prose that starts 
   assert.strictEqual(escapeMd(":--|--:"), ":\\--|--:");
   assert.strictEqual(escapeMd("|-|-|"), "|\\-|-|");
   assert.strictEqual(escapeMd("table\n\n| a | b |\n| - | - |"), "table\n\n| a | b |\n| \\- | - |");
+});
+
+it("frontmatter emits a delimited block with quoted values", () => {
+  const block = frontmatter({ title: "Hello", canonical: "https://www.remiforge.dev/sample-role" });
+  assert.isTrue(block.startsWith("---\n"));
+  assert.include(block, `title: "Hello"`);
+  assert.include(block, `canonical: "https://www.remiforge.dev/sample-role"`);
+});
+
+it("frontmatter escapes the characters YAML double-quoted scalars reject, which JSON.stringify leaves raw", () => {
+  // JSON quoting is valid for YAML quoted scalars except for DEL, the C1 controls and the two
+  // Unicode line separators: a content value carrying one of them would otherwise produce frontmatter
+  // a YAML parser rejects outright, which is a document an indexer cannot read at all.
+  const block = frontmatter({ title: "bel\u007f c1\u0085 ls\u2028 ps\u2029" });
+
+  assert.notInclude(block, "\u007f");
+  assert.notInclude(block, "\u0085");
+  assert.notInclude(block, "\u2028");
+  assert.notInclude(block, "\u2029");
+  // The escapes are transparent: a YAML parser reads back the original text
+  assert.include(block, `title: "bel\\u007f c1\\u0085 ls\\u2028 ps\\u2029"`);
+});
+
+it("mdEmptyMarker keeps translated copy inside the emphasis span", () => {
+  // A dictionary value ending in "_" would close the italic span early and leave stray markup
+  // behind, so the marker escapes the translated text the same way every other content string
+  // does.
+  const marker = mdEmptyMarker((source: string) => (source === "No entries." ? "Brak wpisów_" : source));
+  assert.strictEqual(marker, "_Brak wpisów\\__");
+});
+
+it("a fact label or value cannot fabricate markup from inside a bullet", () => {
+  // Every `Label: value` line runs through mdFact, so a translated label and a content value are
+  // the two halves that must both stay inline text: an unescaped "]" would close a link label early
+  // and hand a parser structure the site never authored
+  const md = educationTwin({
+    pageTitles: stablePageTitles,
+    educationList: [{ name: "Example School", year: "2020", location: "Poland", info: "Studied interaction design." }],
+    preferredLanguage: "en",
+    translate: (source: string) => (source === "Years" ? "Evil]_# [" : source),
+  });
+
+  // The brackets that could close a link label, and the emphasis marker that could open a span,
+  // are both neutralized — while the bullet stays one bullet
+  assert.include(md, "- Evil\\]\\_# \\[: 2020");
+  assert.notInclude(md, "- Evil]");
+  // The emphasis marker is escaped too, so a label cannot open a span the document never closes
+  assert.notInclude(md, "- _");
+  // The document keeps exactly one H1: no label ever reached the heading level
+  assert.strictEqual((md.match(/^# /gm) ?? []).length, 1);
+});
+
+it("experience twin links percent-encode parentheses that would otherwise close a Markdown destination", () => {
+  // encodeURIComponent leaves "(" and ")" raw, but Markdown reads ")" as the end of a link
+  // destination, so every slug-derived path is percent-encoded before it is embedded.
+  assert.strictEqual(mdLink("Label", "https://x.test/a(b)"), "[Label](https://x.test/a%28b%29)");
+
+  const experience = { ...sampleExperience, slug: "role (senior)" };
+  const home = homeTwin({ pageTitles: stablePageTitles, experienceList: [experience], preferredLanguage: "en", translate: translateEn });
+  assert.include(home, "(https://www.remiforge.dev/role%20%28senior%29.md?lang=en)");
 });

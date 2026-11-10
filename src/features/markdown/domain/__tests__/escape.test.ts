@@ -127,3 +127,70 @@ it("mdLink neutralizes a hostile label without the caller pre-escaping it", () =
   assert.strictEqual(mdLink("A *b* _c_", "https://x.test/a"), "[A \\*b\\* \\_c\\_](https://x.test/a)");
   assert.strictEqual(mdLink("## heading", "https://x.test/a"), "[\\## heading](https://x.test/a)");
 });
+
+// escapeMd neutralizes heading characters and collapses blank lines
+it("escapeMd neutralizes heading characters and collapses blank lines", () => {
+  assert.strictEqual(escapeMd("# Hello\n\n\nWorld *bold* [link]"), "\\# Hello\n\nWorld \\*bold\\* \\[link\\]");
+  // Bare "=" / "--" runs under a paragraph would otherwise become setext headings
+  assert.strictEqual(escapeMd("Title\n====="), "Title\n\\=====");
+  assert.strictEqual(escapeMd("Sub\n--"), "Sub\n\\--");
+  // Inline "=" characters are meaningless and stay untouched
+  assert.strictEqual(escapeMd("plain = math"), "plain = math");
+});
+
+// escapeMd neutralizes the image constructor, so authored data cannot fabricate one
+it("escapeMd neutralizes the image constructor, so authored data cannot fabricate one", () => {
+  // The "!" rule reads the raw author text and therefore has to run before the bracket rule: once
+  // that rule has written "\[" the lookahead no longer matches, and the "!" would never be escaped
+  assert.strictEqual(escapeMd("![alt](https://evil.test/a-b.png)"), "\\!\\[alt\\](https://evil.test/a-b.png)");
+  // An image marker inside prose is neutralized the same way
+  assert.strictEqual(escapeMdInline("a ![b](c) d"), "a \\!\\[b\\](c) d");
+});
+
+// escapeMd neutralizes list markers at line end, not only before inline content
+it("escapeMd neutralizes list markers at line end, not only before inline content", () => {
+  // A bare marker opens an empty list item in CommonMark, so trailing markers are structure too
+  assert.strictEqual(escapeMd("Come and see\n-"), "Come and see\n\\-");
+  assert.strictEqual(escapeMd("Ordered steps\n1."), "Ordered steps\n1\\.");
+  assert.strictEqual(escapeMd("Ordered steps\n12)"), "Ordered steps\n12\\)");
+  // The inline case keeps working: the marker binds at the line start either way
+  assert.strictEqual(escapeMd("- item one"), "\\- item one");
+  // An ordered marker escapes at its trailing punctuation, never at the digit: a digit is not
+  // ASCII punctuation, so "\1." would print a literal backslash instead of the authored text
+  assert.strictEqual(escapeMd("1. item one"), "1\\. item one");
+  // Thematic-break runs and setext underlines are claimed by their own rules, not the bullet rule
+  assert.strictEqual(escapeMd("---"), "\\---");
+  assert.strictEqual(escapeMd("Sub\n--"), "Sub\n\\--");
+  // A number followed by inline content is prose, not a marker: only "." / ")" + space-or-EOL binds
+  assert.strictEqual(escapeMd("v1.5 draft"), "v1.5 draft");
+});
+
+// escapeMd only escapes what can actually build markup, leaving authored punctuation intact
+it("escapeMd only escapes what can actually build markup, leaving authored punctuation intact", () => {
+  // Headings and blockquotes bind at the start of a line, so mid-sentence markers are literal text
+  assert.strictEqual(escapeMd("Built with ASP.NET and C#"), "Built with ASP.NET and C#");
+  assert.strictEqual(escapeMd(")> line continuation"), ")> line continuation");
+  // ...while the same characters at a line start still lose their markup meaning
+  assert.strictEqual(escapeMd("# heading\n> quoted"), "\\# heading\n\\> quoted");
+  // An image needs "![", so a sentence-final "!" is plain punctuation
+  assert.strictEqual(escapeMd("financed by the EU initiative “STOP Exclusion!”"), "financed by the EU initiative “STOP Exclusion!”");
+  // "_" is literal inside a word (CommonMark's intraword rule), but emphasis still binds at a boundary
+  assert.strictEqual(escapeMd("node_modules and snake_case names"), "node_modules and snake_case names");
+  assert.strictEqual(escapeMd("an _emphasized_ word"), "an \\_emphasized\\_ word");
+  // Strikethrough needs a run of two; a lone "~" and a pipe cannot build markup at all
+  assert.strictEqual(escapeMd("roughly ~30% of the time"), "roughly ~30% of the time");
+  assert.strictEqual(escapeMd("the ratio A | B mattered"), "the ratio A | B mattered");
+  assert.strictEqual(escapeMd("~~deprecated~~ in favour of the new one"), "\\~\\~deprecated\\~\\~ in favour of the new one");
+  // Entity references change rendered text unless their ampersands are escaped.
+  assert.strictEqual(escapeMd("&copy; &amp; &#169;"), "\\&copy; \\&amp; \\&#169;");
+  // Raw HTML is the one thing an author string must never reach the document, so "<" is always escaped
+  assert.strictEqual(escapeMdInline("evil </script><script>alert(1)</script>"), "evil \\</script>\\<script>alert(1)\\</script>");
+});
+
+// escapeMdInline flattens newlines before escaping, so labels never inherit the bullet marker
+it("escapeMdInline flattens newlines before escaping, so labels never inherit the bullet marker", () => {
+  // "Design\n- Systems" would otherwise become a real list item nested inside the bullet
+  assert.strictEqual(escapeMdInline("Design\n- Systems"), "Design - Systems");
+  // Only the newline runs flatten: runs of spaces inside prose are content, not structure
+  assert.strictEqual(escapeMdInline("  spaced   out\nvalue  "), "spaced   out value");
+});

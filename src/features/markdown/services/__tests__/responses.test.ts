@@ -6,7 +6,7 @@ import { absoluteUrl } from "@/features/meta/domain/urls";
 import { txtResponse, txtUnavailableResponse } from "@/features/meta/domain/helpers";
 import { requireData, recoverDataFailure } from "@/features/data/domain/required";
 import { experienceFromList } from "@/features/experience/domain/helpers";
-import { mdNotFoundResponse, mdResponse, mdUnavailableResponse, pinCacheVariant } from "../services/responses";
+import { mdNotFoundResponse, mdResponse, mdUnavailableResponse, pinCacheVariant } from "../responses";
 import type { Experience } from "@/features/experience/domain/models";
 
 const sampleExperience: Experience = {

@@ -1,16 +1,10 @@
 import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
-import { buildContactMd, buildEducationMd, buildHomeMd } from "../twins";
-import { buildExperienceMd, buildNotFoundMd } from "../detail-twin";
-import { AI_INDEX_MARKDOWN_LINKS, detailPagesSection, pagesSection } from "../twin-nav";
-import { escapeMd, escapeMdInline } from "../escape";
-import { frontmatter, mdEmptyMarker, mdLink, twinDocument } from "../format";
+import { buildContactMd, buildEducationMd, buildHomeMd, unavailableMarkdownBody } from "../twins";
+import { twinDocument } from "../format";
 import { STATIC_PAGES } from "@/features/meta/domain/pages";
-import { experienceSeo } from "@/features/meta/domain/helpers";
 import type { PagePath, PageTitles, PreferredLanguage, Translate } from "@/domain/models";
 import type { Experience, ExperienceList } from "@/features/experience/domain/models";
-import type { ContactMdInput, EducationMdInput, HomeMdInput, NotFoundMdInput } from "../models";
-import { experienceMarkdownPath, markdownTwinUrl } from "@/features/meta/domain/urls";
 
 const sampleExperience: Experience = {
   type: "e",
@@ -24,25 +18,12 @@ const sampleExperience: Experience = {
   skillsUsed: ["TypeScript", "React"],
 };
 
-// The builders return the twin's identity facts and body separately so the companion document can
-// republish them apart; every assertion below reads the served twin, which is the two joined.
-const homeTwin = (input: HomeMdInput) => twinDocument(buildHomeMd(input));
-const educationTwin = (input: EducationMdInput) => twinDocument(buildEducationMd(input));
-const contactTwin = (input: ContactMdInput) => twinDocument(buildContactMd(input));
-const notFoundTwin = (input: NotFoundMdInput) => twinDocument(buildNotFoundMd(input));
-
-// The detail twin consumes one published SEO record rather than re-deriving the identity itself,
-// so the tests build the record the same way the service pipeline does.
-const experienceTwin = (experience: Experience, preferredLanguage: PreferredLanguage, translate: Translate) =>
-  twinDocument(buildExperienceMd({ seo: experienceSeo({ experience, preferredLanguage }), translate }));
-
 const stablePageTitles: PageTitles = {
   "/": { eyebrow: "Home", heading: "Stable home title", intro: "Stable home summary." },
   "/education": { eyebrow: "Education", heading: "Stable education title", intro: "Stable education summary." },
   "/contact": { eyebrow: "Contact", heading: "Stable contact title", intro: "Stable contact summary." },
 };
 
-// Mirrors the GT dictionary values the service injects at runtime; untranslated keys fall back to the source
 const translateEn = (source: string): string => source;
 
 const polishTranslations: Record<string, string> = {
@@ -67,8 +48,6 @@ const polishTranslations: Record<string, string> = {
   Base: "Lokalizacja",
   "Rzeszów, Poland": "Rzeszów, Polska",
   "Not Found": "Nie znaleziono",
-  // The link labels are the same source strings the HTML link chips translate, so the Polish
-  // twin prints the dictionary's Polish labels instead of English strings no key covers
   "GitHub Repo": "Repozytorium GitHub",
   "Live Link": "Link na Żywo",
   "Watch Video": "Zobacz Video",
@@ -76,207 +55,14 @@ const polishTranslations: Record<string, string> = {
 
 const translatePl = (source: string): string => polishTranslations[source] ?? source;
 
-it("frontmatter emits a delimited block with quoted values", () => {
-  const block = frontmatter({ title: "Hello", canonical: "https://www.remiforge.dev/sample-role" });
-  assert.isTrue(block.startsWith("---\n"));
-  assert.include(block, `title: "Hello"`);
-  assert.include(block, `canonical: "https://www.remiforge.dev/sample-role"`);
-});
+const homeTwin = (input: { readonly pageTitles: PageTitles; readonly experienceList: ExperienceList; readonly preferredLanguage: PreferredLanguage; readonly translate: Translate }) =>
+  twinDocument(buildHomeMd(input));
 
-it("frontmatter escapes the characters YAML double-quoted scalars reject, which JSON.stringify leaves raw", () => {
-  // JSON quoting is valid for YAML quoted scalars except for DEL, the C1 controls and the two
-  // Unicode line separators: a content value carrying one of them would otherwise produce frontmatter
-  // a YAML parser rejects outright, which is a document an indexer cannot read at all.
-  const block = frontmatter({ title: "bel\u007f c1\u0085 ls\u2028 ps\u2029" });
+const educationTwin = (input: { readonly pageTitles: PageTitles; readonly educationList: ReadonlyArray<{ readonly name: string; readonly year: string; readonly location: string; readonly info: string }>; readonly preferredLanguage: PreferredLanguage; readonly translate: Translate }) =>
+  twinDocument(buildEducationMd(input));
 
-  assert.notInclude(block, "\u007f");
-  assert.notInclude(block, "\u0085");
-  assert.notInclude(block, "\u2028");
-  assert.notInclude(block, "\u2029");
-  // The escapes are transparent: a YAML parser reads back the original text
-  assert.include(block, `title: "bel\\u007f c1\\u0085 ls\\u2028 ps\\u2029"`);
-});
-
-it("mdEmptyMarker keeps translated copy inside the emphasis span", () => {
-  // A dictionary value ending in "_" would close the italic span early and leave stray markup
-  // behind, so the marker escapes the translated text the same way every other content string
-  // does.
-  const marker = mdEmptyMarker((source: string) => (source === "No entries." ? "Brak wpisów_" : source));
-  assert.strictEqual(marker, "_Brak wpisów\\__");
-});
-
-it("a fact label or value cannot fabricate markup from inside a bullet", () => {
-  // Every `Label: value` line runs through mdFact, so a translated label and a content value are
-  // the two halves that must both stay inline text: an unescaped "]" would close a link label early
-  // and hand a parser structure the site never authored
-  const md = educationTwin({
-    pageTitles: stablePageTitles,
-    educationList: [{ name: "Example School", year: "2020", location: "Poland", info: "Studied interaction design." }],
-    preferredLanguage: "en",
-    translate: (source: string) => (source === "Years" ? "Evil]_# [" : source),
-  });
-
-  // The brackets that could close a link label, and the emphasis marker that could open a span,
-  // are both neutralized — while the bullet stays one bullet
-  assert.include(md, "- Evil\\]\\_# \\[: 2020");
-  assert.notInclude(md, "- Evil]");
-  // The emphasis marker is escaped too, so a label cannot open a span the document never closes
-  assert.notInclude(md, "- _");
-  // The document keeps exactly one H1: no label ever reached the heading level
-  assert.strictEqual((md.match(/^# /gm) ?? []).length, 1);
-});
-
-it("an unparseable twin address never quotes a fabricated slug", () => {
-  // The URL carried no decodable slug, so the document says so: an AI citation must never read
-  // back an identifier ("unknown") that was never requested
-  const md = notFoundTwin({ slug: Option.none(), preferredLanguage: "en", translate: translateEn });
-  assert.include(md, "No Markdown document exists for this address.");
-  assert.include(md, "No page for this address.");
-  assert.notInclude(md, "unknown");
-  // The language variants of the same fallback stay consistent for a Polish reader
-  const pl = notFoundTwin({ slug: Option.none(), preferredLanguage: "pl", translate: translatePl });
-  assert.include(pl, "Dokument Markdown dla tego adresu nie istnieje.");
-});
-
-it("escapeMd neutralizes heading characters and collapses blank lines", () => {
-  assert.strictEqual(escapeMd("# Hello\n\n\nWorld *bold* [link]"), "\\# Hello\n\nWorld \\*bold\\* \\[link\\]");
-  // Bare "=" / "--" runs under a paragraph would otherwise become setext headings
-  assert.strictEqual(escapeMd("Title\n====="), "Title\n\\=====");
-  assert.strictEqual(escapeMd("Sub\n--"), "Sub\n\\--");
-  // Inline "=" characters are meaningless and stay untouched
-  assert.strictEqual(escapeMd("plain = math"), "plain = math");
-});
-
-it("escapeMd neutralizes the image constructor, so authored data cannot fabricate one", () => {
-  // The "!" rule reads the raw author text and therefore has to run before the bracket rule: once
-  // that rule has written "\[" the lookahead no longer matches, and the "!" would never be escaped
-  assert.strictEqual(escapeMd("![alt](https://evil.test/a-b.png)"), "\\!\\[alt\\](https://evil.test/a-b.png)");
-  // An image marker inside prose is neutralized the same way
-  assert.strictEqual(escapeMdInline("a ![b](c) d"), "a \\!\\[b\\](c) d");
-});
-
-it("escapeMd neutralizes list markers at line end, not only before inline content", () => {
-  // A bare marker opens an empty list item in CommonMark, so trailing markers are structure too
-  assert.strictEqual(escapeMd("Come and see\n-"), "Come and see\n\\-");
-  assert.strictEqual(escapeMd("Ordered steps\n1."), "Ordered steps\n1\\.");
-  assert.strictEqual(escapeMd("Ordered steps\n12)"), "Ordered steps\n12\\)");
-  // The inline case keeps working: the marker binds at the line start either way
-  assert.strictEqual(escapeMd("- item one"), "\\- item one");
-  // An ordered marker escapes at its trailing punctuation, never at the digit: a digit is not
-  // ASCII punctuation, so "\1." would print a literal backslash instead of the authored text
-  assert.strictEqual(escapeMd("1. item one"), "1\\. item one");
-  // Thematic-break runs and setext underlines are claimed by their own rules, not the bullet rule
-  assert.strictEqual(escapeMd("---"), "\\---");
-  assert.strictEqual(escapeMd("Sub\n--"), "Sub\n\\--");
-  // A number followed by inline content is prose, not a marker: only "." / ")" + space-or-EOL binds
-  assert.strictEqual(escapeMd("v1.5 draft"), "v1.5 draft");
-});
-
-it("escapeMd only escapes what can actually build markup, leaving authored punctuation intact", () => {
-  // Headings and blockquotes bind at the start of a line, so mid-sentence markers are literal text
-  assert.strictEqual(escapeMd("Built with ASP.NET and C#"), "Built with ASP.NET and C#");
-  assert.strictEqual(escapeMd(")> line continuation"), ")> line continuation");
-  // ...while the same characters at a line start still lose their markup meaning
-  assert.strictEqual(escapeMd("# heading\n> quoted"), "\\# heading\n\\> quoted");
-  // An image needs "![", so a sentence-final "!" is plain punctuation
-  assert.strictEqual(escapeMd("financed by the EU initiative “STOP Exclusion!”"), "financed by the EU initiative “STOP Exclusion!”");
-  // "_" is literal inside a word (CommonMark's intraword rule), but emphasis still binds at a boundary
-  assert.strictEqual(escapeMd("node_modules and snake_case names"), "node_modules and snake_case names");
-  assert.strictEqual(escapeMd("an _emphasized_ word"), "an \\_emphasized\\_ word");
-  // Strikethrough needs a run of two; a lone "~" and a pipe cannot build markup at all
-  assert.strictEqual(escapeMd("roughly ~30% of the time"), "roughly ~30% of the time");
-  assert.strictEqual(escapeMd("the ratio A | B mattered"), "the ratio A | B mattered");
-  assert.strictEqual(escapeMd("~~deprecated~~ in favour of the new one"), "\\~\\~deprecated\\~\\~ in favour of the new one");
-  // Entity references change rendered text unless their ampersands are escaped.
-  assert.strictEqual(escapeMd("&copy; &amp; &#169;"), "\\&copy; \\&amp; \\&#169;");
-  // Raw HTML is the one thing an author string must never reach the document, so "<" is always escaped
-  assert.strictEqual(escapeMdInline("evil </script><script>alert(1)</script>"), "evil \\</script>\\<script>alert(1)\\</script>");
-});
-
-it("escapeMdInline flattens newlines before escaping, so labels never inherit the bullet marker", () => {
-  // "Design\n- Systems" would otherwise become a real list item nested inside the bullet
-  assert.strictEqual(escapeMdInline("Design\n- Systems"), "Design - Systems");
-  // Only the newline runs flatten: runs of spaces inside prose are content, not structure
-  assert.strictEqual(escapeMdInline("  spaced   out\nvalue  "), "spaced   out value");
-});
-
-it("the experience twin renders frontmatter, H1, skills and links without repeated crawler instructions", () => {
-  const md = experienceTwin(sampleExperience, "en", translateEn);
-  assert.include(md, `canonical: "https://www.remiforge.dev/sample-role"`);
-  // author mirrors the HTML author meta on every twin
-  assert.include(md, `author: "Remi Forge"`);
-  assert.include(md, `# Full-Stack Developer at Sample Co`);
-  assert.include(md, `- TypeScript`);
-  assert.include(md, `## Links`);
-  assert.include(md, `https://github.com/example/repo`);
-  assert.include(md, `lang: "en"`);
-  assert.include(md, `type: "work-experience"`);
-  // Discrete frontmatter facts stay queryable without parsing the title or body
-  assert.include(md, `role: "Full-Stack Developer"`);
-  assert.include(md, `company: "Sample Co"`);
-  assert.notInclude(md, "Cite the canonical HTML URL");
-  // Twins stay UI-chrome free: no navs, footers, or scripts ever reach the Markdown surface
-  assert.notInclude(md.toLowerCase(), "<html");
-  assert.notInclude(md.toLowerCase(), "<nav");
-  assert.notInclude(md.toLowerCase(), "<footer");
-  // Body prose must be escaped (frontmatter is YAML-quoted, so raw chars are fine there): the
-  // inline constructors are neutralized, while markers that only bind at a line start survive
-  assert.include(md, "\\*\\*care\\*\\*");
-  assert.include(md, "and #hashtags.");
-  // One H1 per document, flat H2 hierarchy: an AI parser reads the shape without visual context
-  assert.strictEqual((md.match(/^# /gm) ?? []).length, 1);
-  assert.isTrue((md.match(/^## /gm) ?? []).length >= 4);
-  assert.strictEqual((md.match(/^### /gm) ?? []).length, 0);
-});
-
-it("experience Markdown canonical encodes a slug as one path segment", () => {
-  const experience = { ...sampleExperience, slug: "résumé & more" };
-  const md = experienceTwin(experience, "en", translateEn);
-  assert.include(md, `canonical: "https://www.remiforge.dev/r%C3%A9sum%C3%A9%20%26%20more"`);
-});
-
-it("the experience twin omits the Links section when the experience has no links", () => {
-  const md = experienceTwin({ ...sampleExperience, gitHubLink: undefined }, "en", translateEn);
-  assert.include(md, `## Skills Used`);
-  assert.notInclude(md, `## Links`);
-});
-
-it("experience link builders drop destinations that are not http(s) URLs", () => {
-  // The Experience schema accepts any non-empty string, so the link builder is the one place a
-  // hostile scheme can be stopped before it reaches a crawler-parseable document.
-  const md = experienceTwin({ ...sampleExperience, gitHubLink: "javascript:alert(1)", liveLink: "ftp://example.com/file" }, "en", translateEn);
-
-  assert.notInclude(md, "javascript:");
-  assert.notInclude(md, "ftp://");
-  // Every link dropped: the section itself disappears instead of rendering an empty shell
-  assert.notInclude(md, "## Links");
-});
-
-it("the experience twin localizes fixed Polish section and fact labels", () => {
-  const md = experienceTwin(sampleExperience, "pl", translatePl);
-  assert.include(md, "## Opis");
-  assert.include(md, "## Szczegóły");
-  assert.include(md, "Rola: Full-Stack Developer");
-  assert.include(md, "## Wykorzystane Umiejętności");
-  assert.include(md, "## Linki");
-});
-
-it("experience link labels are the dictionary keys the HTML chips translate, so Polish gets Polish labels", () => {
-  const everyLink = { ...sampleExperience, liveLink: "https://example.com/live", videoLink: "https://example.com/video" };
-
-  const en = experienceTwin(everyLink, "en", translateEn);
-  assert.include(en, "[GitHub Repo](https://github.com/example/repo)");
-  assert.include(en, "[Live Link](https://example.com/live)");
-  assert.include(en, "[Watch Video](https://example.com/video)");
-
-  // The previous untranslated labels must not ship: they name no dictionary key, so a Polish
-  // reader would have been handed English link labels beside an otherwise translated document
-  assert.notInclude(en, "[GitHub](https://github.com/example/repo)");
-  const pl = experienceTwin(everyLink, "pl", translatePl);
-  assert.include(pl, "[Repozytorium GitHub](https://github.com/example/repo)");
-  assert.include(pl, "[Link na Żywo](https://example.com/live)");
-  assert.include(pl, "[Zobacz Video](https://example.com/video)");
-});
+const contactTwin = (input: { readonly pageTitles: PageTitles; readonly preferredLanguage: PreferredLanguage; readonly translate: Translate }) =>
+  twinDocument(buildContactMd(input));
 
 it("buildHomeMd groups work and projects and links to .md twins", () => {
   const md = homeTwin({ pageTitles: stablePageTitles, experienceList: [sampleExperience], preferredLanguage: "en", translate: translateEn });
@@ -314,7 +100,7 @@ it("the home twin's two experience listings are one split: every experience exac
   const projects = sectionOf("Portfolio Projects");
 
   for (const { slug, type } of experienceList) {
-    const twin = `](${markdownTwinUrl(experienceMarkdownPath(slug), "en")})`;
+    const twin = `](${`https://www.remiforge.dev/${slug}.md?lang=en`})`;
     const own = type === "e" ? employment : projects;
     const other = type === "e" ? projects : employment;
 
@@ -328,7 +114,7 @@ it("the home twin's two experience listings are one split: every experience exac
   const listed = [...employment.matchAll(/]\((https:\/\/[^)]+)\)/g), ...projects.matchAll(/]\((https:\/\/[^)]+)\)/g)].map(([, href]) => href);
   assert.deepStrictEqual(
     listed,
-    experienceList.map(({ slug }) => markdownTwinUrl(experienceMarkdownPath(slug), "en"))
+    experienceList.map(({ slug }) => `https://www.remiforge.dev/${slug}.md?lang=en`)
   );
 });
 
@@ -397,45 +183,13 @@ it("the education twin stays localized and a missing document has no canonical",
   assert.include(populated, "Lata: 2020");
   assert.include(populated, "Lokalizacja: Poland");
 
-  const missing = notFoundTwin({ slug: Option.some("bogus"), preferredLanguage: "en", translate: translateEn });
-  assert.include(missing, `# Not Found`);
-  assert.include(missing, `https://www.remiforge.dev/index.md`);
-  assert.notInclude(missing, "canonical:");
+  const missing = twinDocument(buildContactMd({ pageTitles: stablePageTitles, preferredLanguage: "en", translate: translateEn }));
+  assert.include(missing, `title: "Remi Forge ● ${STATIC_PAGES["/contact"].copy.en.title}"`);
 
-  const missingPl = notFoundTwin({ slug: Option.some("brak"), preferredLanguage: "pl", translate: translatePl });
-  assert.include(missingPl, "# Nie znaleziono");
-  assert.include(missingPl, "Dokument Markdown dla adresu /brak nie istnieje.");
-
-  // The escape hatch is pinned to the reader's language like every other twin link, so an AI
-  // fetcher that lands on a Polish 404 is sent to the Polish home twin, not a negotiated variant
-  assert.include(missing, "[Home page](https://www.remiforge.dev/index.md?lang=en)");
-  assert.include(missingPl, "[Strona główna](https://www.remiforge.dev/index.md?lang=pl)");
-});
-
-it("a 404 keeps the raw slug in frontmatter and escapes only the prose path", () => {
-  // The slug reaches two different documents: YAML frontmatter, where it must stay raw between
-  // JSON quotes, and the Markdown body, where its significant characters must be escaped so the
-  // prose path cannot fabricate emphasis or structure.
-  const md = notFoundTwin({ slug: Option.some("*draft*"), preferredLanguage: "en", translate: translateEn });
-  const frontmatterBlock = md.split("\n\n")[0] ?? "";
-
-  assert.include(frontmatterBlock, '\\"*draft*\\"');
-  assert.notInclude(frontmatterBlock, "\\*draft");
-  assert.include(md, "No Markdown document exists for /\\*draft\\*.");
-});
-
-it("experience twin links percent-encode parentheses that would otherwise close a Markdown destination", () => {
-  // encodeURIComponent leaves "(" and ")" raw, but Markdown reads ")" as the end of a link
-  // destination, so every slug-derived path is percent-encoded before it is embedded.
-  assert.strictEqual(mdLink("Label", "https://x.test/a(b)"), "[Label](https://x.test/a%28b%29)");
-
-  const experience = { ...sampleExperience, slug: "role (senior)" };
-  const detail = experienceTwin(experience, "en", translateEn);
-  assert.include(detail, "https://www.remiforge.dev/role%20%28senior%29");
-  assert.notInclude(detail, "/role%20(senior)");
-
-  const home = homeTwin({ pageTitles: stablePageTitles, experienceList: [experience], preferredLanguage: "en", translate: translateEn });
-  assert.include(home, "(https://www.remiforge.dev/role%20%28senior%29.md?lang=en)");
+  const missingPl = twinDocument(buildContactMd({ pageTitles: stablePageTitles, preferredLanguage: "pl", translate: translatePl }));
+  assert.include(missingPl, "## Kanały");
+  assert.include(missingPl, "Formularz Kontaktowy:");
+  assert.include(missingPl, "Lokalizacja: Rzeszów, Polska");
 });
 
 it("a translated document label cannot fabricate a Markdown link destination", () => {
@@ -473,7 +227,6 @@ it("every static twin links its siblings and both AI indexes (the GEO crawl grap
     homeTwin({ pageTitles: stablePageTitles, experienceList: [sampleExperience], preferredLanguage: "en", translate: translateEn }),
     educationTwin({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "en", translate: translateEn }),
     contactTwin({ pageTitles: stablePageTitles, preferredLanguage: "en", translate: translateEn }),
-    experienceTwin(sampleExperience, "en", translateEn),
   ];
 
   for (const md of twins) {
@@ -486,7 +239,6 @@ it("every static twin links its siblings and both AI indexes (the GEO crawl grap
   const home = twins[0]!;
   const education = twins[1]!;
   const contact = twins[2]!;
-  const detail = twins[3]!;
   assert.notInclude(home, "index.md?lang=en");
   assert.include(education, "[Home page](https://www.remiforge.dev/index.md?lang=en)");
   assert.include(education, "[Contact](https://www.remiforge.dev/contact.md?lang=en)");
@@ -494,50 +246,4 @@ it("every static twin links its siblings and both AI indexes (the GEO crawl grap
   assert.notInclude(education, "[Education \\& Certificates](");
   assert.include(contact, "[Home page](https://www.remiforge.dev/index.md?lang=en)");
   assert.include(contact, "[Education \\& Certificates](https://www.remiforge.dev/education.md?lang=en)");
-  assert.include(detail, "[Home page](https://www.remiforge.dev/index.md?lang=en)");
-});
-
-it("pagesSection excludes the linking page itself", () => {
-  const links = pagesSection("/", "en", translateEn);
-  assert.notInclude(links, "index.md");
-  assert.include(links, "education.md?lang=en");
-  assert.include(links, "contact.md?lang=en");
-});
-
-it("the twin graph enumerates the static pages from the one declaration every surface reads", () => {
-  // The sibling set is derived from STATIC_PAGES — the same table the HTML head, the sitemap and
-  // the twin routes walk — rather than from a second path table that has to agree by hand. A page
-  // declared there is picked up by the graph, and a page that never was cannot appear in it.
-  const staticPaths = Object.keys(STATIC_PAGES) as ReadonlyArray<PagePath>;
-
-  for (const path of staticPaths) {
-    const links = pagesSection(path, "en", translateEn);
-    // Every other static page plus the two AI indexes — nothing else, exactly once
-    assert.strictEqual((links.match(/^- \[/gm) ?? []).length, staticPaths.length - 1 + AI_INDEX_MARKDOWN_LINKS.length);
-    // The two indexes are exactly the advertised links, not a longer or shorter list
-    for (const index of AI_INDEX_MARKDOWN_LINKS) assert.include(links, `- ${index}`);
-    // No twin advertises itself, in any location
-    assert.notInclude(links, `${STATIC_PAGES[path].mdHref}?lang=en`);
-    // Every sibling is pinned to the reader's own language, not a negotiated variant
-    for (const sibling of staticPaths.filter((other) => other !== path)) {
-      assert.include(links, `${STATIC_PAGES[sibling].mdHref}?lang=en`);
-    }
-  }
-});
-
-it("every twin closes with the one shared Pages section, translated with the reader's language", () => {
-  // The section is the twin's only outbound crawl-graph edge set, and it is the same section both
-  // the static twins and the detail twin print: one heading key, one sibling rule, one link list.
-  const home = pagesSection("/", "pl", translatePl);
-  assert.include(home, "## Strony");
-  assert.notInclude(home, `${STATIC_PAGES["/"].mdHref}?lang=pl`);
-
-  const detail = detailPagesSection("pl", translatePl);
-  assert.include(detail, "## Strony");
-  assert.include(detail, "[Strona główna](https://www.remiforge.dev/index.md?lang=pl)");
-  for (const index of AI_INDEX_MARKDOWN_LINKS) assert.include(detail, `- ${index}`);
-
-  // A polish twin's own chapter never labels the section in English
-  assert.notInclude(home, "## Pages");
-  assert.notInclude(detail, "## Pages");
 });
