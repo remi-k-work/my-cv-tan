@@ -1,9 +1,8 @@
 import { assert, it } from "@effect/vitest";
-import { Option } from "effect";
-import { buildContactMd, buildEducationMd, buildHomeMd, unavailableMarkdownBody } from "../twins";
+import { buildContactMd, buildEducationMd, buildHomeMd } from "../twins";
 import { twinDocument } from "../format";
 import { STATIC_PAGES } from "@/features/meta/domain/pages";
-import type { PagePath, PageTitles, PreferredLanguage, Translate } from "@/domain/models";
+import type { PageTitles, PreferredLanguage, Translate } from "@/domain/models";
 import type { Experience, ExperienceList } from "@/features/experience/domain/models";
 
 const sampleExperience: Experience = {
@@ -55,11 +54,19 @@ const polishTranslations: Record<string, string> = {
 
 const translatePl = (source: string): string => polishTranslations[source] ?? source;
 
-const homeTwin = (input: { readonly pageTitles: PageTitles; readonly experienceList: ExperienceList; readonly preferredLanguage: PreferredLanguage; readonly translate: Translate }) =>
-  twinDocument(buildHomeMd(input));
+const homeTwin = (input: {
+  readonly pageTitles: PageTitles;
+  readonly experienceList: ExperienceList;
+  readonly preferredLanguage: PreferredLanguage;
+  readonly translate: Translate;
+}) => twinDocument(buildHomeMd(input));
 
-const educationTwin = (input: { readonly pageTitles: PageTitles; readonly educationList: ReadonlyArray<{ readonly name: string; readonly year: string; readonly location: string; readonly info: string }>; readonly preferredLanguage: PreferredLanguage; readonly translate: Translate }) =>
-  twinDocument(buildEducationMd(input));
+const educationTwin = (input: {
+  readonly pageTitles: PageTitles;
+  readonly educationList: ReadonlyArray<{ readonly name: string; readonly year: string; readonly location: string; readonly info: string }>;
+  readonly preferredLanguage: PreferredLanguage;
+  readonly translate: Translate;
+}) => twinDocument(buildEducationMd(input));
 
 const contactTwin = (input: { readonly pageTitles: PageTitles; readonly preferredLanguage: PreferredLanguage; readonly translate: Translate }) =>
   twinDocument(buildContactMd(input));

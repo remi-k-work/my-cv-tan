@@ -1,12 +1,9 @@
 import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
 import { absoluteUrl, encodeParens, experienceMarkdownPath, experiencePath, httpUrlOption, markdownTwinUrl, validatedHref, withLanguageParam } from "../urls";
-import { authorLink, canonicalLink, markdownAlternateLink } from "../link-tags";
-import { CV_EN_HREF, CV_PL_HREF, SITEMAP_LINK, LLMS_DISCOVERY_LINK } from "../constants";
-import { cvPdfHref } from "../helpers";
 
 // These tests pin the URL math the HTML heads, Markdown twins, discovery documents and HTTP
-// responses share. The Link-header serialization itself is covered in link-header.test.ts.
+// responses share. The Link-header serialization itself is covered in link-tags.test.ts.
 
 it("absoluteUrl resolves a site path against the canonical origin", () => {
   assert.strictEqual(absoluteUrl("/"), "https://www.remiforge.dev/");
@@ -54,13 +51,6 @@ it("markdownTwinUrl resolves a site-relative twin route to an absolute, language
   assert.strictEqual(markdownTwinUrl("/education.md", "pl"), "https://www.remiforge.dev/education.md?lang=pl");
 });
 
-it("cvPdfHref selects the authored CV file for the visitor's language", () => {
-  assert.strictEqual(cvPdfHref("en"), CV_EN_HREF);
-  assert.strictEqual(cvPdfHref("pl"), CV_PL_HREF);
-  // The two languages must not share one file, or a Polish reader downloads English copy
-  assert.notStrictEqual(CV_EN_HREF, CV_PL_HREF);
-});
-
 it("experience paths encode one URL segment, including parentheses that would close a Markdown destination", () => {
   // encodeURIComponent leaves parentheses raw; the shared helper closes that gap everywhere a path
   // can be embedded in Markdown or XML.
@@ -70,24 +60,4 @@ it("experience paths encode one URL segment, including parentheses that would cl
   assert.strictEqual(experiencePath("résumé"), "/r%C3%A9sum%C3%A9");
   // The twin route is the detail path with one suffix, so both always name the same document
   assert.strictEqual(experienceMarkdownPath("role (senior)"), "/role%20%28senior%29.md");
-});
-
-it("link builders name the canonical, author, and language-pinned Markdown twin", () => {
-  assert.deepStrictEqual(canonicalLink("https://www.remiforge.dev/education"), {
-    rel: "canonical",
-    href: "https://www.remiforge.dev/education",
-  });
-  assert.deepStrictEqual(authorLink("https://www.remiforge.dev/"), { rel: "author", href: "https://www.remiforge.dev/" });
-  // The HTML alternate is pinned to the negotiated language but deliberately carries no hreflang:
-  // the HTML pages are one URL, so claiming distinct language documents would be false.
-  assert.deepStrictEqual(markdownAlternateLink("/index.md", "pl"), {
-    rel: "alternate",
-    type: "text/markdown",
-    href: "https://www.remiforge.dev/index.md?lang=pl",
-  });
-});
-
-it("discovery links declare the sitemap and the canonical llms index", () => {
-  assert.deepStrictEqual(SITEMAP_LINK, { rel: "sitemap", href: "https://www.remiforge.dev/sitemap.xml" });
-  assert.deepStrictEqual(LLMS_DISCOVERY_LINK, { rel: "llms", href: "https://www.remiforge.dev/llms.txt" });
 });

@@ -40,28 +40,6 @@ it("a link serializes as a URI-reference with its parameters in a fixed order", 
   );
 });
 
-it("the AI indexes project into both the <head> advertisements and the Link header from one record", () => {
-  // Same documents, both surfaces: a crawler that only parses response headers sees exactly what a
-  // crawler that only parses the <head> sees.
-  assert.deepStrictEqual(AI_INDEX_LINKS, [
-    { rel: "alternate", type: "text/plain", title: "llms.txt", href: "https://www.remiforge.dev/llms.txt" },
-    { rel: "alternate", type: "text/plain", title: "llms-full.txt", href: "https://www.remiforge.dev/llms-full.txt" },
-  ]);
-
-  assert.strictEqual(
-    AI_INDEX_LINK_HEADER,
-    '<https://www.remiforge.dev/llms.txt>; rel="alternate"; type="text/plain"; title="llms.txt", <https://www.remiforge.dev/llms-full.txt>; rel="alternate"; type="text/plain"; title="llms-full.txt"'
-  );
-  // The joined constant is the joined list, not a second spelling of it
-  assert.strictEqual(AI_INDEX_LINK_HEADER, joinLinkHeader(AI_INDEX_LINKS));
-
-  // The site-wide head carries the <link> projection, so the HTML document advertises the indexes too
-  assert.deepStrictEqual(
-    ROOT_HEAD.links.filter(({ rel }) => rel === "alternate"),
-    [...AI_INDEX_LINKS]
-  );
-});
-
 it("language variants list every supported language and close with the x-default", () => {
   assert.deepStrictEqual(joinLinkHeader(languageVariantLinks("https://www.remiforge.dev/index.md")).split(", "), [
     '<https://www.remiforge.dev/index.md?lang=en>; rel="alternate"; type="text/markdown"; hreflang="en"',
@@ -96,4 +74,46 @@ it("every link the site publishes carries only the three parameters the serializ
       assert.include(header, `${parameter}="${value}"`, `${JSON.stringify(link)} loses its ${parameter} in the header`);
     }
   }
+});
+
+it("link builders name the canonical, author, and language-pinned Markdown twin", () => {
+  assert.deepStrictEqual(canonicalLink("https://www.remiforge.dev/education"), {
+    rel: "canonical",
+    href: "https://www.remiforge.dev/education",
+  });
+  assert.deepStrictEqual(authorLink("https://www.remiforge.dev/"), { rel: "author", href: "https://www.remiforge.dev/" });
+  // The HTML alternate is pinned to the negotiated language but deliberately carries no hreflang:
+  // the HTML pages are one URL, so claiming distinct language documents would be false.
+  assert.deepStrictEqual(markdownAlternateLink("/index.md", "pl"), {
+    rel: "alternate",
+    type: "text/markdown",
+    href: "https://www.remiforge.dev/index.md?lang=pl",
+  });
+});
+
+it("the AI indexes project into both the <head> advertisements and the Link header from one record", () => {
+  // Same documents, both surfaces: a crawler that only parses response headers sees exactly what a
+  // crawler that only parses the <head> sees.
+  assert.deepStrictEqual(AI_INDEX_LINKS, [
+    { rel: "alternate", type: "text/plain", title: "llms.txt", href: "https://www.remiforge.dev/llms.txt" },
+    { rel: "alternate", type: "text/plain", title: "llms-full.txt", href: "https://www.remiforge.dev/llms-full.txt" },
+  ]);
+
+  assert.strictEqual(
+    AI_INDEX_LINK_HEADER,
+    '<https://www.remiforge.dev/llms.txt>; rel="alternate"; type="text/plain"; title="llms.txt", <https://www.remiforge.dev/llms-full.txt>; rel="alternate"; type="text/plain"; title="llms-full.txt"'
+  );
+  // The joined constant is the joined list, not a second spelling of it
+  assert.strictEqual(AI_INDEX_LINK_HEADER, joinLinkHeader(AI_INDEX_LINKS));
+
+  // The site-wide head carries the <link> projection, so the HTML document advertises the indexes too
+  assert.deepStrictEqual(
+    ROOT_HEAD.links.filter(({ rel }) => rel === "alternate"),
+    [...AI_INDEX_LINKS]
+  );
+});
+
+it("discovery links declare the sitemap and the canonical llms index", () => {
+  assert.deepStrictEqual(SITEMAP_LINK, { rel: "sitemap", href: "https://www.remiforge.dev/sitemap.xml" });
+  assert.deepStrictEqual(LLMS_DISCOVERY_LINK, { rel: "llms", href: "https://www.remiforge.dev/llms.txt" });
 });

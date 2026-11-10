@@ -2,8 +2,7 @@ import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
 import { buildExperienceMd, buildNotFoundMd } from "../detail-twin";
 import { twinDocument } from "../format";
-import { escapeMd, escapeMdInline as escapeInline } from "../escape";
-import { mdFact, mdIndexEntry, mdLink } from "../format";
+import { escapeMd } from "../escape";
 import { experienceSeo } from "@/features/meta/domain/helpers";
 import type { Experience } from "@/features/experience/domain/models";
 
@@ -57,7 +56,9 @@ it("experience Markdown canonical encodes a slug as one path segment", () => {
 });
 
 it("the experience twin omits the Links section when the experience has no links", () => {
-  const md = twinDocument(buildExperienceMd({ seo: experienceSeo({ experience: { ...sampleExperience, gitHubLink: undefined }, preferredLanguage: "en" }), translate: translateEn }));
+  const md = twinDocument(
+    buildExperienceMd({ seo: experienceSeo({ experience: { ...sampleExperience, gitHubLink: undefined }, preferredLanguage: "en" }), translate: translateEn })
+  );
   assert.include(md, `## Skills Used`);
   assert.notInclude(md, `## Links`);
 });
@@ -65,7 +66,15 @@ it("the experience twin omits the Links section when the experience has no links
 it("experience link builders drop destinations that are not http(s) URLs", () => {
   // The Experience schema accepts any non-empty string, so the link builder is the one place a
   // hostile scheme can be stopped before it reaches a crawler-parseable document.
-  const md = twinDocument(buildExperienceMd({ seo: experienceSeo({ experience: { ...sampleExperience, gitHubLink: "javascript:alert(1)", liveLink: "ftp://example.com/file" }, preferredLanguage: "en" }), translate: translateEn }));
+  const md = twinDocument(
+    buildExperienceMd({
+      seo: experienceSeo({
+        experience: { ...sampleExperience, gitHubLink: "javascript:alert(1)", liveLink: "ftp://example.com/file" },
+        preferredLanguage: "en",
+      }),
+      translate: translateEn,
+    })
+  );
 
   assert.notInclude(md, "javascript:");
   assert.notInclude(md, "ftp://");

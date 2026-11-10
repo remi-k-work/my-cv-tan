@@ -18,8 +18,7 @@ import {
   translatedLink,
   twinDocument,
 } from "../format";
-import { buildContactMd, buildEducationMd, buildHomeMd } from "../twins";
-import { STATIC_PAGES } from "@/features/meta/domain/pages";
+import { buildEducationMd, buildHomeMd } from "../twins";
 import type { PageTitles, Translate } from "@/domain/models";
 import type { Experience, ExperienceList } from "@/features/experience/domain/models";
 
@@ -43,11 +42,19 @@ const stablePageTitles: PageTitles = {
   "/contact": { eyebrow: "Contact", heading: "Stable contact title", intro: "Stable contact summary." },
 };
 
-const homeTwin = (input: { readonly pageTitles: PageTitles; readonly experienceList: ExperienceList; readonly preferredLanguage: "en"; readonly translate: Translate }) =>
-  twinDocument(buildHomeMd(input));
+const homeTwin = (input: {
+  readonly pageTitles: PageTitles;
+  readonly experienceList: ExperienceList;
+  readonly preferredLanguage: "en";
+  readonly translate: Translate;
+}) => twinDocument(buildHomeMd(input));
 
-const educationTwin = (input: { readonly pageTitles: PageTitles; readonly educationList: ReadonlyArray<{ readonly name: string; readonly year: string; readonly location: string; readonly info: string }>; readonly preferredLanguage: "en"; readonly translate: Translate }) =>
-  twinDocument(buildEducationMd(input));
+const educationTwin = (input: {
+  readonly pageTitles: PageTitles;
+  readonly educationList: ReadonlyArray<{ readonly name: string; readonly year: string; readonly location: string; readonly info: string }>;
+  readonly preferredLanguage: "en";
+  readonly translate: Translate;
+}) => twinDocument(buildEducationMd(input));
 
 it("mdHeading renders one level with the text escaped inline", () => {
   assert.strictEqual(mdHeading(1, "Hello *world*"), "# Hello \\*world\\*");

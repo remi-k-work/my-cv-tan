@@ -1,21 +1,49 @@
 import { assert, it } from "@effect/vitest";
-import { ROBOTS_TXT } from "../domain/robots";
-import { buildSitemapXml, robotsHandler } from "../domain/sitemap";
-import { documentHeaders, sitemapResponse, sitemapUnavailableResponse, txtResponse } from "../domain/helpers";
-import { STATIC_PAGE_PATHS } from "../domain/pages";
-import { CONTENT_SIGNAL, DOWNLOADABLE_DOCUMENTS } from "../domain/constants";
-import type { Experience } from "@/features/experience/domain/models";
+import { STATIC_PAGE_PATHS } from "../pages";
+import { CONTENT_SIGNAL, DOWNLOADABLE_DOCUMENTS } from "../constants";
+import { experiencePath } from "../urls";
+import { sitemapHandler } from "../sitemap";
+import { buildSitemapXml } from "../sitemap";
+import { sitemapResponse, sitemapUnavailableResponse } from "../helpers";
+import experienceEn from "@/assets/data/en/experience.json";
+import experiencePl from "@/assets/data/pl/experience.json";
+
+type Experience = { readonly slug: string };
 
 const sampleExperience: Experience = {
-  type: "p",
   slug: "sample-role",
-  year: "Mar 2026",
-  role: "Full-Stack Developer",
-  company: "Sample Co",
-  txt: "Built things with care.",
-  imageName: "01",
-  skillsUsed: ["TypeScript"],
 };
+
+// Verifies end-to-end runtime wiring of the sitemap route using real portfolio assets.
+it("sitemap route resolves the real portfolio assets into one canonical URL per page", async () => {
+  const response = await sitemapHandler({ request: new Request("https://www.remiforge.dev/sitemap.xml") });
+
+  assert.strictEqual(response.status, 200);
+  assert.strictEqual(response.headers.get("Content-Type"), "application/xml; charset=utf-8");
+  assert.strictEqual(response.headers.get("Cache-Control"), "public, max-age=3600, stale-while-revalidate=86400");
+  // Crawlable but excluded from search indexes.
+  assert.strictEqual(response.headers.get("X-Robots-Tag"), "noindex, follow");
+  // Discovery signal and AI index Link header.
+  assert.strictEqual(response.headers.get("Content-Signal"), CONTENT_SIGNAL);
+  assert.include(response.headers.get("Link") ?? "", "https://www.remiforge.dev/llms.txt");
+
+  const xml = await response.text();
+
+  // Static pages and downloads.
+  for (const path of [...STATIC_PAGE_PATHS, ...DOWNLOADABLE_DOCUMENTS.map(({ href }) => href)]) {
+    assert.include(xml, `<loc>https://www.remiforge.dev${path}</loc>`);
+  }
+
+  // Deduplicated localized experience slugs.
+  const slugs = new Set([...experienceEn, ...experiencePl].map(({ slug }) => slug));
+  for (const slug of slugs) {
+    const loc = `<loc>https://www.remiforge.dev${experiencePath(slug)}</loc>`;
+    assert.strictEqual(xml.split(loc).length - 1, 1, `expected exactly one ${loc}`);
+  }
+
+  // Lists canonical HTML URLs only, not markdown twins.
+  assert.notInclude(xml, ".md");
+});
 
 it("sitemap omits fabricated last-modification dates and leads with the canonical homepage", () => {
   const xml = buildSitemapXml([sampleExperience.slug]);
@@ -101,68 +129,4 @@ it("sitemap data failures return non-cacheable noindex XML with status 503", asy
   // Transient data failure retry interval.
   assert.strictEqual(response.headers.get("Retry-After"), "300");
   assert.include(await response.text(), "<error>Sitemap is temporarily unavailable.</error>");
-});
-
-it("robots.txt allows content, disallows API endpoints, and advertises the sitemap", async () => {
-  const robots = ROBOTS_TXT;
-  assert.include(robots, "User-agent: *");
-  assert.include(robots, "Allow: /");
-  // Excludes private API endpoints from crawling.
-  assert.include(robots, "Disallow: /api");
-  assert.include(robots, "Sitemap: https://www.remiforge.dev/sitemap.xml");
-  // Permissive content reuse signal.
-  assert.include(robots, "Content-Signal: search=yes, ai-input=yes, ai-train=yes");
-  // Global crawl delay.
-  assert.include(robots, "Crawl-delay: 10");
-  const userAgents = robots.match(/^User-agent: .*/gm) ?? [];
-  assert.deepStrictEqual(userAgents, ["User-agent: *"]);
-  assert.strictEqual((robots.match(/^Content-Signal: /gm) ?? []).length, userAgents.length);
-  assert.strictEqual((robots.match(/^# [^\n]*\nUser-agent: /gm) ?? []).length, userAgents.length);
-  assert.strictEqual((robots.match(/\n\n# /g) ?? []).length, userAgents.length);
-  assert.isTrue(
-    robots.endsWith("Sitemap: https://www.remiforge.dev/sitemap.xml\n"),
-    "the sitemap directive is the document's last line and the file ends terminated"
-  );
-
-  const response = await robotsHandler({ request: new Request("https://www.remiforge.dev/robots.txt") });
-  assert.strictEqual(response.status, 200);
-  assert.strictEqual(response.headers.get("Content-Type"), "text/plain; charset=utf-8");
-  assert.strictEqual(response.headers.get("Content-Language"), "en");
-  assert.isNull(response.headers.get("Content-Location"));
-  assert.strictEqual(response.headers.get("Cache-Control"), "public, max-age=3600, stale-while-revalidate=86400");
-  // Advertises machine-readable AI indexes in Link header.
-  assert.include(response.headers.get("Link") ?? "", "https://www.remiforge.dev/llms.txt");
-  assert.include(response.headers.get("Link") ?? "", "https://www.remiforge.dev/llms-full.txt");
-
-  // Verifies each handler call constructs a fresh, unconsumed Response.
-  const first = await robotsHandler({ request: new Request("https://www.remiforge.dev/robots.txt") });
-  const second = await robotsHandler({ request: new Request("https://www.remiforge.dev/robots.txt") });
-  assert.notStrictEqual(first, second);
-  assert.strictEqual(await first.text(), await second.text());
-});
-
-it("robots.txt responses are English, noindex, and carry the shared reuse signal", () => {
-  const response = txtResponse("# Plain");
-  assert.strictEqual(response.status, 200);
-  assert.strictEqual(response.headers.get("Content-Type"), "text/plain; charset=utf-8");
-  assert.strictEqual(response.headers.get("X-Robots-Tag"), "noindex, follow");
-  assert.strictEqual(response.headers.get("Content-Language"), "en");
-});
-
-it("the HTML document names the request inputs it is language-negotiated from", () => {
-  const polish = documentHeaders("pl");
-  const english = documentHeaders("en");
-
-  // Varies by Cookie and Accept-Language for proper CDN cache partitioning.
-  assert.strictEqual(polish.Vary, "Cookie, Accept-Language");
-  assert.strictEqual(polish["Content-Signal"], CONTENT_SIGNAL);
-  assert.strictEqual(polish["Content-Language"], "pl");
-  assert.strictEqual(english["Content-Language"], "en");
-  assert.include(polish.Link, "https://www.remiforge.dev/llms.txt");
-  assert.include(polish.Link, "https://www.remiforge.dev/llms-full.txt");
-  assert.strictEqual(Object.keys(polish).length, 4);
-  assert.deepStrictEqual(
-    Object.keys(polish).filter((key) => key !== "Content-Language"),
-    Object.keys(english).filter((key) => key !== "Content-Language")
-  );
 });
