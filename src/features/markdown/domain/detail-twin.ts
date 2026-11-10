@@ -16,7 +16,7 @@ import { SITE_NAME } from "@/features/meta/domain/constants";
 
 const optionalLink = (label: string, href: string | undefined): Option.Option<string> => Option.map(validatedHref(href), (url) => mdLink(label, url));
 
-// Builds the Markdown twin for an experience detail page.
+// Builds the Markdown twin for an experience detail page
 export const buildExperienceMd = ({ seo, translate }: ExperienceMdInput): MarkdownTwin => {
   const { experience, preferredLanguage, canonical, headline, description } = seo;
   const { role, company, txt, skillsUsed, year } = experience;

@@ -9,7 +9,7 @@ import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
 import type { ExperienceSeo } from "@/features/meta/domain/models";
 
-// A Markdown twin consists of structured frontmatter facts and a markdown body.
+// A Markdown twin consists of structured frontmatter facts and a markdown body
 export interface MarkdownTwin {
   readonly facts: Readonly<Record<string, string>>;
   readonly body: string;

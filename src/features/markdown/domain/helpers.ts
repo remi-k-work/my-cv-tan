@@ -3,11 +3,14 @@ import { Array, flow, Option, pipe, Schema, String } from "effect";
 import { experienceSeo } from "@/features/meta/domain/helpers";
 import { buildExperienceMd } from "./detail-twin";
 import { PreferredLanguage } from "@/domain/models";
-import { decodeUrlOption } from "@/features/meta/domain/urls";
+import { absoluteUrl, decodeUrlOption, experienceMarkdownPath, experiencePath, markdownTwinUrl } from "@/features/meta/domain/urls";
+import { excerpt, experienceHeadline } from "@/features/experience/domain/helpers";
+import { mdBulletList, mdEmptyMarker, mdIndexEntry, mdLink } from "./format";
+import { escapeMdInline } from "./escape";
 
 // types
-import type { ExperienceList } from "@/features/experience/domain/models";
-import type { TwinEntry } from "./models";
+import type { Experience, ExperienceList } from "@/features/experience/domain/models";
+import type { ExperienceLinesInput, TwinEntry } from "./models";
 import type { StaticPageCopy } from "@/features/meta/domain/models";
 
 // constants
@@ -16,6 +19,7 @@ import { DEFAULT_LANGUAGE } from "@/domain/constants";
 import { PAGE_ENTRIES, SOURCE_COPY, TWIN_ENTRY } from "./constants";
 
 const NEGOTIATION_VARY = new Set(NEGOTIATION_VARY_TOKENS.map((token) => token.toLowerCase()));
+const LIST_EXCERPT_LENGTH = 140;
 
 // Strips language negotiation tokens from Vary header, returning null if empty
 export const withoutNegotiationVary = (vary: string | null) =>
@@ -84,3 +88,16 @@ export const slugFromMdPathname = (url: string) =>
     Option.flatMap(decodeUrlComponent),
     Option.filter(String.isNonEmpty)
   );
+
+const experienceLine = (experience: Experience, preferredLanguage: PreferredLanguage, entry: ExperienceLinesInput["entry"]) => {
+  const headline = experienceHeadline(experience, preferredLanguage);
+  const summary = `${excerpt(experience.txt, LIST_EXCERPT_LENGTH)} (${experience.year})`;
+  const twin = markdownTwinUrl(experienceMarkdownPath(experience.slug), preferredLanguage);
+
+  return entry === "twin"
+    ? `${mdLink(headline, twin)}: ${escapeMdInline(summary)}`
+    : mdIndexEntry(headline, absoluteUrl(experiencePath(experience.slug)), twin, summary);
+};
+
+export const experienceLines = ({ experiences, entry, translate, preferredLanguage }: ExperienceLinesInput) =>
+  experiences.length === 0 ? mdEmptyMarker(translate) : mdBulletList(experiences.map((experience) => experienceLine(experience, preferredLanguage, entry)));

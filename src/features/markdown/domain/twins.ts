@@ -1,17 +1,16 @@
 // services, features, and other libraries
 import { partitionExperiences } from "@/features/experience/domain/helpers";
 import { staticPageCopy } from "@/features/meta/domain/pages";
-import { experienceLines } from "./experience-lines";
 import { pagesSection } from "./twin-nav";
 import { mdBody, mdBulletList, mdDocument, mdDocumentLinks, mdEmptyMarker, mdFact, mdHeading, mdProfileLinks, mdQuote, mdTitledSection } from "./format";
 import { escapeMd } from "./escape";
-import { pageFacts } from "./helpers";
+import { experienceLines, pageFacts } from "./helpers";
 
 // types
 import type { StaticPageCopy } from "@/features/meta/domain/models";
 import type { PagePath, PageTitles, Translate } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
-import type { ContactMdInput, EducationMdInput, HomeMdInput, LocalizedMdInput, MarkdownTwin } from "./models";
+import type { ContactMdInput, EducationMdInput, HomeMdInput, LocalizedMdInput } from "./models";
 
 // constants
 import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/domain/constants";
@@ -43,7 +42,7 @@ const staticTwinDocument = (
   input: LocalizedMdInput & { readonly pageTitles: PageTitles },
   pagePath: PagePath,
   sections: (copy: StaticPageCopy) => ReadonlyArray<string>
-): MarkdownTwin => {
+) => {
   const copy = staticPageCopy(input.pageTitles, pagePath, input.preferredLanguage);
 
   return {
@@ -58,7 +57,7 @@ const staticTwinDocument = (
   };
 };
 
-export const buildHomeMd = (input: HomeMdInput): MarkdownTwin => {
+export const buildHomeMd = (input: HomeMdInput) => {
   const { translate, experienceList, preferredLanguage } = input;
   const [employment, projects] = partitionExperiences(experienceList);
 
@@ -68,18 +67,18 @@ export const buildHomeMd = (input: HomeMdInput): MarkdownTwin => {
   ]);
 };
 
-export const buildEducationMd = (input: EducationMdInput): MarkdownTwin => {
+export const buildEducationMd = (input: EducationMdInput) => {
   const { translate, educationList } = input;
   return staticTwinDocument(input, EDUCATION_PATH, () => [schoolSections(educationList, translate), documentsSection(translate)]);
 };
 
-export const buildContactMd = (input: ContactMdInput): MarkdownTwin => {
+export const buildContactMd = (input: ContactMdInput) => {
   const { translate } = input;
   return staticTwinDocument(input, CONTACT_PATH, (copy) => [contactChannels(copy.canonical, translate)]);
 };
 
 // 503 fallback body served when required portfolio data is unavailable
-export const unavailableMarkdownBody = (translate: Translate): string =>
+export const unavailableMarkdownBody = (translate: Translate) =>
   mdDocument([
     mdHeading(1, translate("Content temporarily unavailable")),
     escapeMd(translate("The required portfolio content could not be loaded. Please try again shortly.")),

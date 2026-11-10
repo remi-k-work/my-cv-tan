@@ -1,6 +1,5 @@
 // services, features, and other libraries
 import { partitionExperiences } from "@/features/experience/domain/helpers";
-import { experienceLines } from "./experience-lines";
 import {
   demoteHeadings,
   fencedFacts,
@@ -17,7 +16,7 @@ import {
   mdTitledSection,
 } from "./format";
 import { escapeMd, escapeMdInline } from "./escape";
-import { allEntries } from "./helpers";
+import { allEntries, experienceLines } from "./helpers";
 import { absoluteUrl, encodeDestination, markdownTwinUrl } from "@/features/meta/domain/urls";
 
 // types

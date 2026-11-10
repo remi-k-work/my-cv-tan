@@ -23,7 +23,6 @@ import type { RequiredDataError } from "@/features/data/domain/required";
 import type { PreferredLanguage } from "@/domain/models";
 
 type DocumentBody = (request: Request, context: LocalizedMdInput) => Effect.Effect<Response, RequiredDataError>;
-type DocumentResponse = (request: Request) => Effect.Effect<Response, never>;
 
 // constants
 import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/constants";
@@ -47,7 +46,7 @@ const documentName = (request: Request) =>
   );
 
 // Handles language resolution, translation snapshot loading, rendering, and failure recovery
-const documentResponse = (render: DocumentBody): DocumentResponse =>
+const documentResponse = (render: DocumentBody) =>
   Effect.fnUntraced(function* (request: Request) {
     const langOverride = parseLangParam(request.url);
     const preferredLanguage = requestPreferredLanguage(langOverride);
@@ -71,7 +70,7 @@ const respond = (context: LocalizedMdInput, twin: MarkdownTwin, canonical: strin
     markdownPath,
   });
 
-const pageTwinDocument = <Data>(twin: PageTwin<Data>, datasets: DatasetsService): DocumentResponse =>
+const pageTwinDocument = <Data>(twin: PageTwin<Data>, datasets: DatasetsService) =>
   documentResponse(
     Effect.fnUntraced(function* (_request: Request, context: LocalizedMdInput) {
       const data = yield* twin.resolveData(datasets, context.preferredLanguage);
@@ -82,7 +81,7 @@ const pageTwinDocument = <Data>(twin: PageTwin<Data>, datasets: DatasetsService)
 const notFoundTwin = (slug: Option.Option<string>, context: LocalizedMdInput) =>
   mdNotFoundResponse(twinDocument(buildNotFoundMd({ slug, ...context })), context.preferredLanguage, Option.map(slug, experienceMarkdownPath));
 
-const experienceTwin = (experienceList: LocalizedAccessor<ExperienceList>): DocumentResponse =>
+const experienceTwin = (experienceList: LocalizedAccessor<ExperienceList>) =>
   documentResponse(
     Effect.fnUntraced(function* (request: Request, context: LocalizedMdInput) {
       const slug = slugFromMdPathname(request.url);
@@ -106,16 +105,14 @@ const experienceTwin = (experienceList: LocalizedAccessor<ExperienceList>): Docu
     })
   );
 
-const discoveryDocument =
-  (index: { readonly name: string; readonly url: string }, content: Effect.Effect<string, RequiredDataError>): DocumentResponse =>
-  (_request: Request) =>
-    content.pipe(
-      Effect.map((body) => txtResponse(body, index.url)),
-      recoverDataFailure(
-        () => `[${index.name.toUpperCase()}]`,
-        () => txtUnavailableResponse(unavailableIndexBody(index.name))
-      )
-    );
+const discoveryDocument = (index: { readonly name: string; readonly url: string }, content: Effect.Effect<string, RequiredDataError>) => (_request: Request) =>
+  content.pipe(
+    Effect.map((body) => txtResponse(body, index.url)),
+    recoverDataFailure(
+      () => `[${index.name.toUpperCase()}]`,
+      () => txtUnavailableResponse(unavailableIndexBody(index.name))
+    )
+  );
 
 export class Markdown extends Context.Service<Markdown>()("Markdown", {
   make: Effect.gen(function* () {
