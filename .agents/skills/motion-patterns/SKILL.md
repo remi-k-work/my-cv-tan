@@ -55,23 +55,23 @@ This skill produces:
 
 ### Choosing the right pattern
 
-| Situation                               | Pattern                      |
-| --------------------------------------- | ---------------------------- |
-| Element appears / disappears            | `AnimatePresence`            |
-| List of items loading in sequence       | Stagger variants             |
-| Navigating between routes               | Page transition wrapper      |
-| Element changes size in place           | `layout` prop                |
-| Same element moves across page contexts | `layoutId`                   |
-| Element enters when scrolled into view  | `whileInView`                |
-| Value tied to scroll position           | `useScroll` + `useTransform` |
+| Situation | Pattern |
+| ---------------------------------------- | ---------------------- |
+| Element appears / disappears             | `AnimatePresence`      |
+| List of items loading in sequence        | Stagger variants       |
+| Navigating between routes                | Page transition wrapper|
+| Element changes size in place            | `layout` prop          |
+| Same element moves across page contexts  | `layoutId`             |
+| Element enters when scrolled into view   | `whileInView`          |
+| Value tied to scroll position            | `useScroll` + `useTransform` |
 
 ### When to use `mode="wait"` vs `mode="sync"`
 
-| Mode        | Use when                                            |
-| ----------- | --------------------------------------------------- |
-| `wait`      | Page transitions, content swaps (one at a time)     |
-| `sync`      | Stacked notifications, list items (overlap is fine) |
-| `popLayout` | Items removed from a reflow list                    |
+| Mode | Use when |
+| ------- | --------------------------------------- |
+| `wait` | Page transitions, content swaps (one at a time) |
+| `sync` | Stacked notifications, list items (overlap is fine) |
+| `popLayout` | Items removed from a reflow list |
 
 ## Core Concepts
 
@@ -418,16 +418,16 @@ This skill does **not** cover:
 
 ## Anti-Patterns
 
-| Anti-pattern                                      | Rule violated | Fix                                           |
-| ------------------------------------------------- | ------------- | --------------------------------------------- |
-| `AnimatePresence` child missing `key`             | Rule 1        | Add stable `key` to the direct child          |
-| `initial` + `animate` without `exit`              | Rule 2        | Always define all three together              |
-| Page transition without `mode="wait"`             | Rule 3        | Add `mode="wait"` to `AnimatePresence`        |
-| `layout` on a 50-item list                        | Rule 4        | Use `mode="popLayout"` or explicit transforms |
-| `staggerChildren: 0.2` on a 10-item list          | Rule 5        | Cap at `0.08–0.10`                            |
-| Modal without focus trap                          | Rule 6        | Add `focus-trap-react` or Radix Dialog        |
-| `whileInView` without `viewport={{ once: true }}` | Rule 7        | Repeating entrances distract, not inform      |
-| `transition={{ duration: 0.3 }}` inline           | Rule 8        | Use `motionTokens.duration.normal`            |
+| Anti-pattern | Rule violated | Fix |
+| -------------------------------------------- | ------- | ------------------------------------------ |
+| `AnimatePresence` child missing `key` | Rule 1 | Add stable `key` to the direct child |
+| `initial` + `animate` without `exit` | Rule 2 | Always define all three together |
+| Page transition without `mode="wait"` | Rule 3 | Add `mode="wait"` to `AnimatePresence` |
+| `layout` on a 50-item list | Rule 4 | Use `mode="popLayout"` or explicit transforms |
+| `staggerChildren: 0.2` on a 10-item list | Rule 5 | Cap at `0.08–0.10` |
+| Modal without focus trap | Rule 6 | Add `focus-trap-react` or Radix Dialog |
+| `whileInView` without `viewport={{ once: true }}` | Rule 7 | Repeating entrances distract, not inform |
+| `transition={{ duration: 0.3 }}` inline | Rule 8 | Use `motionTokens.duration.normal` |
 
 ## Related Skills
 

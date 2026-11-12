@@ -60,23 +60,23 @@ These are non-negotiable. They apply to every component in the system.
 
 ### Choosing a duration
 
-| Token     | Use when                                    |
-| --------- | ------------------------------------------- |
+| Token | Use when |
+| --------- | -------------------------------------------- |
 | `instant` | Tooltip show/hide, focus ring, badge update |
-| `fast`    | Button feedback, icon swap, chip toggle     |
-| `normal`  | Modal open, card expand, page element enter |
-| `slow`    | Hero entrance, full-page transition         |
-| `crawl`   | Deliberate storytelling; use sparingly      |
+| `fast` | Button feedback, icon swap, chip toggle |
+| `normal` | Modal open, card expand, page element enter |
+| `slow` | Hero entrance, full-page transition |
+| `crawl` | Deliberate storytelling; use sparingly |
 
 ### Choosing a spring
 
-| Preset    | Use when                                   |
+| Preset | Use when |
 | --------- | ------------------------------------------ |
-| `snappy`  | Default UI — buttons, chips, nav items     |
-| `gentle`  | Cards, modals, panels landing softly       |
-| `bouncy`  | Playful moments — empty states, onboarding |
-| `instant` | Tooltips, popovers, dropdowns              |
-| `release` | Drag release — natural physics feel        |
+| `snappy` | Default UI — buttons, chips, nav items |
+| `gentle` | Cards, modals, panels landing softly |
+| `bouncy` | Playful moments — empty states, onboarding |
+| `instant` | Tooltips, popovers, dropdowns |
+| `release` | Drag release — natural physics feel |
 
 ### When to disable animation entirely
 
@@ -283,16 +283,16 @@ This skill does **not** cover:
 
 ## Anti-Patterns
 
-| Anti-pattern                                    | Rule violated | Fix                                        |
-| ----------------------------------------------- | ------------- | ------------------------------------------ |
-| `import { motion } from "framer-motion"`        | Rule 1        | Use `motion/react`                         |
-| `initial={{ opacity: 0 }}` on SSR component     | Rule 2        | Add mount guard                            |
-| Skipping `useReducedMotion` check               | Rule 3        | Use `useSafeMotion` hook                   |
-| `animate={{ width: "100%" }}`                   | Rule 4        | Use `scaleX` transform instead             |
-| `transition={{ duration: 0.4 }}` inline         | Rule 5        | Use `motionTokens.duration.normal`         |
-| `{ stiffness: 300, damping: 30 }` inline        | Rule 6        | Use `springs.snappy`                       |
-| Missing `"use client"` directive                | Rule 7        | Add to top of file                         |
-| `navigator.hardwareConcurrency` at module level | Rule 8        | Wrap in `typeof navigator !== "undefined"` |
+| Anti-pattern | Rule violated | Fix |
+| --------------------------------------- | ------- | ------------------------------- |
+| `import { motion } from "framer-motion"` | Rule 1 | Use `motion/react` |
+| `initial={{ opacity: 0 }}` on SSR component | Rule 2 | Add mount guard |
+| Skipping `useReducedMotion` check | Rule 3 | Use `useSafeMotion` hook |
+| `animate={{ width: "100%" }}` | Rule 4 | Use `scaleX` transform instead |
+| `transition={{ duration: 0.4 }}` inline | Rule 5 | Use `motionTokens.duration.normal` |
+| `{ stiffness: 300, damping: 30 }` inline | Rule 6 | Use `springs.snappy` |
+| Missing `"use client"` directive | Rule 7 | Add to top of file |
+| `navigator.hardwareConcurrency` at module level | Rule 8 | Wrap in `typeof navigator !== "undefined"` |
 
 ## Related Skills
 

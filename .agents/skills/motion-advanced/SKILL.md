@@ -57,28 +57,28 @@ This skill produces:
 
 ### Choosing the right advanced API
 
-| Scenario                      | API                                        |
-| ----------------------------- | ------------------------------------------ |
-| Drag with physics on release  | `drag` + `dragTransition: springs.release` |
-| Ordered drag-to-reorder list  | `Reorder.Group` + `Reorder.Item`           |
-| Dismiss on drag offset        | `drag="y"` + `onDragEnd` offset check      |
-| Swipe left/right              | `drag="x"` + `onDragEnd` offset check      |
-| Long press                    | `useLongPress` hook                        |
-| Value smoothed over time      | `useSpring`                                |
-| Value derived from another    | `useTransform`                             |
-| Multi-step sequence           | `useAnimate` with `async/await`            |
-| One-shot imperative animation | `animate()` from `motion`                  |
-| Text entering word by word    | Stagger on `inline-block` spans            |
-| SVG drawing on                | `pathLength` 0 → 1                         |
-| SVG morph                     | `d` attribute tween (equal commands)       |
-| Circular progress             | `strokeDashoffset` tween                   |
+| Scenario | API |
+| ------------------------------ | -------------------------------- |
+| Drag with physics on release | `drag` + `dragTransition: springs.release` |
+| Ordered drag-to-reorder list | `Reorder.Group` + `Reorder.Item` |
+| Dismiss on drag offset | `drag="y"` + `onDragEnd` offset check |
+| Swipe left/right | `drag="x"` + `onDragEnd` offset check |
+| Long press | `useLongPress` hook |
+| Value smoothed over time | `useSpring` |
+| Value derived from another | `useTransform` |
+| Multi-step sequence | `useAnimate` with `async/await` |
+| One-shot imperative animation | `animate()` from `motion` |
+| Text entering word by word | Stagger on `inline-block` spans |
+| SVG drawing on | `pathLength` 0 → 1 |
+| SVG morph | `d` attribute tween (equal commands) |
+| Circular progress | `strokeDashoffset` tween |
 
 ### When to use `useSpring` vs a spring transition
 
-|           | `useSpring`                             | `transition: springs.*`     |
-| --------- | --------------------------------------- | --------------------------- |
-| Use for   | Cursor follower, pointer-tracked values | Discrete state changes      |
-| Updates   | Continuous, on every frame              | Triggered by state change   |
+| | `useSpring` | `transition: springs.*` |
+| -------------- | ---------------------------------------- | ----------------------- |
+| Use for | Cursor follower, pointer-tracked values | Discrete state changes |
+| Updates | Continuous, on every frame | Triggered by state change |
 | Interrupt | Smooth — physics picks up from velocity | Restarts from current value |
 
 ## Core Concepts
@@ -580,16 +580,16 @@ This skill does **not** cover:
 
 ## Anti-Patterns
 
-| Anti-pattern                                    | Rule violated | Fix                                            |
-| ----------------------------------------------- | ------------- | ---------------------------------------------- |
-| `drag` tested only on desktop                   | Rule 1        | Test on touch emulator and real device         |
-| `animate={{ repeat: Infinity }}` with no pause  | Rule 2        | Add `visibilitychange` listener                |
-| `onDragEnd` checking only offset, not velocity  | Rule 3        | Check both `info.offset` and `info.velocity`   |
-| `animate(scope, ...)` before `useEffect`        | Rule 4        | Call `animate()` only after mount              |
-| `const x = new MotionValue(0)` in render        | Rule 5        | Use `const x = useMotionValue(0)`              |
-| `transition={{ duration: 1.2 }}` inline         | Rule 6        | Use `motionTokens.duration.crawl`              |
-| `useEffect` without cleanup                     | Rule 7        | Return `removeEventListener` / `controls.stop` |
-| SVG morph between paths with different commands | Rule 8        | Normalize path commands before animating       |
+| Anti-pattern | Rule violated | Fix |
+| ---------------------------------------------- | ------- | ------------------------------------------------ |
+| `drag` tested only on desktop | Rule 1 | Test on touch emulator and real device |
+| `animate={{ repeat: Infinity }}` with no pause | Rule 2 | Add `visibilitychange` listener |
+| `onDragEnd` checking only offset, not velocity | Rule 3 | Check both `info.offset` and `info.velocity` |
+| `animate(scope, ...)` before `useEffect` | Rule 4 | Call `animate()` only after mount |
+| `const x = new MotionValue(0)` in render | Rule 5 | Use `const x = useMotionValue(0)` |
+| `transition={{ duration: 1.2 }}` inline | Rule 6 | Use `motionTokens.duration.crawl` |
+| `useEffect` without cleanup | Rule 7 | Return `removeEventListener` / `controls.stop` |
+| SVG morph between paths with different commands | Rule 8 | Normalize path commands before animating |
 
 ## Related Skills
 
