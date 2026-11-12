@@ -6,9 +6,10 @@ import { assert, it } from "@effect/vitest";
 import { globalSocialImage, socialMeta } from "../social-meta";
 import { AUTHOR_URL, GLOBAL_SOCIAL_IMAGE, PUBLISHER_URL, SITE_NAME } from "../site";
 import { SocialImage, SocialMetaInput } from "../models";
+import { LANGUAGE, tagContent } from "./fixtures";
 import type { PreferredLanguage } from "@/domain/models";
 
-const language: PreferredLanguage = "en";
+const language: PreferredLanguage = LANGUAGE;
 
 const image: SocialImage = {
   src: "https://www.remiforge.dev/images/01-a.webp",
@@ -27,9 +28,6 @@ const input: SocialMetaInput = {
 };
 
 const tagsOf = (input: SocialMetaInput) => JSON.parse(JSON.stringify(socialMeta(input))) as ReadonlyArray<Record<string, string>>;
-
-// Finds a tag by its property or name and returns its content, or undefined when absent.
-const tagContent = (tags: ReadonlyArray<Record<string, string>>, key: "property" | "name", value: string) => tags.find((tag) => tag[key] === value)?.content;
 
 it("socialMeta publishes the Open Graph core tags for a website", () => {
   const tags = tagsOf(input);

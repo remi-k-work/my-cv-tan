@@ -1,4 +1,5 @@
 // services, features, and other libraries
+import { Array, Record, pipe } from "effect";
 import { partitionExperiences } from "@/features/experience/domain/helpers";
 import { experienceSeo } from "@/features/meta/domain/seo";
 import { absoluteUrl, encodeDestination, markdownTwinUrl } from "@/features/meta/domain/urls";
@@ -60,14 +61,15 @@ import { CONTACT_PATH, DEFAULT_LANGUAGE, EDUCATION_PATH, HOME_PATH, SITE_LANGUAG
 import { STATIC_PAGES, STATIC_PAGE_PATHS } from "@/features/meta/domain/pages";
 import { PAGE_ENTRIES } from "./catalogue";
 
-const PINNABLE_LANGUAGES = SITE_LANGUAGES.filter((language) => language !== DEFAULT_LANGUAGE);
-const LANGUAGE_PINS = PINNABLE_LANGUAGES.map(
+const PINNABLE_LANGUAGES = Array.filter(SITE_LANGUAGES, (language) => language !== DEFAULT_LANGUAGE);
+const LANGUAGE_PINS = Array.map(
+  PINNABLE_LANGUAGES,
   (language) => `Append \`?${LANG_PARAM}=${language}\` to any \`.md\` URL to request ${SITE_LANGUAGE_NAMES[language]} explicitly`
 );
 
 export const AI_NOTES = [
   `Reuse is permitted for search, AI input and AI training (\`Content-Signal: ${CONTENT_SIGNAL}\`).`,
-  `Markdown responses follow the request's language preferences. ${LANGUAGE_PINS.join("; ")}; ${SITE_LANGUAGE_NAMES[DEFAULT_LANGUAGE]} is the fallback when no supported preference is present.`,
+  `Markdown responses follow the request's language preferences. ${Array.join(LANGUAGE_PINS, "; ")}; ${SITE_LANGUAGE_NAMES[DEFAULT_LANGUAGE]} is the fallback when no supported preference is present.`,
   "Every page has a machine-readable Markdown twin; fetch one linked `.md` page at a time, or the single-request full-content document for everything at once.",
   "Always cite the clean canonical HTML URL from each document's frontmatter (`canonical:`), not the `.md` URL.",
   "Structured data (JSON-LD) is embedded in every page head.",
@@ -85,8 +87,8 @@ const ABOUT_SECTION = mdTitledSection(
       mdFact("Website", SITE_URL),
       mdFact("Role", `${JOB_TITLE} (self-taught)`),
       mdFact("Based in", `${HOME_LOCATION} (${HOME_COUNTRY})`),
-      mdFact("Site languages", Object.values(SITE_LANGUAGE_NAMES).join(" and ")),
-      mdFact("Focus", KNOWS_ABOUT.join(", ")),
+      mdFact("Site languages", pipe(SITE_LANGUAGE_NAMES, Record.values, Array.join(" and "))),
+      mdFact("Focus", Array.join(KNOWS_ABOUT, ", ")),
     ]),
   ])
 );
@@ -96,12 +98,15 @@ const notesSection = (additional: ReadonlyArray<string>) => mdTitledSection("Not
 const INDEX_NOTES_SECTION = notesSection([SINGLE_REQUEST_NOTE]);
 const COMPANION_NOTES_SECTION = notesSection([]);
 
-export const DISCOVERY_LINES: ReadonlyArray<string> = [
-  { name: LLMS_TXT_INDEX.name, summary: "this index", url: LLMS_TXT_INDEX.url },
-  { name: LLMS_FULL_TXT_INDEX.name, summary: "the complete site in one document", url: LLMS_FULL_TXT_INDEX.url },
-  { name: "robots.txt", summary: "crawl directives", url: absoluteUrl(ROBOTS_TXT_HREF) },
-  { name: "sitemap.xml", summary: "sitemap", url: absoluteUrl(SITEMAP_HREF) },
-].map(({ name, summary, url }) => `${mdLink(name, url)}: ${summary}.`);
+export const DISCOVERY_LINES: ReadonlyArray<string> = Array.map(
+  [
+    { name: LLMS_TXT_INDEX.name, summary: "this index", url: LLMS_TXT_INDEX.url },
+    { name: LLMS_FULL_TXT_INDEX.name, summary: "the complete site in one document", url: LLMS_FULL_TXT_INDEX.url },
+    { name: "robots.txt", summary: "crawl directives", url: absoluteUrl(ROBOTS_TXT_HREF) },
+    { name: "sitemap.xml", summary: "sitemap", url: absoluteUrl(SITEMAP_HREF) },
+  ],
+  ({ name, summary, url }) => `${mdLink(name, url)}: ${summary}.`
+);
 
 const DISCOVERY_SECTION = mdTitledSection("Discovery", mdBulletList(DISCOVERY_LINES));
 export const SITE_OPENING: ReadonlyArray<string> = [mdHeading(1, SITE_NAME), mdQuote(HOME_TITLE), escapeMd(PERSON_DESCRIPTION)];
@@ -110,9 +115,9 @@ const entryTwinUrl = (entry: IndexEntry) => markdownTwinUrl(entry.mdHref, SOURCE
 const PAGES_SECTION = mdTitledSection(
   "Pages",
   mdBulletList([
-    ...PAGE_ENTRIES.map(({ name, canonical, mdHref, summary }) =>
-      mdIndexEntry(name, canonical, markdownTwinUrl(mdHref, SOURCE_CONTEXT.preferredLanguage), summary)
-    ),
+    // The twin URL comes from the same helper the full document's table of contents and its
+    // attribution block use, so the three spellings of "where this page's twin lives" cannot drift
+    ...Array.map(PAGE_ENTRIES, (entry) => mdIndexEntry(entry.name, entry.canonical, entryTwinUrl(entry), entry.summary)),
     `${mdLink("Full site content", LLMS_FULL_TXT_INDEX.url)}: every page above in one document, for single-request ingestion.`,
   ])
 );
@@ -123,7 +128,8 @@ const PROFILES_SECTION = mdTitledSection("Profiles", mdBulletList(mdProfileLinks
 const LANGUAGE_VARIANTS_SECTION = mdTitledSection(
   "Language Variants",
   mdBulletList(
-    PINNABLE_LANGUAGES.map(
+    Array.map(
+      PINNABLE_LANGUAGES,
       (language) =>
         `${SITE_LANGUAGE_NAMES[language]}: every page above is also available at its twin URL with \`?${LANG_PARAM}=${language}\` appended (e.g. ${markdownTwinUrl(STATIC_PAGES[HOME_PATH].mdHref, language)}). ${SITE_LANGUAGE_NAMES[DEFAULT_LANGUAGE]} is the source language.`
     )
@@ -138,8 +144,8 @@ const SOURCE_PAGE_DOCUMENTS: Record<PagePath, (content: SourceContent) => Markdo
 };
 
 const sourceDocuments = (content: SourceContent): ReadonlyArray<SourceDocument> => [
-  ...STATIC_PAGE_PATHS.map((pagePath) => ({ entry: pageEntry(pagePath), twin: SOURCE_PAGE_DOCUMENTS[pagePath](content) })),
-  ...content.experienceList.map((experience) => {
+  ...Array.map(STATIC_PAGE_PATHS, (pagePath) => ({ entry: pageEntry(pagePath), twin: SOURCE_PAGE_DOCUMENTS[pagePath](content) })),
+  ...Array.map(content.experienceList, (experience) => {
     const seo = experienceSeo({ experience, preferredLanguage: DEFAULT_LANGUAGE });
     return { entry: experienceEntry(seo), twin: buildExperienceMd({ seo, translate: SOURCE_CONTEXT.translate }) };
   }),
@@ -171,9 +177,9 @@ export const buildLlmsFullTxt = (content: SourceContent) => {
     ...SITE_OPENING,
     `Complete Markdown content of every page, concatenated for single-request ingestion. Each section begins with its canonical HTML URL after "Source:", its Markdown twin after "Markdown:", and its identity facts as YAML, then includes the twin content with headings demoted to preserve one document hierarchy. Cite the canonical HTML URL, not this file.`,
     ABOUT_SECTION,
-    mdTitledSection("Table of Contents", mdBulletList(documents.map(({ entry }) => mdIndexEntry(entry.name, entry.canonical, entryTwinUrl(entry))))),
+    mdTitledSection("Table of Contents", mdBulletList(Array.map(documents, ({ entry }) => mdIndexEntry(entry.name, entry.canonical, entryTwinUrl(entry))))),
     DISCOVERY_SECTION,
-    ...documents.map(({ entry, twin }) =>
+    ...Array.map(documents, ({ entry, twin }) =>
       mdBody([
         mdHeading(2, entry.name),
         `Source: ${escapeMdInline(entry.canonical)}`,

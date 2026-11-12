@@ -8,10 +8,10 @@ const sharedMemoMap = Layer.makeMemoMapUnsafe();
 
 const LoggerLayer = Logger.layer([Logger.consolePretty()]);
 
-// HTML loaders use Data directly; machine-readable documents read the required-dataset adapter.
-// Markdown resolves Datasets when its layer is built, so it must be provided after the base layers
-// rather than merged beside them; the memo map keeps Data and Datasets singletons across the merge
-const BaseLayer = Layer.mergeAll(LoggerLayer, Data.layer, Datasets.layer);
+// The services the runtime composes. Datasets resolves Data when its own layer is built and
+// publishes it alongside itself, so listing it here is enough: Markdown requires Datasets, the
+// HTML loaders require Data, and both resolve to the instances that one layer built
+const BaseLayer = Layer.mergeAll(LoggerLayer, Datasets.layer);
 const MainLayer = Markdown.layer.pipe(Layer.provideMerge(BaseLayer));
 
 export const RuntimeServer = ManagedRuntime.make(MainLayer, { memoMap: sharedMemoMap });

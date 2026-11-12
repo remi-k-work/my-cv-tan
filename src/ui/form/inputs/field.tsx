@@ -3,6 +3,7 @@ import { useId } from "react";
 
 // services, features, and other libraries
 import { Option } from "effect";
+import { FormReact } from "@lucas-barake/effect-form-react";
 
 // components
 import { ErrorLine } from "@/ui/form/error-line";
@@ -15,7 +16,9 @@ import type { ChangeEvent, ElementType } from "react";
 // The caller's props type is carried through instead of being cast through an untyped
 // record here, so every input keeps its own prop types end to end
 interface LabeledFieldProps<P> {
-  field: { path: string; value: string; onChange: (value: string) => void; onBlur: () => void; error: Option.Option<string> };
+  // The field binding comes from the form library itself rather than a local restatement of it,
+  // so a field state the library adds is never silently missing here
+  field: FormReact.FieldState<string>;
   props: P & { readonly label: string };
   element: ElementType;
   fieldClassName?: string;
@@ -39,17 +42,20 @@ export function LabeledField<P extends object>({ field, props, element: Element,
         {label}
       </label>
       <Element
+        // The caller's props come first: everything below is the field binding, so a stray
+        // `value` or `onChange` in the caller's props can never take the input out of the form
+        {...rest}
         className={fieldClassName}
         id={inputId}
         name={path}
         value={value}
-        onChange={(ev: ChangeEvent<HTMLInputElement>) => onChange(ev.target.value)}
+        // One component renders both an input and a textarea, so the event is typed for either
+        onChange={(ev: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => onChange(ev.target.value)}
         onBlur={onBlur}
         aria-invalid={hasError || undefined}
         aria-describedby={hasError ? errorId : undefined}
-        {...rest}
       />
-      <ErrorLine id={errorId} message={Option.getOrUndefined(error)} />
+      <ErrorLine id={errorId} error={error} />
     </>
   );
 }

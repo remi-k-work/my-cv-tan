@@ -43,8 +43,13 @@ export const routeHead = <TData>({ loaderData, matches, matchStatus, fallbackPat
 
   const preferredLanguage = headLanguage(matches);
 
-  if (matchStatus !== "success" || loaderData == null || Array.some(matches, ({ status }) => status === "error"))
+  // A failed or still-pending loader leaves no payload; TanStack hands back either null or
+  // undefined for it, so the nullish projection covers both and the builder only ever reads a
+  // payload the match actually produced
+  const payload = Option.fromNullishOr(loaderData);
+
+  if (matchStatus !== "success" || Option.isNone(payload) || Array.some(matches, ({ status }) => status === "error"))
     return fallbackHead(fallbackPath, preferredLanguage);
 
-  return build(loaderData, preferredLanguage);
+  return build(payload.value, preferredLanguage);
 };

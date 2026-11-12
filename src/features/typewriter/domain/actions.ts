@@ -6,7 +6,7 @@ import { charCount, randomLetter } from "./helpers";
 import type { TypewriterOp } from "./models";
 
 // constants
-import { TYPO_PROBABILITY } from "./constants";
+import { TYPO_PROBABILITY, TYPO_SKIP_SHARE, TYPO_SWAP_SHARE } from "./constants";
 import { DeleteChars, Pause, TypeChars } from "./models";
 
 // Simulates a human typo for a single word; an adjacent-character swap, a skipped character, or an inserted random lowercase letter
@@ -16,9 +16,13 @@ export const planTypo = Effect.fnUntraced(function* (word: string): Effect.fn.Re
   let i = 0;
 
   while (i < chars.length) {
+    // The character under the cursor, read once: every branch below either keeps it, swaps it, or
+    // drops it, so naming it keeps the stride arithmetic from repeating the subscript
+    const char = chars[i];
+
     // Most characters pass through untouched
     if ((yield* Random.next) >= TYPO_PROBABILITY) {
-      result.push(chars[i]);
+      result.push(char);
       i += 1;
       continue;
     }
@@ -26,20 +30,20 @@ export const planTypo = Effect.fnUntraced(function* (word: string): Effect.fn.Re
     const roll = yield* Random.next;
 
     // Swap with the adjacent character, consuming both
-    if (roll < 0.33 && i < chars.length - 1) {
-      result.push(chars[i + 1], chars[i]);
+    if (roll < TYPO_SWAP_SHARE && i < chars.length - 1) {
+      result.push(chars[i + 1], char);
       i += 2;
       continue;
     }
 
     // Skip the character
-    if (roll < 0.66) {
+    if (roll < TYPO_SKIP_SHARE) {
       i += 1;
       continue;
     }
 
     // Insert a random lowercase letter after the character
-    result.push(chars[i], yield* randomLetter);
+    result.push(char, yield* randomLetter);
     i += 1;
   }
 

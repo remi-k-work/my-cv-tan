@@ -13,11 +13,13 @@ const linkParam = (key: string, value: string | undefined) => Option.fromNullish
 
 // Serializes a link tag in RFC 8288 parameter order: rel, type, title, hreflang.
 const linkHeader = ({ href, rel, type, title, hreflang }: LinkTag) => {
-  const parts = Array.getSomes([Option.some(`rel="${rel}"`), linkParam("type", type), linkParam("title", title), linkParam("hreflang", hreflang)]);
-  return `<${href}>; ${parts.join("; ")}`;
+  // `rel` is the one required parameter, so it is written directly instead of being lifted into an
+  // Option only to be taken straight back out of `getSomes`
+  const parameters = [`rel="${rel}"`, ...Array.getSomes([linkParam("type", type), linkParam("title", title), linkParam("hreflang", hreflang)])];
+  return `<${href}>; ${Array.join(parameters, "; ")}`;
 };
 
-export const joinLinkHeader = (links: ReadonlyArray<LinkTag>) => links.map(linkHeader).join(", ");
+export const joinLinkHeader = (links: ReadonlyArray<LinkTag>) => Array.join(Array.map(links, linkHeader), ", ");
 export const canonicalLink = (href: string): LinkTag => ({ rel: "canonical", href });
 export const authorLink = (href: string): LinkTag => ({ rel: "author", href });
 
@@ -32,6 +34,6 @@ export const markdownAlternateLink = (mdPath: string, preferredLanguage: Preferr
   markdownLink(markdownTwinUrl(mdPath, preferredLanguage));
 
 export const languageVariantLinks = (markdownUrl: string): ReadonlyArray<LinkTag> => [
-  ...SITE_LANGUAGES.map((language) => markdownLink(withLanguageParam(markdownUrl, language), language)),
+  ...Array.map(SITE_LANGUAGES, (language) => markdownLink(withLanguageParam(markdownUrl, language), language)),
   markdownLink(withLanguageParam(markdownUrl, DEFAULT_LANGUAGE), "x-default"),
 ];

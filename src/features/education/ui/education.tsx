@@ -44,8 +44,8 @@ export function Education({ educationList }: EducationProps) {
   return (
     <PageSection title={gt("My Education")}>
       <dl>
-        {educationList.map((entry, index) => (
-          <EducationEntry key={`${index}-${entry.name}`} {...entry} />
+        {educationList.map(({ name, year, location, info }) => (
+          <EducationEntry key={name} name={name} year={year} location={location} info={info} />
         ))}
       </dl>
     </PageSection>

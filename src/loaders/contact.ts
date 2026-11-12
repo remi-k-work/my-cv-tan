@@ -5,27 +5,21 @@ import { createIsomorphicFn } from "@tanstack/react-start";
 import { Effect } from "effect";
 import { clientLoader } from "./shared";
 import { serverLoader } from "./shared.server";
-import { requireData } from "@/features/data/domain/required";
+import { requireDataFrom } from "@/features/data/domain/required";
 
 // types
 import type { PageData } from "./page-data";
 
-// Fetch both title sets concurrently, then require them
+// Fetch both title sets and require them in one step: `requireDataFrom` flattens the maybe-data
+// effect into the required one, so a concurrent read either produces the titles or fails by name
 const load = <E>(source: PageData<E>) =>
-  Effect.gen(function* () {
-    const { randomPageTitles, stablePageTitles } = yield* Effect.all(
-      {
-        randomPageTitles: source.randomPageTitles,
-        stablePageTitles: source.stablePageTitles,
-      },
-      { concurrency: "unbounded" }
-    );
-
-    return {
-      randomPageTitles: yield* requireData(randomPageTitles, "random page titles"),
-      stablePageTitles: yield* requireData(stablePageTitles, "stable page titles"),
-    } as const;
-  });
+  Effect.all(
+    {
+      randomPageTitles: requireDataFrom(source.randomPageTitles, "random page titles"),
+      stablePageTitles: requireDataFrom(source.stablePageTitles, "stable page titles"),
+    },
+    { concurrency: "unbounded" }
+  );
 
 export const loaderContact = createIsomorphicFn()
   .server(() => serverLoader(load))

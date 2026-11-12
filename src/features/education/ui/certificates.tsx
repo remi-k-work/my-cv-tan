@@ -27,8 +27,9 @@ import { CERTIFICATES_HREF } from "@/features/meta/domain/discovery";
 const CERTIFICATES = [
   { src: artcom, width: 1222, height: 870, alt: "ARTCOM" },
   { src: alcc, width: 1222, height: 870, alt: "ALCC" },
-  { src: prattOrig, width: 1222, height: 870, alt: "Pratt" },
-  { src: prattTrans, width: 1694, height: 870, alt: "Pratt" },
+  // The two Pratt sheets are the same award in two spellings, so each names its own document
+  { src: prattOrig, width: 1222, height: 870, alt: "Pratt — original certificate" },
+  { src: prattTrans, width: 1694, height: 870, alt: "Pratt — transcript" },
 ] as const satisfies ReadonlyArray<CertificateSheetProps>;
 
 // One certificate sheet: rises in on scroll, then leans away from the pointer with the same gentle physics as the

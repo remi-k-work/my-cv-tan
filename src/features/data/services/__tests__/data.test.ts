@@ -1,7 +1,7 @@
 // services, features, and other libraries
-import { assert, it } from "@effect/vitest";
+import { assert, describe, it } from "@effect/vitest";
 import { Effect, Option } from "effect";
-import { Data } from "../data";
+import { Data, localizedExperienceAsset } from "../data";
 import { RequiredDataError } from "@/features/data/domain/required";
 import { applyHtmlDataUnavailableResponse, markHtmlDataUnavailable } from "@/features/data/http/html-response";
 import { haveSameExperienceSlugs } from "@/features/experience/domain/helpers";
@@ -51,6 +51,35 @@ it.effect("randomPageTitles selects from the requested locale", () =>
     );
   }).pipe(Effect.provide(Data.layer))
 );
+
+describe("localizedExperienceAsset", () => {
+  // Two bundles that name the same unique routes in a different display order
+  const english = Option.some([{ slug: "alpha" }, { slug: "beta" }]);
+  const polish = Option.some([{ slug: "beta" }, { slug: "alpha" }]);
+  const unpublished: Record<"en" | "pl", Option.Option<ReadonlyArray<{ readonly slug: string }>>> = { en: Option.none(), pl: Option.none() };
+
+  it("publishes both locales when each bundle decodes to the same unique canonical routes", () => {
+    assert.deepStrictEqual(localizedExperienceAsset(english, polish), { en: english, pl: polish });
+  });
+
+  it("drops both locales when the two bundles decode to different canonical routes", () => {
+    // One language would 404 on a route the other publishes, and the canonical URLs, the sitemap
+    // and the twins would each list a different route set, so neither locale is served
+    assert.deepStrictEqual(localizedExperienceAsset(english, Option.some([{ slug: "alpha" }])), unpublished);
+  });
+
+  it("drops both locales when either bundle names the same canonical route twice", () => {
+    // A repeated slug is an ambiguous route: the shared path resolves to two different entries
+    assert.deepStrictEqual(localizedExperienceAsset(english, Option.some([{ slug: "alpha" }, { slug: "alpha" }])), unpublished);
+  });
+
+  it("keeps the locale that decoded when the other bundle is missing", () => {
+    // The reader of the missing locale never addresses the published one's routes, so partial data
+    // still serves the locale that has it rather than failing every language
+    assert.deepStrictEqual(localizedExperienceAsset(english, Option.none()), { en: english, pl: Option.none() });
+    assert.deepStrictEqual(localizedExperienceAsset(Option.none(), polish), { en: Option.none(), pl: polish });
+  });
+});
 
 it("required HTML data failures preserve the rendered error page and return a non-cacheable 503", async () => {
   const request = new Request("https://www.remiforge.dev/education");

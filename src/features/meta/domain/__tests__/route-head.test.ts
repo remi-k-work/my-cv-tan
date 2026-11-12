@@ -3,14 +3,8 @@ import { headLanguage, routeHead } from "../route-head";
 import { rootHead } from "../root-head";
 import { homeHead } from "../page-head";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
-import type { PageTitles } from "@/domain/models";
+import { stablePageTitles } from "./fixtures";
 import type { PageHead } from "../models";
-
-const stablePageTitles: PageTitles = {
-  "/": { eyebrow: "Home", heading: "Stable home title", intro: "Stable home description." },
-  "/education": { eyebrow: "Education", heading: "Stable education title", intro: "Stable education description." },
-  "/contact": { eyebrow: "Contact", heading: "Stable contact title", intro: "Stable contact description." },
-};
 
 // The loader payload shapes headLanguage sees: a valid locale, an unsupported
 // one, and a missing match entry (404 / SSR shell renders before the root loader resolves)

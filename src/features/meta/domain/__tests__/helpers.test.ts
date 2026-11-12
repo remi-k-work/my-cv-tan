@@ -3,7 +3,7 @@
 // so its fields must be correct and consistent on their own.
 
 import { assert, it } from "@effect/vitest";
-import { Option, Schema, pipe } from "effect";
+import { Option, pipe } from "effect";
 import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain/constants";
 import { experienceScreenshot, experienceSeo } from "../seo";
 import { experienceHead } from "../page-head";
@@ -13,35 +13,7 @@ import { jsonLdGraph } from "../jsonld";
 import { META_DESCRIPTION_LENGTH, PERSON_DESCRIPTION, SITE_DESCRIPTION, SITE_NODES } from "../site";
 import { CONTENT_SIGNAL } from "../discovery";
 import { NOINDEX_FOLLOW } from "@/domain/http";
-import type { Experience } from "@/features/experience/domain/models";
-
-// Minimal JSON-LD graph reader for graph-shape assertions.
-const JsonLdNode = Schema.Record(Schema.String, Schema.Unknown);
-const decodeGraph = Schema.decodeUnknownOption(Schema.fromJsonString(Schema.Struct({ "@graph": Schema.Array(JsonLdNode) })));
-
-const graphOf = (children: string | undefined): ReadonlyArray<Record<string, unknown>> =>
-  pipe(
-    decodeGraph(children ?? "{}"),
-    Option.map((document) => document["@graph"]),
-    Option.getOrElse<ReadonlyArray<Record<string, unknown>>>(() => [])
-  );
-
-const nodeOf = (graph: ReadonlyArray<Record<string, unknown>>, type: string, idFragment?: string) =>
-  graph.find((node) => node["@type"] === type && (idFragment === undefined || String(node["@id"]).endsWith(idFragment)));
-
-const decodeString = Schema.decodeUnknownOption(Schema.String);
-
-const sampleExperience: Experience = {
-  type: "p",
-  slug: "sample-role",
-  year: "Mar 2026",
-  role: "Full-Stack Developer",
-  company: "Sample Co",
-  txt: "Built things with care.",
-  gitHubLink: "https://github.com/example/repo",
-  imageName: "01",
-  skillsUsed: ["TypeScript", "React"],
-};
+import { graphOf, nodeOf, sampleExperience, textOf } from "./fixtures";
 
 it("derives canonical, path, markdownPath, headline and description from one experience", () => {
   const seo = experienceSeo({ experience: sampleExperience, preferredLanguage: "en" });
@@ -220,8 +192,8 @@ it("JSON-LD children escape < so content can never break out of the script tag",
   assert.include(graph?.children, "\\u003C");
   // The escape is transparent: parsers still see the original text
   const description = pipe(
-    decodeGraph(graph?.children ?? "{}"),
-    Option.flatMap((document) => decodeString(document["@graph"].find((node) => node["@type"] === "WebPage")?.description)),
+    Option.fromNullishOr(nodeOf(graphOf(graph?.children), "WebPage")),
+    Option.flatMap((node) => textOf(node.description)),
     Option.getOrThrow
   );
   assert.include(description, "</script>");

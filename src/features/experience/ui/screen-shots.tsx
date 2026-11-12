@@ -2,7 +2,7 @@
 import { Option } from "effect";
 import { cn } from "@/lib/utils";
 import { useGT } from "gt-tanstack-start";
-import { httpUrlOption } from "@/features/meta/domain/urls";
+import { validatedHref } from "@/features/meta/domain/urls";
 import { experienceImagePath } from "@/features/experience/domain/helpers";
 
 // types
@@ -57,18 +57,23 @@ export function ScreenShots({ experience: { role, company, imageName, liveLink, 
   // The schema accepts any non-empty string, so the panel link applies the same http(s) guard the
   // Markdown twin, the JSON-LD graph and the HTML chips apply: a destination the site refuses to
   // publish renders nowhere rather than as a broken or hostile href.
-  const video = Option.flatMap(Option.fromNullishOr(videoLink), httpUrlOption);
+  const video = validatedHref(videoLink);
   // The video wins over the live site, but only when it is itself publishable: a dropped video
   // still leaves the live destination, so a project with an unparseable video stays linked.
-  const href = Option.orElse(video, () => Option.flatMap(Option.fromNullishOr(liveLink), httpUrlOption));
+  const href = Option.orElse(video, () => validatedHref(liveLink));
   // Ordered project-first so the thumbnail link reads differently from the matching LinkChip in the same slide
-  const linkLabel = `${role}, ${company} — ${Option.isSome(video) ? gt("Watch Video") : gt("Live Link")}`;
+  const linkLabel = `${role}, ${company} — ${Option.match(video, {
+    onNone: () => gt("Live Link"),
+    onSome: () => gt("Watch Video"),
+  })}`;
 
-  return Option.isSome(href) ? (
-    <a className="group" href={href.value} target="_blank" rel="noopener noreferrer" aria-label={linkLabel}>
-      {shots}
-    </a>
-  ) : (
-    shots
-  );
+  // The panel is the link when a destination survived validation, and the bare shots when none did
+  return Option.match(href, {
+    onNone: () => shots,
+    onSome: (url) => (
+      <a className="group" href={url} target="_blank" rel="noopener noreferrer" aria-label={linkLabel}>
+        {shots}
+      </a>
+    ),
+  });
 }

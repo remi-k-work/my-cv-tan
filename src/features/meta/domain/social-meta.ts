@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Array, Option, pipe } from "effect";
+import { Array, Option } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
 
 // types
@@ -21,16 +21,18 @@ export const globalSocialImage = (preferredLanguage: PreferredLanguage): SocialI
 
 const alternateLocales = (preferredLanguage: PreferredLanguage) => Array.filter(SITE_LANGUAGES, (language) => language !== preferredLanguage);
 
+// The section is the only optional article attribution, so only it is lifted into an Option:
+// author and publisher are always published once the type is article, and wrapping them in
+// `Option.some` just to take them straight back out of `getSomes` says nothing the type does not
+const articleSectionTag = (articleSection: "employment" | "portfolio" | undefined): ReadonlyArray<MetaTag> =>
+  Option.match(Option.fromNullishOr(articleSection), {
+    onNone: () => [],
+    onSome: (section): ReadonlyArray<MetaTag> => [{ property: "article:section", content: section }],
+  });
+
 const articleMetaTags = (ogType: "website" | "article", articleSection?: "employment" | "portfolio"): ReadonlyArray<MetaTag> =>
   ogType === "article"
-    ? Array.getSomes([
-        Option.some<MetaTag>({ property: "article:author", content: AUTHOR_URL }),
-        Option.some<MetaTag>({ property: "article:publisher", content: PUBLISHER_URL }),
-        pipe(
-          Option.fromNullishOr(articleSection),
-          Option.map((section): MetaTag => ({ property: "article:section", content: section }))
-        ),
-      ])
+    ? [{ property: "article:author", content: AUTHOR_URL }, { property: "article:publisher", content: PUBLISHER_URL }, ...articleSectionTag(articleSection)]
     : [];
 
 export const socialMeta = ({

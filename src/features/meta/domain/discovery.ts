@@ -3,6 +3,7 @@
 // `Link:` header projections built from them.
 
 // services, features, and other libraries
+import { Array } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
 import { joinLinkHeader } from "./link-tags";
 
@@ -31,7 +32,7 @@ export const DOWNLOADABLE_DOCUMENTS = [
   { label: "Certificates", href: CERTIFICATES_HREF },
 ] as const;
 
-export const DOWNLOADABLE_DOCUMENT_PATHS = DOWNLOADABLE_DOCUMENTS.map(({ href }) => href);
+export const DOWNLOADABLE_DOCUMENT_PATHS = Array.map(DOWNLOADABLE_DOCUMENTS, ({ href }) => href);
 
 export const cvPdfHref = (preferredLanguage: PreferredLanguage) => matchPreferredLanguage(preferredLanguage, CV_EN_HREF, CV_PL_HREF);
 
@@ -43,7 +44,12 @@ export const AI_INDEXES = [LLMS_TXT_INDEX, LLMS_FULL_TXT_INDEX] as const;
 export const SITEMAP_LINK = { rel: "sitemap", href: `${SITE_URL}${SITEMAP_HREF}` } as const;
 export const LLMS_DISCOVERY_LINK: LinkTag = { rel: "llms", href: LLMS_TXT_INDEX.url };
 
-export const AI_INDEX_LINKS: ReadonlyArray<LinkTag> = AI_INDEXES.map(({ name, url }) => ({ rel: "alternate", type: "text/plain", title: name, href: url }));
+export const AI_INDEX_LINKS: ReadonlyArray<LinkTag> = Array.map(AI_INDEXES, ({ name, url }) => ({
+  rel: "alternate",
+  type: "text/plain",
+  title: name,
+  href: url,
+}));
 export const AI_INDEX_LINK_HEADER = joinLinkHeader(AI_INDEX_LINKS);
 
-export const ME_LINKS: ReadonlyArray<LinkTag> = SOCIAL_LINKS.map((href) => ({ rel: "me", href }));
+export const ME_LINKS: ReadonlyArray<LinkTag> = Array.map(SOCIAL_LINKS, (href) => ({ rel: "me", href }));

@@ -1,3 +1,10 @@
+// The validation limits the contact-form field schemas enforce. The HTML inputs allow one
+// character past each: the browser then accepts the over-limit keystroke, so the field's own
+// validation message can fire, instead of the input silently refusing it
+export const NAME_MAX_LENGTH = 25;
+export const SUBJECT_MAX_LENGTH = 40;
+export const MESSAGE_MAX_LENGTH = 2048;
+
 // Shared feedback messages for contact-form submission, used both by the inline
 // status line (SubmitStatus) and the toast notification (useSubmitToast); keeping
 // them in one place prevents the two UI layers from drifting out of sync

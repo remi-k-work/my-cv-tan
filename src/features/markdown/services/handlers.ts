@@ -13,22 +13,19 @@ const markdownRoute = (select: (markdown: Markdown["Service"]) => (request: Requ
 // Preserves cookie state on language negotiation unless an explicit ?lang= pin is present in the URL
 const keepsNegotiatedLocale = (request: Request) => Option.isNone(parseLangParam(request.url));
 
-export const homeHandler = documentRoute(
-  markdownRoute((markdown) => markdown.page(HOME_PATH)),
-  keepsNegotiatedLocale
-);
-export const educationHandler = documentRoute(
-  markdownRoute((markdown) => markdown.page(EDUCATION_PATH)),
-  keepsNegotiatedLocale
-);
-export const contactHandler = documentRoute(
-  markdownRoute((markdown) => markdown.page(CONTACT_PATH)),
-  keepsNegotiatedLocale
-);
-export const experienceHandler = documentRoute(
-  markdownRoute((markdown) => markdown.experience),
-  keepsNegotiatedLocale
-);
+// The twins are negotiated documents: their shared-cacheable variants are only safe to pin to a
+// visitor when the language came from the visitor's own negotiation, so their routes keep the
+// cookie state the negotiation recorded
+const negotiatedRoute = (select: (markdown: Markdown["Service"]) => (request: Request) => Effect.Effect<Response>) =>
+  documentRoute(markdownRoute(select), keepsNegotiatedLocale);
 
-export const llmsTxtHandler = documentRoute(markdownRoute((markdown) => markdown.siteIndex));
-export const llmsFullTxtHandler = documentRoute(markdownRoute((markdown) => markdown.siteIndexFull));
+// The indexes answer one document regardless of who asked, so nothing about the visitor is pinned
+const statelessRoute = (select: (markdown: Markdown["Service"]) => (request: Request) => Effect.Effect<Response>) => documentRoute(markdownRoute(select));
+
+export const homeHandler = negotiatedRoute((markdown) => markdown.page(HOME_PATH));
+export const educationHandler = negotiatedRoute((markdown) => markdown.page(EDUCATION_PATH));
+export const contactHandler = negotiatedRoute((markdown) => markdown.page(CONTACT_PATH));
+export const experienceHandler = negotiatedRoute((markdown) => markdown.experience);
+
+export const llmsTxtHandler = statelessRoute((markdown) => markdown.siteIndex);
+export const llmsFullTxtHandler = statelessRoute((markdown) => markdown.siteIndexFull);

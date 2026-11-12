@@ -3,34 +3,21 @@
 // with its own nodes and the collection subgraphs.
 
 import { assert, it } from "@effect/vitest";
-import { Option, Schema, pipe } from "effect";
+import { Option } from "effect";
 import { educationJsonLd, contactJsonLd, experienceCollections, experienceJsonLd, homeJsonLd, schoolSubgraph } from "../page-graphs";
 import { EXPERIENCE_LIST_ID, HOME_URL, PERSON_ID, PORTFOLIO_LIST_ID, PROFILE_ID, WEBSITE_ID } from "../site";
 import { jsonLdGraph } from "../jsonld";
+import { LANGUAGE, graphOf, nodeOf, sampleEducation, sampleExperience } from "./fixtures";
 import type { PreferredLanguage } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
-import type { Experience, ExperienceList } from "@/features/experience/domain/models";
+import type { ExperienceList } from "@/features/experience/domain/models";
 
-const language: PreferredLanguage = "en";
+const language: PreferredLanguage = LANGUAGE;
 
 const employment: ExperienceList = [
   { type: "e", slug: "job-1", year: "2024", role: "Dev", company: "Co", txt: "Work.", skillsUsed: ["TypeScript"], imageName: "" },
 ];
 const projects: ExperienceList = [{ type: "p", slug: "proj-1", year: "2025", role: "Art", company: "Co", txt: "Play.", skillsUsed: ["React"], imageName: "" }];
-
-const sampleExperience: Experience = {
-  type: "p",
-  slug: "sample-role",
-  year: "Mar 2026",
-  role: "Full-Stack Developer",
-  company: "Sample Co",
-  txt: "Built things with care.",
-  gitHubLink: "https://github.com/example/repo",
-  imageName: "01",
-  skillsUsed: ["TypeScript", "React"],
-};
-
-const sampleEducation: EducationList = [{ name: "Pratt Institute", year: "• 2002 — 2004 •", location: "New York, US", info: "Interactive Media." }];
 
 const findByType = <T extends Record<string, unknown>>(nodes: ReadonlyArray<T>, type: string, idFragment?: string) =>
   nodes.find((node) => node["@type"] === type && (idFragment === undefined || String(node["@id"]).endsWith(idFragment))) as T | undefined;
@@ -280,21 +267,6 @@ it("schoolSubgraph returns nothing for an empty list", () => {
 // Four page graphs lead with exactly this pair, so the @id the breadcrumb hangs from and the
 // isPartOf edge are decided in one place. These tests pin the invariant the four of them rely on:
 // the page node, its trail and the site entity they both reference stay one addressable graph.
-
-// Minimal reader, mirroring the one in helpers.test.ts: a node is an open record because the
-// assertions probe arbitrary fields, and a payload that fails to decode reads as an empty graph so
-// the assertions below fail loudly instead of quietly reading `undefined` off a cast.
-const JsonLdNode = Schema.Record(Schema.String, Schema.Unknown);
-const decodeGraph = Schema.decodeUnknownOption(Schema.fromJsonString(Schema.Struct({ "@graph": Schema.Array(JsonLdNode) })));
-
-const graphOf = (children: string | undefined) =>
-  pipe(
-    decodeGraph(children ?? "{}"),
-    Option.map((document) => document["@graph"] as ReadonlyArray<Record<string, unknown>>),
-    Option.getOrElse<ReadonlyArray<Record<string, unknown>>>(() => [])
-  );
-
-const nodeOf = (graph: ReadonlyArray<Record<string, unknown>>, type: string) => graph.find((node) => node["@type"] === type);
 
 const graph = educationJsonLd({
   pageName: "Education",

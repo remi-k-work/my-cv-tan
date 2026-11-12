@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Option } from "effect";
+import { Array, Option, pipe } from "effect";
 import { excerpt, experienceHeadline, isEmployment, partitionExperiences } from "@/features/experience/domain/helpers";
 import { matchPreferredLanguage } from "@/domain/helpers";
 import { absoluteUrl, experiencePath, validatedHref } from "./urls";
@@ -76,7 +76,7 @@ const experienceCollection = ({
       id,
       name,
       preferredLanguage,
-      parts: experiences.map((experience) => {
+      parts: Array.map(experiences, (experience) => {
         const url = absoluteUrl(experiencePath(experience.slug));
         return { "@type": "WebPage", "@id": url, url, name: experienceHeadline(experience, preferredLanguage) };
       }),
@@ -102,7 +102,7 @@ export const experienceCollections = (employment: ExperienceList, projects: Expe
 export const schoolSubgraph = (url: string, educationList: EducationList): JsonLdNodes => {
   if (educationList.length === 0) return [];
 
-  const schoolNodes = educationList.map(({ name, info, location }, index) => ({
+  const schoolNodes = Array.map(educationList, ({ name, info, location }, index) => ({
     "@type": "EducationalOrganization",
     "@id": `${url}#school-${index + 1}`,
     name,
@@ -111,7 +111,7 @@ export const schoolSubgraph = (url: string, educationList: EducationList): JsonL
     alumni: { "@id": PERSON_ID },
   }));
 
-  return [...schoolNodes, personEdge({ alumniOf: schoolNodes.map(({ "@id": id }) => ({ "@id": id })) })];
+  return [...schoolNodes, personEdge({ alumniOf: Array.map(schoolNodes, ({ "@id": id }) => ({ "@id": id })) })];
 };
 
 export const educationJsonLd = ({
@@ -169,8 +169,14 @@ export const experienceJsonLd = ({ experience, preferredLanguage, path, headline
   const itemId = `${url}#${employment ? "organization-role" : "project"}`;
   const articleId = `${url}#article`;
 
-  const image = Option.getOrUndefined(Option.map(screenshot, ({ src, width, height }) => imageObject(src, width, height)));
-  const repository = Option.getOrUndefined(validatedHref(gitHubLink));
+  // Both optional projections stay Options until the node inputs collapse them, and read as one
+  // pipe rather than a nested pair of calls
+  const image = pipe(
+    screenshot,
+    Option.map(({ src, width, height }) => imageObject(src, width, height)),
+    Option.getOrUndefined
+  );
+  const repository = pipe(gitHubLink, validatedHref, Option.getOrUndefined);
 
   const item = experienceItemNode({ employment, id: itemId, url, role, description, preferredLanguage, keywords: skillsUsed, image, repository });
 

@@ -6,13 +6,7 @@ import { assert, it } from "@effect/vitest";
 import { staticPageCopy } from "../pages";
 import { STATIC_PAGES, STATIC_PAGE_PATHS } from "../pages";
 import { HOME_PATH, EDUCATION_PATH, CONTACT_PATH } from "@/domain/constants";
-import type { PageTitles } from "@/domain/models";
-
-const stablePageTitles: PageTitles = {
-  "/": { eyebrow: "Home", heading: "Stable home title", intro: "Stable home description." },
-  "/education": { eyebrow: "Education", heading: "Stable education title", intro: "Stable education description." },
-  "/contact": { eyebrow: "Contact", heading: "Stable contact title", intro: "Stable contact description." },
-};
+import { stablePageTitles } from "./fixtures";
 
 it("resolves localized copy for every static page path", () => {
   for (const pagePath of STATIC_PAGE_PATHS) {
@@ -27,7 +21,7 @@ it("resolves localized copy for every static page path", () => {
       assert.strictEqual(copy.seoTitle, STATIC_PAGES[pagePath].copy[language].title);
       // `intro` prefers loader data when present, otherwise falls back to catalogue
       const loaderIntro = stablePageTitles[pagePath]?.intro;
-      assert.strictEqual(copy.intro, loaderIntro !== undefined ? loaderIntro : STATIC_PAGES[pagePath].copy[language].intro);
+      assert.strictEqual(copy.intro, loaderIntro ?? STATIC_PAGES[pagePath].copy[language].intro);
       assert.strictEqual(copy.description, STATIC_PAGES[pagePath].copy[language].description);
     }
   }
@@ -40,7 +34,7 @@ it("uses authored page titles from loader data when available", () => {
 });
 
 it("falls back to catalogue heading when loader data is missing", () => {
-  const emptyTitles: PageTitles = {} as PageTitles;
+  const emptyTitles: Partial<typeof stablePageTitles> = {};
   const copy = staticPageCopy(emptyTitles, HOME_PATH, "en");
   assert.strictEqual(copy.pageName, STATIC_PAGES[HOME_PATH].copy.en.heading);
 });

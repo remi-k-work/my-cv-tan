@@ -4,7 +4,6 @@
 // heads all build on it.
 
 import { assert, it } from "@effect/vitest";
-import { Option, Schema, pipe } from "effect";
 import { pageHead, experienceHead, contactHead, educationHead, homeHead } from "../page-head";
 import { globalSocialImage } from "../social-meta";
 import { BRANDED_TITLE, GLOBAL_SOCIAL_IMAGE, SITE_NAME, AUTHOR_URL, PROFILE_ID } from "../site";
@@ -12,12 +11,11 @@ import { INDEXABLE_ROBOTS } from "@/domain/http";
 import { STATIC_PAGES } from "../pages";
 import { withLanguageParam } from "../urls";
 import { canonicalLink } from "../link-tags";
+import { LANGUAGE, graphOf, metaOf, nodeOf, nodesOf, sampleEducation, sampleExperience, stablePageTitles, tagContent } from "./fixtures";
 import type { JsonLdNodes, PageHead, SocialMetaInput } from "../models";
-import type { PageTitles, PreferredLanguage } from "@/domain/models";
-import type { Experience } from "@/features/experience/domain/models";
-import type { EducationList } from "@/features/education/domain/models";
+import type { PreferredLanguage } from "@/domain/models";
 
-const language: PreferredLanguage = "en";
+const language: PreferredLanguage = LANGUAGE;
 
 const social: SocialMetaInput = {
   title: "Headline",
@@ -28,45 +26,6 @@ const social: SocialMetaInput = {
 };
 
 const graph: JsonLdNodes = [{ "@type": "WebPage", "@id": "https://www.remiforge.dev/test", name: "Test" }];
-
-const stablePageTitles: PageTitles = {
-  "/": { eyebrow: "Home", heading: "Stable home title", intro: "Stable home description." },
-  "/education": { eyebrow: "Education", heading: "Stable education title", intro: "Stable education description." },
-  "/contact": { eyebrow: "Contact", heading: "Stable contact title", intro: "Stable contact description." },
-};
-
-const sampleExperience: Experience = {
-  type: "p",
-  slug: "sample-role",
-  year: "Mar 2026",
-  role: "Full-Stack Developer",
-  company: "Sample Co",
-  txt: "Built things with care.",
-  gitHubLink: "https://github.com/example/repo",
-  imageName: "01",
-  skillsUsed: ["TypeScript", "React"],
-};
-
-const metaOf = (head: PageHead) => JSON.parse(JSON.stringify(head.meta)) as ReadonlyArray<Record<string, string>>;
-
-// Finds a tag by its property or name and returns its content, or undefined when absent.
-const tagContent = (tags: ReadonlyArray<Record<string, string>>, key: "property" | "name", value: string) => tags.find((tag) => tag[key] === value)?.content;
-
-// JSON-LD graph reader mirroring the one in helpers.test.ts
-const JsonLdNode = Schema.Record(Schema.String, Schema.Unknown);
-const decodeGraph = Schema.decodeUnknownOption(Schema.fromJsonString(Schema.Struct({ "@graph": Schema.Array(JsonLdNode) })));
-
-const graphOf = (children: string | undefined): ReadonlyArray<Record<string, unknown>> =>
-  pipe(
-    decodeGraph(children ?? "{}"),
-    Option.map((document) => document["@graph"]),
-    Option.getOrElse<ReadonlyArray<Record<string, unknown>>>(() => [])
-  );
-
-const nodeOf = (graph: ReadonlyArray<Record<string, unknown>>, type: string, idFragment?: string) =>
-  graph.find((node) => node["@type"] === type && (idFragment === undefined || String(node["@id"]).endsWith(idFragment)));
-
-const sampleEducation: EducationList = [{ name: "Pratt Institute", year: "• 2002 — 2004 •", location: "New York, US", info: "Interactive Media." }];
 
 it("pageHead builds a flat head with title, description, robots and social tags", () => {
   const head = pageHead({ social, markdownPath: "/test.md", graph });
@@ -220,13 +179,13 @@ it("each card's alt describes the picture that card actually shows", () => {
   // og:image and twitter:image publish different pictures — X rejects WebP, so the Twitter card
   // falls back to the jpeg banner — and a card whose alt describes the other card's picture
   // announces an image it is not showing. Read the alt back beside the image each card names.
-  const contentOf = (head: ReturnType<typeof experienceHead>, tag: "og:image:alt" | "twitter:image:alt") => {
-    const meta = JSON.parse(JSON.stringify(head.meta)) as Array<Record<string, string>>;
+  const contentOf = (head: PageHead, tag: "og:image:alt" | "twitter:image:alt") => {
+    const meta = metaOf(head);
     return meta.find((entry) => entry[tag.startsWith("og:") ? "property" : "name"] === tag)?.content;
   };
 
-  const srcOf = (target: ReturnType<typeof experienceHead>, tag: "og:image" | "twitter:image") => {
-    const meta = JSON.parse(JSON.stringify(target.meta)) as Array<Record<string, string>>;
+  const srcOf = (target: PageHead, tag: "og:image" | "twitter:image") => {
+    const meta = metaOf(target);
     return meta.find((entry) => entry[tag.startsWith("og:") ? "property" : "name"] === tag)?.content;
   };
 
@@ -276,8 +235,8 @@ it("og:locale:alternate lists every other supported locale as its own tag (ogp.m
   // og:locale:alternate is an array, not a single value: one meta tag per alternate locale, and a
   // page never lists the locale it is itself in. Read the rendered tags back rather than the raw
   // JSON so a regression to a single first-match (or a self-including alternate) fails here.
-  const localesOf = (preferredLanguage: "en" | "pl") => {
-    const meta = JSON.parse(JSON.stringify(experienceHead({ experience: sampleExperience, preferredLanguage }).meta)) as Array<Record<string, string>>;
+  const localesOf = (preferredLanguage: PreferredLanguage) => {
+    const meta = metaOf(experienceHead({ experience: sampleExperience, preferredLanguage }));
     return {
       own: meta.filter((tag) => tag["property"] === "og:locale").map((tag) => tag["content"]),
       alternate: meta.filter((tag) => tag["property"] === "og:locale:alternate").map((tag) => tag["content"]),
@@ -559,16 +518,6 @@ it("contact structured data describes the visible ContactPage inside a breadcrum
 });
 
 // Helpers used by the JSON-LD graph tests above
-const collectionParts = (node: Record<string, unknown> | undefined) =>
-  pipe(
-    Option.fromNullishOr(node),
-    Option.flatMap((value) => Schema.decodeUnknownOption(Schema.Array(JsonLdNode))(value["hasPart"])),
-    Option.getOrElse<ReadonlyArray<Record<string, unknown>>>(() => [])
-  );
+const collectionParts = (node: Record<string, unknown> | undefined) => nodesOf(node, "hasPart");
 
-const listItems = (node: Record<string, unknown> | undefined) =>
-  pipe(
-    Option.fromNullishOr(node),
-    Option.flatMap((value) => Schema.decodeUnknownOption(Schema.Array(JsonLdNode))(value["itemListElement"])),
-    Option.getOrElse<ReadonlyArray<Record<string, unknown>>>(() => [])
-  );
+const listItems = (node: Record<string, unknown> | undefined) => nodesOf(node, "itemListElement");

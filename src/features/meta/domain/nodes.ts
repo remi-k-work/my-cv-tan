@@ -1,4 +1,5 @@
 // services, features, and other libraries
+import { Array } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
 
 // types
@@ -142,7 +143,8 @@ export const experienceItemNode = ({
         inLanguage: preferredLanguage,
         creator: { "@id": PERSON_ID },
         publisher: { "@id": PUBLISHER_ID },
-        keywords: keywords.join(", "),
+        // The same join the Markdown twin's `skills` fact publishes, so the two spellings cannot drift
+        keywords: Array.join(keywords, ", "),
         ...(repository === undefined ? {} : { codeRepository: repository }),
       };
 

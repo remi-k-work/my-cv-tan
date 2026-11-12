@@ -20,8 +20,9 @@ import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/domain/constants";
 
 const pageTwin = (pagePath: PagePath, document: PageTwin["document"]): PageTwin => ({ entry: pageEntry(pagePath), document });
 
-const homeTwin = pageTwin(HOME_PATH, ({ preferredLanguage, translate }) =>
-  Effect.gen(function* () {
+const homeTwin = pageTwin(
+  HOME_PATH,
+  Effect.fnUntraced(function* ({ preferredLanguage, translate }) {
     const datasets = yield* Datasets;
     const data = yield* Effect.all(
       { pageTitles: datasets.pageTitles(preferredLanguage), experienceList: datasets.experienceList(preferredLanguage) },
@@ -32,8 +33,9 @@ const homeTwin = pageTwin(HOME_PATH, ({ preferredLanguage, translate }) =>
   })
 );
 
-const educationTwin = pageTwin(EDUCATION_PATH, ({ preferredLanguage, translate }) =>
-  Effect.gen(function* () {
+const educationTwin = pageTwin(
+  EDUCATION_PATH,
+  Effect.fnUntraced(function* ({ preferredLanguage, translate }) {
     const datasets = yield* Datasets;
     const data = yield* Effect.all(
       { pageTitles: datasets.pageTitles(preferredLanguage), educationList: datasets.educationList(preferredLanguage) },
@@ -44,8 +46,9 @@ const educationTwin = pageTwin(EDUCATION_PATH, ({ preferredLanguage, translate }
   })
 );
 
-const contactTwin = pageTwin(CONTACT_PATH, ({ preferredLanguage, translate }) =>
-  Effect.gen(function* () {
+const contactTwin = pageTwin(
+  CONTACT_PATH,
+  Effect.fnUntraced(function* ({ preferredLanguage, translate }) {
     const datasets = yield* Datasets;
     const pageTitles = yield* datasets.pageTitles(preferredLanguage);
 

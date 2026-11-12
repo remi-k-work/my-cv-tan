@@ -11,26 +11,26 @@ import { sampleExperience } from "@/features/markdown/__tests__/fixtures";
 
 describe("withoutNegotiationVary", () => {
   it("drops both negotiation tokens, leaving no Vary value", () => {
-    assert.isNull(withoutNegotiationVary("Cookie, Accept-Language"));
-    assert.isNull(withoutNegotiationVary("accept-language,Cookie"));
+    assert.deepStrictEqual(withoutNegotiationVary("Cookie, Accept-Language"), Option.none());
+    assert.deepStrictEqual(withoutNegotiationVary("accept-language,Cookie"), Option.none());
   });
 
   it("preserves unrelated tokens the runtime added", () => {
     // Retains transport-level Vary tokens such as Accept-Encoding.
-    assert.strictEqual(withoutNegotiationVary("Cookie, Accept-Language, Accept-Encoding"), "Accept-Encoding");
-    assert.strictEqual(withoutNegotiationVary("Accept-Encoding"), "Accept-Encoding");
+    assert.deepStrictEqual(withoutNegotiationVary("Cookie, Accept-Language, Accept-Encoding"), Option.some("Accept-Encoding"));
+    assert.deepStrictEqual(withoutNegotiationVary("Accept-Encoding"), Option.some("Accept-Encoding"));
   });
 
   it("passes through an absent header and trims empty or padded tokens", () => {
-    assert.isNull(withoutNegotiationVary(null));
-    assert.strictEqual(withoutNegotiationVary(" Accept-Encoding ,  Origin "), "Accept-Encoding, Origin");
-    assert.strictEqual(withoutNegotiationVary("Cookie,,Accept-Encoding"), "Accept-Encoding");
+    assert.deepStrictEqual(withoutNegotiationVary(null), Option.none());
+    assert.deepStrictEqual(withoutNegotiationVary(" Accept-Encoding ,  Origin "), Option.some("Accept-Encoding, Origin"));
+    assert.deepStrictEqual(withoutNegotiationVary("Cookie,,Accept-Encoding"), Option.some("Accept-Encoding"));
   });
 
   it("strips exactly the negotiation tokens documentHeaders advertises, for both languages", () => {
     for (const language of ["en", "pl"] as const) {
       const vary = documentHeaders(language);
-      assert.isNull(withoutNegotiationVary(vary.Vary));
+      assert.deepStrictEqual(withoutNegotiationVary(vary.Vary), Option.none());
     }
   });
 });

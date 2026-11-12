@@ -1,4 +1,5 @@
 // services, features, and other libraries
+import { Array } from "effect";
 import { absoluteUrl } from "@/features/meta/domain/urls";
 
 // types
@@ -23,7 +24,7 @@ export const pageEntry = (pagePath: PagePath): IndexEntry => ({
   summary: STATIC_PAGES[pagePath].indexSummary,
 });
 
-export const PAGE_ENTRIES: ReadonlyArray<IndexEntry> = STATIC_PAGE_PATHS.map(pageEntry);
+export const PAGE_ENTRIES: ReadonlyArray<IndexEntry> = Array.map(STATIC_PAGE_PATHS, pageEntry);
 
 export const experienceEntry = (seo: ExperienceSeo): IndexEntry => ({
   name: seo.headline,

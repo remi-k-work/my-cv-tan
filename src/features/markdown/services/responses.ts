@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Array, Option, String, pipe } from "effect";
+import { Array, HashSet, Option, String, pipe } from "effect";
 import { documentHeaders } from "@/features/meta/domain/responses";
 import { markdownTwinUrl } from "@/features/meta/domain/urls";
 import { canonicalLink, joinLinkHeader, languageVariantLinks } from "@/features/meta/domain/link-tags";
@@ -19,9 +19,9 @@ import {
 } from "@/features/meta/domain/responses";
 
 const MD_CONTENT_TYPE = "text/markdown; charset=utf-8";
-const NEGOTIATION_VARY = new Set(NEGOTIATION_VARY_TOKENS.map((token) => token.toLowerCase()));
+const NEGOTIATION_VARY = pipe(NEGOTIATION_VARY_TOKENS, Array.map(String.toLowerCase), HashSet.fromIterable);
 
-// Strips language negotiation tokens from a Vary header, returning null if nothing remains
+// Strips language negotiation tokens from a Vary header, returning None when nothing remains
 export const withoutNegotiationVary = (vary: string | null) =>
   pipe(
     Option.fromNullishOr(vary),
@@ -29,12 +29,12 @@ export const withoutNegotiationVary = (vary: string | null) =>
       pipe(
         String.split(value, ","),
         Array.map(String.trim),
-        Array.filter((token) => String.isNonEmpty(token) && !NEGOTIATION_VARY.has(token.toLowerCase()))
+        Array.filter((token) => String.isNonEmpty(token) && !HashSet.has(NEGOTIATION_VARY, token.toLowerCase()))
       )
     ),
-    Option.filter((tokens) => tokens.length > 0),
-    Option.map(Array.join(", ")),
-    Option.getOrNull
+    // A Vary left with only negotiation tokens is no Vary at all, so the caller drops the header
+    Option.filter((tokens) => Array.isReadonlyArrayNonEmpty(tokens)),
+    Option.map(Array.join(", "))
   );
 
 const withHeaders = (response: Response, update: (headers: Headers) => void) => {
@@ -46,11 +46,12 @@ const withHeaders = (response: Response, update: (headers: Headers) => void) => 
 // Drops language negotiation Vary tokens when the URL contains an explicit ?lang= pin
 export const pinCacheVariant = (response: Response) =>
   withHeaders(response, (headers) => {
-    const varyOption = Option.fromNullishOr(withoutNegotiationVary(headers.get("vary")));
+    const vary = withoutNegotiationVary(headers.get("vary"));
 
-    Option.match(varyOption, {
+    Option.match(vary, {
+      // Nothing worth negotiating on: the pinned URL already names its language, so drop Vary entirely
       onNone: () => headers.delete("vary"),
-      onSome: (vary) => headers.set("vary", vary),
+      onSome: (value) => headers.set("vary", value),
     });
   });
 
@@ -96,6 +97,6 @@ const mdFailureResponse = (body: string, preferredLanguage: PreferredLanguage, s
   });
 
 export const mdNotFoundResponse = (body: string, preferredLanguage: PreferredLanguage, markdownPath: Option.Option<string>) =>
-  mdFailureResponse(body, preferredLanguage, 404, Option.isSome(markdownPath) ? markdownTwinUrl(markdownPath.value, preferredLanguage) : undefined);
+  mdFailureResponse(body, preferredLanguage, 404, Option.getOrUndefined(Option.map(markdownPath, (path) => markdownTwinUrl(path, preferredLanguage))));
 
 export const mdUnavailableResponse = (body: string, preferredLanguage: PreferredLanguage) => mdFailureResponse(body, preferredLanguage, 503);

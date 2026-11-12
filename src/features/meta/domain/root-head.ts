@@ -1,4 +1,5 @@
 // services, features, and other libraries
+import { Array } from "effect";
 import { fallbackHead } from "./fallback";
 import { headLanguage, isNotFoundMatch } from "./route-head";
 import { authorLink } from "./link-tags";
@@ -34,7 +35,7 @@ export const ROOT_HEAD: RootHead = {
 
 // Builds the root head elements, handling root-level not-found fallbacks if matched
 export const rootHead = (matches: MatchChain): PageHead => {
-  if (!matches.some(isNotFoundMatch)) return { meta: [...ROOT_HEAD.meta], links: [...ROOT_HEAD.links], scripts: [] };
+  if (!Array.some(matches, isNotFoundMatch)) return { meta: [...ROOT_HEAD.meta], links: [...ROOT_HEAD.links], scripts: [] };
 
   const fallback = fallbackHead(undefined, headLanguage(matches));
 

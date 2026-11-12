@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Array, Option, pipe, Result, String } from "effect";
+import { Array, Number, Option, pipe, Result, String } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
 
 // types
@@ -20,12 +20,22 @@ export const experienceFromList = (experienceList: ExperienceList, slug: string)
 // it from one place keeps a second spelling of "e" from labelling the same experience two ways
 export const isEmployment = (experience: Pick<Experience, "type">) => experience.type === "e";
 
-// Localized records share canonical URLs, so every language must publish the same unique slugs.
+// Localized records share canonical URLs, so every language must publish the same unique slugs
+// The invariant reads as set algebra over the two projected lists: each side has to be
+// duplicate-free, and the two sides have to be the same set
 export const haveSameExperienceSlugs = (left: ReadonlyArray<Pick<Experience, "slug">>, right: ReadonlyArray<Pick<Experience, "slug">>) => {
-  const leftSlugs = new Set(left.map(({ slug }) => slug));
-  const rightSlugs = new Set(right.map(({ slug }) => slug));
+  const leftSlugs = Array.dedupe(Array.map(left, ({ slug }) => slug));
+  const rightSlugs = Array.dedupe(Array.map(right, ({ slug }) => slug));
 
-  return left.length === right.length && leftSlugs.size === left.length && rightSlugs.size === right.length && left.every(({ slug }) => rightSlugs.has(slug));
+  return (
+    // A projection shorter than its source means that language publishes one route twice
+    leftSlugs.length === left.length &&
+    rightSlugs.length === right.length &&
+    left.length === right.length &&
+    // Equal counts plus the right set being contained in the left make the two sides one set, so
+    // neither language can publish a route the other does not
+    Array.every(rightSlugs, (slug) => Array.contains(leftSlugs, slug))
+  );
 };
 
 // One-pass split of the mixed list into employment ("e") and portfolio projects ("p"):
@@ -60,7 +70,7 @@ export const excerpt = (text: string, maxLength: number) => {
   if (chars.length <= limit) return text;
 
   // Reserve room for the suffix so the appended ellipsis cannot push the result past the budget
-  const budget = Math.max(0, limit - EXCERPT_SUFFIX.length);
+  const budget = Number.max(0, limit - EXCERPT_SUFFIX.length);
 
   // Take the first `budget` characters from the left
   const cut = Array.join(Array.take(chars, budget), "");

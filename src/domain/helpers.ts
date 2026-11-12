@@ -19,10 +19,7 @@ export const makeRpcClient = <Rpcs extends Rpc.Any>(serviceName: string, group: 
   };
 };
 
-// Builds the web handler for an RPC group's HTTP route. disableFatalDefects serializes defects
-// as an Exit instead of closing the connection; disableTracing is deliberate (no tracer configured)
-// The handlers layer claims Rpc.ServicesServer too: the schema services those requirements resolve
-// to for a concrete group are already covered, and the claim is checked at each call site
+// Builds the web handler for an RPC group's HTTP route
 export const makeRpcHandler = <Rpcs extends Rpc.Any, LE>(
   group: RpcGroup.RpcGroup<Rpcs>,
   path: HttpRouter.PathInput,
@@ -39,27 +36,22 @@ export const makeRpcHandler = <Rpcs extends Rpc.Any, LE>(
   return HttpRouter.toWebHandler(RpcLayer, { disableLogger: true });
 };
 
-// Adapts an HttpRouter web handler to TanStack Start's server route-handler shape,
-// which receives the request wrapped in a context object
+// Adapts an HttpRouter web handler to TanStack Start's server route-handler shape, which receives the request wrapped in a context object
 export const routeHandler =
   (webHandler: { readonly handler: (request: Request) => Response | Promise<Response> }) =>
   ({ request }: { request: Request }) =>
     webHandler.handler(request);
 
-export const matchPreferredLanguage = <T>(preferredLanguage: PreferredLanguage, en: T, pl: T): T => (preferredLanguage === "en" ? en : pl);
+// Selects the branch for the resolved language
+export const matchPreferredLanguage = <T>(preferredLanguage: PreferredLanguage, en: T, pl: T): T => (preferredLanguage === "pl" ? pl : en);
 
-// Normalizes any locale string a caller can hand us (GT's resolved locale, a header value,
-// a typed route locale) onto the site's supported languages: only an exact "pl" keeps
-// Polish, everything else — including "en-US", an empty string, or an unknown locale — is
-// English; every surface resolves the language through this one function so the site never
-// branches on locale in more than one place
+// Normalizes any locale string a caller can hand us onto the site's supported languages
 export const preferredLanguageFromLocale = (locale: string): PreferredLanguage => (locale === "pl" ? "pl" : "en");
 
 // Localized page title/intro with a static fallback when loader data is missing or partial
-export const pageField = (pageTitles: PageTitles | null, pagePath: PagePath, key: "heading" | "intro", fallback: string) =>
+export const pageField = (pageTitles: Partial<PageTitles> | null, pagePath: PagePath, key: "heading" | "intro", fallback: string) =>
   pipe(
-    Option.fromNullishOr(pageTitles),
-    Option.flatMapNullishOr((titles) => titles[pagePath]),
+    Option.fromNullishOr(pageTitles?.[pagePath]),
     Option.map((page) => page[key]),
     Option.getOrElse(() => fallback)
   );

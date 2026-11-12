@@ -1,4 +1,5 @@
 // services, features, and other libraries
+import { Option } from "effect";
 import { AnimatePresence, motion } from "motion/react";
 import { useMessages } from "gt-tanstack-start";
 
@@ -8,7 +9,9 @@ import ExclamationTriangleIcon from "@heroicons/react/24/solid/ExclamationTriang
 // types
 interface ErrorLineProps {
   id?: string;
-  message?: string;
+  // The absence stays an Option all the way to the leaf, so "no error" is the same typed nothing
+  // the field state handed over rather than a flattened undefined
+  error: Option.Option<string>;
 }
 
 // constants
@@ -16,13 +19,13 @@ import { SPRINGS } from "@/lib/motion-tokens";
 
 // A field validation message animated in and out; reserves its vertical space so the form does not jump
 // Schema validation messages arrive as msg()-registered strings; m resolves those at runtime
-export function ErrorLine({ id, message }: ErrorLineProps) {
+export function ErrorLine({ id, error }: ErrorLineProps) {
   const m = useMessages();
 
   return (
     <div className="min-h-6">
       <AnimatePresence>
-        {message && (
+        {Option.isSome(error) && (
           <motion.p
             id={id}
             role="alert"
@@ -34,7 +37,7 @@ export function ErrorLine({ id, message }: ErrorLineProps) {
             transition={SPRINGS.gentle}
           >
             <ExclamationTriangleIcon className="size-9 flex-none" aria-hidden="true" />
-            {m(message)}
+            {m(error.value)}
           </motion.p>
         )}
       </AnimatePresence>

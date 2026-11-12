@@ -2,7 +2,6 @@
 import { useState } from "react";
 
 // services, features, and other libraries
-import { DateTime } from "effect";
 import { useGT } from "gt-tanstack-start";
 
 // components
@@ -16,15 +15,14 @@ import { CAPTCHA_HEIGHT, CAPTCHA_WIDTH } from "@/features/captcha/domain/constan
 
 export function Captcha() {
   const gt = useGT();
-  const [captchaSrc, setCaptchaSrc] = useState("/api/captcha");
+  const [nonce, setNonce] = useState(0);
+  const captchaSrc = `/api/captcha?r=${nonce}`;
 
   return (
     <div className="flex items-center justify-center gap-3">
       <img className="rounded" src={captchaSrc} width={CAPTCHA_WIDTH} height={CAPTCHA_HEIGHT} alt={gt("Captcha")} />
-      <Button className="button" aria-label={gt("Refresh CAPTCHA")} onClick={() => setCaptchaSrc(`/api/captcha?t=${DateTime.nowUnsafe().epochMilliseconds}`)}>
-        {/* Keyed by the captcha source, so the spinner remounts and plays its one-shot spin whenever a fresh captcha is fetched;
-            the wrapper carries the animation because CSS transform animations aren't hardware-accelerated on SVG elements */}
-        <span key={captchaSrc} className="inline-flex size-9 animate-spin-once" aria-hidden="true">
+      <Button className="button" aria-label={gt("Refresh CAPTCHA")} onClick={() => setNonce((current) => current + 1)}>
+        <span key={nonce} className="inline-flex size-9 animate-spin-once" aria-hidden="true">
           <ArrowPathIcon className="size-9" />
         </span>
       </Button>

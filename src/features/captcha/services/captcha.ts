@@ -18,36 +18,42 @@ export class Captcha extends Context.Service<Captcha>()("Captcha", {
     // Read the signing secret once when the service boots, like the other feature services
     const secret = yield* Config.Redacted("SESSION_SECRET").pipe(Effect.map(Redacted.value));
 
-    const generate = Effect.gen(function* () {
-      const indices = yield* Effect.replicateEffect(STRENGTH)(secureRandom.intBetween(0, PERMITTED_CHARS.length - 1));
-      return pipe(
+    // One draw per character, then the projection into the permitted alphabet: a combinator pair
+    // rather than a generator body, since there is a single effect to sequence
+    const generate = Effect.map(Effect.replicateEffect(STRENGTH)(secureRandom.intBetween(0, PERMITTED_CHARS.length - 1)), (indices) =>
+      pipe(
         indices,
         Array.map((index) => PERMITTED_CHARS[index]),
         Array.join("")
-      );
-    });
+      )
+    );
 
     const seal = Effect.fnUntraced(
-      function* (captchaString: string) {
+      function* (captchaString: string): Effect.fn.Return<string, CaptchaError, Digest.Digest> {
         const salt = yield* secureRandom.randomBytes(SALT_BYTES);
         const commitment = yield* commitToCaptcha(secret, salt, captchaString);
         return `${Base64Url.encode(salt)}.${Base64Url.encode(commitment)}`;
       },
-      Effect.provideService(SecureRandom.SecureRandom, secureRandom),
       Effect.provideService(Digest.Digest, digest),
       Effect.mapError((error) => new CaptchaError({ cause: error }))
     );
 
     const verify = Effect.fnUntraced(
-      function* (headers: Headers.Headers, captchaInput: string) {
-        // A missing captcha cookie is a failed verification, not an error: no sealed
-        // commitment to compare against
-        const sealed = pipe(Headers.get(headers, "cookie"), Option.map(Cookies.parseHeader), Option.flatMap(Record.get(CAPTCHA_COOKIE_NAME)));
-
-        if (Option.isNone(sealed)) return false;
-        return yield* verifyCaptchaString(secret, sealed.value, captchaInput);
+      function* (headers: Headers.Headers, captchaInput: string): Effect.fn.Return<boolean, CaptchaError, Digest.Digest> {
+        // Verification only recomputes a commitment, so `commitToCaptcha` is the whole service
+        // requirement: the entropy service `seal` needs is not part of reading one back
+        return yield* pipe(
+          Headers.get(headers, "cookie"),
+          Option.map(Cookies.parseHeader),
+          Option.flatMap(Record.get(CAPTCHA_COOKIE_NAME)),
+          Option.match({
+            // A missing captcha cookie is a failed verification, not an error: there is no sealed
+            // commitment to compare against
+            onNone: () => Effect.succeed(false),
+            onSome: (sealedValue) => verifyCaptchaString(secret, sealedValue, captchaInput),
+          })
+        );
       },
-      Effect.provideService(SecureRandom.SecureRandom, secureRandom),
       Effect.provideService(Digest.Digest, digest),
       Effect.mapError((error) => new CaptchaError({ cause: error }))
     );

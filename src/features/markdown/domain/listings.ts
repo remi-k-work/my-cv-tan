@@ -1,4 +1,5 @@
 // services, features, and other libraries
+import { Array } from "effect";
 import { absoluteUrl, experienceMarkdownPath, experiencePath, markdownTwinUrl } from "@/features/meta/domain/urls";
 import { excerpt, experienceHeadline } from "@/features/experience/domain/helpers";
 import { mdBulletList, mdEmptyMarker, mdIndexEntry, mdLink } from "./format";
@@ -28,4 +29,7 @@ const experienceLine = (experience: Experience, preferredLanguage: TwinContext["
 
 // One projection of the experience list, shared by the index and the home twin; only the lead URL differs
 export const experienceLines = ({ experiences, mode, translate, preferredLanguage }: ExperienceLinesInput) =>
-  experiences.length === 0 ? mdEmptyMarker(translate) : mdBulletList(experiences.map((experience) => experienceLine(experience, preferredLanguage, mode)));
+  Array.match(experiences, {
+    onEmpty: () => mdEmptyMarker(translate),
+    onNonEmpty: (entries) => mdBulletList(Array.map(entries, (experience) => experienceLine(experience, preferredLanguage, mode))),
+  });

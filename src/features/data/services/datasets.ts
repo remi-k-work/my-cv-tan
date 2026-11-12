@@ -6,34 +6,31 @@ import { requireDataFrom } from "@/features/data/domain/required";
 import { Data } from "@/features/data/services/data";
 
 // types
-import type { EducationList } from "@/features/education/domain/models";
-import type { ExperienceList } from "@/features/experience/domain/models";
-import type { PageTitles, PreferredLanguage } from "@/domain/models";
-import type { RequiredDataError } from "@/features/data/domain/required";
+import type { PreferredLanguage } from "@/domain/models";
 
-export type LocalizedAccessor<Value> = (preferredLanguage: PreferredLanguage) => Effect.Effect<Value, RequiredDataError>;
-
-export type DatasetsService = {
-  readonly pageTitles: LocalizedAccessor<PageTitles>;
-  readonly experienceList: LocalizedAccessor<ExperienceList>;
-  readonly educationList: LocalizedAccessor<EducationList>;
-};
-
+// Every accessor resolves one language itself, so a document pipeline reads the dataset for the
+// reader it was built for instead of negotiating a language on its own
 const localizedDataset =
   <Value>(dataset: string, accessor: (preferredLanguage: Option.Option<PreferredLanguage>) => Effect.Effect<Option.Option<Value>>) =>
   (preferredLanguage: PreferredLanguage) =>
     requireDataFrom(accessor(Option.some(preferredLanguage)), dataset);
 
 export class Datasets extends Context.Service<Datasets>()("Datasets", {
-  make: Effect.gen(function* () {
-    const data = yield* Data;
-
-    return {
-      pageTitles: localizedDataset("page titles", (preferredLanguage) => data.stablePageTitles(preferredLanguage)),
-      experienceList: localizedDataset("experience list", (preferredLanguage) => data.experienceList(preferredLanguage)),
-      educationList: localizedDataset("education list", (preferredLanguage) => data.educationList(preferredLanguage)),
-    } as const;
-  }),
+  // The accessors are pure projections of Data's already-shaped methods, so the layer is a map
+  // over the service rather than a generator body that yields it once
+  make: Effect.map(
+    Data,
+    (data) =>
+      ({
+        pageTitles: localizedDataset("page titles", data.stablePageTitles),
+        experienceList: localizedDataset("experience list", data.experienceList),
+        educationList: localizedDataset("education list", data.educationList),
+      }) as const
+  ),
 }) {
-  static readonly layer = Layer.effect(this, this.make).pipe(Layer.provide(Data.layer));
+  // `provideMerge` rather than `provide`: Data is a published layer of its own, so the composition
+  // itself states that both readers share one instance instead of leaving that to the runtime's
+  // memo map — `Layer.provide` would keep `Data` private to this layer and silently rely on the
+  // caller rebuilding it from `Data.layer` and being memoized into the same instance
+  static readonly layer = Layer.effect(this, this.make).pipe(Layer.provideMerge(Data.layer));
 }

@@ -5,9 +5,10 @@
 import { assert, it } from "@effect/vitest";
 import { articleNode, breadcrumb, collectionNode, experienceItemNode, imageObject, personEdge, webPageNode } from "../nodes";
 import { HOME_URL, PERSON_ID, PUBLISHER_ID, WEBSITE_ID } from "../site";
+import { LANGUAGE } from "./fixtures";
 import type { PreferredLanguage } from "@/domain/models";
 
-const language: PreferredLanguage = "en";
+const language: PreferredLanguage = LANGUAGE;
 
 const baseWebPageInput = {
   id: "https://www.remiforge.dev/test",

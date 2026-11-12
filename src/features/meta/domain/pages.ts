@@ -1,4 +1,5 @@
 // services, features, and other libraries
+import { Record } from "effect";
 import { pageField } from "@/domain/helpers";
 import { absoluteUrl } from "./urls";
 
@@ -86,10 +87,11 @@ export const STATIC_PAGES = {
   },
 } as const satisfies Record<PagePath, StaticPageSettings>;
 
-export const STATIC_PAGE_PATHS = Object.keys(STATIC_PAGES) as ReadonlyArray<keyof typeof STATIC_PAGES>;
+export const STATIC_PAGE_PATHS = Record.keys(STATIC_PAGES);
 
 // Resolves localized static page copy, falling back to static strings if loader titles are missing
-export const staticPageCopy = (pageTitles: PageTitles, pagePath: PagePath, preferredLanguage: PreferredLanguage): StaticPageCopy => {
+// The titles are a loader payload, so they are only as complete as the request that produced them
+export const staticPageCopy = (pageTitles: Partial<PageTitles>, pagePath: PagePath, preferredLanguage: PreferredLanguage): StaticPageCopy => {
   const { mdHref, type, copy } = STATIC_PAGES[pagePath];
   const { heading, intro, title, description } = copy[preferredLanguage];
 

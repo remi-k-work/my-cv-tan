@@ -44,6 +44,12 @@ it("withLanguageParam pins the lang parameter without disturbing the rest of the
   );
   // An input that is not a URL is returned untouched, so callers never publish a half-built href
   assert.strictEqual(withLanguageParam("not a url", "pl"), "not a url");
+  // Repeated calls answer the same URL every time: each one derives a fresh URL rather than
+  // mutating a decoded one, so a pin can never survive into a later call's result
+  const twin = "https://www.remiforge.dev/index.md?view=full";
+  assert.strictEqual(withLanguageParam(twin, "en"), "https://www.remiforge.dev/index.md?view=full&lang=en");
+  assert.strictEqual(withLanguageParam(twin, "pl"), "https://www.remiforge.dev/index.md?view=full&lang=pl");
+  assert.strictEqual(withLanguageParam(twin, "en"), "https://www.remiforge.dev/index.md?view=full&lang=en");
 });
 
 it("markdownTwinUrl resolves a site-relative twin route to an absolute, language-pinned URL", () => {

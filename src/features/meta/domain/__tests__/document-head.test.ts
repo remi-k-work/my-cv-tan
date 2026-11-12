@@ -17,31 +17,12 @@ import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 import { NotFoundPage } from "@/ui/not-found-page";
 import { BRANDED_TITLE, NOT_FOUND_COPY, SITE_DESCRIPTION, SOCIAL_LINKS, UNAVAILABLE_COPY } from "../site";
 import { fallbackHead } from "../fallback";
-import type { PageTitles } from "@/domain/models";
-import type { Experience } from "@/features/experience/domain/models";
+import { sampleExperience, stablePageTitles } from "./fixtures";
 import type { LinkTag, MatchChain, MetaTag, PageHead } from "../models";
 
 // The not-found page reads the request locale through GT, so the runtime has to be initialized
 // before it renders — exactly as the twin-localization tests do for the same reason.
 initializeGT({ ...gtConfig, loadTranslations, _reload: () => {} });
-
-const stablePageTitles: PageTitles = {
-  "/": { eyebrow: "Home", heading: "Stable home title", intro: "Stable home description." },
-  "/education": { eyebrow: "Education", heading: "Stable education title", intro: "Stable education description." },
-  "/contact": { eyebrow: "Contact", heading: "Stable contact title", intro: "Stable contact description." },
-};
-
-const sampleExperience: Experience = {
-  type: "p",
-  slug: "sample-role",
-  year: "Mar 2026",
-  role: "Full-Stack Developer",
-  company: "Sample Co",
-  txt: "Built things with care.",
-  gitHubLink: "https://github.com/example/repo",
-  imageName: "01",
-  skillsUsed: ["TypeScript", "React"],
-};
 
 // The router's head merge (headContentUtils in @tanstack/react-router), replayed so the assertions
 // below read the merged document: matches are walked leaf-last, the first tag seen for each

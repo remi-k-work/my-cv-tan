@@ -38,3 +38,21 @@ it.effect("accepts a sealed captcha only when the input matches the commitment",
     assert.isFalse(yield* verifyCaptchaString("test", sealed, "ABCDEG"));
   }).pipe(Effect.provideService(Digest.Digest, echoDigest))
 );
+
+it.effect("rejects a commitment whose digest is not the length the algorithm produces", () =>
+  Effect.gen(function* () {
+    // A commitment that is a strict prefix of the recomputed digest shares every one of its bytes
+    // with it, so only the length check can tell them apart: a comparison that skipped it would
+    // accept this one and let a caller walk the digest down to any shorter prefix
+    const salt = new Uint8Array(16);
+    const prefix = Bytes.concat([textEncoder.encode("test"), salt]);
+    const prefixed = `${Base64Url.encode(salt)}.${Base64Url.encode(prefix)}`;
+    assert.isFalse(yield* verifyCaptchaString("test", prefixed, "ABCDEF"));
+
+    // A commitment of an unrelated length is likewise refused on length alone
+    const truncated = `${Base64Url.encode(salt)}.${Base64Url.encode(new Uint8Array(16))}`;
+    const padded = `${Base64Url.encode(salt)}.${Base64Url.encode(new Uint8Array(64))}`;
+    assert.isFalse(yield* verifyCaptchaString("test", truncated, "ABCDEF"));
+    assert.isFalse(yield* verifyCaptchaString("test", padded, "ABCDEF"));
+  }).pipe(Effect.provideService(Digest.Digest, echoDigest))
+);

@@ -7,7 +7,9 @@ import type { PreferredLanguage } from "@/domain/models";
 // constants
 import { LANG_PARAM, SITE_URL } from "./site";
 
-export const decodeUrlOption = Schema.decodeUnknownOption(Schema.URLFromString);
+// `decodeOption` rather than `decodeUnknownOption`: every caller hands this a URL string, so the
+// narrower input type makes a non-string a compile error instead of a runtime None
+export const decodeUrlOption = Schema.decodeOption(Schema.URLFromString);
 
 // Validates that a string is a valid HTTP(S) URL
 export const httpUrlOption = (value: string) =>
@@ -26,7 +28,10 @@ export const absoluteUrl = (path: string) => `${SITE_URL}${path}`;
 export const withLanguageParam = (url: string, preferredLanguage: PreferredLanguage) =>
   pipe(
     decodeUrlOption(url),
-    Option.map((variant) => {
+    // A fresh URL per option: mutating the decoded one would leave a shared instance carrying this
+    // call's parameter into anything that later reads it from the same Some
+    Option.map((parsed) => {
+      const variant = new URL(parsed.href);
       variant.searchParams.set(LANG_PARAM, preferredLanguage);
       return variant.href;
     }),

@@ -4,6 +4,9 @@
 // no discovery constant, so every other meta module — and the Markdown feature — can depend on it
 // without a cycle.
 
+// services, features, and other libraries
+import { Array } from "effect";
+
 // types
 import type { PreferredLanguage } from "@/domain/models";
 import type { JsonLdNode } from "./models";
@@ -45,7 +48,7 @@ export const SOCIAL_PROFILES = [
   { name: "LinkedIn", href: "https://linkedin.com/in/remi-k-work" },
 ] as const;
 
-export const SOCIAL_LINKS = SOCIAL_PROFILES.map(({ href }) => href);
+export const SOCIAL_LINKS = Array.map(SOCIAL_PROFILES, ({ href }) => href);
 
 export const HOME_LOCALITY = "Rzeszów";
 export const HOME_COUNTRY = "PL";

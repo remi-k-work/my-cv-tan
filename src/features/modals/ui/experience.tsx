@@ -25,7 +25,12 @@ export function ExperienceModal({ isOpen, onClosed, title, children }: Experienc
   const gt = useGT();
 
   return (
-    <Dialog.Root open={isOpen} onOpenChange={(next) => !next && onClosed()}>
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={(next) => {
+        if (!next) onClosed();
+      }}
+    >
       <Dialog.Portal>
         <Dialog.Backdrop
           className={cn(

@@ -68,7 +68,7 @@ export const buildExperienceMd = ({ seo, translate }: ExperienceMdInput) => {
       role,
       company,
       year,
-      skills: skillsUsed.join(", "),
+      skills: Array.join(skillsUsed, ", "),
     },
     body: mdBody([
       mdHeading(1, headline),
@@ -78,8 +78,9 @@ export const buildExperienceMd = ({ seo, translate }: ExperienceMdInput) => {
         translate("Details"),
         mdBulletList([mdFact(translate("Role"), role), mdFact(translate("Company"), company), mdFact(translate("Year"), year)])
       ),
-      mdTitledSection(translate("Skills Used"), mdBulletList(skillsUsed.map(escapeMdInline))),
-      ...(links.length > 0 ? [mdTitledSection(translate("Links"), mdBulletList(links))] : []),
+      mdTitledSection(translate("Skills Used"), mdBulletList(Array.map(skillsUsed, escapeMdInline))),
+      // An experience with no publishable link gets no Links section at all, rather than an empty one
+      ...(Array.isReadonlyArrayNonEmpty(links) ? [mdTitledSection(translate("Links"), mdBulletList(links))] : []),
       detailPagesSection(preferredLanguage, translate),
     ]),
   };

@@ -1,26 +1,26 @@
 import { assert, it } from "@effect/vitest";
+import { Array, pipe } from "effect";
 import { ROOT_HEAD } from "../root-head";
 import { rootHead } from "../root-head";
 import { homeHead, contactHead, educationHead, experienceHead } from "../page-head";
 import { AI_INDEX_LINKS, AI_INDEX_LINK_HEADER } from "../discovery";
 import { joinLinkHeader } from "../link-tags";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
-import type { PageTitles } from "@/domain/models";
+import { stablePageTitles } from "./fixtures";
 import type { MetaTag } from "../models";
 
 // Dedupe meta tags by name/property, keeping the last occurrence (mirrors TanStack's merge).
-const dedupeMeta = (tags: ReadonlyArray<MetaTag>): ReadonlyArray<MetaTag> => {
-  const keyOf = (tag: MetaTag) => ("title" in tag ? "title" : "name" in tag ? `name:${tag.name}` : "property" in tag ? `property:${tag.property}` : "charset");
-  const merged = new Map<string, MetaTag>();
-  for (const tag of tags) merged.set(keyOf(tag), tag);
-  return [...merged.values()];
-};
-
-const stablePageTitles: PageTitles = {
-  "/": { eyebrow: "Home", heading: "Stable home title", intro: "Stable home description." },
-  "/education": { eyebrow: "Education", heading: "Stable education title", intro: "Stable education description." },
-  "/contact": { eyebrow: "Contact", heading: "Stable contact title", intro: "Stable contact description." },
-};
+const dedupeMeta = (tags: ReadonlyArray<MetaTag>): ReadonlyArray<MetaTag> =>
+  pipe(
+    Array.reduce(tags, new Map<string, MetaTag>(), (merged, tag) =>
+      merged.set(
+        "title" in tag ? "title" : "name" in tag ? `name:${tag.name}` : "property" in tag ? `property:${tag.property}` : "charset",
+        tag
+      )
+    ),
+    Array.fromIterable,
+    Array.map(([, tag]) => tag)
+  );
 
 it("root metadata defaults to noindex and complete page heads explicitly allow indexing", () => {
   assert.include(JSON.stringify(ROOT_HEAD.meta), `"content":"${NOINDEX_FOLLOW}"`);

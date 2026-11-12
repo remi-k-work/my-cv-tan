@@ -2,6 +2,9 @@
 // caching, robots and language-negotiation headers, plus the plain-text and XML response envelopes
 // used by the discovery documents and the Markdown twins.
 
+// services, features, and other libraries
+import { Array } from "effect";
+
 // types
 import type { PreferredLanguage } from "@/domain/models";
 
@@ -32,7 +35,7 @@ export const documentHeaders = (preferredLanguage: PreferredLanguage) =>
   ({
     ...MACHINE_HEADERS,
     "Content-Language": preferredLanguage,
-    Vary: NEGOTIATION_VARY_TOKENS.join(", "),
+    Vary: Array.join(NEGOTIATION_VARY_TOKENS, ", "),
   }) as const;
 
 // HTTP response envelope helpers for plain-text and XML discovery endpoints

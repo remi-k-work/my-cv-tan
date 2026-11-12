@@ -7,7 +7,7 @@ import { Captcha } from "@/features/captcha/services/captcha";
 import { CaptchaApi } from "./api";
 
 // constants
-import { CAPTCHA_COOKIE_NAME, CAPTCHA_COOKIE_OPTIONS } from "@/features/captcha/domain/constants";
+import { CAPTCHA_CACHE_CONTROL, CAPTCHA_COOKIE_NAME, CAPTCHA_COOKIE_OPTIONS } from "@/features/captcha/domain/constants";
 
 const CaptchaApiHandlers = HttpApiBuilder.group(
   CaptchaApi,
@@ -29,7 +29,7 @@ const CaptchaApiHandlers = HttpApiBuilder.group(
               Effect.catchTag("CookiesError", (error) => Effect.logError("[CAPTCHA]: failed to set captcha cookie", error).pipe(Effect.as(response)))
             )
           );
-          return HttpApiSchema.withHeaders({ body: svg, headers: { "Cache-Control": "private, no-store" as const } });
+          return HttpApiSchema.withHeaders({ body: svg, headers: { "Cache-Control": CAPTCHA_CACHE_CONTROL } as const });
         },
         // Sealing failures are a real error condition (bad seal, missing entropy), not a reason to
         // kill the connection: log with context and answer with a 500 instead of terminating abruptly

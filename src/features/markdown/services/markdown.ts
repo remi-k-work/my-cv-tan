@@ -17,12 +17,15 @@ import { resolveTranslation } from "./translation";
 
 // types
 import type { PagePath } from "@/domain/models";
-import type { ExperienceList } from "@/features/experience/domain/models";
 import type { RequiredDataError } from "@/features/data/domain/required";
 import type { MarkdownTwin, TwinContext } from "@/features/markdown/domain/models";
 
 type DocumentBody = (request: Request, context: TwinContext) => Effect.Effect<Response, RequiredDataError, Datasets>;
 type Document = (request: Request) => Effect.Effect<Response, never, Datasets>;
+
+// A discovery index answers from content the layer already resolved, so its document carries no
+// service requirement of its own — unlike a twin, which resolves its datasets per request
+type IndexDocument = (request: Request) => Effect.Effect<Response, never>;
 
 // constants
 import { DEFAULT_LANGUAGE } from "@/domain/constants";
@@ -69,10 +72,10 @@ const notFoundTwin = (slug: Option.Option<string>, context: TwinContext) =>
 
 const experienceTwin: Document = documentResponse(
   Effect.fnUntraced(function* (request: Request, context: TwinContext) {
+    // The parsed slug is the 404 subject in both misses, so each branch hands the Option it
+    // already holds rather than re-wrapping the value (or an empty one) a second time
     const slug = slugFromMdPathname(request.url);
-    if (Option.isNone(slug)) {
-      return notFoundTwin(Option.none(), context);
-    }
+    if (Option.isNone(slug)) return notFoundTwin(slug, context);
 
     const slugValue = slug.value;
     const datasets = yield* Datasets;
@@ -81,7 +84,7 @@ const experienceTwin: Document = documentResponse(
 
     if (Option.isNone(found)) {
       yield* Effect.logDebug(`[SLUG.MD]: no experience for slug "${slugValue}", emitting markdown 404`);
-      return notFoundTwin(Option.some(slugValue), context);
+      return notFoundTwin(slug, context);
     }
 
     const experience = found.value;
@@ -92,7 +95,7 @@ const experienceTwin: Document = documentResponse(
 );
 
 const discoveryDocument =
-  (index: { readonly name: string; readonly url: string }, content: Effect.Effect<string, RequiredDataError, Datasets>): Document =>
+  (index: { readonly name: string; readonly url: string }, content: Effect.Effect<string, RequiredDataError>): IndexDocument =>
   (_request: Request) =>
     content.pipe(
       Effect.map((body) => txtResponse(body, index.url)),
@@ -102,47 +105,37 @@ const discoveryDocument =
       )
     );
 
-const siteIndexContent = Effect.gen(function* () {
-  const datasets = yield* Datasets;
-  const experienceList: ExperienceList = yield* datasets.experienceList(DEFAULT_LANGUAGE);
-
-  return buildLlmsTxt(experienceList);
-});
-
-const siteIndexFullContent = Effect.gen(function* () {
-  const datasets = yield* Datasets;
-  const content = yield* Effect.all(
-    {
-      pageTitles: datasets.pageTitles(DEFAULT_LANGUAGE),
-      experienceList: datasets.experienceList(DEFAULT_LANGUAGE),
-      educationList: datasets.educationList(DEFAULT_LANGUAGE),
-    },
-    { concurrency: "unbounded" }
-  );
-
-  return buildLlmsFullTxt(content);
-});
-
-const siteIndex = discoveryDocument(LLMS_TXT_INDEX, siteIndexContent);
-const siteIndexFull = discoveryDocument(LLMS_FULL_TXT_INDEX, siteIndexFullContent);
-
 // The service's callers are document routes, not data pipelines: resolve the datasets once when
-// the layer is built so the public method types describe what the service does, not what it reads
-const provideDatasets =
-  (datasets: Datasets["Service"]) =>
-  <A, E>(effect: Effect.Effect<A, E, Datasets>): Effect.Effect<A, E> =>
-    Effect.provideService(effect, Datasets, datasets);
-
+// the layer is built so the public method types describe what the service does, not what it reads.
+// The indexes are source-language documents, so their content is one projection over those
+// resolved accessors rather than a pipeline that looks the service up again per request
 export class Markdown extends Context.Service<Markdown>()("Markdown", {
-  make: Effect.gen(function* () {
-    const datasets = yield* Datasets;
-    const withDatasets = provideDatasets(datasets);
+  make: Effect.map(Datasets, (datasets) => {
+    const withDatasets = Effect.provideService(Datasets, datasets);
+
+    const siteIndex = discoveryDocument(LLMS_TXT_INDEX, Effect.map(datasets.experienceList(DEFAULT_LANGUAGE), buildLlmsTxt));
+
+    const siteIndexFull = discoveryDocument(
+      LLMS_FULL_TXT_INDEX,
+      Effect.map(
+        Effect.all(
+          {
+            pageTitles: datasets.pageTitles(DEFAULT_LANGUAGE),
+            experienceList: datasets.experienceList(DEFAULT_LANGUAGE),
+            educationList: datasets.educationList(DEFAULT_LANGUAGE),
+          },
+          { concurrency: "unbounded" }
+        ),
+        buildLlmsFullTxt
+      )
+    );
 
     return {
       page: (pagePath: PagePath) => (request: Request) => withDatasets(pageDocument(pagePath)(request)),
       experience: (request: Request) => withDatasets(experienceTwin(request)),
-      siteIndex: (request: Request) => withDatasets(siteIndex(request)),
-      siteIndexFull: (request: Request) => withDatasets(siteIndexFull(request)),
+      // The indexes read the resolved accessors directly, so they need no service provided to them
+      siteIndex,
+      siteIndexFull,
     } as const;
   }),
 }) {

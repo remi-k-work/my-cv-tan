@@ -5,29 +5,22 @@ import { createIsomorphicFn } from "@tanstack/react-start";
 import { Effect } from "effect";
 import { clientLoader } from "./shared";
 import { serverLoader } from "./shared.server";
-import { requireData } from "@/features/data/domain/required";
+import { requireDataFrom } from "@/features/data/domain/required";
 
 // types
 import type { PageData } from "./page-data";
 
-// Fetch every dataset concurrently, then require them
+// Fetch every dataset and require it in one step, so a concurrent read either produces the data or
+// fails by the name of the asset it could not read
 const load = <E>(source: PageData<E>) =>
-  Effect.gen(function* () {
-    const { randomPageTitles, stablePageTitles, educationList } = yield* Effect.all(
-      {
-        randomPageTitles: source.randomPageTitles,
-        stablePageTitles: source.stablePageTitles,
-        educationList: source.educationList,
-      },
-      { concurrency: "unbounded" }
-    );
-
-    return {
-      randomPageTitles: yield* requireData(randomPageTitles, "random page titles"),
-      stablePageTitles: yield* requireData(stablePageTitles, "stable page titles"),
-      educationList: yield* requireData(educationList, "education list"),
-    } as const;
-  });
+  Effect.all(
+    {
+      randomPageTitles: requireDataFrom(source.randomPageTitles, "random page titles"),
+      stablePageTitles: requireDataFrom(source.stablePageTitles, "stable page titles"),
+      educationList: requireDataFrom(source.educationList, "education list"),
+    },
+    { concurrency: "unbounded" }
+  );
 
 export const loaderEducation = createIsomorphicFn()
   .server(() => serverLoader(load))

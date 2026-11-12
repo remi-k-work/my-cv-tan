@@ -22,31 +22,49 @@ import type { Experience } from "@/features/experience/domain/models";
 // call site selects the bundle, never an (en, pl) pair, so the two languages can't be swapped
 type LocalizedAsset<A> = Record<PreferredLanguage, Option.Option<A>>;
 
+// Canonical routes are shared across locales, so a pair that decodes but names different paths
+// cannot be served safely: neither locale is published, because one language would 404 on a route
+// the other publishes. A bundle that never decoded leaves the pair as it was instead — the reader
+// of a language whose own bundle failed never addresses the other locale's routes, so partial data
+// still serves the locale that has it. Exported so the invariant is unit-testable rather than
+// only observable through a decode of the real assets.
+export const localizedExperienceAsset = <A extends ReadonlyArray<Pick<Experience, "slug">>>(
+  english: Option.Option<A>,
+  polish: Option.Option<A>
+): LocalizedAsset<A> => {
+  // Both bundles decoded but disagree on the routes they publish, so neither can be served
+  if (Option.isSome(english) && Option.isSome(polish) && !haveSameExperienceSlugs(english.value, polish.value))
+    return { en: Option.none<A>(), pl: Option.none<A>() };
+
+  return { en: english, pl: polish };
+};
+
+// The decoders are pure values, so they are built once at module scope and reused on every layer
+// construction — the same "build once, use many" the captcha session's sealed-value decoder follows.
+// `decodeOption` keeps compile-time checking where the imported JSON already matches the schema's
+// encoded type; the experience assets mix "e" and "p" entries, which widen to `string` on import,
+// so they need the decoder that accepts unknown input
+const decodePageTitlesList = Schema.decodeOption(PageTitlesList);
+const decodeExperienceList = Schema.decodeUnknownOption(ExperienceList);
+const decodeEducationList = Schema.decodeOption(EducationList);
+
 export class Data extends Context.Service<Data>()("Data", {
   make: Effect.sync(() => {
-    // Decode localized JSON assets once at service construction; decoding to Option turns
-    // malformed assets into None (treated as missing data downstream) instead of failing
-    // the layer; `decodeOption` keeps compile-time checking where the imported JSON already
-    // matches the schema's encoded type; the experience assets mix "e" and "p" entries, which
-    // widen to `string` on import, so they need the untyped decoder
+    // Decode once at service construction. Decoding to Option turns a malformed asset into None
+    // (missing data downstream) instead of failing the layer
     const pageTitlesAsset = {
-      en: Schema.decodeOption(PageTitlesList)(pageTitlesEn),
-      pl: Schema.decodeOption(PageTitlesList)(pageTitlesPl),
+      en: decodePageTitlesList(pageTitlesEn),
+      pl: decodePageTitlesList(pageTitlesPl),
     };
     const decodedExperienceAsset = {
-      en: Schema.decodeUnknownOption(ExperienceList)(experienceEn),
-      pl: Schema.decodeUnknownOption(ExperienceList)(experiencePl),
+      en: decodeExperienceList(experienceEn),
+      pl: decodeExperienceList(experiencePl),
     };
-    // Canonical routes are shared across locales, so a mismatched slug set cannot be served safely.
-    const experienceAsset =
-      Option.isSome(decodedExperienceAsset.en) &&
-      Option.isSome(decodedExperienceAsset.pl) &&
-      !haveSameExperienceSlugs(decodedExperienceAsset.en.value, decodedExperienceAsset.pl.value)
-        ? { en: Option.none<ExperienceList>(), pl: Option.none<ExperienceList>() }
-        : decodedExperienceAsset;
+    // Canonical routes are shared across locales, so a mismatched slug set cannot be served safely
+    const experienceAsset = localizedExperienceAsset(decodedExperienceAsset.en, decodedExperienceAsset.pl);
     const educationAsset = {
-      en: Schema.decodeOption(EducationList)(educationEn),
-      pl: Schema.decodeOption(EducationList)(educationPl),
+      en: decodeEducationList(educationEn),
+      pl: decodeEducationList(educationPl),
     };
 
     const localized = <A>(preferredLanguage: Option.Option<PreferredLanguage>, asset: LocalizedAsset<A>) => asset[requestPreferredLanguage(preferredLanguage)];

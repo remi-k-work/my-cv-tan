@@ -1,8 +1,8 @@
 import { assert, it } from "@effect/vitest";
+import { Record } from "effect";
 import { AI_INDEX_MARKDOWN_LINKS, detailPagesSection, pagesSection } from "../twin-nav";
 import { STATIC_PAGES } from "@/features/meta/domain/pages";
 import { translateEn, translatePl } from "@/features/markdown/__tests__/fixtures";
-import type { PagePath } from "@/domain/models";
 
 it("pagesSection excludes the linking page itself", () => {
   const links = pagesSection("/", "en", translateEn);
@@ -15,7 +15,7 @@ it("the twin graph enumerates the static pages from the one declaration every su
   // The sibling set is derived from STATIC_PAGES — the same table the HTML head, the sitemap and
   // the twin routes walk — rather than from a second path table that has to agree by hand. A page
   // declared there is picked up by the graph, and a page that never was cannot appear in it.
-  const staticPaths = Object.keys(STATIC_PAGES) as ReadonlyArray<PagePath>;
+  const staticPaths = Record.keys(STATIC_PAGES);
 
   for (const path of staticPaths) {
     const links = pagesSection(path, "en", translateEn);

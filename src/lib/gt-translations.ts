@@ -34,6 +34,8 @@ export const translateForLanguage = async (preferredLanguage: PreferredLanguage)
     pipe(
       translations,
       Option.flatMap((dictionary) => Record.get(dictionary, hashSource({ source, dataFormat: "ICU" }))),
+      // `hashSource` returns a branded content value, not a plain key: this is the one place the
+      // brand is dropped, so the dictionary read stays a string-to-string record
       Option.filter(Predicate.isString),
       Option.getOrElse(() => source)
     );

@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Predicate } from "effect";
+import { Option, Predicate, pipe } from "effect";
 
 // constants
 import { NOINDEX_FOLLOW, NO_STORE, RETRY_AFTER } from "@/domain/http";
@@ -13,9 +13,20 @@ export const markHtmlDataUnavailable = (request: Request, error: unknown) => {
 };
 
 export const applyHtmlDataUnavailableResponse = (request: Request, response: Response) => {
-  if (!unavailableHtmlRequests.has(request) || !response.headers.get("content-type")?.includes("text/html")) return response;
+  // Consume the mark on read: it stands for one failed loader run, so it must not outlive the
+  // response it was raised for — a later response for the same Request is a fresh, healthy one,
+  // and a mark left in place would downgrade that one too
+  const marked = unavailableHtmlRequests.delete(request);
+  if (!marked) return response;
 
-  unavailableHtmlRequests.delete(request);
+  // Only an HTML document carries the rendered error page the downgrade describes; a JSON or asset
+  // answer for the same request is unaffected, so the header read decides like the mark does
+  const isHtml = pipe(
+    Option.fromNullishOr(response.headers.get("content-type")),
+    Option.exists((contentType) => contentType.includes("text/html"))
+  );
+  if (!isHtml) return response;
+
   const headers = new Headers(response.headers);
   headers.set("Cache-Control", NO_STORE);
   headers.set("X-Robots-Tag", NOINDEX_FOLLOW);

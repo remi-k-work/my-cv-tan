@@ -3,12 +3,14 @@
 // from another's.
 
 // services, features, and other libraries
+import { Option, Record } from "effect";
 import { twinDocument } from "@/features/markdown/domain/format";
 import { buildContactMd, buildEducationMd, buildHomeMd } from "@/features/markdown/domain/twins";
 
 // types
 import type { PageTitles, Translate } from "@/domain/models";
 import type { Experience } from "@/features/experience/domain/models";
+import type { ContactMdInput, EducationMdInput, HomeMdInput } from "@/features/markdown/domain/twins";
 
 export const sampleExperience: Experience = {
   type: "e",
@@ -57,9 +59,11 @@ const polishTranslations: Readonly<Record<string, string>> = {
   "Watch Video": "Zobacz Video",
 };
 
-export const translatePl: Translate = (source) => polishTranslations[source] ?? source;
+// A miss in the dictionary is the source string itself, expressed as the same typed absence the
+// rest of the feature reads rather than an undefined index lookup
+export const translatePl: Translate = (source) => Option.getOrElse(Record.get(polishTranslations, source), () => source);
 
 // Builders return a twin; tests almost always want the serialized document.
-export const homeTwin = (input: Parameters<typeof buildHomeMd>[0]) => twinDocument(buildHomeMd(input));
-export const educationTwin = (input: Parameters<typeof buildEducationMd>[0]) => twinDocument(buildEducationMd(input));
-export const contactTwin = (input: Parameters<typeof buildContactMd>[0]) => twinDocument(buildContactMd(input));
+export const homeTwin = (input: HomeMdInput) => twinDocument(buildHomeMd(input));
+export const educationTwin = (input: EducationMdInput) => twinDocument(buildEducationMd(input));
+export const contactTwin = (input: ContactMdInput) => twinDocument(buildContactMd(input));

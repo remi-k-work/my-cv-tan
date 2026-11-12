@@ -38,8 +38,9 @@ it.effect("deletes characters frame by frame", () =>
 
 it.effect("emits no deletion frames when the visible text is already empty", () =>
   Effect.gen(function* () {
-    // Array.makeBy always returns at least one element, so deleting from an empty text must
-    // be skipped rather than emitting a frame for a character that is not there
+    // `Array.range` normalizes a non-positive length to a single element, so deleting from an
+    // empty text has to be short-circuited rather than emitting a frame for a character that
+    // is not there
     const frames = yield* collectFrames([DeleteChars({ count: 4 })]);
 
     assert.deepStrictEqual(Array.from(frames), []);

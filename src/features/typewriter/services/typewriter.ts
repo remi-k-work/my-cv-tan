@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Array, Context, Duration, Effect, Layer, Match, Option, Random, Stream, pipe } from "effect";
+import { Array, Context, Duration, Effect, Layer, Match, Number, Option, Random, Stream, pipe } from "effect";
 import { planScript } from "@/features/typewriter/domain/actions";
 
 // types
@@ -24,8 +24,10 @@ const expandOp = (currText: string, typewriterOp: TypewriterOp) =>
     // `Array.range` always yields at least one element, so an empty text (or zero count) skips
     DeleteChars: ({ count }) => {
       const visible = Array.fromIterable(currText);
-      const removalCount = Math.min(count, visible.length);
-      if (removalCount === 0) return Effect.succeed([]);
+      const removalCount = Number.min(count, visible.length);
+      // A non-positive count deletes nothing: `Array.range` always yields at least one element, so
+      // only this guard keeps an empty text (or a zero request) from emitting a deletion frame
+      if (removalCount <= 0) return Effect.succeed([]);
 
       return pipe(
         Array.range(1, removalCount),

@@ -1,4 +1,5 @@
 // services, features, and other libraries
+import { Array } from "effect";
 import { partitionExperiences } from "@/features/experience/domain/helpers";
 import { staticPageCopy } from "@/features/meta/domain/pages";
 import { pagesSection } from "./twin-nav";
@@ -14,9 +15,11 @@ import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
 import type { TwinContext } from "./models";
 
-type HomeMdInput = TwinContext & { readonly pageTitles: PageTitles; readonly experienceList: ExperienceList };
-type EducationMdInput = TwinContext & { readonly pageTitles: PageTitles; readonly educationList: EducationList };
-type ContactMdInput = TwinContext & { readonly pageTitles: PageTitles };
+// What each twin builder reads, named so the tests and any other caller can spell the input
+// without recomputing it from the builder's own signature
+export type HomeMdInput = TwinContext & { readonly pageTitles: PageTitles; readonly experienceList: ExperienceList };
+export type EducationMdInput = TwinContext & { readonly pageTitles: PageTitles; readonly educationList: EducationList };
+export type ContactMdInput = TwinContext & { readonly pageTitles: PageTitles };
 
 // constants
 import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/domain/constants";
@@ -28,13 +31,17 @@ const profileLinks = (translate: Translate) => [...mdProfileLinks(SOCIAL_PROFILE
 const schoolSections = (educationList: EducationList, translate: Translate) =>
   mdTitledSection(
     translate("Education"),
-    educationList.length === 0
-      ? mdEmptyMarker(translate)
-      : mdBody(
-          educationList.map(({ name, year, location, info }) =>
+    // The two arms are the whole decision, so matching on emptiness names it instead of leaving a
+    // length read for the reader to interpret
+    Array.match(educationList, {
+      onEmpty: () => mdEmptyMarker(translate),
+      onNonEmpty: (entries) =>
+        mdBody(
+          Array.map(entries, ({ name, year, location, info }) =>
             mdBody([mdHeading(3, name), mdBulletList([mdFact(translate("Years"), year), mdFact(translate("Location"), location)]), escapeMd(info)])
           )
-        )
+        ),
+    })
   );
 
 const documentsSection = (translate: Translate) => mdTitledSection(translate("Documents"), mdDocumentLinks(DOWNLOADABLE_DOCUMENTS, translate));
