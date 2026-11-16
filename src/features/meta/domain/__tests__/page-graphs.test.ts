@@ -20,7 +20,7 @@ const employment: ExperienceList = [
 const projects: ExperienceList = [{ type: "p", slug: "proj-1", year: "2025", role: "Art", company: "Co", txt: "Play.", skillsUsed: ["React"], imageName: "" }];
 
 const findByType = <T extends Record<string, unknown>>(nodes: ReadonlyArray<T>, type: string, idFragment?: string) =>
-  nodes.find((node) => node["@type"] === type && (idFragment === undefined || String(node["@id"]).endsWith(idFragment))) as T | undefined;
+  nodes.find((node) => node["@type"] === type && (idFragment === undefined || String(node["@id"]).endsWith(idFragment)));
 
 it("educationJsonLd assembles a CollectionPage with its school subgraph", () => {
   const nodes = educationJsonLd({

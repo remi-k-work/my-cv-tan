@@ -14,7 +14,9 @@ export function NotFoundPage() {
   // The <head> publishes the same two strings for this same document, so the page reads them from
   // the degraded-document declaration instead of restating them where a crawler cannot see them
   const { title: heading, description: explanation } = NOT_FOUND_COPY[preferredLanguage];
-  // The link back home is nav chrome: it follows the GT dictionary, like the header's own labels
+  // The link back home is nav chrome: it comes from the same static per-language copy the heading
+  // above reads, so the degraded document stays fully translated even when the GT dictionary is
+  // unavailable — the one moment a fallback document cannot rely on it
   const homeLabel = matchPreferredLanguage(preferredLanguage, "Home page", "Strona główna");
 
   return (

@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Array, Number, Option, String, flow, pipe, Record } from "effect";
+import { Array, Number, Option, Predicate, String, flow, pipe, Record } from "effect";
 import { absoluteUrl, encodeDestination } from "@/features/meta/domain/urls";
 import { escapeMdInline } from "./escape";
 
@@ -16,7 +16,8 @@ const isBlank = flow(String.trim, String.isEmpty);
 // Escapes DEL, C1 controls, and Unicode line separators for YAML double-quoted scalars
 const YAML_UNSAFE_CHARACTERS = /[\u007f-\u009f\u2028\u2029]/g;
 
-const yamlValue = (value: string) => JSON.stringify(value).replace(YAML_UNSAFE_CHARACTERS, (char) => `\\u${char.charCodeAt(0).toString(16).padStart(4, "0")}`);
+const yamlValue = (value: string) =>
+  JSON.stringify(value).replace(YAML_UNSAFE_CHARACTERS, (char) => `\\u${pipe(char.charCodeAt(0).toString(16), String.padStart(4, "0"))}`);
 
 const yamlFields = (fields: Readonly<Record<string, string>>) =>
   pipe(
@@ -33,8 +34,13 @@ export const demoteHeadings = (markdown: string) => markdown.replace(DEMOTE_HEAD
 
 // Determines the minimum backtick fence length to avoid collisions with contained code
 const fenceFor = (content: string) => {
-  const runs = content.match(/`+/g) ?? [];
-  const longest = Array.reduce(runs, 0, (max, run) => Number.max(max, run.length));
+  // A document with no backtick run at all fences at the minimum length
+  const longest = pipe(
+    content,
+    String.match(/`+/g),
+    Option.map(Array.reduce(0, (max: number, run: string) => Number.max(max, run.length))),
+    Option.getOrElse(() => 0)
+  );
   return "`".repeat(Number.max(3, longest + 1));
 };
 
@@ -71,7 +77,9 @@ export const mdIndexEntry = (label: string, canonical: string, twinUrl: string, 
   // separates the two links, so an empty value must not leave a double space behind
   const beforeTwin = pipe(
     Option.fromUndefinedOr(summary),
-    Option.filter(String.isNonEmpty),
+    // Blank counts as absent: the inline escape trims whitespace-only text away, so keeping it
+    // would emit the separator space without any summary text between the two links
+    Option.filter(Predicate.not(isBlank)),
     Option.map((value) => `${escapeMdInline(value)} `),
     Option.getOrElse(() => "")
   );

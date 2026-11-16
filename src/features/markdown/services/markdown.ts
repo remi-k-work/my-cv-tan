@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Context, Effect, Layer, Option } from "effect";
+import { Context, Effect, Layer, Option, String } from "effect";
 import { Datasets } from "@/features/data/services/datasets";
 import { requestPreferredLanguage } from "@/features/data/services/request-language";
 import { recoverDataFailure } from "@/features/data/domain/required";
@@ -100,7 +100,7 @@ const discoveryDocument =
     content.pipe(
       Effect.map((body) => txtResponse(body, index.url)),
       recoverDataFailure(
-        () => `[${index.name.toUpperCase()}]`,
+        () => `[${String.toUpperCase(index.name)}]`,
         () => txtUnavailableResponse(unavailableIndexBody(index.name))
       )
     );

@@ -9,13 +9,16 @@ import { ClientOnly } from "@tanstack/react-router";
 const ReactLeaflet = lazy(() => import("./react-leaflet"));
 import { ContactAddressCard } from "./contact-address-card";
 
+// constants
+import { TILE_ORIGIN } from "./map-constants";
+
 // Leaflet touches window at import time, so it must never be evaluated on the server
 // ClientOnly gates SSR, Suspense covers the client-side chunk download; hoisted so every render reuses one element
 const mapFallback = <div className="size-full min-h-96" />;
 
 export function ContactMap() {
   // Warm the one tile origin the map actually loads from
-  preconnect("https://tile.openstreetmap.org");
+  preconnect(TILE_ORIGIN);
 
   return (
     <div className="relative z-0 mx-auto size-full max-w-4xl">

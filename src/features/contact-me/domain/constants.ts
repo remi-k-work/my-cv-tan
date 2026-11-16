@@ -2,6 +2,7 @@
 // character past each: the browser then accepts the over-limit keystroke, so the field's own
 // validation message can fire, instead of the input silently refusing it
 export const NAME_MAX_LENGTH = 25;
+export const EMAIL_MAX_LENGTH = 50;
 export const SUBJECT_MAX_LENGTH = 40;
 export const MESSAGE_MAX_LENGTH = 2048;
 

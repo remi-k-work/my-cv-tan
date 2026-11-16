@@ -6,7 +6,7 @@ import { assert, it } from "@effect/vitest";
 import { globalSocialImage, socialMeta } from "../social-meta";
 import { AUTHOR_URL, GLOBAL_SOCIAL_IMAGE, PUBLISHER_URL, SITE_NAME } from "../site";
 import { SocialImage, SocialMetaInput } from "../models";
-import { LANGUAGE, tagContent } from "./fixtures";
+import { LANGUAGE, metaTagsOf, tagContent } from "./fixtures";
 import type { PreferredLanguage } from "@/domain/models";
 
 const language: PreferredLanguage = LANGUAGE;
@@ -27,7 +27,7 @@ const input: SocialMetaInput = {
   preferredLanguage: language,
 };
 
-const tagsOf = (input: SocialMetaInput) => JSON.parse(JSON.stringify(socialMeta(input))) as ReadonlyArray<Record<string, string>>;
+const tagsOf = (input: SocialMetaInput) => metaTagsOf(socialMeta(input));
 
 it("socialMeta publishes the Open Graph core tags for a website", () => {
   const tags = tagsOf(input);

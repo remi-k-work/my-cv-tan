@@ -18,6 +18,9 @@ interface SlideProps {
   experience: Experience;
 }
 
+// constants
+import { SLIDE_EXCERPT_LENGTH } from "@/features/experience/domain/constants";
+
 export function Slide({ experience, experience: { slug, txt } }: SlideProps) {
   const { style, handlers, glareStyle } = useTilt();
 
@@ -26,7 +29,7 @@ export function Slide({ experience, experience: { slug, txt } }: SlideProps) {
       <SlideHeader experience={experience} />
       <ScreenShots experience={experience} />
       <Link className={cn("mx-auto mt-3 block text-center", "hover:text-accent")} to="/{-$slug}" params={{ slug }}>
-        {excerpt(txt, 240)}
+        {excerpt(txt, SLIDE_EXCERPT_LENGTH)}
       </Link>
       <motion.div className="pointer-events-none absolute inset-0 rounded-xl" style={glareStyle} aria-hidden="true" />
     </motion.article>

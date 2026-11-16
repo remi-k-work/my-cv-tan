@@ -8,7 +8,7 @@ import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domai
 import { experienceScreenshot, experienceSeo } from "../seo";
 import { experienceHead } from "../page-head";
 import { documentHeaders } from "../responses";
-import { fallbackHead } from "../fallback";
+import { notFoundHead, unavailableHead } from "../fallback";
 import { jsonLdGraph } from "../jsonld";
 import { META_DESCRIPTION_LENGTH, PERSON_DESCRIPTION, SITE_DESCRIPTION, SITE_NODES } from "../site";
 import { CONTENT_SIGNAL } from "../discovery";
@@ -84,8 +84,8 @@ it("encodes slugs consistently in path, canonical and markdownPath", () => {
   assert.strictEqual(seo.markdownPath, `${encoded}.md`);
 });
 
-it("fallbackHead publishes a canonical noindex head with site entities", () => {
-  const fallback = fallbackHead("/contact");
+it("unavailableHead publishes a canonical noindex head with site entities", () => {
+  const fallback = unavailableHead("/contact");
 
   assert.deepStrictEqual(
     fallback.links?.map(({ rel, href }) => ({ rel, href })),
@@ -95,29 +95,29 @@ it("fallbackHead publishes a canonical noindex head with site entities", () => {
   assert.include(JSON.stringify(fallback.meta), '"title":"Remi Forge ● Page unavailable"');
   assert.include(JSON.stringify(fallback.meta), "This page is temporarily unavailable.");
   // The fallback publishes site entities (WebSite, Person, Organization) without a page graph
-  const graph = JSON.parse(fallback.scripts?.[0]?.children ?? "{}");
-  assert.isDefined(graph["@graph"].find((node: { "@type"?: string }) => node["@type"] === "WebSite"));
-  assert.isDefined(graph["@graph"].find((node: { "@type"?: string }) => node["@type"] === "Person"));
-  assert.isDefined(graph["@graph"].find((node: { "@type"?: string }) => node["@type"] === "Organization"));
+  const graph = graphOf(fallback.scripts?.[0]?.children);
+  assert.isDefined(nodeOf(graph, "WebSite"));
+  assert.isDefined(nodeOf(graph, "Person"));
+  assert.isDefined(nodeOf(graph, "Organization"));
   // Exactly one JSON-LD block
   assert.strictEqual(fallback.scripts?.length, 1);
 });
 
-it("fallbackHead's copy and canonical follow one fact: no route to name is the not-found head", () => {
+it("the degraded heads publish copy and canonicals that follow one fact: only the unavailable head names a route", () => {
   // The unavailable and not-found fallbacks differ only in their localized copy, and the copy
   // selection is derived from the same fact that decides the canonical — so a head that publishes
   // an "unavailable" title must name the route it stands in for, and one that names none must
   // carry the not-found copy and no canonical at all.
-  const unavailable = fallbackHead("/contact", "pl");
+  const unavailable = unavailableHead("/contact", "pl");
   assert.include(JSON.stringify(unavailable.meta), '"title":"Remi Forge ● Strona niedostępna"');
   assert.deepStrictEqual(unavailable.links, [{ rel: "canonical", href: "https://www.remiforge.dev/contact" }]);
 
-  const notFound = fallbackHead(undefined, "pl");
+  const notFound = notFoundHead("pl");
   assert.include(JSON.stringify(notFound.meta), '"title":"Remi Forge ● Nie znaleziono"');
   assert.include(JSON.stringify(notFound.meta), "Nie znaleziono żądanej strony.");
   assert.strictEqual(notFound.links.length, 0);
   // The site entities are published either way: a fallback is still a document about the site
-  assert.isDefined(JSON.parse(notFound.scripts?.[0]?.children ?? "{}")["@graph"].find((node: { "@type"?: string }) => node["@type"] === "Person"));
+  assert.isDefined(nodeOf(graphOf(notFound.scripts?.[0]?.children), "Person"));
 });
 
 it("robots.txt responses are English, noindex, and carry the shared reuse signal", () => {

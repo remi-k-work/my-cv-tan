@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Array, Option } from "effect";
+import { Array } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
 
 // types
@@ -21,14 +21,10 @@ export const globalSocialImage = (preferredLanguage: PreferredLanguage): SocialI
 
 const alternateLocales = (preferredLanguage: PreferredLanguage) => Array.filter(SITE_LANGUAGES, (language) => language !== preferredLanguage);
 
-// The section is the only optional article attribution, so only it is lifted into an Option:
-// author and publisher are always published once the type is article, and wrapping them in
-// `Option.some` just to take them straight back out of `getSomes` says nothing the type does not
+// The section is the only optional article attribution: when it is absent it contributes no tag
+// at all, which is a single nullish test rather than Option ceremony
 const articleSectionTag = (articleSection: "employment" | "portfolio" | undefined): ReadonlyArray<MetaTag> =>
-  Option.match(Option.fromNullishOr(articleSection), {
-    onNone: () => [],
-    onSome: (section): ReadonlyArray<MetaTag> => [{ property: "article:section", content: section }],
-  });
+  articleSection === undefined ? [] : [{ property: "article:section", content: articleSection }];
 
 const articleMetaTags = (ogType: "website" | "article", articleSection?: "employment" | "portfolio"): ReadonlyArray<MetaTag> =>
   ogType === "article"

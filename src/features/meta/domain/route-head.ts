@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { Array, Option, Schema, pipe } from "effect";
 import { PreferredLanguage } from "@/domain/models";
-import { fallbackHead } from "./fallback";
+import { unavailableHead } from "./fallback";
 
 // types
 import type { MatchChain, PageHead, RouteStatus } from "./models";
@@ -46,10 +46,12 @@ export const routeHead = <TData>({ loaderData, matches, matchStatus, fallbackPat
   // A failed or still-pending loader leaves no payload; TanStack hands back either null or
   // undefined for it, so the nullish projection covers both and the builder only ever reads a
   // payload the match actually produced
-  const payload = Option.fromNullishOr(loaderData);
-
-  if (matchStatus !== "success" || Option.isNone(payload) || Array.some(matches, ({ status }) => status === "error"))
-    return fallbackHead(fallbackPath, preferredLanguage);
-
-  return build(payload.value, preferredLanguage);
+  return pipe(
+    Option.fromNullishOr(loaderData),
+    // An unresolved match — or an errored one anywhere in the chain — must publish the degraded
+    // head, never one built from a payload the match did not produce
+    Option.filter(() => matchStatus === "success" && !Array.some(matches, ({ status }) => status === "error")),
+    Option.map((data) => build(data, preferredLanguage)),
+    Option.getOrElse(() => unavailableHead(fallbackPath, preferredLanguage))
+  );
 };

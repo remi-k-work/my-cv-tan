@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Option, Predicate, pipe } from "effect";
+import { Option, Predicate, String, pipe } from "effect";
 
 // constants
 import { NOINDEX_FOLLOW, NO_STORE, RETRY_AFTER } from "@/domain/http";
@@ -21,10 +21,7 @@ export const applyHtmlDataUnavailableResponse = (request: Request, response: Res
 
   // Only an HTML document carries the rendered error page the downgrade describes; a JSON or asset
   // answer for the same request is unaffected, so the header read decides like the mark does
-  const isHtml = pipe(
-    Option.fromNullishOr(response.headers.get("content-type")),
-    Option.exists((contentType) => contentType.includes("text/html"))
-  );
+  const isHtml = pipe(Option.fromNullishOr(response.headers.get("content-type")), Option.exists(String.includes("text/html")));
   if (!isHtml) return response;
 
   const headers = new Headers(response.headers);

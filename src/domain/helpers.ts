@@ -1,12 +1,16 @@
 // services, features, and other libraries
-import { Context, Layer, Option, pipe } from "effect";
+import { Context, Layer, Option, Schema, pipe } from "effect";
 import { RpcClient, RpcGroup, RpcSerialization, RpcServer } from "effect/rpc";
 import { FetchHttpClient, HttpRouter, HttpServer } from "effect/http";
 import { RpcLogger } from "@/services/rpc-logger";
+import { PreferredLanguage } from "./models";
 
 // types
 import type { Rpc } from "effect/rpc";
-import type { PagePath, PageTitles, PreferredLanguage, Translate } from "./models";
+import type { PagePath, PageTitles, Translate } from "./models";
+
+// constants
+import { DEFAULT_LANGUAGE } from "./constants";
 
 // Builds a class-style RPC client service backed by an HTTP protocol layer for a given RPC group
 export const makeRpcClient = <Rpcs extends Rpc.Any>(serviceName: string, group: RpcGroup.RpcGroup<Rpcs>, path: string) => {
@@ -46,7 +50,12 @@ export const routeHandler =
 export const matchPreferredLanguage = <T>(preferredLanguage: PreferredLanguage, en: T, pl: T): T => (preferredLanguage === "pl" ? pl : en);
 
 // Normalizes any locale string a caller can hand us onto the site's supported languages
-export const preferredLanguageFromLocale = (locale: string): PreferredLanguage => (locale === "pl" ? "pl" : "en");
+const decodePreferredLanguage = Schema.decodeUnknownOption(PreferredLanguage);
+export const preferredLanguageFromLocale = (locale: string) =>
+  pipe(
+    decodePreferredLanguage(locale),
+    Option.getOrElse(() => DEFAULT_LANGUAGE)
+  );
 
 // Localized page title/intro with a static fallback when loader data is missing or partial
 export const pageField = (pageTitles: Partial<PageTitles> | null, pagePath: PagePath, key: "heading" | "intro", fallback: string) =>

@@ -69,19 +69,20 @@ const experienceCollection = ({
   readonly experiences: ExperienceList;
   readonly preferredLanguage: PreferredLanguage;
 }): JsonLdNodes => {
-  if (experiences.length === 0) return [];
-
-  return [
-    collectionNode({
-      id,
-      name,
-      preferredLanguage,
-      parts: Array.map(experiences, (experience) => {
-        const url = absoluteUrl(experiencePath(experience.slug));
-        return { "@type": "WebPage", "@id": url, url, name: experienceHeadline(experience, preferredLanguage) };
+  return Array.match(experiences, {
+    onEmpty: () => [],
+    onNonEmpty: (entries) => [
+      collectionNode({
+        id,
+        name,
+        preferredLanguage,
+        parts: Array.map(entries, (experience) => {
+          const url = absoluteUrl(experiencePath(experience.slug));
+          return { "@type": "WebPage", "@id": url, url, name: experienceHeadline(experience, preferredLanguage) };
+        }),
       }),
-    }),
-  ];
+    ],
+  });
 };
 
 export const experienceCollections = (employment: ExperienceList, projects: ExperienceList, preferredLanguage: PreferredLanguage): JsonLdNodes => [
@@ -99,20 +100,22 @@ export const experienceCollections = (employment: ExperienceList, projects: Expe
   }),
 ];
 
-export const schoolSubgraph = (url: string, educationList: EducationList): JsonLdNodes => {
-  if (educationList.length === 0) return [];
+export const schoolSubgraph = (url: string, educationList: EducationList): JsonLdNodes =>
+  Array.match(educationList, {
+    onEmpty: () => [],
+    onNonEmpty: (entries) => {
+      const schoolNodes = Array.map(entries, ({ name, info, location }, index) => ({
+        "@type": "EducationalOrganization",
+        "@id": `${url}#school-${index + 1}`,
+        name,
+        description: excerpt(info, META_DESCRIPTION_LENGTH),
+        address: location,
+        alumni: { "@id": PERSON_ID },
+      }));
 
-  const schoolNodes = Array.map(educationList, ({ name, info, location }, index) => ({
-    "@type": "EducationalOrganization",
-    "@id": `${url}#school-${index + 1}`,
-    name,
-    description: excerpt(info, META_DESCRIPTION_LENGTH),
-    address: location,
-    alumni: { "@id": PERSON_ID },
-  }));
-
-  return [...schoolNodes, personEdge({ alumniOf: Array.map(schoolNodes, ({ "@id": id }) => ({ "@id": id })) })];
-};
+      return [...schoolNodes, personEdge({ alumniOf: Array.map(schoolNodes, ({ "@id": id }) => ({ "@id": id })) })];
+    },
+  });
 
 export const educationJsonLd = ({
   pageName,

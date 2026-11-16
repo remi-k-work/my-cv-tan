@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Option, Schema, String, flow, pipe } from "effect";
+import { Option, Predicate, Schema, String, flow, pipe } from "effect";
 import { PreferredLanguage } from "@/domain/models";
 import { decodeUrlOption } from "@/features/meta/domain/urls";
 
@@ -22,10 +22,11 @@ export const parseLangParam = (url: string) =>
 export const slugFromMdPathname = (url: string) =>
   pipe(
     decodeUrlOption(url),
-    Option.map(({ pathname }) => pathname.slice(1)),
-    Option.filter((path) => !path.includes("/")),
-    Option.filter((segment) => segment.endsWith(".md")),
-    Option.map((segment) => segment.slice(0, -".md".length)),
+    Option.map(({ pathname }) => pipe(pathname, String.slice(1))),
+    // A markdown twin lives at a single top-level segment: a nested path is not a twin route
+    Option.filter(Predicate.not(String.includes("/"))),
+    Option.filter(String.endsWith(".md")),
+    Option.map(String.slice(0, -".md".length)),
     Option.flatMap(decodeUrlComponent),
     Option.filter(String.isNonEmpty)
   );

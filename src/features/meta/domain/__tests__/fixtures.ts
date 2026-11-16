@@ -12,7 +12,7 @@ import { Option, Schema, pipe } from "effect";
 import type { PageTitles, PreferredLanguage } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { Experience } from "@/features/experience/domain/models";
-import type { PageHead } from "../models";
+import type { MetaTag, PageHead } from "../models";
 
 // constants
 export const LANGUAGE: PreferredLanguage = "en";
@@ -37,17 +37,36 @@ export const stablePageTitles: PageTitles = {
   "/contact": { eyebrow: "Contact", heading: "Stable contact title", intro: "Stable contact description." },
 };
 
-// Serialized graph string is the public output, so a payload that fails to decode reads as an empty
-// graph: the assertions then fail loudly instead of quietly reading `undefined` off a cast
-const decodeGraph = Schema.decodeUnknownOption(Schema.fromJsonString(Schema.Struct({ "@graph": Schema.Array(Schema.Record(Schema.String, Schema.Unknown)) })));
+// The whole JSON-LD document a crawler parses, so a reader can reach the @context it reads first
+// and the @graph it reads second. `@context` is optional because only the document's own
+// serialization decides it; `@graph` stays required, so a payload that fails the decode still
+// reads as no graph at all — the assertions fail loudly instead of reading `undefined` off a cast
+const decodeDocument = Schema.decodeUnknownOption(
+  Schema.fromJsonString(Schema.Struct({ "@context": Schema.optionalKey(Schema.Unknown), "@graph": Schema.Array(Schema.Record(Schema.String, Schema.Unknown)) }))
+);
 const decodeText = Schema.decodeUnknownOption(Schema.String);
 const decodeNodes = Schema.decodeUnknownOption(Schema.Array(Schema.Record(Schema.String, Schema.Unknown)));
+const decodeMetaTags = Schema.decodeUnknownOption(Schema.fromJsonString(Schema.Array(Schema.Record(Schema.String, Schema.String))));
+
+type JsonLdDocument = { readonly "@context"?: unknown; readonly "@graph"?: ReadonlyArray<Record<string, unknown>> };
+
+export const documentOf = (children: string | undefined): Option.Option<JsonLdDocument> => decodeDocument(children ?? "{}");
 
 export const graphOf = (children: string | undefined): ReadonlyArray<Record<string, unknown>> =>
   pipe(
-    decodeGraph(children ?? "{}"),
-    Option.map((document) => document["@graph"]),
+    documentOf(children),
+    Option.flatMap((document) => Option.fromNullishOr(document["@graph"])),
     Option.getOrElse<ReadonlyArray<Record<string, unknown>>>(() => [])
+  );
+
+// The vocabulary a JSON-LD document declares before its graph. A payload that fails the decode — or
+// declares one that is not text — reads as no vocabulary at all, so an assertion about the published
+// @context fails rather than quietly comparing undefined
+export const contextOf = (children: string | undefined): string | undefined =>
+  pipe(
+    documentOf(children),
+    Option.flatMap((document) => decodeText(document["@context"])),
+    Option.getOrUndefined
   );
 
 // A node is an open record because the assertions probe arbitrary fields; `idFragment` narrows a
@@ -68,7 +87,15 @@ export const nodesOf = (node: Record<string, unknown> | undefined, key: string):
   );
 
 // Meta tags are a flat union, so a JSON round trip reads them back as the plain records the
-// assertions compare against
-export const metaOf = (head: PageHead) => JSON.parse(JSON.stringify(head.meta)) as ReadonlyArray<Record<string, string>>;
+// assertions compare against; like the graph readers above, a payload that fails the decode reads
+// as an empty list, so a regression fails loudly instead of quieting reading undefined off a cast
+export const metaTagsOf = (tags: ReadonlyArray<MetaTag>): ReadonlyArray<Record<string, string>> =>
+  pipe(
+    decodeMetaTags(JSON.stringify(tags)),
+    Option.getOrElse<ReadonlyArray<Record<string, string>>>(() => [])
+  );
 
-export const tagContent = (tags: ReadonlyArray<Record<string, string>>, key: "property" | "name", value: string) => tags.find((tag) => tag[key] === value)?.content;
+export const metaOf = (head: PageHead) => metaTagsOf(head.meta ?? []);
+
+export const tagContent = (tags: ReadonlyArray<Record<string, string>>, key: "property" | "name", value: string) =>
+  tags.find((tag) => tag[key] === value)?.content;

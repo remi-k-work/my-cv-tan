@@ -22,11 +22,10 @@ const contactFormBuilder = FormBuilder.empty
   .addField(MessageField)
   .addField(CaptchaInputField)
   .refineEffect(({ captchaInput }) =>
-    Effect.gen(function* () {
-      // Check the captcha to ensure it matches
-      const { isCaptchaValid } = yield* RpcCaptchaClient;
-      if (!(yield* isCaptchaValid({ captchaInput }))) return { path: ["captchaInput"], issue: msg("Entered captcha is invalid") };
-    }).pipe(
+    // Check the captcha to ensure it matches: the refine maps the answer onto its issue, and a
+    // transport failure degrades to the retry issue instead of failing the (never-error) refine
+    Effect.flatMap(RpcCaptchaClient, ({ isCaptchaValid }) => isCaptchaValid({ captchaInput })).pipe(
+      Effect.map((isValid) => (isValid ? undefined : { path: ["captchaInput"], issue: msg("Entered captcha is invalid") })),
       Effect.tapError(Effect.logError),
       Effect.orElseSucceed(() => ({
         path: ["captchaInput"],

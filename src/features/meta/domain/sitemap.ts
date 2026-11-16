@@ -23,10 +23,7 @@ const escapeXml = (value: string) => value.replace(/[&<>"']/g, (character) => Op
 const sitemapDocument = Effect.gen(function* () {
   const { experienceList } = yield* Datasets;
 
-  const lists = yield* Effect.all(
-    Array.map(SITE_LANGUAGES, (language) => experienceList(language)),
-    { concurrency: "unbounded" }
-  );
+  const lists = yield* Effect.forEach(SITE_LANGUAGES, (language) => experienceList(language), { concurrency: "unbounded" });
 
   // Every language publishes the same unique canonical routes, so the per-language lists flatten
   // into one slug collection; the builder dedupes the locations it renders from them

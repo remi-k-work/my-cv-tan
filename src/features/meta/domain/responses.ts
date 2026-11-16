@@ -13,6 +13,9 @@ import { DEFAULT_LANGUAGE } from "@/domain/constants";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW, NO_STORE, RETRY_AFTER } from "@/domain/http";
 import { AI_INDEX_LINK_HEADER, CONTENT_SIGNAL } from "./discovery";
 
+// The one spelling of the language-negotiation Vary tokens every surface shares: emitted by
+// `documentHeaders` below, and stripped by the Markdown twins' `withoutNegotiationVary` when a
+// URL pins its language, so the two sides can never disagree on what negotiation means
 export const NEGOTIATION_VARY_TOKENS = ["Cookie", "Accept-Language"] as const;
 
 // HTTP metadata headers for caching, robots indexing directives, and language negotiation

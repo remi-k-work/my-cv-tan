@@ -2,7 +2,7 @@
 // page graphs into the site entities by `@id`.
 
 // services, features, and other libraries
-import { Array, Predicate, Record } from "effect";
+import { Array, Predicate, Record, String, pipe } from "effect";
 
 // types
 import type { JsonLdNode, JsonLdObject, JsonLdScript } from "./models";
@@ -10,7 +10,7 @@ import type { JsonLdNode, JsonLdObject, JsonLdScript } from "./models";
 // Escapes '<' so serialized content cannot close the HTML script tag
 const jsonLdScript = (data: JsonLdObject): JsonLdScript => ({
   type: "application/ld+json",
-  children: JSON.stringify(data).replace(/</g, "\\u003C"),
+  children: pipe(JSON.stringify(data), String.replaceAll(/</g, "\\u003C")),
 });
 
 // Merges nodes by @id, preserving initial order and letting subsequent defined fields override

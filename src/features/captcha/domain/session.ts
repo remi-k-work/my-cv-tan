@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Bytes, Effect, Option, Schema, String } from "effect";
+import { Bytes, Effect, Option, Schema, String, pipe } from "effect";
 import { Digest, Mac } from "effect/crypto";
 
 // constants
@@ -16,12 +16,16 @@ export const commitToCaptcha = Effect.fnUntraced(function* (secret: string, salt
 });
 
 export const verifyCaptchaString = Effect.fnUntraced(function* (secret: string, sealed: string, captchaInput: string) {
-  const sealedParts = decodeSealed(String.split(sealed, "."));
-  if (Option.isNone(sealedParts)) return false;
-
-  const [salt, expected] = sealedParts.value;
-  const actual = yield* commitToCaptcha(secret, salt, captchaInput);
-
-  // The commitment is a secret-keyed digest, so the comparison must not leak how many leading bytes matched
-  return Mac.timingSafeEqual(actual, expected);
+  return yield* pipe(
+    decodeSealed(String.split(sealed, ".")),
+    Option.match({
+      // A malformed seal is a failed verification, not an error: there is no commitment to compare against
+      onNone: () => Effect.succeed(false),
+      onSome: ([salt, expected]) =>
+        Effect.map(commitToCaptcha(secret, salt, captchaInput), (actual) =>
+          // The commitment is a secret-keyed digest, so the comparison must not leak how many leading bytes matched
+          Mac.timingSafeEqual(actual, expected)
+        ),
+    })
+  );
 });

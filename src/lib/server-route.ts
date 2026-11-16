@@ -36,12 +36,17 @@ export const documentRoute = (
   keepsVisitorState: (request: Request) => boolean = () => false
 ): DocumentRoute =>
   Object.assign(
-    async ({ request }: { request: Request }) => {
-      try {
-        return await RuntimeServer.runPromise(document(request));
-      } finally {
-        if (!keepsVisitorState(request)) removeSetCookieHeader();
-      }
-    },
+    async ({ request }: { request: Request }) =>
+      // The finalizer rides the Effect, so it also runs when the document fails or the runtime
+      // interrupts it — the same guarantee try/finally gave at the promise boundary
+      RuntimeServer.runPromise(
+        document(request).pipe(
+          Effect.ensuring(
+            Effect.sync(() => {
+              if (!keepsVisitorState(request)) removeSetCookieHeader();
+            })
+          )
+        )
+      ),
     { keepsVisitorState }
   );

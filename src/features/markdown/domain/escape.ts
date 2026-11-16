@@ -34,9 +34,9 @@ const MD_ESCAPE_RULES = [...NORMALIZE_RULES, ...INLINE_RULES, ...EMPHASIS_RULES,
 // Escapes block-level markdown text
 export const escapeMd = (text: string) =>
   pipe(
-    Array.reduce(MD_ESCAPE_RULES, String.trimStart(text), (escaped, [pattern, replacement]) => escaped.replace(pattern, replacement)),
+    Array.reduce(MD_ESCAPE_RULES, String.trimStart(text), (escaped, [pattern, replacement]) => String.replace(pattern, replacement)(escaped)),
     String.trim
   );
 
 // Escapes inline markdown text, collapsing newlines into spaces
-export const escapeMdInline = (text: string) => escapeMd(text.replace(/[\r\n]+/g, " "));
+export const escapeMdInline = (text: string) => escapeMd(pipe(text, String.replace(/[\r\n]+/g, " ")));

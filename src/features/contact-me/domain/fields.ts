@@ -5,7 +5,7 @@ import { msg } from "gt-tanstack-start";
 
 // constants
 import { EMAIL_REGEX } from "@/domain/constants";
-import { MESSAGE_MAX_LENGTH, NAME_MAX_LENGTH, SUBJECT_MAX_LENGTH } from "./constants";
+import { EMAIL_MAX_LENGTH, MESSAGE_MAX_LENGTH, NAME_MAX_LENGTH, SUBJECT_MAX_LENGTH } from "./constants";
 
 export const NameField = Field.makeField(
   "name",
@@ -19,6 +19,7 @@ export const EmailField = Field.makeField(
   "email",
   Schema.Trim.check(
     Schema.isNonEmpty({ message: msg("Email address is required") }),
+    Schema.isMaxLength(EMAIL_MAX_LENGTH, { message: msg("Please keep the email to a maximum of 50 characters") }),
     Schema.isPattern(EMAIL_REGEX, { message: msg("The email address you gave appears to be incorrect; please update it") })
   )
 );

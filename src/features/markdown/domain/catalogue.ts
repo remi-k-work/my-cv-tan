@@ -17,12 +17,11 @@ export interface IndexEntry {
 // constants
 import { STATIC_PAGES, STATIC_PAGE_PATHS } from "@/features/meta/domain/pages";
 
-export const pageEntry = (pagePath: PagePath): IndexEntry => ({
-  name: STATIC_PAGES[pagePath].label,
-  canonical: absoluteUrl(pagePath),
-  mdHref: STATIC_PAGES[pagePath].mdHref,
-  summary: STATIC_PAGES[pagePath].indexSummary,
-});
+export const pageEntry = (pagePath: PagePath): IndexEntry => {
+  const { label, mdHref, indexSummary } = STATIC_PAGES[pagePath];
+
+  return { name: label, canonical: absoluteUrl(pagePath), mdHref, summary: indexSummary };
+};
 
 export const PAGE_ENTRIES: ReadonlyArray<IndexEntry> = Array.map(STATIC_PAGE_PATHS, pageEntry);
 

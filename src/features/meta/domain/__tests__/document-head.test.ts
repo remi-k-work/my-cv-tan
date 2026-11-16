@@ -16,7 +16,7 @@ import { routeHead } from "../route-head";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 import { NotFoundPage } from "@/ui/not-found-page";
 import { BRANDED_TITLE, NOT_FOUND_COPY, SITE_DESCRIPTION, SOCIAL_LINKS, UNAVAILABLE_COPY } from "../site";
-import { fallbackHead } from "../fallback";
+import { notFoundHead } from "../fallback";
 import { sampleExperience, stablePageTitles } from "./fixtures";
 import type { LinkTag, MatchChain, MetaTag, PageHead } from "../models";
 
@@ -171,7 +171,7 @@ it("the not-found head and the not-found page tell a crawler and a visitor the s
   // Both surfaces describe one document, and both read NOT_FOUND_COPY: a string re-authored on
   // either side would hand the SERP summary one title and the reader another.
   for (const preferredLanguage of ["en", "pl"] as const) {
-    const head = fallbackHead(undefined, preferredLanguage);
+    const head = notFoundHead(preferredLanguage);
     const copy = NOT_FOUND_COPY[preferredLanguage];
     // The page reads its language from the GT provider, the same way the document shell hands it one
     const page = renderToStaticMarkup(createElement(GTProvider, { locale: preferredLanguage, translations: {} }, createElement(NotFoundPage)));

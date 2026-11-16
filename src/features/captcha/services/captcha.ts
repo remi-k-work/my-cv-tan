@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Array, Config, Context, Effect, Layer, Option, pipe, Record, Redacted } from "effect";
+import { Array, Config, Context, Effect, Layer, Option, pipe, Record, Redacted, String } from "effect";
 import { Digest, SecureRandom } from "effect/crypto";
 import { Base64Url } from "effect/encoding";
 import { Cookies, Headers } from "effect/http";
@@ -20,7 +20,7 @@ export class Captcha extends Context.Service<Captcha>()("Captcha", {
 
     // One draw per character, then the projection into the permitted alphabet: a combinator pair
     // rather than a generator body, since there is a single effect to sequence
-    const generate = Effect.map(Effect.replicateEffect(STRENGTH)(secureRandom.intBetween(0, PERMITTED_CHARS.length - 1)), (indices) =>
+    const generate = Effect.map(Effect.replicateEffect(STRENGTH)(secureRandom.intBetween(0, String.length(PERMITTED_CHARS) - 1)), (indices) =>
       pipe(
         indices,
         Array.map((index) => PERMITTED_CHARS[index]),

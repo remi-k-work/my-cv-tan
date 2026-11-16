@@ -1,3 +1,6 @@
+// types
+import type { Transition } from "motion/react";
+
 // Shared motion tokens — single source of truth for every animation in the app
 export const MOTION_TOKENS = {
   duration: { instant: 0.08, fast: 0.18, normal: 0.35, slow: 0.6, crawl: 1.0 },
@@ -6,11 +9,12 @@ export const MOTION_TOKENS = {
   scale: { subtle: 0.98, press: 0.95, pop: 1.04 },
 } as const;
 
-// Spring presets — physics-based transitions for natural feel
+// Spring presets — physics-based transitions for natural feel; checked against motion's own
+// transition shape, so a property it does not accept fails here rather than at a call site
 export const SPRINGS = {
   snappy: { type: "spring", stiffness: 300, damping: 30 },
   gentle: { type: "spring", stiffness: 120, damping: 14 },
   bouncy: { type: "spring", stiffness: 400, damping: 10 },
   instant: { type: "spring", stiffness: 600, damping: 35 },
   release: { type: "spring", stiffness: 200, damping: 20, restDelta: 0.001 },
-} as const;
+} as const satisfies Readonly<Record<string, Transition>>;

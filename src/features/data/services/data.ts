@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Array, Context, Effect, Layer, Option, Random, Schema } from "effect";
+import { Array, Context, Effect, Layer, Option, Random, Schema, pipe } from "effect";
 import { haveSameExperienceSlugs } from "@/features/experience/domain/helpers";
 import { ExperienceList } from "@/features/experience/domain/models";
 import { EducationList } from "@/features/education/domain/models";
@@ -33,10 +33,12 @@ export const localizedExperienceAsset = <A extends ReadonlyArray<Pick<Experience
   polish: Option.Option<A>
 ): LocalizedAsset<A> => {
   // Both bundles decoded but disagree on the routes they publish, so neither can be served
-  if (Option.isSome(english) && Option.isSome(polish) && !haveSameExperienceSlugs(english.value, polish.value))
-    return { en: Option.none<A>(), pl: Option.none<A>() };
+  const disagrees = pipe(
+    Option.zipWith(english, polish, (en, pl) => !haveSameExperienceSlugs(en, pl)),
+    Option.getOrElse(() => false)
+  );
 
-  return { en: english, pl: polish };
+  return disagrees ? { en: Option.none<A>(), pl: Option.none<A>() } : { en: english, pl: polish };
 };
 
 // The decoders are pure values, so they are built once at module scope and reused on every layer

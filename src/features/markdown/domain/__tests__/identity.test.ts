@@ -14,6 +14,7 @@ import { buildContactMd, buildEducationMd, buildHomeMd } from "../twins";
 import { buildExperienceMd } from "../detail-twin";
 import { twinDocument } from "../format";
 import { sampleExperience, stablePageTitles, translateEn } from "@/features/markdown/__tests__/fixtures";
+import { graphOf, metaOf } from "@/features/meta/domain/__tests__/fixtures";
 import type { PagePath, PreferredLanguage } from "@/domain/models";
 import type { PageHead } from "@/features/meta/domain/models";
 import { experienceSeo } from "@/features/meta/domain/seo";
@@ -22,12 +23,12 @@ it("the head, JSON-LD, Markdown twin and visible detail heading share one experi
   const preferredLanguage = "pl";
   const seo = experienceSeo({ experience: sampleExperience, preferredLanguage });
   const head = experienceHead({ experience: sampleExperience, preferredLanguage });
-  const graph = JSON.parse(head.scripts?.[0]?.children ?? "{}") as { readonly "@graph": ReadonlyArray<Record<string, unknown>> };
-  const webPage = graph["@graph"].find((node) => node["@type"] === "WebPage");
+  const graph = graphOf(head.scripts?.[0]?.children);
+  const webPage = graph.find((node) => node["@type"] === "WebPage");
   const twin = twinDocument(buildExperienceMd({ seo, translate: translateEn }));
 
   const metaContent = (key: string) => {
-    const meta = JSON.parse(JSON.stringify(head.meta)) as ReadonlyArray<Record<string, string>>;
+    const meta = metaOf(head);
     return meta.find((tag) => tag["property"] === key || tag["name"] === key)?.content;
   };
 
@@ -75,7 +76,7 @@ it("each static page's head and twin publish the same canonical, title and descr
     const twin = twinDocument(buildTwin({ pageTitles: stablePageTitles, experienceList: [], educationList: [], preferredLanguage, translate: translateEn }));
 
     const metaContent = (key: string) => {
-      const meta = JSON.parse(JSON.stringify(head.meta)) as ReadonlyArray<Record<string, string>>;
+      const meta = metaOf(head);
       return meta.find((tag) => tag["property"] === key || tag["name"] === key)?.content;
     };
     const canonical = head.links?.find(({ rel }) => rel === "canonical")?.href;

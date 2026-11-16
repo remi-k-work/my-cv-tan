@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Option, Schema, pipe } from "effect";
+import { Option, Schema, String, pipe } from "effect";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
@@ -41,10 +41,10 @@ export const withLanguageParam = (url: string, preferredLanguage: PreferredLangu
 export const markdownTwinUrl = (mdPath: string, preferredLanguage: PreferredLanguage) => withLanguageParam(absoluteUrl(mdPath), preferredLanguage);
 
 // Percent-encodes parentheses which encodeURIComponent leaves raw
-export const encodeParens = (value: string) => value.replace(/\(/g, "%28").replace(/\)/g, "%29");
+export const encodeParens = (value: string) => pipe(value, String.replaceAll(/\(/g, "%28"), String.replaceAll(/\)/g, "%29"));
 
 // Percent-encodes parentheses and whitespace for Markdown link destinations
-export const encodeDestination = (value: string) => encodeParens(value).replace(/\s/g, "%20");
+export const encodeDestination = (value: string) => pipe(encodeParens(value), String.replaceAll(/\s/g, "%20"));
 
 export const experiencePath = (slug: string) => `/${encodeParens(encodeURIComponent(slug))}`;
 export const experienceMarkdownPath = (slug: string) => `${experiencePath(slug)}.md`;

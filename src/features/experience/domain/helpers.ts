@@ -46,11 +46,11 @@ export const partitionExperiences = (experienceList: ExperienceList) =>
   Array.partition(experienceList, (experience) => (isEmployment(experience) ? Result.succeed(experience) : Result.fail(experience)));
 
 // Keep translated headlines consistent across route metadata, JSON-LD, and Markdown twins;
-// the language switch delegates to the shared helper so every surface branches the same way
+// the kind switch reads the shared predicate so every surface branches the same way
 export const experienceHeadline = (experience: Pick<Experience, "type" | "role" | "company">, preferredLanguage: PreferredLanguage) =>
-  experience.type === "p"
-    ? matchPreferredLanguage(preferredLanguage, experience.role, `Projekt osobisty: ${experience.role}`)
-    : matchPreferredLanguage(preferredLanguage, `${experience.role} at ${experience.company}`, `${experience.role} w ${experience.company}`);
+  isEmployment(experience)
+    ? matchPreferredLanguage(preferredLanguage, `${experience.role} at ${experience.company}`, `${experience.role} w ${experience.company}`)
+    : matchPreferredLanguage(preferredLanguage, experience.role, `Projekt osobisty: ${experience.role}`);
 
 // The page and its social card use the same encoded frame path, so an image name stays one URL segment on both surfaces.
 export const experienceImagePath = (imageName: string, suffix: "a" | "b" | "c") => `/images/${encodeURIComponent(imageName)}-${suffix}.webp`;
@@ -70,7 +70,7 @@ export const excerpt = (text: string, maxLength: number) => {
   if (chars.length <= limit) return text;
 
   // Reserve room for the suffix so the appended ellipsis cannot push the result past the budget
-  const budget = Number.max(0, limit - EXCERPT_SUFFIX.length);
+  const budget = Number.max(0, limit - String.length(EXCERPT_SUFFIX));
 
   // Take the first `budget` characters from the left
   const cut = Array.join(Array.take(chars, budget), "");

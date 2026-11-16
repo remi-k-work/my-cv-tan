@@ -12,7 +12,7 @@ interface ContactFormFieldsProps {
 }
 
 // constants
-import { MESSAGE_MAX_LENGTH, NAME_MAX_LENGTH, SUBJECT_MAX_LENGTH } from "@/features/contact-me/domain/constants";
+import { EMAIL_MAX_LENGTH, MESSAGE_MAX_LENGTH, NAME_MAX_LENGTH, SUBJECT_MAX_LENGTH } from "@/features/contact-me/domain/constants";
 import { STRENGTH } from "@/features/captcha/domain/constants";
 
 // Every schema-limited input admits one character past its limit (see the domain constants)
@@ -29,7 +29,14 @@ export function ContactFormFields({ form }: ContactFormFieldsProps) {
         autoComplete="name"
         placeholder={gt("Let me know who you are!")}
       />
-      <form.email label={gt("Email")} size={20} maxLength={50} spellCheck={false} autoComplete="email" placeholder={gt("I will reply to you here")} />
+      <form.email
+        label={gt("Email")}
+        size={20}
+        maxLength={EMAIL_MAX_LENGTH + 1}
+        spellCheck={false}
+        autoComplete="email"
+        placeholder={gt("I will reply to you here")}
+      />
       <form.subject
         label={gt("Subject")}
         size={20}

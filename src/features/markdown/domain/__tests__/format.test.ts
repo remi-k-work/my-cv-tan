@@ -113,6 +113,18 @@ it("mdIndexEntry prints label, canonical, twin and an optional inline summary", 
   );
 });
 
+it("mdIndexEntry treats a whitespace-only summary as no summary at all", () => {
+  // A blank summary is the same as an absent one: the inline escape pass trims it to nothing, so
+  // keeping it would leave a lone space between the two separators the entry publishes
+  for (const blank of ["", " ", "\t", "\n", " \n\t "]) {
+    assert.strictEqual(
+      mdIndexEntry("Role", "https://site.test/role", "https://site.test/role.md", blank),
+      "[Role](https://site.test/role): Markdown: https://site.test/role.md",
+      `a ${JSON.stringify(blank)} summary must not render`
+    );
+  }
+});
+
 it("mdIndexEntry encodes parens in the twin URL exactly like mdLink encodes its href", () => {
   // Every URL the toolkit embeds is a Markdown destination, and a raw ")" would close it early.
   // The label goes through mdLink, so the twin spelling beside it has to take the same treatment.

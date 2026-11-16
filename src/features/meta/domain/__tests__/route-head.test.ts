@@ -3,7 +3,7 @@ import { headLanguage, routeHead } from "../route-head";
 import { rootHead } from "../root-head";
 import { homeHead } from "../page-head";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
-import { stablePageTitles } from "./fixtures";
+import { graphOf, stablePageTitles } from "./fixtures";
 import type { PageHead } from "../models";
 
 // The loader payload shapes headLanguage sees: a valid locale, an unsupported
@@ -27,7 +27,7 @@ it("routeHead keeps a canonical noindex fallback when loader data is missing", (
   assert.include(JSON.stringify(fallback.meta), '"title":"Remi Forge ● Page unavailable"');
   assert.include(JSON.stringify(fallback.meta), "This page is temporarily unavailable.");
   // The fallback still publishes the site entities, just not the page's own graph.
-  assert.isAbove(JSON.parse(fallback.scripts?.[0]?.children ?? "{}")["@graph"].length, 0);
+  assert.isAbove(graphOf(fallback.scripts?.[0]?.children).length, 0);
 });
 
 it("routeHead leaves not-found metadata to the root boundary, even with stale loader data", () => {

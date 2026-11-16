@@ -29,7 +29,7 @@ export const withoutNegotiationVary = (vary: string | null) =>
       pipe(
         String.split(value, ","),
         Array.map(String.trim),
-        Array.filter((token) => String.isNonEmpty(token) && !HashSet.has(NEGOTIATION_VARY, token.toLowerCase()))
+        Array.filter((token) => String.isNonEmpty(token) && !HashSet.has(NEGOTIATION_VARY, String.toLowerCase(token)))
       )
     ),
     // A Vary left with only negotiation tokens is no Vary at all, so the caller drops the header

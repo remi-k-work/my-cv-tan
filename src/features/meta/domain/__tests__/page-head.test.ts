@@ -11,7 +11,7 @@ import { INDEXABLE_ROBOTS } from "@/domain/http";
 import { STATIC_PAGES } from "../pages";
 import { withLanguageParam } from "../urls";
 import { canonicalLink } from "../link-tags";
-import { LANGUAGE, graphOf, metaOf, nodeOf, nodesOf, sampleEducation, sampleExperience, stablePageTitles, tagContent } from "./fixtures";
+import { LANGUAGE, contextOf, graphOf, metaOf, nodeOf, nodesOf, sampleEducation, sampleExperience, stablePageTitles, tagContent } from "./fixtures";
 import type { JsonLdNodes, PageHead, SocialMetaInput } from "../models";
 import type { PreferredLanguage } from "@/domain/models";
 
@@ -58,11 +58,12 @@ it("pageHead publishes the page's own canonical and Markdown alternate links", (
 it("pageHead publishes exactly one JSON-LD block merging site entities with the page graph", () => {
   const head = pageHead({ social, markdownPath: "/test.md", graph });
   assert.strictEqual(head.scripts?.length, 1);
-  const payload = JSON.parse(head.scripts?.[0]?.children ?? "{}");
-  assert.strictEqual(payload["@context"], "https://schema.org");
-  assert.isDefined(payload["@graph"].find((node: { "@type"?: string }) => node["@type"] === "WebSite"));
-  assert.isDefined(payload["@graph"].find((node: { "@type"?: string }) => node["@type"] === "Person"));
-  assert.isDefined(payload["@graph"].find((node: { "@type"?: string }) => node["@type"] === "WebPage"));
+  const script = head.scripts?.[0]?.children;
+  // The document declares the schema.org vocabulary before the graph it carries
+  assert.strictEqual(contextOf(script), "https://schema.org");
+  assert.isDefined(nodeOf(graphOf(script), "WebSite"));
+  assert.isDefined(nodeOf(graphOf(script), "Person"));
+  assert.isDefined(nodeOf(graphOf(script), "WebPage"));
 });
 
 it("experienceHead builds on pageHead with article social type and canonical link", () => {
@@ -120,7 +121,7 @@ it("experienceHead omits unsupported publication dates and keyword meta", () => 
   // The authored year is a display string ("Mar 2026", "2005 – 2007", "Too Long"), not an ISO
   // date, so it is never published as schema.org datePublished. It stays a factual "year" field in
   // the Markdown twin instead of a freshness claim the graph cannot substantiate.
-  const graph = JSON.parse(head.scripts?.[0]?.children ?? "{}");
+  const graph = graphOf(head.scripts?.[0]?.children);
   assert.notInclude(JSON.stringify(graph), "datePublished");
 
   const undated = JSON.stringify(experienceHead({ experience: { ...sampleExperience, year: "Too Long" }, preferredLanguage: "en" }).meta);
@@ -155,7 +156,6 @@ it("every card image is addressable under both the bare and the structured og:im
   // Facebook's crawler reads the og:image:* family as one record and og:image:url as its canonical
   // address. A card publishing only the bare og:image beside the family's other members leaves the
   // image ambiguous, so both spellings are published for the same src on every page kind.
-  const metaOf = (head: ReturnType<typeof homeHead>) => JSON.parse(JSON.stringify(head.meta)) as ReadonlyArray<Record<string, string>>;
   const sourcesOf = (tags: ReadonlyArray<Record<string, string>>) => ({
     bare: tags.filter((tag) => tag["property"] === "og:image").map((tag) => tag["content"]),
     url: tags.filter((tag) => tag["property"] === "og:image:url").map((tag) => tag["content"]),
@@ -171,7 +171,7 @@ it("every card image is addressable under both the bare and the structured og:im
     const { bare, url } = sourcesOf(metaOf(head));
     assert.deepStrictEqual(url, bare);
     // Declared absolute, so a scraper never has to resolve an origin
-    assert.isTrue(bare.every((src) => (src ?? "").startsWith("https://")));
+    assert.isTrue(bare.every((src) => src.startsWith("https://")));
   }
 });
 
@@ -276,7 +276,7 @@ it("og:url is byte-equal to the canonical link on every page kind", () => {
   // URL math twice — once for the <link> and again for og:url — is how two spellings of one
   // document drift apart, which hands crawlers a duplicate-URL signal it has to reconcile.
   const ogUrlOf = (head: ReturnType<typeof homeHead>) => {
-    const meta = JSON.parse(JSON.stringify(head.meta)) as Array<Record<string, string>>;
+    const meta = metaOf(head);
     return meta.find((tag) => tag["property"] === "og:url")?.content;
   };
   const canonicalOf = (head: ReturnType<typeof homeHead>) => head.links?.find((tag) => tag.rel === "canonical")?.href;
