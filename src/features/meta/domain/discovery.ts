@@ -4,6 +4,7 @@
 
 // services, features, and other libraries
 import { Array } from "effect";
+import { msg } from "gt-i18n";
 import { matchPreferredLanguage } from "@/domain/helpers";
 import { joinLinkHeader } from "./link-tags";
 
@@ -27,9 +28,9 @@ export const CV_PL_HREF = "/my-cv-pl.pdf";
 export const CERTIFICATES_HREF = "/my-certificates.pdf";
 
 export const DOWNLOADABLE_DOCUMENTS = [
-  { label: "CV (English)", href: CV_EN_HREF },
-  { label: "CV (Polish)", href: CV_PL_HREF },
-  { label: "Certificates", href: CERTIFICATES_HREF },
+  { label: msg("CV (English)"), href: CV_EN_HREF },
+  { label: msg("CV (Polish)"), href: CV_PL_HREF },
+  { label: msg("Certificates"), href: CERTIFICATES_HREF },
 ] as const;
 
 export const DOWNLOADABLE_DOCUMENT_PATHS = Array.map(DOWNLOADABLE_DOCUMENTS, ({ href }) => href);

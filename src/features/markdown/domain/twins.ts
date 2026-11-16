@@ -1,5 +1,6 @@
 // services, features, and other libraries
 import { Array } from "effect";
+import { msg } from "gt-i18n";
 import { partitionExperiences } from "@/features/experience/domain/helpers";
 import { staticPageCopy } from "@/features/meta/domain/pages";
 import { pagesSection } from "./twin-nav";
@@ -26,11 +27,11 @@ import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/domain/constants";
 import { DOWNLOADABLE_DOCUMENTS } from "@/features/meta/domain/discovery";
 import { HOME_LOCATION, SOCIAL_PROFILES } from "@/features/meta/domain/site";
 
-const profileLinks = (translate: Translate) => [...mdProfileLinks(SOCIAL_PROFILES), mdFact(translate("Base"), translate(HOME_LOCATION))];
+const profileLinks = (translate: Translate) => [...mdProfileLinks(SOCIAL_PROFILES), mdFact(translate(msg("Base")), translate(HOME_LOCATION))];
 
 const schoolSections = (educationList: EducationList, translate: Translate) =>
   mdTitledSection(
-    translate("Education"),
+    translate(msg("Education")),
     // The two arms are the whole decision, so matching on emptiness names it instead of leaving a
     // length read for the reader to interpret
     Array.match(educationList, {
@@ -38,18 +39,18 @@ const schoolSections = (educationList: EducationList, translate: Translate) =>
       onNonEmpty: (entries) =>
         mdBody(
           Array.map(entries, ({ name, year, location, info }) =>
-            mdBody([mdHeading(3, name), mdBulletList([mdFact(translate("Years"), year), mdFact(translate("Location"), location)]), escapeMd(info)])
+            mdBody([mdHeading(3, name), mdBulletList([mdFact(translate(msg("Years")), year), mdFact(translate(msg("Location")), location)]), escapeMd(info)])
           )
         ),
     })
   );
 
-const documentsSection = (translate: Translate) => mdTitledSection(translate("Documents"), mdDocumentLinks(DOWNLOADABLE_DOCUMENTS, translate));
+const documentsSection = (translate: Translate) => mdTitledSection(translate(msg("Documents")), mdDocumentLinks(DOWNLOADABLE_DOCUMENTS, translate));
 
 const contactChannels = (canonical: string, translate: Translate) =>
   mdTitledSection(
-    translate("Channels"),
-    mdBulletList([mdFact(translate("Contact Form"), `${canonical} (${translate("same page in HTML")})`), ...profileLinks(translate)])
+    translate(msg("Channels")),
+    mdBulletList([mdFact(translate(msg("Contact Form")), `${canonical} (${translate(msg("same page in HTML"))})`), ...profileLinks(translate)])
   );
 
 const staticTwinDocument = (
@@ -76,8 +77,8 @@ export const buildHomeMd = (input: HomeMdInput) => {
   const [employment, projects] = partitionExperiences(experienceList);
 
   return staticTwinDocument(input, HOME_PATH, () => [
-    mdTitledSection(translate("Experience"), experienceLines({ experiences: employment, translate, preferredLanguage, mode: "twin" })),
-    mdTitledSection(translate("Portfolio Projects"), experienceLines({ experiences: projects, translate, preferredLanguage, mode: "twin" })),
+    mdTitledSection(translate(msg("Experience")), experienceLines({ experiences: employment, translate, preferredLanguage, mode: "twin" })),
+    mdTitledSection(translate(msg("Portfolio Projects")), experienceLines({ experiences: projects, translate, preferredLanguage, mode: "twin" })),
   ]);
 };
 
@@ -94,6 +95,6 @@ export const buildContactMd = (input: ContactMdInput) => {
 // 503 fallback body served when required portfolio data is unavailable
 export const unavailableMarkdownBody = (translate: Translate) =>
   mdDocument([
-    mdHeading(1, translate("Content temporarily unavailable")),
-    escapeMd(translate("The required portfolio content could not be loaded. Please try again shortly.")),
+    mdHeading(1, translate(msg("Content temporarily unavailable"))),
+    escapeMd(translate(msg("The required portfolio content could not be loaded. Please try again shortly."))),
   ]);

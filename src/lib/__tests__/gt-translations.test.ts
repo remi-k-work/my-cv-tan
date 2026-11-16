@@ -1,6 +1,6 @@
 // The translation boundary every Polish machine-readable document reads its copy through: the
-// committed locale dictionaries (loaded when GT's runtime snapshot is not available), and the
-// sync translate function a pinned ?lang= document resolves its section headings with.
+// committed locale dictionaries GT's cache loads each locale with, and the sync translate function
+// a pinned ?lang= document resolves its registered msg() sources with.
 
 import { assert, describe, it } from "@effect/vitest";
 import { Option, Record, Schema } from "effect";
@@ -11,7 +11,7 @@ import { preferredLanguageFromLocale } from "@/domain/helpers";
 import { DEFAULT_LANGUAGE } from "@/domain/constants";
 
 // Initializes the GT runtime the way the router does, so the translate function reads the same
-// snapshot — or the same committed dictionary when the snapshot is unavailable — a route does.
+// cached dictionary a route does.
 initializeGT({ ...gtConfig, loadTranslations, _reload: () => {} });
 
 // The same shape the loader asserts, read through the module's own decoder: a dictionary is a
@@ -37,6 +37,31 @@ describe("loadTranslations", () => {
       const dictionary = await loadTranslations(locale);
       assert.isTrue(Record.every(dictionary, (_key, value) => typeof value === "string"));
     }
+  });
+});
+
+describe("committed dictionaries", () => {
+  // A term both languages spell the same is not a missing translation
+  const IDENTICAL_BY_DESIGN = new Set(["Captcha", "Email"]);
+
+  it("carries the same keys in every locale", async () => {
+    const en = await loadTranslations("en");
+    const pl = await loadTranslations("pl");
+
+    assert.deepStrictEqual(Object.keys(pl).sort(), Object.keys(en).sort());
+  });
+
+  it("keeps no Polish entry a silent copy of its English source", async () => {
+    const en = await loadTranslations("en");
+    const pl = await loadTranslations("pl");
+    // A gt generate run fills any source it could not translate with the English string, so a
+    // value that still equals its source is the machine-readable signal of missing Polish copy
+    const untranslated = Object.keys(en).filter((key) => pl[key] === en[key] && !IDENTICAL_BY_DESIGN.has(en[key] ?? ""));
+
+    assert.deepStrictEqual(
+      untranslated.map((key) => `${key} = ${en[key]}`),
+      []
+    );
   });
 });
 

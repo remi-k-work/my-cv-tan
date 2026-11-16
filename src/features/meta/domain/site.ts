@@ -6,6 +6,7 @@
 
 // services, features, and other libraries
 import { Array } from "effect";
+import { msg } from "gt-i18n";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
@@ -53,7 +54,7 @@ export const SOCIAL_LINKS = Array.map(SOCIAL_PROFILES, ({ href }) => href);
 export const HOME_LOCALITY = "Rzeszów";
 export const HOME_COUNTRY = "PL";
 export const HOME_COUNTRY_NAME = "Poland";
-export const HOME_LOCATION = `${HOME_LOCALITY}, ${HOME_COUNTRY_NAME}`;
+export const HOME_LOCATION = msg(`${HOME_LOCALITY}, ${HOME_COUNTRY_NAME}`);
 
 // Query parameter used for explicit language override in markdown twins
 export const LANG_PARAM = "lang";

@@ -1,5 +1,6 @@
 // services, features, and other libraries
 import { Record } from "effect";
+import { msg } from "gt-i18n";
 import { pageField } from "@/domain/helpers";
 import { absoluteUrl } from "./urls";
 
@@ -32,7 +33,7 @@ import { HOME_TITLE, PERSON_DESCRIPTION, SITE_DESCRIPTION } from "./site";
 export const STATIC_PAGES = {
   [HOME_PATH]: {
     mdHref: "/index.md",
-    label: "Home page",
+    label: msg("Home page"),
     type: "overview",
     indexSummary: "portfolio overview with experience and project lists.",
     copy: {
@@ -47,7 +48,7 @@ export const STATIC_PAGES = {
   },
   [EDUCATION_PATH]: {
     mdHref: "/education.md",
-    label: "Education & Certificates",
+    label: msg("Education & Certificates"),
     type: "education",
     indexSummary: "schools, courses and certificates.",
     copy: {
@@ -67,7 +68,7 @@ export const STATIC_PAGES = {
   },
   [CONTACT_PATH]: {
     mdHref: "/contact.md",
-    label: "Contact",
+    label: msg("Contact"),
     type: "contact",
     indexSummary: "contact form, location and social profiles.",
     copy: {

@@ -1,5 +1,6 @@
 // services, features, and other libraries
 import { Array, Option } from "effect";
+import { msg } from "gt-i18n";
 import { isEmployment } from "@/features/experience/domain/helpers";
 import { experiencePath, validatedHref } from "@/features/meta/domain/urls";
 import { deadEndEscapeLine, detailPagesSection } from "./twin-nav";
@@ -56,9 +57,9 @@ export const buildExperienceMd = ({ seo, translate }: ExperienceMdInput) => {
   const { role, company, txt, skillsUsed, year } = experience;
 
   const links = Array.getSomes([
-    optionalLink(translate("GitHub Repo"), experience.gitHubLink),
-    optionalLink(translate("Live Link"), experience.liveLink),
-    optionalLink(translate("Watch Video"), experience.videoLink),
+    optionalLink(translate(msg("GitHub Repo")), experience.gitHubLink),
+    optionalLink(translate(msg("Live Link")), experience.liveLink),
+    optionalLink(translate(msg("Watch Video")), experience.videoLink),
   ]);
 
   return {
@@ -73,16 +74,16 @@ export const buildExperienceMd = ({ seo, translate }: ExperienceMdInput) => {
     body: mdBody([
       mdHeading(1, headline),
       mdQuote(description),
-      mdTitledSection(translate("Overview"), escapeMd(txt)),
+      mdTitledSection(translate(msg("Overview")), escapeMd(txt)),
       mdTitledSection(
-        translate("Details"),
-        mdBulletList([mdFact(translate("Role"), role), mdFact(translate("Company"), company), mdFact(translate("Year"), year)])
+        translate(msg("Details")),
+        mdBulletList([mdFact(translate(msg("Role")), role), mdFact(translate(msg("Company")), company), mdFact(translate(msg("Year")), year)])
       ),
-      mdTitledSection(translate("Skills Used"), mdBulletList(Array.map(skillsUsed, escapeMdInline))),
+      mdTitledSection(translate(msg("Skills Used")), mdBulletList(Array.map(skillsUsed, escapeMdInline))),
       // An experience with no publishable link gets no Links section at all, rather than an empty one
       ...Array.match(links, {
         onEmpty: () => [],
-        onNonEmpty: (entries) => [mdTitledSection(translate("Links"), mdBulletList(entries))],
+        onNonEmpty: (entries) => [mdTitledSection(translate(msg("Links")), mdBulletList(entries))],
       }),
       detailPagesSection(preferredLanguage, translate),
     ]),
@@ -93,7 +94,7 @@ const detailOf = (slug: Option.Option<string>) => Option.map(slug, (value) => ({
 
 // Builds the Markdown 404 response twin
 export const buildNotFoundMd = ({ slug, preferredLanguage, translate }: NotFoundMdInput) => {
-  const title = translate("Not Found");
+  const title = translate(msg("Not Found"));
   const copy = NOT_FOUND_COPY[preferredLanguage];
   const { description, missing } = Option.match(detailOf(slug), {
     onNone: () => ({ description: copy.address, missing: copy.missingAddress }),

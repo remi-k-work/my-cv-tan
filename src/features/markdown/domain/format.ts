@@ -1,5 +1,6 @@
 // services, features, and other libraries
 import { Array, Number, Option, Predicate, String, flow, pipe, Record } from "effect";
+import { msg } from "gt-i18n";
 import { absoluteUrl, encodeDestination } from "@/features/meta/domain/urls";
 import { escapeMdInline } from "./escape";
 
@@ -67,7 +68,7 @@ export const mdBody = (blocks: ReadonlyArray<string>) =>
   );
 export const mdTitledSection = (title: string, body: string) => mdBody([mdHeading(2, title), body]);
 export const mdDocument = (blocks: ReadonlyArray<string>) => `${mdBody(blocks)}\n`;
-export const mdEmptyMarker = (translate: Translate) => `_${escapeMdInline(translate("No entries."))}_`;
+export const mdEmptyMarker = (translate: Translate) => `_${escapeMdInline(translate(msg("No entries.")))}_`;
 
 export const mdLink = (label: string, href: string) => `[${escapeMdInline(label)}](${encodeDestination(href)})`;
 export const translatedLink = (label: string, href: string, translate: Translate) => mdLink(translate(label), href);
