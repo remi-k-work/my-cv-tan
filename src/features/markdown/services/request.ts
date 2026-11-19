@@ -32,9 +32,9 @@ export const slugFromMdPathname = (url: string) =>
   );
 
 // Names the failing document in a log line without trusting the URL to parse
-export const documentName = (request: Request) =>
+export const documentName = (url: string) =>
   pipe(
-    decodeUrlOption(request.url),
+    decodeUrlOption(url),
     Option.map(({ pathname }) => pathname),
-    Option.getOrElse(() => request.url)
+    Option.getOrElse(() => url)
   );

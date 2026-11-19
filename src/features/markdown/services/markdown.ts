@@ -40,7 +40,7 @@ const documentResponse = (render: DocumentBody): Document =>
 
     const rendered = yield* render(request, context).pipe(
       recoverDataFailure(
-        () => `[${documentName(request)}]`,
+        () => `[${documentName(request.url)}]`,
         () => mdUnavailableResponse(unavailableMarkdownBody(context.translate), context.preferredLanguage)
       )
     );

@@ -15,8 +15,8 @@ export const commitToCaptcha = Effect.fnUntraced(function* (secret: string, salt
   return yield* digest.digest(Digest.sha256, Bytes.concat([textEncoder.encode(secret), salt, textEncoder.encode(captchaString)]));
 });
 
-export const verifyCaptchaString = Effect.fnUntraced(function* (secret: string, sealed: string, captchaInput: string) {
-  return yield* pipe(
+export const verifyCaptchaString = (secret: string, sealed: string, captchaInput: string) =>
+  pipe(
     decodeSealed(String.split(sealed, ".")),
     Option.match({
       // A malformed seal is a failed verification, not an error: there is no commitment to compare against
@@ -28,4 +28,3 @@ export const verifyCaptchaString = Effect.fnUntraced(function* (secret: string, 
         ),
     })
   );
-});

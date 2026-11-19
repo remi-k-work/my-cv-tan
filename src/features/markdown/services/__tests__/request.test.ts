@@ -53,6 +53,6 @@ it("a published twin route parses back to the very slug it was built from", () =
 });
 
 it("documentName names a route by its pathname and tolerates an unparseable URL", () => {
-  assert.strictEqual(documentName(new Request("https://www.remiforge.dev/benefit-finance.md?lang=pl")), "/benefit-finance.md");
-  assert.strictEqual(documentName({ url: "not a URL" } as Request), "not a URL");
+  assert.strictEqual(documentName("https://www.remiforge.dev/benefit-finance.md?lang=pl"), "/benefit-finance.md");
+  assert.strictEqual(documentName("not a URL"), "not a URL");
 });

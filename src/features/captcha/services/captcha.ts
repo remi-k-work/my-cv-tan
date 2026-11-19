@@ -38,25 +38,22 @@ export class Captcha extends Context.Service<Captcha>()("Captcha", {
       Effect.mapError((error) => new CaptchaError({ cause: error }))
     );
 
-    const verify = Effect.fnUntraced(
-      function* (headers: Headers.Headers, captchaInput: string): Effect.fn.Return<boolean, CaptchaError, Digest.Digest> {
-        // Verification only recomputes a commitment, so `commitToCaptcha` is the whole service
-        // requirement: the entropy service `seal` needs is not part of reading one back
-        return yield* pipe(
-          Headers.get(headers, "cookie"),
-          Option.map(Cookies.parseHeader),
-          Option.flatMap(Record.get(CAPTCHA_COOKIE_NAME)),
-          Option.match({
-            // A missing captcha cookie is a failed verification, not an error: there is no sealed
-            // commitment to compare against
-            onNone: () => Effect.succeed(false),
-            onSome: (sealedValue) => verifyCaptchaString(secret, sealedValue, captchaInput),
-          })
-        );
-      },
-      Effect.provideService(Digest.Digest, digest),
-      Effect.mapError((error) => new CaptchaError({ cause: error }))
-    );
+    // Verification only recomputes a commitment, so `commitToCaptcha` is the whole service
+    // requirement: the entropy service `seal` needs is not part of reading one back
+    const verify = (headers: Headers.Headers, captchaInput: string): Effect.Effect<boolean, CaptchaError> =>
+      pipe(
+        Headers.get(headers, "cookie"),
+        Option.map(Cookies.parseHeader),
+        Option.flatMap(Record.get(CAPTCHA_COOKIE_NAME)),
+        Option.match({
+          // A missing captcha cookie is a failed verification, not an error: there is no sealed
+          // commitment to compare against
+          onNone: () => Effect.succeed(false),
+          onSome: (sealedValue) => verifyCaptchaString(secret, sealedValue, captchaInput),
+        }),
+        Effect.provideService(Digest.Digest, digest),
+        Effect.mapError((error) => new CaptchaError({ cause: error }))
+      );
 
     return { generate, seal, verify } as const;
   }),
