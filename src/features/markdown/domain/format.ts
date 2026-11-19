@@ -17,6 +17,8 @@ const isBlank = flow(String.trim, String.isEmpty);
 // Escapes DEL, C1 controls, and Unicode line separators for YAML double-quoted scalars
 const YAML_UNSAFE_CHARACTERS = /[\u007f-\u009f\u2028\u2029]/g;
 
+// `String.replace` only takes a string replacement in this version, so the codepoint escape goes
+// through the prototype's function replacer; the `String` module still owns the padding
 const yamlValue = (value: string) =>
   JSON.stringify(value).replace(YAML_UNSAFE_CHARACTERS, (char) => `\\u${pipe(char.charCodeAt(0).toString(16), String.padStart(4, "0"))}`);
 
@@ -60,12 +62,7 @@ export const mdBulletList = (items: ReadonlyArray<string>) =>
     Array.join("\n")
   );
 export const mdFact = (label: string, value: string) => `${escapeMdInline(label)}: ${escapeMdInline(value)}`;
-export const mdBody = (blocks: ReadonlyArray<string>) =>
-  pipe(
-    blocks,
-    Array.filter((block) => !isBlank(block)),
-    Array.join("\n\n")
-  );
+export const mdBody = (blocks: ReadonlyArray<string>) => pipe(blocks, Array.filter(Predicate.not(isBlank)), Array.join("\n\n"));
 export const mdTitledSection = (title: string, body: string) => mdBody([mdHeading(2, title), body]);
 export const mdDocument = (blocks: ReadonlyArray<string>) => `${mdBody(blocks)}\n`;
 export const mdEmptyMarker = (translate: Translate) => `_${escapeMdInline(translate(msg("No entries.")))}_`;
