@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Array, Number, Option, pipe, Result, String } from "effect";
+import { Array, HashSet, Number, Option, pipe, Result, String } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
 
 // types
@@ -24,17 +24,17 @@ export const isEmployment = (experience: Pick<Experience, "type">) => experience
 // The invariant reads as set algebra over the two projected lists: each side has to be
 // duplicate-free, and the two sides have to be the same set
 export const haveSameExperienceSlugs = (left: ReadonlyArray<Pick<Experience, "slug">>, right: ReadonlyArray<Pick<Experience, "slug">>) => {
-  const leftSlugs = Array.dedupe(Array.map(left, ({ slug }) => slug));
-  const rightSlugs = Array.dedupe(Array.map(right, ({ slug }) => slug));
+  const leftSlugs = HashSet.make(...Array.map(left, ({ slug }) => slug));
+  const rightSlugs = HashSet.make(...Array.map(right, ({ slug }) => slug));
 
   return (
-    // A projection shorter than its source means that language publishes one route twice
-    leftSlugs.length === left.length &&
-    rightSlugs.length === right.length &&
+    // A set smaller than its source means that language publishes one route twice
+    HashSet.size(leftSlugs) === left.length &&
+    HashSet.size(rightSlugs) === right.length &&
     left.length === right.length &&
     // Equal counts plus the right set being contained in the left make the two sides one set, so
     // neither language can publish a route the other does not
-    Array.every(rightSlugs, (slug) => Array.contains(leftSlugs, slug))
+    HashSet.isSubset(rightSlugs, leftSlugs)
   );
 };
 
