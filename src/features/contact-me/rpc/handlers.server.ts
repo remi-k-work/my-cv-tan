@@ -10,9 +10,8 @@ const RpcContactMeLayer = RpcContactMe.toLayer({
   // Re-verify the captcha against the signed cookie before sending: the client-side refine is only
   // a convenience, since the RPC itself is reachable without going through the form
   contactForm: Effect.fnUntraced(function* ({ name, email, subject, message, captchaInput }, { headers }) {
-    // The gate first, the mailer second: a rejected answer must short-circuit before the `Send`
-    // service is resolved, so a submission that never reaches EmailJS never reads its credentials
-    // or resolves the HTTP client it would need
+    // The handler only invokes the mail operation after the gate succeeds, so a rejected answer
+    // never sends a request to EmailJS; the Send service itself is initialized with this layer
     const { verify } = yield* Captcha;
     if (!(yield* verify(headers, captchaInput))) return yield* new CaptchaError({ cause: "Captcha verification failed" });
 
