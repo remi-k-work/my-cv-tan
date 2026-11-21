@@ -5,43 +5,50 @@
       "source": "affaan-m/ecc",
       "sourceType": "github",
       "skillPath": "skills/motion-advanced/SKILL.md",
-      "computedHash": "20ea5771211756ca1fb705ac102dd59b90734feae8a9f0a3b103f48b752524d7"
+      "computedHash": "20ea5771211756ca1fb705ac102dd59b90734feae8a9f0a3b103f48b752524d7",
+      "commit": "4adeee6732a12d1540f49a4d50a38ce8c97f9a53"
     },
     "motion-foundations": {
       "source": "affaan-m/ecc",
       "sourceType": "github",
       "skillPath": "skills/motion-foundations/SKILL.md",
-      "computedHash": "2584c98dd4baae120b50201b1716203a55aed181dce82773b6568a13c6290b23"
+      "computedHash": "2584c98dd4baae120b50201b1716203a55aed181dce82773b6568a13c6290b23",
+      "commit": "4adeee6732a12d1540f49a4d50a38ce8c97f9a53"
     },
     "motion-patterns": {
       "source": "affaan-m/ecc",
       "sourceType": "github",
       "skillPath": "skills/motion-patterns/SKILL.md",
-      "computedHash": "7503959000ad77bd65a4865e5523ae38c29261285c67c16c6c5cb18534ded794"
+      "computedHash": "7503959000ad77bd65a4865e5523ae38c29261285c67c16c6c5cb18534ded794",
+      "commit": "4adeee6732a12d1540f49a4d50a38ce8c97f9a53"
     },
     "semantic-html": {
       "source": "schalkneethling/webdev-agent-skills",
       "sourceType": "github",
       "skillPath": "semantic-html/SKILL.md",
-      "computedHash": "8180f6bf6f0b077db05abab337d0c9baeaa9cdd78b16bf408aeaaa304cf7f5ae"
+      "computedHash": "8180f6bf6f0b077db05abab337d0c9baeaa9cdd78b16bf408aeaaa304cf7f5ae",
+      "commit": "85710096f476abb8910033f53667f153fa8062ff"
     },
     "tailwind-design-system": {
       "source": "wshobson/agents",
       "sourceType": "github",
       "skillPath": "plugins/frontend-mobile-development/skills/tailwind-design-system/SKILL.md",
-      "computedHash": "c807f0c9619e8c389879f55846c2e395956f1073ab6d01a93fbb30b340015ab1"
+      "computedHash": "c807f0c9619e8c389879f55846c2e395956f1073ab6d01a93fbb30b340015ab1",
+      "commit": "91ff75307f5668916f3eb77d5ba556266c961376"
     },
     "vercel-composition-patterns": {
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/composition-patterns/SKILL.md",
-      "computedHash": "f711ed8b16162eaa712abbcdbbae6c926f86c57e60127735fecc3ad0dd85b3fa"
+      "computedHash": "f711ed8b16162eaa712abbcdbbae6c926f86c57e60127735fecc3ad0dd85b3fa",
+      "commit": "5a37a6329fbad3666c3207392a6a7c0110e92efb"
     },
     "vercel-react-best-practices": {
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/react-best-practices/SKILL.md",
-      "computedHash": "7991ed4fbecdac23f47c1a40c243e00a212a9e7f3604db93959b3ae11dffe299"
+      "computedHash": "7991ed4fbecdac23f47c1a40c243e00a212a9e7f3604db93959b3ae11dffe299",
+      "commit": "5a37a6329fbad3666c3207392a6a7c0110e92efb"
     }
   }
 }
