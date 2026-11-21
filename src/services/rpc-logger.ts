@@ -2,7 +2,7 @@
 import { Effect, Layer } from "effect";
 import { RpcMiddleware } from "effect/rpc";
 
-export class RpcLogger extends RpcMiddleware.Service<RpcLogger>()("RpcLogger") {
+export class RpcLogger extends RpcMiddleware.Service<RpcLogger>()("my-cv-v4-tan/services/RpcLogger") {
   static readonly layer: Layer.Layer<RpcLogger> = Layer.succeed(
     RpcLogger,
     RpcLogger.of((effect, opts) =>

@@ -2,4 +2,4 @@
 import { makeRpcClient } from "@/domain/helpers";
 import { RpcContactMe } from "./requests";
 
-export class RpcContactMeClient extends makeRpcClient("RpcContactMeClient", RpcContactMe, "/api/rpc/contact-me") {}
+export class RpcContactMeClient extends makeRpcClient("my-cv-v4-tan/features/contact-me/rpc/RpcContactMeClient", RpcContactMe, "/api/rpc/contact-me") {}

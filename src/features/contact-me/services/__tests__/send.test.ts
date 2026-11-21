@@ -36,27 +36,66 @@ const sendWith = (fetch: typeof globalThis.fetch) =>
 const failureOf = (exit: Exit.Exit<void, SendError>): Option.Option<SendError> =>
   Exit.isSuccess(exit) ? Option.none<SendError>() : Cause.findErrorOption(exit.cause);
 
-it.live("an upstream rejection fails the send and carries the upstream status and body", () =>
+it.live("a persistent transient rejection exhausts the retries and carries the final response diagnostics", () =>
   Effect.gen(function* () {
     // A rate limit is the case the enriched SendError exists for: EmailJS answered, and its
     // status and body are the only diagnostics that explain why
-    const rejected: typeof globalThis.fetch = async () => new Response("EmailJS rejected the message", { status: 429 });
+    let attempts = 0;
+    const rejected: typeof globalThis.fetch = async () => {
+      attempts += 1;
+      return new Response("EmailJS rejected the message", { status: 429 });
+    };
 
     const failure = failureOf(yield* sendWith(rejected));
 
     if (Option.isNone(failure)) return assert.fail("an upstream rejection must fail the send, not report success");
 
-    // The upstream status and body are the diagnostic, so the wrapping must keep them
+    // The initial request plus three retries must preserve the last upstream diagnostic
+    assert.strictEqual(attempts, 4);
     assert.strictEqual(failure.value._tag, "SendError");
     assert.strictEqual(failure.value.status, 429);
     assert.strictEqual(failure.value.responseBody, "EmailJS rejected the message");
   })
 );
 
+it.live("a transient rejection is retried until the upstream accepts the message", () =>
+  Effect.gen(function* () {
+    let attempts = 0;
+    const eventuallyAccepted: typeof globalThis.fetch = async () => {
+      attempts += 1;
+      const status = attempts === 1 ? 429 : attempts === 2 ? 503 : 200;
+      return new Response(status === 200 ? "OK" : "Try again later", { status });
+    };
+
+    assert.isTrue(Exit.isSuccess(yield* sendWith(eventuallyAccepted)));
+    assert.strictEqual(attempts, 3);
+  })
+);
+
+it.live("a permanent upstream rejection is not retried", () =>
+  Effect.gen(function* () {
+    let attempts = 0;
+    const rejected: typeof globalThis.fetch = async () => {
+      attempts += 1;
+      return new Response("Invalid template", { status: 400 });
+    };
+
+    const failure = failureOf(yield* sendWith(rejected));
+
+    if (Option.isNone(failure)) return assert.fail("a permanent rejection must fail the send");
+
+    assert.strictEqual(attempts, 1);
+    assert.strictEqual(failure.value.status, 400);
+    assert.strictEqual(failure.value.responseBody, "Invalid template");
+  })
+);
+
 it.live("a transport failure leaves the raw client error as the only cause", () =>
   Effect.gen(function* () {
     // No response ever arrived, so there is no status or body to report
+    let attempts = 0;
     const offline: typeof globalThis.fetch = async () => {
+      attempts += 1;
       throw new Error("offline");
     };
 
@@ -64,6 +103,7 @@ it.live("a transport failure leaves the raw client error as the only cause", () 
 
     if (Option.isNone(failure)) return assert.fail("a transport failure must fail the send");
 
+    assert.strictEqual(attempts, 1);
     assert.strictEqual(failure.value._tag, "SendError");
     assert.isUndefined(failure.value.status);
     assert.isUndefined(failure.value.responseBody);

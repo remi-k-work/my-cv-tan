@@ -20,4 +20,4 @@ export const requireDataFrom = <A, R, E>(data: Effect.Effect<Option.Option<A>, E
 export const recoverDataFailure =
   (logPrefix: () => string, fallback: () => Response) =>
   <R>(document: Effect.Effect<Response, RequiredDataError, R>): Effect.Effect<Response, never, R> =>
-    document.pipe(Effect.catchTag("RequiredDataError", (error) => Effect.logError(`${logPrefix()}: ${error.message}`).pipe(Effect.map(() => fallback()))));
+    document.pipe(Effect.catchTag("RequiredDataError", (error) => Effect.logError(`${logPrefix()}: ${error.message}`).pipe(Effect.as(fallback()))));

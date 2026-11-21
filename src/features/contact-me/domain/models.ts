@@ -3,10 +3,10 @@ import { Schema } from "effect";
 import { EmailField, MessageField, NameField, SubjectField } from "./fields";
 
 // types
-export type Name = (typeof SendRequest)["Type"]["template_params"]["name"];
-export type Email = (typeof SendRequest)["Type"]["template_params"]["email"];
-export type Subject = (typeof SendRequest)["Type"]["template_params"]["subject"];
-export type Message = (typeof SendRequest)["Type"]["template_params"]["message"];
+export type Name = Schema.Schema.Type<typeof NameField.schema>;
+export type Email = Schema.Schema.Type<typeof EmailField.schema>;
+export type Subject = Schema.Schema.Type<typeof SubjectField.schema>;
+export type Message = Schema.Schema.Type<typeof MessageField.schema>;
 
 export class SendRequest extends Schema.Class<SendRequest, { readonly brand: unique symbol }>("SendRequest")({
   service_id: Schema.tag("default_service"),

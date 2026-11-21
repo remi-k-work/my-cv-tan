@@ -22,5 +22,5 @@ const load = <E>(source: PageData<E>) =>
   );
 
 export const loaderContact = createIsomorphicFn()
-  .server(() => serverLoader(load))
-  .client(() => clientLoader(load));
+  .server((signal?: AbortSignal) => serverLoader(load, signal))
+  .client((signal?: AbortSignal) => clientLoader(load, signal));

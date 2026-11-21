@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { Array, Context, Effect, Layer, Option, Random, Schema, pipe } from "effect";
-import { haveSameExperienceSlugs } from "@/features/experience/domain/helpers";
+import { experienceFromList, haveSameExperienceSlugs } from "@/features/experience/domain/helpers";
 import { ExperienceList } from "@/features/experience/domain/models";
 import { EducationList } from "@/features/education/domain/models";
 import { PageTitlesList } from "@/domain/models";
@@ -24,10 +24,9 @@ type LocalizedAsset<A> = Record<PreferredLanguage, Option.Option<A>>;
 
 // Canonical routes are shared across locales, so a pair that decodes but names different paths
 // cannot be served safely: neither locale is published, because one language would 404 on a route
-// the other publishes. A bundle that never decoded leaves the pair as it was instead — the reader
-// of a language whose own bundle failed never addresses the other locale's routes, so partial data
-// still serves the locale that has it. Exported so the invariant is unit-testable rather than
-// only observable through a decode of the real assets.
+// the other publishes; if one bundle never decoded, a valid partner remains available because its
+// reader never addresses the missing locale's routes; exported so the invariant is unit-testable
+// rather than only observable through a decode of the real assets
 export const localizedExperienceAsset = <A extends ReadonlyArray<Pick<Experience, "slug">>>(
   english: Option.Option<A>,
   polish: Option.Option<A>
@@ -38,7 +37,13 @@ export const localizedExperienceAsset = <A extends ReadonlyArray<Pick<Experience
     Option.getOrElse(() => false)
   );
 
-  return disagrees ? { en: Option.none<A>(), pl: Option.none<A>() } : { en: english, pl: polish };
+  if (disagrees) return { en: Option.none<A>(), pl: Option.none<A>() };
+
+  // Even without a cross-locale pair to compare, a decoded bundle must not publish ambiguous routes
+  return {
+    en: Option.filter(english, (experiences) => haveSameExperienceSlugs(experiences, experiences)),
+    pl: Option.filter(polish, (experiences) => haveSameExperienceSlugs(experiences, experiences)),
+  };
 };
 
 // The decoders are pure values, so they are built once at module scope and reused on every layer
@@ -50,9 +55,9 @@ const decodePageTitlesList = Schema.decodeOption(PageTitlesList);
 const decodeExperienceList = Schema.decodeUnknownOption(ExperienceList);
 const decodeEducationList = Schema.decodeOption(EducationList);
 
-export class Data extends Context.Service<Data>()("Data", {
+export class Data extends Context.Service<Data>()("my-cv-v4-tan/features/data/services/Data", {
   make: Effect.sync(() => {
-    // Decode once at service construction. Decoding to Option turns a malformed asset into None
+    // Decode once at service construction; decoding to Option turns a malformed asset into None
     // (missing data downstream) instead of failing the layer
     const pageTitlesAsset = {
       en: decodePageTitlesList(pageTitlesEn),
@@ -71,24 +76,23 @@ export class Data extends Context.Service<Data>()("Data", {
 
     const localized = <A>(preferredLanguage: Option.Option<PreferredLanguage>, asset: LocalizedAsset<A>) => asset[requestPreferredLanguage(preferredLanguage)];
 
+    // Keep request-locale lookup inside the Effect: constructing an accessor outside a request and
+    // running it inside one must resolve the language from the execution context, not the constructor's
     const randomPageTitles = (preferredLanguage: Option.Option<PreferredLanguage>) =>
-      Option.match(localized(preferredLanguage, pageTitlesAsset), {
-        onNone: () => Effect.succeedNone,
-        onSome: (pageTitles) => Effect.option(Random.choice(pageTitles)),
-      });
+      Effect.suspend(() =>
+        Option.match(localized(preferredLanguage, pageTitlesAsset), {
+          onNone: () => Effect.succeedNone,
+          onSome: (pageTitles) => Effect.option(Random.choice(pageTitles)),
+        })
+      );
 
     const stablePageTitles = (preferredLanguage: Option.Option<PreferredLanguage>) =>
-      Effect.succeed(Option.flatMap(localized(preferredLanguage, pageTitlesAsset), Array.head));
-    const experienceList = (preferredLanguage: Option.Option<PreferredLanguage>) => Effect.succeed(localized(preferredLanguage, experienceAsset));
-    const educationList = (preferredLanguage: Option.Option<PreferredLanguage>) => Effect.succeed(localized(preferredLanguage, educationAsset));
+      Effect.sync(() => Option.flatMap(localized(preferredLanguage, pageTitlesAsset), Array.head));
+    const experienceList = (preferredLanguage: Option.Option<PreferredLanguage>) => Effect.sync(() => localized(preferredLanguage, experienceAsset));
+    const educationList = (preferredLanguage: Option.Option<PreferredLanguage>) => Effect.sync(() => localized(preferredLanguage, educationAsset));
 
     const experience = (slug: Experience["slug"], preferredLanguage: Option.Option<PreferredLanguage>) =>
-      Effect.succeed(
-        Option.flatMap(
-          localized(preferredLanguage, experienceAsset),
-          Array.findFirst((exp) => exp.slug === slug)
-        )
-      );
+      Effect.sync(() => Option.flatMap(localized(preferredLanguage, experienceAsset), (experiences) => experienceFromList(experiences, slug)));
 
     return { randomPageTitles, stablePageTitles, experienceList, educationList, experience } as const;
   }),

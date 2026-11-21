@@ -27,11 +27,11 @@ it("rejects route slugs that URL parsing would normalize to another page", () =>
 });
 
 it("rejects slugs reserved by static routes or the Markdown twin suffix", () => {
-  for (const slug of ["education", "CONTACT", "exp", "llms.txt", "llms-full.txt", "robots.txt", "sitemap.xml", "report.md", "REPORT.MD"]) {
+  for (const slug of ["index", "INDEX", "education", "CONTACT", "exp", "llms.txt", "llms-full.txt", "robots.txt", "sitemap.xml", "report.md", "REPORT.MD"]) {
     assert.deepStrictEqual(decodeExperience(experience(slug)), Option.none(), `${slug} is reserved`);
   }
 
-  for (const slug of ["education-tools", "index", "report.mdx", "api.captcha", "api.rpc.data", "C# .NET", "a/b"]) {
+  for (const slug of ["education-tools", "index-tools", "report.mdx", "api.captcha", "api.rpc.data", "C# .NET", "a/b"]) {
     assert.isTrue(Option.isSome(decodeExperience(experience(slug))), `${slug} remains a valid slug`);
   }
 });
@@ -48,4 +48,12 @@ it("rejects unpaired surrogates that URL encoding cannot represent", () => {
   }
 
   assert.isTrue(Option.isSome(decodeExperience(experience("👩‍💻"))));
+});
+
+it("rejects image names that URL encoding cannot represent", () => {
+  for (const imageName of ["\uD800", "\uDC00"]) {
+    assert.deepStrictEqual(decodeExperience({ ...experience("project"), imageName }), Option.none());
+  }
+
+  assert.isTrue(Option.isSome(decodeExperience({ ...experience("project"), imageName: "👩‍💻" })));
 });

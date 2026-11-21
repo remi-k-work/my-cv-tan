@@ -8,7 +8,7 @@ import { RpcDataClient } from "@/features/data/rpc/client";
 import type { PageData } from "./page-data";
 
 // Runs a client loader against the data RPC client, logging failures before rejecting
-export const clientLoader = <A, E>(use: (source: PageData<RpcClientError.RpcClientError>) => Effect.Effect<A, E>) =>
+export const clientLoader = <A, E>(use: (source: PageData<RpcClientError.RpcClientError>) => Effect.Effect<A, E>, signal?: AbortSignal) =>
   RuntimeClient.runPromise(
     Effect.flatMap(RpcDataClient, (client) =>
       // Effects are lazy, so the requests below are only described here, not fired
@@ -18,5 +18,6 @@ export const clientLoader = <A, E>(use: (source: PageData<RpcClientError.RpcClie
         experienceList: client.experienceList(),
         educationList: client.educationList(),
       })
-    ).pipe(Effect.tapError(Effect.logError))
+    ).pipe(Effect.tapError(Effect.logError)),
+    { signal }
   );

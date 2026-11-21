@@ -1,10 +1,7 @@
 // services, features, and other libraries
 import { Layer, Logger, ManagedRuntime } from "effect";
-import { Data } from "@/features/data/services/data";
 import { Datasets } from "@/features/data/services/datasets";
 import { Markdown } from "@/features/markdown/services/markdown";
-
-const sharedMemoMap = Layer.makeMemoMapUnsafe();
 
 const LoggerLayer = Logger.layer([Logger.consolePretty()]);
 
@@ -14,10 +11,10 @@ const LoggerLayer = Logger.layer([Logger.consolePretty()]);
 const BaseLayer = Layer.mergeAll(LoggerLayer, Datasets.layer);
 const MainLayer = Markdown.layer.pipe(Layer.provideMerge(BaseLayer));
 
-export const RuntimeServer = ManagedRuntime.make(MainLayer, { memoMap: sharedMemoMap });
+export const RuntimeServer = ManagedRuntime.make(MainLayer);
 
 // The services MainLayer composes: a document pipeline may require any subset of them, and the
 // runtime satisfies the rest; server routes declare their pipelines against this rather than
 // restating the layer list, so a pipeline that needs a service stays a compile error until the
-// runtime actually provides it
-export type ServerServices = Data | Datasets | Markdown;
+// runtime actually provides it; deriving the union from MainLayer keeps the two from drifting
+export type ServerServices = Layer.Success<typeof MainLayer>;

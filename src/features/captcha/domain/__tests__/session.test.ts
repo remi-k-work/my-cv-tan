@@ -1,58 +1,46 @@
 // services, features, and other libraries
 import { assert, it } from "@effect/vitest";
-import { Bytes, Effect } from "effect";
-import { Digest } from "effect/crypto";
+import { Effect } from "effect";
 import { Base64Url } from "effect/encoding";
+import { BrowserCrypto } from "@effect/platform-browser";
 
 // domain
-import { verifyCaptchaString } from "../session";
-
-const testDigest = Digest.Digest.of({
-  digest: () => Effect.succeed(new Uint8Array()),
-  digestHex: () => Effect.succeed(""),
-});
+import { captchaKey, commitToCaptcha, verifyCaptchaString } from "../session";
 
 it.effect("rejects sealed captcha values that are not two segments", () =>
   Effect.gen(function* () {
-    assert.isFalse(yield* verifyCaptchaString("test", "only-one-segment", "ABCDEF"));
-    assert.isFalse(yield* verifyCaptchaString("test", "salt.digest.extra", "ABCDEF"));
-  }).pipe(Effect.provideService(Digest.Digest, testDigest))
+    const key = yield* captchaKey("test");
+
+    assert.isFalse(yield* verifyCaptchaString(key, "only-one-segment", "ABCDEF"));
+    assert.isFalse(yield* verifyCaptchaString(key, "salt.digest.extra", "ABCDEF"));
+  }).pipe(Effect.provide(BrowserCrypto.layerMac))
 );
 
-// A digest that returns its input makes the commitment equal the secret-salt-answer concatenation
-const echoDigest = Digest.Digest.of({
-  digest: (_algorithm, data) => Effect.succeed(new Uint8Array(data)),
-  digestHex: () => Effect.succeed(""),
-});
-
-const textEncoder = new TextEncoder();
-
-const sealWith = (secret: string, salt: Uint8Array, answer: string) =>
-  `${Base64Url.encode(salt)}.${Base64Url.encode(Bytes.concat([textEncoder.encode(secret), salt, textEncoder.encode(answer)]))}`;
-
-it.effect("accepts a sealed captcha only when the input matches the commitment", () =>
+it.effect("accepts a sealed captcha only for the same key and input", () =>
   Effect.gen(function* () {
+    const key = yield* captchaKey("test");
+    const otherKey = yield* captchaKey("other");
     const salt = new Uint8Array(16);
-    const sealed = sealWith("test", salt, "ABCDEF");
-    assert.isTrue(yield* verifyCaptchaString("test", sealed, "ABCDEF"));
-    assert.isFalse(yield* verifyCaptchaString("test", sealed, "ABCDEG"));
-  }).pipe(Effect.provideService(Digest.Digest, echoDigest))
+    const commitment = yield* commitToCaptcha(key, salt, "ABCDEF");
+    const sealed = `${Base64Url.encode(salt)}.${Base64Url.encode(commitment)}`;
+
+    assert.isTrue(yield* verifyCaptchaString(key, sealed, "ABCDEF"));
+    assert.isFalse(yield* verifyCaptchaString(key, sealed, "ABCDEG"));
+    assert.isFalse(yield* verifyCaptchaString(otherKey, sealed, "ABCDEF"));
+  }).pipe(Effect.provide(BrowserCrypto.layerMac))
 );
 
-it.effect("rejects a commitment whose digest is not the length the algorithm produces", () =>
+it.effect("rejects a commitment whose tag is not the HMAC length", () =>
   Effect.gen(function* () {
-    // A commitment that is a strict prefix of the recomputed digest shares every one of its bytes
-    // with it, so only the length check can tell them apart: a comparison that skipped it would
-    // accept this one and let a caller walk the digest down to any shorter prefix
+    const key = yield* captchaKey("test");
     const salt = new Uint8Array(16);
-    const prefix = Bytes.concat([textEncoder.encode("test"), salt]);
-    const prefixed = `${Base64Url.encode(salt)}.${Base64Url.encode(prefix)}`;
-    assert.isFalse(yield* verifyCaptchaString("test", prefixed, "ABCDEF"));
+    const commitment = yield* commitToCaptcha(key, salt, "ABCDEF");
 
-    // A commitment of an unrelated length is likewise refused on length alone
-    const truncated = `${Base64Url.encode(salt)}.${Base64Url.encode(new Uint8Array(16))}`;
-    const padded = `${Base64Url.encode(salt)}.${Base64Url.encode(new Uint8Array(64))}`;
-    assert.isFalse(yield* verifyCaptchaString("test", truncated, "ABCDEF"));
-    assert.isFalse(yield* verifyCaptchaString("test", padded, "ABCDEF"));
-  }).pipe(Effect.provideService(Digest.Digest, echoDigest))
+    // A strict prefix shares every byte it has with the real tag, so verification must also check length
+    const truncated = `${Base64Url.encode(salt)}.${Base64Url.encode(commitment.slice(0, -1))}`;
+    const padded = `${Base64Url.encode(salt)}.${Base64Url.encode(new Uint8Array(commitment.length + 1))}`;
+
+    assert.isFalse(yield* verifyCaptchaString(key, truncated, "ABCDEF"));
+    assert.isFalse(yield* verifyCaptchaString(key, padded, "ABCDEF"));
+  }).pipe(Effect.provide(BrowserCrypto.layerMac))
 );

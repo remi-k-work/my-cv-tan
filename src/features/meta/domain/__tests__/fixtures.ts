@@ -55,7 +55,7 @@ export const documentOf = (children: string | undefined): Option.Option<JsonLdDo
 export const graphOf = (children: string | undefined): ReadonlyArray<Record<string, unknown>> =>
   pipe(
     documentOf(children),
-    Option.flatMap((document) => Option.fromNullishOr(document["@graph"])),
+    Option.flatMapNullishOr((document) => document["@graph"]),
     Option.getOrElse<ReadonlyArray<Record<string, unknown>>>(() => [])
   );
 

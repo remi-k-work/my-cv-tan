@@ -10,5 +10,32 @@ export const TYPO_PROBABILITY = 0.03;
 export const TYPO_SWAP_SHARE = 0.33;
 export const TYPO_SKIP_SHARE = 0.66;
 
-// The alphabet insertion typos draw from
-export const LOWERCASE_LETTERS = "abcdefghijklmnopqrstuvwxyz";
+// The alphabet insertion typos draw from; a non-empty tuple lets Random.choice stay total
+export const LOWERCASE_LETTERS = [
+  "a",
+  "b",
+  "c",
+  "d",
+  "e",
+  "f",
+  "g",
+  "h",
+  "i",
+  "j",
+  "k",
+  "l",
+  "m",
+  "n",
+  "o",
+  "p",
+  "q",
+  "r",
+  "s",
+  "t",
+  "u",
+  "v",
+  "w",
+  "x",
+  "y",
+  "z",
+] as const;

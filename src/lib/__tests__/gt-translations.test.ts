@@ -3,7 +3,7 @@
 // a pinned ?lang= document resolves its registered msg() sources with.
 
 import { assert, describe, it } from "@effect/vitest";
-import { Option, Record, Schema } from "effect";
+import { Option, Predicate, Record, Schema } from "effect";
 import { initializeGT } from "gt-tanstack-start";
 import gtConfig from "../../../gt.config.json";
 import { loadTranslations, translateForLanguage } from "@/lib/gt-translations";
@@ -35,7 +35,7 @@ describe("loadTranslations", () => {
   it("keeps every entry a string, so a dictionary lookup never reads a non-string value", async () => {
     for (const locale of ["en", "pl"]) {
       const dictionary = await loadTranslations(locale);
-      assert.isTrue(Record.every(dictionary, (_key, value) => typeof value === "string"));
+      assert.isTrue(Record.every(dictionary, Predicate.isString));
     }
   });
 });

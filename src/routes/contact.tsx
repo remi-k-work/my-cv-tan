@@ -17,7 +17,7 @@ import { PageTitle } from "@/ui/page-title";
 import { CONTACT_PATH } from "@/domain/constants";
 
 export const Route = createFileRoute("/contact")({
-  loader: () => loaderContact(),
+  loader: ({ abortController }) => loaderContact(abortController.signal),
   head: ({ loaderData, matches, match }) =>
     routeHead({
       loaderData,

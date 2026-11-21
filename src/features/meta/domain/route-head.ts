@@ -43,14 +43,15 @@ export const routeHead = <TData>({ loaderData, matches, matchStatus, fallbackPat
 
   const preferredLanguage = headLanguage(matches);
 
-  // A failed or still-pending loader leaves no payload; TanStack hands back either null or
-  // undefined for it, so the nullish projection covers both and the builder only ever reads a
-  // payload the match actually produced
+  // An unresolved match — or an errored one anywhere in the chain — must publish the degraded
+  // head, never one built from a payload the match did not produce
+  if (matchStatus !== "success" || Array.some(matches, ({ status }) => status === "error")) {
+    return unavailableHead(fallbackPath, preferredLanguage);
+  }
+
+  // TanStack represents a missing payload with either null or undefined
   return pipe(
     Option.fromNullishOr(loaderData),
-    // An unresolved match — or an errored one anywhere in the chain — must publish the degraded
-    // head, never one built from a payload the match did not produce
-    Option.filter(() => matchStatus === "success" && !Array.some(matches, ({ status }) => status === "error")),
     Option.map((data) => build(data, preferredLanguage)),
     Option.getOrElse(() => unavailableHead(fallbackPath, preferredLanguage))
   );

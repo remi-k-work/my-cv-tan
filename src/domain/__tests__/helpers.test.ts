@@ -73,7 +73,7 @@ describe("pageField", () => {
       "/": { eyebrow: "Home eyebrow", heading: "Home heading", intro: "Home intro" },
     };
 
-    for (const pagePath of ["/", "/education", "/contact"] as ReadonlyArray<PagePath>) {
+    for (const pagePath of ["/", "/education", "/contact"] satisfies ReadonlyArray<PagePath>) {
       const present = partial[pagePath] !== undefined;
       assert.strictEqual(pageField(partial, pagePath, "heading", "fallback"), present ? partial[pagePath]?.heading : "fallback");
     }
@@ -84,7 +84,7 @@ describe("pageField", () => {
       "/": { eyebrow: "Eyebrow", heading: "Heading", intro: "Intro" },
       "/education": { eyebrow: "Eyebrow", heading: "Heading", intro: "Intro" },
       "/contact": { eyebrow: "Eyebrow", heading: "Heading", intro: "Intro" },
-    } as PageTitles;
+    } satisfies PageTitles;
 
     assert.strictEqual(pageField(pageTitles, "/", "heading", "heading fallback"), "Heading");
     assert.strictEqual(pageField(pageTitles, "/", "intro", "intro fallback"), "Intro");

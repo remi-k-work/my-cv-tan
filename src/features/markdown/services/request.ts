@@ -1,19 +1,18 @@
 // services, features, and other libraries
-import { Option, Predicate, Schema, String, flow, pipe } from "effect";
-import { PreferredLanguage } from "@/domain/models";
+import { Option, Predicate, String, flow, pipe } from "effect";
+import { decodePreferredLanguage } from "@/domain/models";
 import { decodeUrlOption } from "@/features/meta/domain/urls";
 
 // constants
 import { LANG_PARAM } from "@/features/meta/domain/site";
 
-const decodePreferredLanguage = Schema.decodeUnknownOption(PreferredLanguage);
 const decodeUrlComponent = Option.liftThrowable(decodeURIComponent);
 
 // Parses and validates the ?lang= query parameter from a request URL
 export const parseLangParam = (url: string) =>
   pipe(
     decodeUrlOption(url),
-    Option.flatMap(({ searchParams }) => Option.fromNullishOr(searchParams.get(LANG_PARAM))),
+    Option.flatMapNullishOr(({ searchParams }) => searchParams.get(LANG_PARAM)),
     Option.map(flow(String.trim, String.toLowerCase)),
     Option.flatMap(decodePreferredLanguage)
   );

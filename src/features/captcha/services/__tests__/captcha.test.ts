@@ -1,7 +1,9 @@
 // services, features, and other libraries
 import { assert, describe, it } from "@effect/vitest";
 import { Array, ConfigProvider, Effect, Layer } from "effect";
+import { SecureRandom } from "effect/crypto";
 import { Headers } from "effect/http";
+import { BrowserCrypto } from "@effect/platform-browser";
 import { Captcha } from "../captcha";
 
 // constants
@@ -13,6 +15,17 @@ const SECRETS = ConfigProvider.layer(ConfigProvider.fromEnvRecord({ SESSION_SECR
 
 // One layer for every case: the captcha service over the secrets it reads at construction
 const CAPTCHA = Captcha.layer.pipe(Layer.provide(SECRETS));
+
+// Drive every index draw to the upper boundary so the generator proves that the whole alphabet is
+// reachable without relying on a probabilistic test eventually drawing its final character
+const LAST_CHAR_RANDOM = Layer.effect(
+  SecureRandom.SecureRandom,
+  Effect.map(SecureRandom.SecureRandom, (random) => ({
+    ...random,
+    intBetween: (_min: number, max: number, options?: { readonly halfOpen?: boolean }) => Effect.succeed(options?.halfOpen === true ? max - 1 : max),
+  }))
+).pipe(Layer.provide(BrowserCrypto.layerSecureRandom));
+const LAST_CHAR_CAPTCHA = Layer.effect(Captcha, Captcha.make).pipe(Layer.provide([SECRETS, BrowserCrypto.layerMac, LAST_CHAR_RANDOM]));
 
 // Cookie header carrying one sealed commitment, built the way a browser sends it back
 const cookieHeader = (sealed: string) => Headers.fromInput({ cookie: `${CAPTCHA_COOKIE_NAME}=${sealed}` });
@@ -29,6 +42,14 @@ describe("Captcha", () => {
         assert.isTrue(Array.every(Array.fromIterable(captcha), (char) => PERMITTED_CHARS.includes(char)), `"${captcha}" left the alphabet`);
       }
     }).pipe(Effect.provide(CAPTCHA))
+  );
+
+  it.effect("generate includes the final permitted character in its random range", () =>
+    Effect.gen(function* () {
+      const { generate } = yield* Captcha;
+
+      assert.strictEqual(yield* generate, PERMITTED_CHARS.slice(-1).repeat(STRENGTH));
+    }).pipe(Effect.provide(LAST_CHAR_CAPTCHA))
   );
 
   it.effect("a sealed answer verifies only against the same answer", () =>

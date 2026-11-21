@@ -44,7 +44,6 @@ const load = Effect.fnUntraced(function* <E>(source: PageData<E>, slug: Option.O
   };
 });
 
-export const loaderIndex = (slug: Option.Option<string>) =>
-  createIsomorphicFn()
-    .server(() => serverLoader((source) => load(source, slug)))
-    .client(() => clientLoader((source) => load(source, slug)))();
+export const loaderIndex = createIsomorphicFn()
+  .server((slug: Option.Option<string>, signal?: AbortSignal) => serverLoader((source) => load(source, slug), signal))
+  .client((slug: Option.Option<string>, signal?: AbortSignal) => clientLoader((source) => load(source, slug), signal));

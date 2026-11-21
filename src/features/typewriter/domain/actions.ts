@@ -10,7 +10,7 @@ import { TYPO_PROBABILITY, TYPO_SKIP_SHARE, TYPO_SWAP_SHARE } from "./constants"
 import { DeleteChars, Pause, TypeChars } from "./models";
 
 // Simulates a human typo for a single word; an adjacent-character swap, a skipped character, or an inserted random lowercase letter
-export const planTypo = Effect.fnUntraced(function* (word: string): Effect.fn.Return<string> {
+export const planTypo = Effect.fnUntraced(function* (word: string) {
   const chars = Array.fromIterable(word);
   const result: Array<string> = [];
   let i = 0;
@@ -51,7 +51,7 @@ export const planTypo = Effect.fnUntraced(function* (word: string): Effect.fn.Re
 });
 
 // Plans the script for one word: either type it straight away, or type the typo, pause, delete it, then type the correct word
-const planWord = Effect.fnUntraced(function* (word: string, typo: (word: string) => Effect.Effect<string>): Effect.fn.Return<ReadonlyArray<TypewriterOp>> {
+const planWord = Effect.fnUntraced(function* (word: string, typo: (word: string) => Effect.Effect<string>) {
   const typoWord = yield* typo(word);
   const pauseAfterWord = yield* Random.nextIntBetween(60, 100);
 

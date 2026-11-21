@@ -109,7 +109,7 @@ const discoveryDocument =
 // the layer is built so the public method types describe what the service does, not what it reads.
 // The indexes are source-language documents, so their content is one projection over those
 // resolved accessors rather than a pipeline that looks the service up again per request
-export class Markdown extends Context.Service<Markdown>()("Markdown", {
+export class Markdown extends Context.Service<Markdown>()("my-cv-v4-tan/features/markdown/services/Markdown", {
   make: Effect.map(Datasets, (datasets) => {
     const withDatasets = Effect.provideService(Datasets, datasets);
 

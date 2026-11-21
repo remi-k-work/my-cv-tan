@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Array, Effect, Option, Record, pipe } from "effect";
+import { Array, Effect, pipe } from "effect";
 import { documentRoute } from "@/lib/server-route";
 import { recoverDataFailure } from "@/features/data/domain/required";
 import { Datasets } from "@/features/data/services/datasets";
@@ -16,7 +16,7 @@ const XML_ENTITIES: Readonly<Record<string, string>> = { "&": "&amp;", "<": "&lt
 
 // The character class is exactly the entity table's key set, so a lookup miss can only mean the
 // class and the table drifted: publishing the character unchanged keeps it well-formed XML
-const escapeXml = (value: string) => value.replace(/[&<>"']/g, (character) => Option.getOrElse(Record.get(XML_ENTITIES, character), () => character));
+const escapeXml = (value: string) => value.replace(/[&<>"']/g, (character) => XML_ENTITIES[character] ?? character);
 
 // One document description, built once and re-run per request: it is a pure value, so nothing
 // about the request that asks for it has to be threaded in
@@ -27,11 +27,7 @@ const sitemapDocument = Effect.gen(function* () {
 
   // Every language publishes the same unique canonical routes, so the per-language lists flatten
   // into one slug collection; the builder dedupes the locations it renders from them
-  const slugs = pipe(
-    lists,
-    Array.flatten,
-    Array.map(({ slug }) => slug)
-  );
+  const slugs = Array.flatMap(lists, (experiences) => Array.map(experiences, ({ slug }) => slug));
   return sitemapResponse(buildSitemapXml(slugs));
 }).pipe(
   recoverDataFailure(() => "[SITEMAP.XML]", sitemapUnavailableResponse),

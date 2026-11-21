@@ -2,4 +2,4 @@
 import { makeRpcClient } from "@/domain/helpers";
 import { RpcCaptcha } from "./requests";
 
-export class RpcCaptchaClient extends makeRpcClient("RpcCaptchaClient", RpcCaptcha, "/api/rpc/captcha") {}
+export class RpcCaptchaClient extends makeRpcClient("my-cv-v4-tan/features/captcha/rpc/RpcCaptchaClient", RpcCaptcha, "/api/rpc/captcha") {}

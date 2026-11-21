@@ -17,7 +17,7 @@ import { PageTitle } from "@/ui/page-title";
 import { EDUCATION_PATH } from "@/domain/constants";
 
 export const Route = createFileRoute("/education")({
-  loader: () => loaderEducation(),
+  loader: ({ abortController }) => loaderEducation(abortController.signal),
   head: ({ loaderData, matches, match }) =>
     routeHead({
       loaderData,

@@ -26,11 +26,14 @@ const contactFormBuilder = FormBuilder.empty
     // transport failure degrades to the retry issue instead of failing the (never-error) refine
     Effect.flatMap(RpcCaptchaClient, ({ isCaptchaValid }) => isCaptchaValid({ captchaInput })).pipe(
       Effect.map((isValid) => (isValid ? undefined : { path: ["captchaInput"], issue: msg("Entered captcha is invalid") })),
-      Effect.tapError(Effect.logError),
-      Effect.orElseSucceed(() => ({
-        path: ["captchaInput"],
-        issue: msg("Something went wrong, please try again later"),
-      }))
+      Effect.catch((error) =>
+        Effect.logError(error).pipe(
+          Effect.as({
+            path: ["captchaInput"],
+            issue: msg("Something went wrong, please try again later"),
+          })
+        )
+      )
     )
   );
 

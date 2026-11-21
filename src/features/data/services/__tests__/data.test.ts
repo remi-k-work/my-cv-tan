@@ -1,6 +1,8 @@
 // services, features, and other libraries
 import { assert, describe, it } from "@effect/vitest";
 import { Effect, Option } from "effect";
+import { getLocale } from "gt-tanstack-start";
+import { vi } from "vite-plus/test";
 import { Data, localizedExperienceAsset } from "../data";
 import { RequiredDataError } from "@/features/data/domain/required";
 import { applyHtmlDataUnavailableResponse, markHtmlDataUnavailable } from "@/features/data/http/html-response";
@@ -9,6 +11,10 @@ import { haveSameExperienceSlugs } from "@/features/experience/domain/helpers";
 // assets
 import pageTitlesEn from "@/assets/data/en/page-titles.json";
 import pageTitlesPl from "@/assets/data/pl/page-titles.json";
+import experiencePl from "@/assets/data/pl/experience.json";
+import educationPl from "@/assets/data/pl/education.json";
+
+vi.mock("gt-tanstack-start", () => ({ getLocale: vi.fn<() => string>(() => "en") }));
 
 it.effect("stablePageTitles always selects the first authored entry for each locale", () =>
   Effect.gen(function* () {
@@ -52,6 +58,45 @@ it.effect("randomPageTitles selects from the requested locale", () =>
   }).pipe(Effect.provide(Data.layer))
 );
 
+it.effect("data accessors resolve an implicit request locale when they execute", () =>
+  Effect.gen(function* () {
+    const data = yield* Data;
+    const locale = vi.mocked(getLocale);
+    locale.mockReturnValue("en");
+
+    // Effects are values: create every accessor under English, then run the same values in Polish
+    const randomPageTitles = data.randomPageTitles(Option.none());
+    const stablePageTitles = data.stablePageTitles(Option.none());
+    const experienceList = data.experienceList(Option.none());
+    const educationList = data.educationList(Option.none());
+    const experience = data.experience(experiencePl[0].slug, Option.none());
+
+    locale.mockReturnValue("pl");
+    const [randomTitles, stableTitles, experiences, education, selectedExperience] = yield* Effect.all([
+      randomPageTitles,
+      stablePageTitles,
+      experienceList,
+      educationList,
+      experience,
+    ]);
+
+    assert.isTrue(
+      Option.match(randomTitles, {
+        onNone: () => false,
+        onSome: (entry) => pageTitlesPl.some((page) => page["/"].eyebrow === entry["/"].eyebrow),
+      })
+    );
+    assert.deepStrictEqual(Option.getOrThrow(stableTitles), pageTitlesPl[0]);
+    assert.deepStrictEqual(
+      Option.getOrThrow(experiences).map(({ slug }) => slug),
+      experiencePl.map(({ slug }) => slug)
+    );
+    assert.strictEqual(Option.getOrThrow(experiences)[0].role, experiencePl[0].role);
+    assert.deepStrictEqual(Option.getOrThrow(education), educationPl);
+    assert.strictEqual(Option.getOrThrow(selectedExperience).role, experiencePl[0].role);
+  }).pipe(Effect.provide(Data.layer))
+);
+
 describe("localizedExperienceAsset", () => {
   // Two bundles that name the same unique routes in a different display order
   const english = Option.some([{ slug: "alpha" }, { slug: "beta" }]);
@@ -73,11 +118,18 @@ describe("localizedExperienceAsset", () => {
     assert.deepStrictEqual(localizedExperienceAsset(english, Option.some([{ slug: "alpha" }, { slug: "alpha" }])), unpublished);
   });
 
-  it("keeps the locale that decoded when the other bundle is missing", () => {
+  it("keeps a valid locale that decoded when the other bundle is missing", () => {
     // The reader of the missing locale never addresses the published one's routes, so partial data
     // still serves the locale that has it rather than failing every language
     assert.deepStrictEqual(localizedExperienceAsset(english, Option.none()), { en: english, pl: Option.none() });
     assert.deepStrictEqual(localizedExperienceAsset(Option.none(), polish), { en: Option.none(), pl: polish });
+  });
+
+  it("drops a locale with duplicate routes even when the other bundle is missing", () => {
+    const duplicated = Option.some([{ slug: "alpha" }, { slug: "alpha" }]);
+
+    assert.deepStrictEqual(localizedExperienceAsset(duplicated, Option.none()), unpublished);
+    assert.deepStrictEqual(localizedExperienceAsset(Option.none(), duplicated), unpublished);
   });
 });
 

@@ -5,6 +5,7 @@
 // properties of that merged document. These replay the router's own merge to pin them.
 
 import { assert, it } from "@effect/vitest";
+import { Array } from "effect";
 import { GTProvider, initializeGT } from "gt-tanstack-start";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -60,7 +61,7 @@ const mergeHeads = (heads: ReadonlyArray<PageHead>): MergedHead => {
       const tag = metaByKey.get(`${key}:${value}`);
       return tag !== undefined && "content" in tag ? tag.content : undefined;
     },
-    links: [...new Set(heads.flatMap((head) => head.links.map((link) => JSON.stringify(link))))].map((link) => JSON.parse(link) as LinkTag),
+    links: Array.dedupeWith(heads.flatMap((head) => head.links), (self, that) => JSON.stringify(self) === JSON.stringify(that)),
     scripts: [...new Set(heads.flatMap((head) => head.scripts.map((script) => script.children)))],
   };
 };

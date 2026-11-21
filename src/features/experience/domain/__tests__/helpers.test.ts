@@ -29,6 +29,10 @@ describe("excerpt", () => {
     assert.isFalse(result.includes("\uFFFD"));
   });
 
+  it("finds a word boundary after astral characters without mixing grapheme and UTF-16 indexes", () => {
+    assert.strictEqual(excerpt("😀😀 one two three", 13), `😀😀 one two${EXCERPT_SUFFIX}`);
+  });
+
   it("keeps combining marks and joined emoji intact and handles an empty limit", () => {
     assert.strictEqual(excerpt("e\u0301e\u0301e\u0301", 2), `e\u0301${EXCERPT_SUFFIX}`);
     assert.strictEqual(excerpt("👩‍💻👩‍💻👩‍💻", 2), `👩‍💻${EXCERPT_SUFFIX}`);

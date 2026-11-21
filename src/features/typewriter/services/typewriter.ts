@@ -21,12 +21,11 @@ const expandOp = (currText: string, typewriterOp: TypewriterOp) =>
       ),
     // Deleting emits one frame per removed character; split by code point, the same unit typing
     // uses, so an astral character is removed whole rather than leaving a lone surrogate frame
-    // `Array.range` always yields at least one element, so an empty text (or zero count) skips
     DeleteChars: ({ count }) => {
       const visible = Array.fromIterable(currText);
       const removalCount = Number.min(count, visible.length);
-      // A non-positive count deletes nothing: `Array.range` always yields at least one element, so
-      // only this guard keeps an empty text (or a zero request) from emitting a deletion frame
+      // Array.range(1, 0) is [1], so this guard keeps an empty text (or a zero request) from
+      // emitting a deletion frame for a character that is not there
       if (removalCount <= 0) return Effect.succeed([]);
 
       return pipe(
@@ -54,10 +53,11 @@ const run = (script: ReadonlyArray<TypewriterOp>) =>
           expandOp(currText, typewriterOp),
           (frames) =>
             [
-              Option.match(Array.last(frames), {
-                onNone: () => currText,
-                onSome: (frame) => frame.text,
-              }),
+              pipe(
+                Array.last(frames),
+                Option.map((frame) => frame.text),
+                Option.getOrElse(() => currText)
+              ),
               frames,
             ] as const
         )
@@ -65,9 +65,13 @@ const run = (script: ReadonlyArray<TypewriterOp>) =>
     Stream.mapEffect((frame) => Effect.as(Effect.sleep(Duration.millis(frame.holdMillis)), frame.text))
   );
 
-export class Typewriter extends Context.Service<Typewriter>()("Typewriter", {
-  // Pure value: `run` is stateless and `plan` is a function reference, so there is no work to defer
-  make: Effect.succeed({ plan: planScript, run }),
-}) {
-  static readonly layer = Layer.effect(this, this.make);
+export class Typewriter extends Context.Service<
+  Typewriter,
+  {
+    readonly plan: typeof planScript;
+    readonly run: typeof run;
+  }
+>()("my-cv-v4-tan/features/typewriter/services/Typewriter") {
+  // The implementation is a pure value, so it needs no effectful layer construction
+  static readonly layer = Layer.succeed(this, { plan: planScript, run });
 }

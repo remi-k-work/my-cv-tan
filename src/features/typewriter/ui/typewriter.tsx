@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 
 // services, features, and other libraries
 import { cn } from "@/lib/utils";
-import { Option } from "effect";
 import { useAtomValue } from "@effect/atom-react";
 import { AsyncResult } from "effect/reactivity";
 import { typewriterAtom } from "@/features/typewriter/state/typewriter";
@@ -27,7 +26,7 @@ export function Typewriter({ fullText }: TypewriterProps) {
   useEffect(() => setIsMounted(true), []);
 
   // The latest emitted text, falling back to the full text before the first emission (which is also the SSR-rendered markup)
-  const currText = AsyncResult.value(typewriter).pipe(Option.getOrElse(() => fullText));
+  const currText = AsyncResult.getOrElse(typewriter, () => fullText);
 
   // Whether or not the typewriter is still running
   const isRunning = isMounted && AsyncResult.isWaiting(typewriter);

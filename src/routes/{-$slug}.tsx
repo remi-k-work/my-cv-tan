@@ -28,7 +28,7 @@ import { HOME_PATH } from "@/domain/constants";
 
 export const Route = createFileRoute("/{-$slug}")({
   notFoundComponent: NotFoundPage,
-  loader: ({ params }) => loaderIndex(Option.fromNullishOr(params.slug)),
+  loader: ({ params, abortController }) => loaderIndex(Option.fromNullishOr(params.slug), abortController.signal),
   head: ({ loaderData, matches, match, params }) =>
     routeHead({
       loaderData,

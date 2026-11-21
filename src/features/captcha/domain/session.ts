@@ -1,30 +1,30 @@
 // services, features, and other libraries
 import { Bytes, Effect, Option, Schema, String, pipe } from "effect";
-import { Digest, Mac } from "effect/crypto";
+import { Mac } from "effect/crypto";
 
 // constants
 const textEncoder = new TextEncoder();
 
-// The sealed value is exactly two base64url segments (salt.digest); anything else is a
+// The sealed value is exactly two base64url segments (salt.tag); anything else is a
 // mismatch, not an error; built once at module scope and reused on every verification
 const decodeSealed = Schema.decodeUnknownOption(Schema.Tuple([Schema.Uint8ArrayFromBase64Url, Schema.Uint8ArrayFromBase64Url]));
 
-// Binds a captcha answer to a one-time salt under the session secret (digest commitment)
-export const commitToCaptcha = Effect.fnUntraced(function* (secret: string, salt: Uint8Array, captchaString: string) {
-  const digest = yield* Digest.Digest;
-  return yield* digest.digest(Digest.sha256, Bytes.concat([textEncoder.encode(secret), salt, textEncoder.encode(captchaString)]));
+export const captchaKey = (secret: string) => Mac.key(Mac.hmacSha256, textEncoder.encode(secret));
+
+const captchaMessage = (salt: Uint8Array, captchaString: string) => Bytes.concat([salt, textEncoder.encode(captchaString)]);
+
+// Binds a captcha answer to a one-time salt with HMAC-SHA-256 under the session secret
+export const commitToCaptcha = Effect.fnUntraced(function* (key: Mac.Key, salt: Uint8Array, captchaString: string) {
+  const mac = yield* Mac.Mac;
+  return yield* mac.sign(key, captchaMessage(salt, captchaString));
 });
 
-export const verifyCaptchaString = (secret: string, sealed: string, captchaInput: string) =>
+export const verifyCaptchaString = (key: Mac.Key, sealed: string, captchaInput: string) =>
   pipe(
     decodeSealed(String.split(sealed, ".")),
     Option.match({
       // A malformed seal is a failed verification, not an error: there is no commitment to compare against
       onNone: () => Effect.succeed(false),
-      onSome: ([salt, expected]) =>
-        Effect.map(commitToCaptcha(secret, salt, captchaInput), (actual) =>
-          // The commitment is a secret-keyed digest, so the comparison must not leak how many leading bytes matched
-          Mac.timingSafeEqual(actual, expected)
-        ),
+      onSome: ([salt, expected]) => Effect.flatMap(Mac.Mac, (mac) => mac.verify(key, expected, captchaMessage(salt, captchaInput))),
     })
   );

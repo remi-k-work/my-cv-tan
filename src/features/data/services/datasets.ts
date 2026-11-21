@@ -15,7 +15,7 @@ const localizedDataset =
   (preferredLanguage: PreferredLanguage) =>
     requireDataFrom(accessor(Option.some(preferredLanguage)), dataset);
 
-export class Datasets extends Context.Service<Datasets>()("Datasets", {
+export class Datasets extends Context.Service<Datasets>()("my-cv-v4-tan/features/data/services/Datasets", {
   // The accessors are pure projections of Data's already-shaped methods, so the layer is a map
   // over the service rather than a generator body that yields it once
   make: Effect.map(

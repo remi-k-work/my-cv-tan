@@ -15,6 +15,7 @@ export type Translate = (source: string) => string;
 import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH, SITE_LANGUAGES } from "./constants";
 
 export const PreferredLanguage = Schema.Literals(SITE_LANGUAGES);
+export const decodePreferredLanguage = Schema.decodeUnknownOption(PreferredLanguage);
 
 // The route list above is the vocabulary, so a path the schema accepted but no constant names
 // would be a page no surface could address

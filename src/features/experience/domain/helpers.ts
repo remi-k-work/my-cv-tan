@@ -10,9 +10,11 @@ import type { Experience, ExperienceList } from "./models";
 import { EXCERPT_SUFFIX } from "./constants";
 
 const GRAPHEME_SEGMENTER = new Intl.Segmenter(undefined, { granularity: "grapheme" });
+const graphemes = (text: string) => Array.map(Array.fromIterable(GRAPHEME_SEGMENTER.segment(text)), ({ segment }) => segment);
+const EXCERPT_SUFFIX_LENGTH = graphemes(EXCERPT_SUFFIX).length;
 
 // Locate one experience by slug inside a decoded list (None = clean 404 candidate);
-// shared by the route loaders and the Markdown twins so the lookup can never drift
+// shared by the data service, route loaders and Markdown twins so the lookup can never drift
 export const experienceFromList = (experienceList: ExperienceList, slug: string) => Array.findFirst(experienceList, (experience) => experience.slug === slug);
 
 // Employment or portfolio project — the one kind question the HTML head's article section, the
@@ -24,8 +26,8 @@ export const isEmployment = (experience: Pick<Experience, "type">) => experience
 // The invariant reads as set algebra over the two projected lists: each side has to be
 // duplicate-free, and the two sides have to be the same set
 export const haveSameExperienceSlugs = (left: ReadonlyArray<Pick<Experience, "slug">>, right: ReadonlyArray<Pick<Experience, "slug">>) => {
-  const leftSlugs = HashSet.make(...Array.map(left, ({ slug }) => slug));
-  const rightSlugs = HashSet.make(...Array.map(right, ({ slug }) => slug));
+  const leftSlugs = HashSet.fromIterable(Array.map(left, ({ slug }) => slug));
+  const rightSlugs = HashSet.fromIterable(Array.map(right, ({ slug }) => slug));
 
   return (
     // A set smaller than its source means that language publishes one route twice
@@ -64,24 +66,25 @@ export const excerpt = (text: string, maxLength: number) => {
   if (limit <= 0) return "";
 
   // Count grapheme clusters so a combining mark or joined emoji stays with its base character.
-  const chars = Array.map(Array.fromIterable(GRAPHEME_SEGMENTER.segment(text)), ({ segment }) => segment);
+  const chars = graphemes(text);
 
   // Return early if text fits within limits
   if (chars.length <= limit) return text;
 
-  // Reserve room for the suffix so the appended ellipsis cannot push the result past the budget
-  const budget = Number.max(0, limit - String.length(EXCERPT_SUFFIX));
+  // Measure the suffix in the same grapheme units so it cannot push the result past the budget
+  const budget = Number.max(0, limit - EXCERPT_SUFFIX_LENGTH);
 
-  // Take the first `budget` characters from the left
-  const cut = Array.join(Array.take(chars, budget), "");
+  // Take the first `budget` graphemes from the left
+  const cut = Array.take(chars, budget);
 
-  // Find last word boundary using Option
+  // Find the boundary and take the prefix in the same grapheme index space
   const wordBoundedText = pipe(
     cut,
-    String.lastIndexOf(" "),
+    Array.findLastIndex((char) => char === " "),
     Option.filter((index) => index > 0),
-    Option.map((index) => pipe(cut, String.takeLeft(index))),
-    Option.getOrElse(() => cut)
+    Option.map((index) => Array.take(cut, index)),
+    Option.getOrElse(() => cut),
+    Array.join("")
   );
 
   return `${String.trimEnd(wordBoundedText)}${EXCERPT_SUFFIX}`;

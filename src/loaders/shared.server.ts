@@ -22,7 +22,7 @@ const fromData = (data: Data["Service"], preferredLanguage: PreferredLanguage): 
 });
 
 // Runs a server loader against the shared services, logging failures before rejecting
-export const serverLoader = <A, E>(use: (source: PageData) => Effect.Effect<A, E>) => {
+export const serverLoader = <A, E>(use: (source: PageData) => Effect.Effect<A, E>, signal?: AbortSignal) => {
   const request = getRequest();
 
   return RuntimeServer.runPromise(
@@ -31,6 +31,7 @@ export const serverLoader = <A, E>(use: (source: PageData) => Effect.Effect<A, E
         // A failed dataset must also downgrade the rendered HTML response to a non-cacheable 503
         Effect.logError(error).pipe(Effect.andThen(Effect.sync(() => markHtmlDataUnavailable(request, error))))
       )
-    )
+    ),
+    { signal }
   );
 };

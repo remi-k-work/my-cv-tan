@@ -25,4 +25,4 @@ export const ROBOTS_TXT = Array.join(
   "\n"
 );
 
-export const robotsHandler = documentRoute(() => Effect.succeed(txtResponse(ROBOTS_TXT)));
+export const robotsHandler = documentRoute(() => Effect.sync(() => txtResponse(ROBOTS_TXT)));

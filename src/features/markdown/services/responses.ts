@@ -29,12 +29,12 @@ export const withoutNegotiationVary = (vary: string | null) =>
       pipe(
         String.split(value, ","),
         Array.map(String.trim),
-        Array.filter((token) => String.isNonEmpty(token) && !HashSet.has(NEGOTIATION_VARY, String.toLowerCase(token)))
+        Array.filter((token) => String.isNonEmpty(token) && !HashSet.has(NEGOTIATION_VARY, String.toLowerCase(token))),
+        Array.join(", ")
       )
     ),
     // A Vary left with only negotiation tokens is no Vary at all, so the caller drops the header
-    Option.filter((tokens) => Array.isReadonlyArrayNonEmpty(tokens)),
-    Option.map(Array.join(", "))
+    Option.filter(String.isNonEmpty)
   );
 
 const withHeaders = (response: Response, update: (headers: Headers) => void) => {
@@ -97,6 +97,15 @@ const mdFailureResponse = (body: string, preferredLanguage: PreferredLanguage, s
   });
 
 export const mdNotFoundResponse = (body: string, preferredLanguage: PreferredLanguage, markdownPath: Option.Option<string>) =>
-  mdFailureResponse(body, preferredLanguage, 404, Option.getOrUndefined(Option.map(markdownPath, (path) => markdownTwinUrl(path, preferredLanguage))));
+  mdFailureResponse(
+    body,
+    preferredLanguage,
+    404,
+    pipe(
+      markdownPath,
+      Option.map((path) => markdownTwinUrl(path, preferredLanguage)),
+      Option.getOrUndefined
+    )
+  );
 
 export const mdUnavailableResponse = (body: string, preferredLanguage: PreferredLanguage) => mdFailureResponse(body, preferredLanguage, 503);

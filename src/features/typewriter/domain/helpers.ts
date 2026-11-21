@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Array, Effect, pipe, Random, String } from "effect";
+import { Array, Iterable, pipe, Random, String } from "effect";
 
 // types
 import type { ChunkAcc } from "./models";
@@ -39,7 +39,7 @@ export const chunkTextByWords = (text: string, maxLength: number) => {
 // Length of a text in user-visible characters (Unicode code points); typing emits one frame
 // per code point, so delete counts must be measured in the same unit to stay aligned; using
 // `String.length` would split surrogate pairs and delete past the intended word
-export const charCount = (text: string) => Array.length(Array.fromIterable(text));
+export const charCount = (text: string) => Iterable.size(text);
 
 // A random lowercase letter used for insertion typos
-export const randomLetter = Effect.map(Random.nextIntBetween(0, String.length(LOWERCASE_LETTERS) - 1), (index) => LOWERCASE_LETTERS[index]);
+export const randomLetter = Random.choice(LOWERCASE_LETTERS);
