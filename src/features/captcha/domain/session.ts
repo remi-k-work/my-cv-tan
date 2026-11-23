@@ -14,10 +14,8 @@ export const captchaKey = (secret: string) => Mac.key(Mac.hmacSha256, textEncode
 const captchaMessage = (salt: Uint8Array, captchaString: string) => Bytes.concat([salt, textEncoder.encode(captchaString)]);
 
 // Binds a captcha answer to a one-time salt with HMAC-SHA-256 under the session secret
-export const commitToCaptcha = Effect.fnUntraced(function* (key: Mac.Key, salt: Uint8Array, captchaString: string) {
-  const mac = yield* Mac.Mac;
-  return yield* mac.sign(key, captchaMessage(salt, captchaString));
-});
+export const commitToCaptcha = (key: Mac.Key, salt: Uint8Array, captchaString: string) =>
+  Effect.flatMap(Mac.Mac, (mac) => mac.sign(key, captchaMessage(salt, captchaString)));
 
 export const verifyCaptchaString = (key: Mac.Key, sealed: string, captchaInput: string) =>
   pipe(

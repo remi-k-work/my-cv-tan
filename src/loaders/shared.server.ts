@@ -28,8 +28,9 @@ export const serverLoader = <A, E>(use: (source: PageData) => Effect.Effect<A, E
   return RuntimeServer.runPromise(
     Effect.flatMap(Data, (data) => use(fromData(data, preferredLanguageFromLocale(getLocale())))).pipe(
       Effect.tapError((error) =>
-        // A failed dataset must also downgrade the rendered HTML response to a non-cacheable 503
-        Effect.logError(error).pipe(Effect.andThen(Effect.sync(() => markHtmlDataUnavailable(request, error))))
+        // A failed dataset must also downgrade the rendered HTML response to a non-cacheable 503,
+        // even if logging the original failure is interrupted or defects
+        Effect.logError(error).pipe(Effect.ensuring(Effect.sync(() => markHtmlDataUnavailable(request, error))))
       )
     ),
     { signal }

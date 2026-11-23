@@ -3,7 +3,7 @@
 // a pinned ?lang= document resolves its registered msg() sources with.
 
 import { assert, describe, it } from "@effect/vitest";
-import { Option, Predicate, Record, Schema } from "effect";
+import { Effect, Option, Predicate, Record, Schema } from "effect";
 import { initializeGT } from "gt-tanstack-start";
 import gtConfig from "../../../gt.config.json";
 import { loadTranslations, translateForLanguage } from "@/lib/gt-translations";
@@ -66,30 +66,30 @@ describe("committed dictionaries", () => {
 });
 
 describe("translateForLanguage", () => {
-  it("resolves the requested language's copy from its hashed dictionary", async () => {
-    const translate = await translateForLanguage("pl");
+  it.effect("resolves the requested language's copy from its hashed dictionary", () =>
+    Effect.map(translateForLanguage("pl"), (translate) => {
+      // The source strings the Markdown twins publish as section headings and link labels; each
+      // resolves only if the hash is computed the way the runtime dictionary keys it
+      assert.strictEqual(translate("Experience"), "Doświadczenie");
+      assert.strictEqual(translate("Portfolio Projects"), "Projekty do Portfolio");
+      assert.strictEqual(translate("Channels"), "Kanały");
+    })
+  );
 
-    // The source strings the Markdown twins publish as section headings and link labels; each
-    // resolves only if the hash is computed the way the runtime dictionary keys it
-    assert.strictEqual(translate("Experience"), "Doświadczenie");
-    assert.strictEqual(translate("Portfolio Projects"), "Projekty do Portfolio");
-    assert.strictEqual(translate("Channels"), "Kanały");
-  });
+  it.effect("returns a source string the dictionary has no entry for unchanged", () =>
+    Effect.map(translateForLanguage("pl"), (translate) => {
+      // A string no msg() registered is not a key the dictionary can carry, so the document keeps
+      // its source copy rather than publishing an empty or fabricated heading
+      assert.strictEqual(translate("Not a registered source string"), "Not a registered source string");
+    })
+  );
 
-  it("returns a source string the dictionary has no entry for unchanged", async () => {
-    const translate = await translateForLanguage("pl");
-
-    // A string no msg() registered is not a key the dictionary can carry, so the document keeps
-    // its source copy rather than publishing an empty or fabricated heading
-    assert.strictEqual(translate("Not a registered source string"), "Not a registered source string");
-  });
-
-  it("is the identity for the source language, which never consults a dictionary", async () => {
-    const translate = await translateForLanguage("en");
-
-    assert.strictEqual(translate("Experience"), "Experience");
-    assert.strictEqual(translate("Anything at all"), "Anything at all");
-  });
+  it.effect("is the identity for the source language, which never consults a dictionary", () =>
+    Effect.map(translateForLanguage("en"), (translate) => {
+      assert.strictEqual(translate("Experience"), "Experience");
+      assert.strictEqual(translate("Anything at all"), "Anything at all");
+    })
+  );
 });
 
 it("the locale vocabulary every dictionary is selected through is limited to the site's languages", () => {

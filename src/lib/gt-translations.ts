@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Schema } from "effect";
+import { Effect, Schema } from "effect";
 import { getMessagesInternal } from "gt-i18n/internal";
 import { preferredLanguageFromLocale } from "@/domain/helpers";
 
@@ -25,7 +25,11 @@ export async function loadTranslations(locale: string) {
 // A sync translate function bound to one explicit language. getGT()/getMessages() follow the
 // request locale through the condition store, which a ?lang= override must not depend on, so the
 // condition-store-agnostic resolver reads the msg()-registered sources for the requested language
-export const translateForLanguage = async (preferredLanguage: PreferredLanguage): Promise<Translate> => {
-  const m = await getMessagesInternal({ locale: preferredLanguage, enableI18n: true });
-  return (source: string): string => m(source);
-};
+export const translateForLanguage = (preferredLanguage: PreferredLanguage) =>
+  Effect.tryPromise(() => getMessagesInternal({ locale: preferredLanguage, enableI18n: true })).pipe(
+    Effect.map(
+      (m): Translate =>
+        (source) =>
+          m(source)
+    )
+  );

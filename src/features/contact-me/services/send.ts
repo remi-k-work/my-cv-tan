@@ -23,6 +23,8 @@ export class Send extends Context.Service<Send>()("my-cv-v4-tan/features/contact
         schedule: Schedule.jittered(Schedule.exponential("100 millis")),
         times: 3,
       }),
+      // Bound the whole retry loop without making an ambiguous transport timeout retryable
+      HttpClient.timeout("10 seconds"),
       // Convert the final non-OK response to a typed error after the response retries are exhausted
       HttpClient.filterStatusOk
     );
@@ -36,17 +38,19 @@ export class Send extends Context.Service<Send>()("my-cv-v4-tan/features/contact
       ).pipe(Effect.mapError((error) => new SendError({ cause: error })));
 
       yield* client.execute(request).pipe(
-        Effect.catchTag("HttpClientError", (clientError) =>
-          Effect.gen(function* () {
-            const response = clientError.response;
-            // A transport failure has no response to enrich the error with
-            if (response === undefined) return yield* new SendError({ cause: clientError });
+        Effect.catchTag("HttpClientError", (clientError) => {
+          const response = clientError.response;
+          // A transport failure has no response to enrich the error with
+          if (response === undefined) return new SendError({ cause: clientError });
 
-            // Preserve upstream diagnostics such as rate-limit details alongside the client error
-            const responseBody = yield* response.text.pipe(Effect.orElseSucceed(() => "<unreadable body>"));
-            return yield* new SendError({ cause: clientError, status: response.status, responseBody });
-          })
-        )
+          // Preserve upstream diagnostics such as rate-limit details alongside the client error;
+          // the response-header timeout does not cover this separate body read
+          return response.text.pipe(
+            Effect.timeout("10 seconds"),
+            Effect.orElseSucceed(() => "<unreadable body>"),
+            Effect.flatMap((responseBody) => new SendError({ cause: clientError, status: response.status, responseBody }))
+          );
+        })
       );
     });
 

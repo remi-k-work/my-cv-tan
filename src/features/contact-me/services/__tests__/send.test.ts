@@ -1,9 +1,10 @@
 // services, features, and other libraries
-// `live`, not `effect`: the client retries a transient failure on a real (jittered) schedule, and
-// the default test clock never advances it
+// Retry cases use `live`, not `effect`: the client retries a transient failure on a real
+// (jittered) schedule, and the default test clock never advances it
 import { assert, it } from "@effect/vitest";
-import { Cause, ConfigProvider, Effect, Exit, Layer, Option, pipe } from "effect";
+import { Cause, ConfigProvider, Effect, Exit, Fiber, Layer, Option, pipe } from "effect";
 import { FetchHttpClient } from "effect/http";
+import { TestClock } from "effect/testing";
 import { Send } from "../send";
 
 // types
@@ -39,11 +40,12 @@ const failureOf = (exit: Exit.Exit<void, SendError>): Option.Option<SendError> =
 it.live("a persistent transient rejection exhausts the retries and carries the final response diagnostics", () =>
   Effect.gen(function* () {
     // A rate limit is the case the enriched SendError exists for: EmailJS answered, and its
-    // status and body are the only diagnostics that explain why
+    // status and body are the only diagnostics that explain why. Make the last response distinct
+    // so the test cannot pass by retaining diagnostics from an earlier attempt.
     let attempts = 0;
     const rejected: typeof globalThis.fetch = async () => {
       attempts += 1;
-      return new Response("EmailJS rejected the message", { status: 429 });
+      return new Response(`EmailJS rejection ${attempts}`, { status: attempts === 4 ? 503 : 429 });
     };
 
     const failure = failureOf(yield* sendWith(rejected));
@@ -53,8 +55,8 @@ it.live("a persistent transient rejection exhausts the retries and carries the f
     // The initial request plus three retries must preserve the last upstream diagnostic
     assert.strictEqual(attempts, 4);
     assert.strictEqual(failure.value._tag, "SendError");
-    assert.strictEqual(failure.value.status, 429);
-    assert.strictEqual(failure.value.responseBody, "EmailJS rejected the message");
+    assert.strictEqual(failure.value.status, 503);
+    assert.strictEqual(failure.value.responseBody, "EmailJS rejection 4");
   })
 );
 
@@ -87,6 +89,46 @@ it.live("a permanent upstream rejection is not retried", () =>
     assert.strictEqual(attempts, 1);
     assert.strictEqual(failure.value.status, 400);
     assert.strictEqual(failure.value.responseBody, "Invalid template");
+  })
+);
+
+it.live("an unreadable upstream diagnostic body falls back without hiding the response status", () =>
+  Effect.gen(function* () {
+    let attempts = 0;
+    const rejected: typeof globalThis.fetch = async () => {
+      attempts += 1;
+      const response = new Response("Already consumed", { status: 400 });
+      await response.text();
+      return response;
+    };
+
+    const failure = failureOf(yield* sendWith(rejected));
+
+    if (Option.isNone(failure)) return assert.fail("a permanent rejection must fail the send");
+
+    assert.strictEqual(attempts, 1);
+    assert.strictEqual(failure.value.status, 400);
+    assert.strictEqual(failure.value.responseBody, "<unreadable body>");
+  })
+);
+
+it.effect("a stalled upstream request times out without being retried", () =>
+  Effect.gen(function* () {
+    let attempts = 0;
+    const stalled: typeof globalThis.fetch = () => {
+      attempts += 1;
+      return new Promise<Response>(() => {});
+    };
+
+    const fiber = yield* Effect.forkChild(sendWith(stalled));
+    yield* TestClock.adjust("10 seconds");
+    const failure = failureOf(yield* Fiber.join(fiber));
+
+    if (Option.isNone(failure)) return assert.fail("a stalled request must fail the send");
+
+    assert.strictEqual(attempts, 1);
+    assert.isUndefined(failure.value.status);
+    assert.isUndefined(failure.value.responseBody);
   })
 );
 

@@ -3,6 +3,7 @@ import { Effect } from "effect";
 import { translateForLanguage } from "@/lib/gt-translations";
 
 // types
+import type { Cause } from "effect";
 import type { PreferredLanguage, Translate } from "@/domain/models";
 import type { TwinContext } from "@/features/markdown/domain/models";
 
@@ -19,11 +20,11 @@ import { SOURCE_CONTEXT } from "@/features/markdown/domain/context";
 // complete English context, never to English copy behind Polish metadata
 export const resolveTranslation = (
   preferredLanguage: PreferredLanguage,
-  load: (language: PreferredLanguage) => Promise<Translate> = translateForLanguage
+  load: (language: PreferredLanguage) => Effect.Effect<Translate, Cause.UnknownError> = translateForLanguage
 ): Effect.Effect<ResolvedTranslation> =>
   preferredLanguage === DEFAULT_LANGUAGE
     ? Effect.succeed({ context: SOURCE_CONTEXT, fallback: false })
-    : Effect.tryPromise(() => load(preferredLanguage)).pipe(
+    : load(preferredLanguage).pipe(
         Effect.map((translate) => ({ context: { preferredLanguage, translate }, fallback: false })),
         Effect.catch((error) =>
           Effect.logError(`[MARKDOWN]: translation snapshot unavailable for "${preferredLanguage}", falling back to ${DEFAULT_LANGUAGE}`, error).pipe(

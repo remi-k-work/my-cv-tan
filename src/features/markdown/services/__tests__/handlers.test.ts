@@ -217,9 +217,7 @@ const STATIC_TWIN_HANDLERS: Readonly<Record<string, (event: { request: Request }
 const twinHandlerFor = (pathname: string) => STATIC_TWIN_HANDLERS[pathname] ?? experienceHandler;
 
 const advertisedTwins: ReadonlyArray<readonly [twinUrl: string, canonical: string]> = [
-  ...STATIC_PAGE_PATHS.map(
-    (path: string) => [markdownTwinUrl(STATIC_PAGES[path as (typeof STATIC_PAGE_PATHS)[number]].mdHref, DEFAULT_LANGUAGE), absoluteUrl(path)] as const
-  ),
+  ...STATIC_PAGE_PATHS.map((path) => [markdownTwinUrl(STATIC_PAGES[path].mdHref, DEFAULT_LANGUAGE), absoluteUrl(path)] as const),
   ...slugs.values().map((slug: string) => [markdownTwinUrl(experienceMarkdownPath(slug), DEFAULT_LANGUAGE), absoluteUrl(experiencePath(slug))] as const),
 ];
 

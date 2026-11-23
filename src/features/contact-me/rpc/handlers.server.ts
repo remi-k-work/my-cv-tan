@@ -13,7 +13,7 @@ const RpcContactMeLayer = RpcContactMe.toLayer({
     // The handler only invokes the mail operation after the gate succeeds, so a rejected answer
     // never sends a request to EmailJS; the Send service itself is initialized with this layer
     const { verify } = yield* Captcha;
-    if (!(yield* verify(headers, captchaInput))) return yield* new CaptchaError({ cause: "Captcha verification failed" });
+    if (!(yield* verify(headers, captchaInput))) return yield* new CaptchaError({ cause: new Error("Captcha verification failed") });
 
     const { send } = yield* Send;
     return yield* send(name, email, subject, message);
