@@ -105,11 +105,11 @@ it("translatedLink translates the label before building the link", () => {
 it("mdIndexEntry prints label, canonical, twin and an optional inline summary", () => {
   assert.strictEqual(
     mdIndexEntry("Role", "https://site.test/role", "https://site.test/role.md"),
-    "[Role](https://site.test/role): Markdown: https://site.test/role.md"
+    "[Role](https://site.test/role): [Markdown](https://site.test/role.md)"
   );
   assert.strictEqual(
     mdIndexEntry("Role", "https://site.test/role", "https://site.test/role.md", "A *bold* summary"),
-    "[Role](https://site.test/role): A \\*bold\\* summary Markdown: https://site.test/role.md"
+    "[Role](https://site.test/role): A \\*bold\\* summary [Markdown](https://site.test/role.md)"
   );
 });
 
@@ -119,7 +119,7 @@ it("mdIndexEntry treats a whitespace-only summary as no summary at all", () => {
   for (const blank of ["", " ", "\t", "\n", " \n\t "]) {
     assert.strictEqual(
       mdIndexEntry("Role", "https://site.test/role", "https://site.test/role.md", blank),
-      "[Role](https://site.test/role): Markdown: https://site.test/role.md",
+      "[Role](https://site.test/role): [Markdown](https://site.test/role.md)",
       `a ${JSON.stringify(blank)} summary must not render`
     );
   }
@@ -131,7 +131,7 @@ it("mdIndexEntry encodes parens in the twin URL exactly like mdLink encodes its 
   const entry = mdIndexEntry("Role", "https://site.test/role(1)", "https://site.test/role(1).md");
 
   assert.include(entry, "](https://site.test/role%281%29)");
-  assert.include(entry, "Markdown: https://site.test/role%281%29.md");
+  assert.include(entry, "[Markdown](https://site.test/role%281%29.md)");
   assert.notInclude(entry, "(1)");
 });
 

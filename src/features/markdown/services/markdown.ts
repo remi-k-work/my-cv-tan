@@ -6,11 +6,11 @@ import { recoverDataFailure } from "@/features/data/domain/required";
 import { experienceFromList } from "@/features/experience/domain/helpers";
 import { experienceMarkdownPath } from "@/features/meta/domain/urls";
 import { experienceSeo } from "@/features/meta/domain/seo";
-import { txtResponse, txtUnavailableResponse } from "@/features/meta/domain/responses";
-import { buildExperienceMd, buildNotFoundMd } from "@/features/markdown/domain/detail-twin";
+import { txtResponse, txtUnavailableResponse } from "@/features/meta/services/responses";
+import { buildExperienceMd } from "@/features/markdown/domain/detail-twin";
+import { buildNotFoundMd, unavailableMarkdownBody } from "@/features/markdown/domain/fallback";
 import { twinDocument } from "@/features/markdown/domain/format";
 import { buildLlmsFullTxt, buildLlmsTxt, unavailableIndexBody } from "@/features/markdown/domain/indexes";
-import { unavailableMarkdownBody } from "@/features/markdown/domain/twins";
 import { documentName, parseLangParam, slugFromMdPathname } from "./request";
 import { mdNotFoundResponse, mdResponse, mdUnavailableResponse, pinCacheVariant, withoutCaching } from "./responses";
 import { resolveTranslation } from "./translation";
@@ -23,8 +23,7 @@ import type { MarkdownTwin, TwinContext } from "@/features/markdown/domain/model
 type DocumentBody = (request: Request, context: TwinContext) => Effect.Effect<Response, RequiredDataError, Datasets>;
 type Document = (request: Request) => Effect.Effect<Response, never, Datasets>;
 
-// A discovery index answers from content the layer already resolved, so its document carries no
-// service requirement of its own — unlike a twin, which resolves its datasets per request
+// Discovery indexes close over their dataset accessors, so their public effects need no context.
 type IndexDocument = (request: Request) => Effect.Effect<Response, never>;
 
 // constants
@@ -105,10 +104,9 @@ const discoveryDocument =
       )
     );
 
-// The service's callers are document routes, not data pipelines: resolve the datasets once when
-// the layer is built so the public method types describe what the service does, not what it reads.
-// The indexes are source-language documents, so their content is one projection over those
-// resolved accessors rather than a pipeline that looks the service up again per request
+// Resolve the accessors once when constructing the service; each document effect still reads its
+// data when run. Source-language indexes use those accessors directly rather than looking up the
+// Markdown service from inside their own pipeline.
 export class Markdown extends Context.Service<Markdown>()("my-cv-v4-tan/features/markdown/services/Markdown", {
   make: Effect.map(Datasets, (datasets) => {
     const withDatasets = Effect.provideService(Datasets, datasets);

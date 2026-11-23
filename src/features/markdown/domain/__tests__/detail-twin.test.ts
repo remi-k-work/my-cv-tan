@@ -1,9 +1,11 @@
 import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
-import { buildExperienceMd, buildNotFoundMd } from "../detail-twin";
+import { buildExperienceMd } from "../detail-twin";
+import { buildNotFoundMd } from "../fallback";
 import { twinDocument } from "../format";
 import { escapeMd } from "../escape";
 import { experienceSeo } from "@/features/meta/domain/seo";
+import { BRANDED_TITLE, NOT_FOUND_COPY } from "@/features/meta/domain/site";
 import { sampleExperience, translateEn, translatePl } from "@/features/markdown/__tests__/fixtures";
 
 it("the experience twin renders frontmatter, H1, skills and links without repeated crawler instructions", () => {
@@ -124,6 +126,16 @@ it("a 404 publishes only the identity facts it can honestly claim", () => {
   const { facts } = buildNotFoundMd({ slug: Option.none(), preferredLanguage: "en", translate: translateEn });
 
   assert.deepStrictEqual(Object.keys(facts).sort(), ["author", "description", "lang", "title"]);
+});
+
+it("a 404 twin shares its branded, localized title with the HTML head", () => {
+  for (const preferredLanguage of ["en", "pl"] as const) {
+    const { facts, body } = buildNotFoundMd({ slug: Option.none(), preferredLanguage, translate: translateEn });
+    const { title } = NOT_FOUND_COPY[preferredLanguage];
+
+    assert.strictEqual(facts.title, BRANDED_TITLE(title));
+    assert.include(body, `# ${title}`);
+  }
 });
 
 // regression guards from regression-guards.test.ts

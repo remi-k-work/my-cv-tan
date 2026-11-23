@@ -170,9 +170,8 @@ it("experienceJsonLd uses OrganizationRole for employment type", () => {
   assert.isDefined(organization);
   assert.isDefined(article);
   assert.deepStrictEqual(role?.member, { "@id": "https://www.remiforge.dev/#person" });
-  // The employer claims the person, not the OrganizationRole node: Organization.member expects a
-  // Person or Organization, and the role is already carried as the Article's subject.
-  assert.deepStrictEqual(organization?.member, { "@id": "https://www.remiforge.dev/#person" });
+  // Schema.org's role pattern connects all three entities: employer -> role -> person.
+  assert.deepStrictEqual(organization?.member, { "@id": "https://www.remiforge.dev/sample-job#organization-role" });
   assert.isUndefined(role?.inLanguage);
   assert.deepStrictEqual(article?.about, { "@id": "https://www.remiforge.dev/sample-job#organization-role" });
 });

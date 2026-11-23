@@ -3,7 +3,7 @@ import { Effect, Option } from "effect";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 import { CONTENT_SIGNAL } from "@/features/meta/domain/discovery";
 import { absoluteUrl } from "@/features/meta/domain/urls";
-import { documentHeaders, txtResponse, txtUnavailableResponse } from "@/features/meta/domain/responses";
+import { documentHeaders, txtResponse, txtUnavailableResponse } from "@/features/meta/services/responses";
 import { requireData, recoverDataFailure } from "@/features/data/domain/required";
 import { experienceFromList } from "@/features/experience/domain/helpers";
 import { mdNotFoundResponse, mdResponse, mdUnavailableResponse, pinCacheVariant, withoutCaching, withoutNegotiationVary } from "../responses";
@@ -97,7 +97,7 @@ it("response helpers set content types, indexing, cache, canonical, and language
   // RFC 8288 parameter order: rel, type, title, hreflang.
   assert.strictEqual(
     ok.headers.get("Link"),
-    '<https://www.remiforge.dev/>; rel="canonical", <https://www.remiforge.dev/llms.txt>; rel="alternate"; type="text/plain"; title="llms.txt", <https://www.remiforge.dev/llms-full.txt>; rel="alternate"; type="text/plain"; title="llms-full.txt", <https://www.remiforge.dev/index.md?lang=en>; rel="alternate"; type="text/markdown"; hreflang="en", <https://www.remiforge.dev/index.md?lang=pl>; rel="alternate"; type="text/markdown"; hreflang="pl", <https://www.remiforge.dev/index.md?lang=en>; rel="alternate"; type="text/markdown"; hreflang="x-default"'
+    '<https://www.remiforge.dev/>; rel="canonical", <https://www.remiforge.dev/llms.txt>; rel="describedby", <https://www.remiforge.dev/llms.txt>; rel="alternate"; type="text/plain"; title="llms.txt", <https://www.remiforge.dev/llms-full.txt>; rel="alternate"; type="text/plain"; title="llms-full.txt", <https://www.remiforge.dev/index.md?lang=en>; rel="alternate"; type="text/markdown"; hreflang="en", <https://www.remiforge.dev/index.md?lang=pl>; rel="alternate"; type="text/markdown"; hreflang="pl", <https://www.remiforge.dev/index.md?lang=en>; rel="alternate"; type="text/markdown"; hreflang="x-default"'
   );
   assert.strictEqual(ok.headers.get("Content-Signal"), "search=yes, ai-input=yes, ai-train=yes");
 
@@ -110,7 +110,7 @@ it("response helpers set content types, indexing, cache, canonical, and language
   assert.isNull(missing.headers.get("Retry-After"));
   assert.strictEqual(
     missing.headers.get("Link"),
-    '<https://www.remiforge.dev/llms.txt>; rel="alternate"; type="text/plain"; title="llms.txt", <https://www.remiforge.dev/llms-full.txt>; rel="alternate"; type="text/plain"; title="llms-full.txt"'
+    '<https://www.remiforge.dev/llms.txt>; rel="describedby", <https://www.remiforge.dev/llms.txt>; rel="alternate"; type="text/plain"; title="llms.txt", <https://www.remiforge.dev/llms-full.txt>; rel="alternate"; type="text/plain"; title="llms-full.txt"'
   );
 
   // Missing representation omits Content-Location.
@@ -129,7 +129,7 @@ it("response helpers set content types, indexing, cache, canonical, and language
   assert.strictEqual(unavailable.headers.get("Retry-After"), "300");
   assert.strictEqual(
     unavailable.headers.get("Link"),
-    '<https://www.remiforge.dev/llms.txt>; rel="alternate"; type="text/plain"; title="llms.txt", <https://www.remiforge.dev/llms-full.txt>; rel="alternate"; type="text/plain"; title="llms-full.txt"'
+    '<https://www.remiforge.dev/llms.txt>; rel="describedby", <https://www.remiforge.dev/llms.txt>; rel="alternate"; type="text/plain"; title="llms.txt", <https://www.remiforge.dev/llms-full.txt>; rel="alternate"; type="text/plain"; title="llms-full.txt"'
   );
 
   const txt = txtResponse("# Plain");
@@ -156,7 +156,7 @@ it("response helpers set content types, indexing, cache, canonical, and language
   assert.strictEqual(discovery.headers.get("Content-Location"), "https://www.remiforge.dev/llms.txt");
   assert.strictEqual(
     discovery.headers.get("Link"),
-    '<https://www.remiforge.dev/llms.txt>; rel="alternate"; type="text/plain"; title="llms.txt", <https://www.remiforge.dev/llms-full.txt>; rel="alternate"; type="text/plain"; title="llms-full.txt"'
+    '<https://www.remiforge.dev/llms.txt>; rel="describedby", <https://www.remiforge.dev/llms.txt>; rel="alternate"; type="text/plain"; title="llms.txt", <https://www.remiforge.dev/llms-full.txt>; rel="alternate"; type="text/plain"; title="llms-full.txt"'
   );
 });
 

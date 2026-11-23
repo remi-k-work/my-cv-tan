@@ -1,15 +1,10 @@
 // services, features, and other libraries
-import { Array, Effect, pipe } from "effect";
-import { documentRoute } from "@/lib/server-route";
-import { recoverDataFailure } from "@/features/data/domain/required";
-import { Datasets } from "@/features/data/services/datasets";
+import { Array, pipe } from "effect";
 import { absoluteUrl, experiencePath } from "./urls";
-import { sitemapResponse, sitemapUnavailableResponse } from "./responses";
 
 // constants
 import { DOWNLOADABLE_DOCUMENT_PATHS } from "./discovery";
 import { STATIC_PAGE_PATHS } from "./pages";
-import { SITE_LANGUAGES } from "@/domain/constants";
 
 const STATIC_URLS = Array.map([...STATIC_PAGE_PATHS, ...DOWNLOADABLE_DOCUMENT_PATHS], absoluteUrl);
 const XML_ENTITIES: Readonly<Record<string, string>> = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" };
@@ -17,22 +12,6 @@ const XML_ENTITIES: Readonly<Record<string, string>> = { "&": "&amp;", "<": "&lt
 // The character class is exactly the entity table's key set, so a lookup miss can only mean the
 // class and the table drifted: publishing the character unchanged keeps it well-formed XML
 const escapeXml = (value: string) => value.replace(/[&<>"']/g, (character) => XML_ENTITIES[character] ?? character);
-
-// One document description, built once and re-run per request: it is a pure value, so nothing
-// about the request that asks for it has to be threaded in
-const sitemapDocument = Effect.gen(function* () {
-  const { experienceList } = yield* Datasets;
-
-  const lists = yield* Effect.forEach(SITE_LANGUAGES, (language) => experienceList(language), { concurrency: "unbounded" });
-
-  // Every language publishes the same unique canonical routes, so the per-language lists flatten
-  // into one slug collection; the builder dedupes the locations it renders from them
-  const slugs = Array.flatMap(lists, (experiences) => Array.map(experiences, ({ slug }) => slug));
-  return sitemapResponse(buildSitemapXml(slugs));
-}).pipe(
-  recoverDataFailure(() => "[SITEMAP.XML]", sitemapUnavailableResponse),
-  Effect.withSpan("sitemapDocument")
-);
 
 // Generates XML sitemap containing canonical URLs for static pages, downloads, and experience items
 export const buildSitemapXml = (slugs: ReadonlyArray<string>) => {
@@ -48,5 +27,3 @@ export const buildSitemapXml = (slugs: ReadonlyArray<string>) => {
     "\n"
   );
 };
-
-export const sitemapHandler = documentRoute(() => sitemapDocument);

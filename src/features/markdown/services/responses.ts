@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { Array, HashSet, Option, String, pipe } from "effect";
-import { documentHeaders } from "@/features/meta/domain/responses";
+import { documentHeaders } from "@/features/meta/services/responses";
 import { markdownTwinUrl } from "@/features/meta/domain/urls";
 import { canonicalLink, joinLinkHeader, languageVariantLinks } from "@/features/meta/domain/link-tags";
 
@@ -9,14 +9,14 @@ import type { PreferredLanguage } from "@/domain/models";
 
 // constants
 import { NO_STORE } from "@/domain/http";
-import { AI_INDEX_LINK_HEADER, AI_INDEX_LINKS } from "@/features/meta/domain/discovery";
+import { AI_DISCOVERY_LINK_HEADER, AI_DISCOVERY_LINKS } from "@/features/meta/domain/discovery";
 import {
   CACHEABLE_HEADERS,
   INDEXABLE_HEADERS,
   NEGOTIATION_VARY_TOKENS,
   SERVICE_UNAVAILABLE_HEADERS,
   UNAVAILABLE_HEADERS,
-} from "@/features/meta/domain/responses";
+} from "@/features/meta/services/responses";
 
 const MD_CONTENT_TYPE = "text/markdown; charset=utf-8";
 const NEGOTIATION_VARY = pipe(NEGOTIATION_VARY_TOKENS, Array.map(String.toLowerCase), HashSet.fromIterable);
@@ -65,7 +65,7 @@ const markdownHeaders = (preferredLanguage: PreferredLanguage, links: string) =>
 });
 
 const markdownLinks = (canonical: string, markdownUrl: string) =>
-  joinLinkHeader([canonicalLink(canonical), ...AI_INDEX_LINKS, ...languageVariantLinks(markdownUrl)]);
+  joinLinkHeader([canonicalLink(canonical), ...AI_DISCOVERY_LINKS, ...languageVariantLinks(markdownUrl)]);
 
 export const mdResponse = (input: {
   readonly body: string;
@@ -90,7 +90,7 @@ const mdFailureResponse = (body: string, preferredLanguage: PreferredLanguage, s
   new Response(body, {
     status,
     headers: {
-      ...markdownHeaders(preferredLanguage, AI_INDEX_LINK_HEADER),
+      ...markdownHeaders(preferredLanguage, AI_DISCOVERY_LINK_HEADER),
       ...(status === 503 ? SERVICE_UNAVAILABLE_HEADERS : UNAVAILABLE_HEADERS),
       ...(contentLocation === undefined ? {} : { "Content-Location": contentLocation }),
     },

@@ -185,7 +185,9 @@ export const experienceJsonLd = ({ experience, preferredLanguage, path, headline
 
   const itemNodes: JsonLdNodes = employment
     ? [
-        { "@type": "Organization", "@id": `${url}#organization`, name: company, member: { "@id": PERSON_ID } },
+        // Schema.org's OrganizationRole pattern: the employer's member edge points at the role,
+        // and the role's member edge points at the person, keeping employer, role and person connected.
+        { "@type": "Organization", "@id": `${url}#organization`, name: company, member: { "@id": itemId } },
         item,
         personEdge({ worksFor: { "@id": `${url}#organization` } }),
       ]

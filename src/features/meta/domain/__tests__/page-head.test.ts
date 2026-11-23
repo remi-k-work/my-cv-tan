@@ -51,7 +51,7 @@ it("pageHead publishes the page's own canonical and Markdown alternate links", (
   });
   // Site-wide discovery and identity links live on the root head; the leaf adds nothing site-wide
   assert.strictEqual(head.links?.length, 2);
-  assert.notInclude(JSON.stringify(head.links), '"rel":"llms"');
+  assert.notInclude(JSON.stringify(head.links), '"rel":"describedby"');
   assert.notInclude(JSON.stringify(head.links), '"rel":"author"');
 });
 
@@ -364,8 +364,8 @@ it("employment details use OrganizationRole linked to the person and canonical W
   assert.deepStrictEqual(role?.member, { "@id": "https://www.remiforge.dev/#person" });
   assert.deepStrictEqual(role?.mainEntityOfPage, { "@id": "https://www.remiforge.dev/sample-job" });
   assert.strictEqual(organization?.name, "Sample Co");
-  // The employer claims the person; the OrganizationRole is reached through the Article's subject
-  assert.deepStrictEqual(organization?.member, { "@id": "https://www.remiforge.dev/#person" });
+  // The employer points at the role, whose own member edge above points back to the person.
+  assert.deepStrictEqual(organization?.member, { "@id": "https://www.remiforge.dev/sample-job#organization-role" });
   // The reciprocal Person edge: "works for" is readable from the person side of the graph too
   assert.deepStrictEqual(nodeOf(parsed, "Person")?.worksFor, { "@id": "https://www.remiforge.dev/sample-job#organization" });
   assert.notInclude(JSON.stringify(role), "startDate");

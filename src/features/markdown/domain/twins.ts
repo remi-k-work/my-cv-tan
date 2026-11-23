@@ -4,7 +4,7 @@ import { msg } from "gt-i18n";
 import { partitionExperiences } from "@/features/experience/domain/helpers";
 import { staticPageCopy } from "@/features/meta/domain/pages";
 import { pagesSection } from "./twin-nav";
-import { mdBody, mdBulletList, mdDocument, mdDocumentLinks, mdEmptyMarker, mdFact, mdHeading, mdProfileLinks, mdQuote, mdTitledSection } from "./format";
+import { mdBody, mdBulletList, mdDocumentLinks, mdEmptyMarker, mdFact, mdHeading, mdProfileLinks, mdQuote, mdTitledSection } from "./format";
 import { escapeMd } from "./escape";
 import { pageFacts } from "./identity";
 import { experienceLines } from "./listings";
@@ -91,10 +91,3 @@ export const buildContactMd = (input: ContactMdInput) => {
   const { translate } = input;
   return staticTwinDocument(input, CONTACT_PATH, (copy) => [contactChannels(copy.canonical, translate)]);
 };
-
-// 503 fallback body served when required portfolio data is unavailable
-export const unavailableMarkdownBody = (translate: Translate) =>
-  mdDocument([
-    mdHeading(1, translate(msg("Content temporarily unavailable"))),
-    escapeMd(translate(msg("The required portfolio content could not be loaded. Please try again shortly."))),
-  ]);

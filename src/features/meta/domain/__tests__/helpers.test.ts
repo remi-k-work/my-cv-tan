@@ -7,7 +7,7 @@ import { Option, pipe } from "effect";
 import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain/constants";
 import { experienceScreenshot, experienceSeo } from "../seo";
 import { experienceHead } from "../page-head";
-import { documentHeaders } from "../responses";
+import { documentHeaders } from "@/features/meta/services/responses";
 import { notFoundHead, unavailableHead } from "../fallback";
 import { jsonLdGraph } from "../jsonld";
 import { META_DESCRIPTION_LENGTH, PERSON_DESCRIPTION, SITE_DESCRIPTION, SITE_NODES } from "../site";

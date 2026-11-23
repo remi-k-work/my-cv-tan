@@ -1,8 +1,6 @@
 // services, features, and other libraries
-import { Array, Effect } from "effect";
-import { documentRoute } from "@/lib/server-route";
+import { Array } from "effect";
 import { absoluteUrl } from "./urls";
-import { txtResponse } from "./responses";
 
 // constants
 import { CONTENT_SIGNAL, LLMS_TXT_HREF, SITEMAP_HREF } from "./discovery";
@@ -24,5 +22,3 @@ export const ROBOTS_TXT = Array.join(
   ],
   "\n"
 );
-
-export const robotsHandler = documentRoute(() => Effect.sync(() => txtResponse(ROBOTS_TXT)));

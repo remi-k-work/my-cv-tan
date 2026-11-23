@@ -71,17 +71,15 @@ export const mdLink = (label: string, href: string) => `[${escapeMdInline(label)
 export const translatedLink = (label: string, href: string, translate: Translate) => mdLink(translate(label), href);
 
 export const mdIndexEntry = (label: string, canonical: string, twinUrl: string, summary?: string) => {
-  // A summary that is absent or blank is the same as no summary: the entry's own punctuation already
-  // separates the two links, so an empty value must not leave a double space behind
   const beforeTwin = pipe(
     Option.fromUndefinedOr(summary),
-    // Blank counts as absent: the inline escape trims whitespace-only text away, so keeping it
-    // would emit the separator space without any summary text between the two links
     Option.filter(Predicate.not(isBlank)),
     Option.map((value) => `${escapeMdInline(value)} `),
     Option.getOrElse(() => "")
   );
-  return `${mdLink(label, canonical)}: ${beforeTwin}Markdown: ${encodeDestination(twinUrl)}`;
+
+  // Explicit links work without relying on GFM's optional bare-URL autolinking.
+  return `${mdLink(label, canonical)}: ${beforeTwin}${mdLink("Markdown", twinUrl)}`;
 };
 
 export const mdDocumentLinks = (documents: ReadonlyArray<{ readonly label: string; readonly href: string }>, translate: Translate) =>

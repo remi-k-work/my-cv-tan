@@ -1,5 +1,5 @@
 import { assert, it } from "@effect/vitest";
-import { AI_INDEX_LINKS, AI_INDEX_LINK_HEADER, LLMS_DISCOVERY_LINK, SITEMAP_LINK } from "../discovery";
+import { AI_DISCOVERY_LINK_HEADER, AI_DISCOVERY_LINKS, AI_INDEX_LINKS, LLMS_DISCOVERY_LINK, SITEMAP_LINK } from "../discovery";
 import { ROOT_HEAD } from "../root-head";
 import { authorLink, canonicalLink, joinLinkHeader, languageVariantLinks, markdownAlternateLink } from "../link-tags";
 import type { LinkTag } from "../models";
@@ -100,11 +100,11 @@ it("the AI indexes project into both the <head> advertisements and the Link head
   ]);
 
   assert.strictEqual(
-    AI_INDEX_LINK_HEADER,
-    '<https://www.remiforge.dev/llms.txt>; rel="alternate"; type="text/plain"; title="llms.txt", <https://www.remiforge.dev/llms-full.txt>; rel="alternate"; type="text/plain"; title="llms-full.txt"'
+    AI_DISCOVERY_LINK_HEADER,
+    '<https://www.remiforge.dev/llms.txt>; rel="describedby", <https://www.remiforge.dev/llms.txt>; rel="alternate"; type="text/plain"; title="llms.txt", <https://www.remiforge.dev/llms-full.txt>; rel="alternate"; type="text/plain"; title="llms-full.txt"'
   );
   // The joined constant is the joined list, not a second spelling of it
-  assert.strictEqual(AI_INDEX_LINK_HEADER, joinLinkHeader(AI_INDEX_LINKS));
+  assert.strictEqual(AI_DISCOVERY_LINK_HEADER, joinLinkHeader(AI_DISCOVERY_LINKS));
 
   // The site-wide head carries the <link> projection, so the HTML document advertises the indexes too
   assert.deepStrictEqual(
@@ -115,5 +115,5 @@ it("the AI indexes project into both the <head> advertisements and the Link head
 
 it("discovery links declare the sitemap and the canonical llms index", () => {
   assert.deepStrictEqual(SITEMAP_LINK, { rel: "sitemap", href: "https://www.remiforge.dev/sitemap.xml" });
-  assert.deepStrictEqual(LLMS_DISCOVERY_LINK, { rel: "llms", href: "https://www.remiforge.dev/llms.txt" });
+  assert.deepStrictEqual(LLMS_DISCOVERY_LINK, { rel: "describedby", href: "https://www.remiforge.dev/llms.txt" });
 });

@@ -53,7 +53,6 @@ const polishTranslations: Readonly<Record<string, string>> = {
   "Contact Form": "Formularz Kontaktowy",
   Base: "Lokalizacja",
   "Rzeszów, Poland": "Rzeszów, Polska",
-  "Not Found": "Nie znaleziono",
   "GitHub Repo": "Repozytorium GitHub",
   "Live Link": "Link na Żywo",
   "Watch Video": "Zobacz Video",

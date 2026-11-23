@@ -1,12 +1,15 @@
 import { assert, it } from "@effect/vitest";
+import { Effect } from "effect";
 import { STATIC_PAGE_PATHS } from "../pages";
 import { CONTENT_SIGNAL, DOWNLOADABLE_DOCUMENTS } from "../discovery";
 import { experiencePath } from "../urls";
-import { sitemapHandler } from "../sitemap";
+import { sitemapDocument, sitemapHandler } from "../../services/sitemap";
 import { buildSitemapXml } from "../sitemap";
-import { sitemapResponse, sitemapUnavailableResponse } from "../responses";
+import { sitemapResponse, sitemapUnavailableResponse } from "@/features/meta/services/responses";
 import experienceEn from "@/assets/data/en/experience.json";
 import experiencePl from "@/assets/data/pl/experience.json";
+import { Datasets } from "@/features/data/services/datasets";
+import { RequiredDataError } from "@/features/data/domain/required";
 
 type Experience = { readonly slug: string };
 
@@ -94,7 +97,7 @@ it("sitemap encodes experience paths the same way canonical pages and twins do",
   assert.notInclude(xml, "role%20(senior)");
 });
 
-it("sitemap unions every supported language without emitting duplicate URLs", () => {
+it("sitemap preserves distinct slugs in caller order without emitting duplicate URLs", () => {
   const translatedOnly = { ...sampleExperience, slug: "translated-only" };
   const xml = buildSitemapXml([sampleExperience.slug, translatedOnly.slug]);
 
@@ -119,6 +122,44 @@ it("sitemap success responses carry the XML content type, noindex, and hour-long
   // Crawlable but excluded from search indexes.
   assert.strictEqual(ok.headers.get("X-Robots-Tag"), "noindex, follow");
 });
+
+it.effect("the sitemap document reads the shared canonical slug set only from the default language", () =>
+  Effect.gen(function* () {
+    const reads: Array<string> = [];
+    const response = yield* sitemapDocument.pipe(
+      Effect.provideService(Datasets, {
+        pageTitles: () => Effect.die("sitemap must not read page titles"),
+        experienceList: (language) =>
+          Effect.sync(() => {
+            reads.push(language);
+            return [];
+          }),
+        educationList: () => Effect.die("sitemap must not read education"),
+      })
+    );
+
+    assert.strictEqual(response.status, 200);
+    assert.deepStrictEqual(reads, ["en"]);
+  })
+);
+
+it.effect("the sitemap document recovers a dataset failure as a non-cacheable 503", () =>
+  Effect.gen(function* () {
+    const failed = Effect.fail(new RequiredDataError({ dataset: "experience list", message: "test outage" }));
+    const response = yield* sitemapDocument.pipe(
+      Effect.provideService(Datasets, {
+        pageTitles: () => failed,
+        experienceList: () => failed,
+        educationList: () => failed,
+      })
+    );
+
+    assert.strictEqual(response.status, 503);
+    assert.strictEqual(response.headers.get("Cache-Control"), "no-store");
+    assert.strictEqual(response.headers.get("Retry-After"), "300");
+    assert.include(yield* Effect.promise(() => response.text()), "<error>Sitemap is temporarily unavailable.</error>");
+  })
+);
 
 it("sitemap data failures return non-cacheable noindex XML with status 503", async () => {
   const response = sitemapUnavailableResponse();

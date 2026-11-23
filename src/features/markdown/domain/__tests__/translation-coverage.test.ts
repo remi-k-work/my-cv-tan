@@ -8,8 +8,9 @@ import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
 import { loadTranslations } from "@/lib/gt-translations";
 import { experienceSeo } from "@/features/meta/domain/seo";
-import { buildExperienceMd, buildNotFoundMd } from "../detail-twin";
-import { buildContactMd, buildEducationMd, buildHomeMd, unavailableMarkdownBody } from "../twins";
+import { buildExperienceMd } from "../detail-twin";
+import { buildNotFoundMd, unavailableMarkdownBody } from "../fallback";
+import { buildContactMd, buildEducationMd, buildHomeMd } from "../twins";
 import { sampleExperience, stablePageTitles } from "@/features/markdown/__tests__/fixtures";
 
 // types
@@ -42,7 +43,7 @@ it("every source a Markdown twin requests is extracted and translated", async ()
 
   // Guard the wiring itself: a builder silently dropping out of this test would otherwise pass
   // vacuously, so a sentinel from each builder family must have been requested
-  for (const sentinel of ["Pages", "No entries.", "Rzeszów, Poland", "Not Found", "Content temporarily unavailable"]) {
+  for (const sentinel of ["Pages", "No entries.", "Rzeszów, Poland", "Content temporarily unavailable"]) {
     assert.isTrue(requested.has(sentinel), `"${sentinel}" was not requested; a builder stopped being exercised`);
   }
 

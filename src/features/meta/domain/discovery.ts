@@ -43,7 +43,8 @@ export const LLMS_FULL_TXT_INDEX = { name: "llms-full.txt", url: `${SITE_URL}${L
 export const AI_INDEXES = [LLMS_TXT_INDEX, LLMS_FULL_TXT_INDEX] as const;
 
 export const SITEMAP_LINK = { rel: "sitemap", href: `${SITE_URL}${SITEMAP_HREF}` } as const;
-export const LLMS_DISCOVERY_LINK: LinkTag = { rel: "llms", href: LLMS_TXT_INDEX.url };
+// Standard llms.txt discovery relation from https://llmstxt.org.
+export const LLMS_DISCOVERY_LINK: LinkTag = { rel: "describedby", href: LLMS_TXT_INDEX.url };
 
 export const AI_INDEX_LINKS: ReadonlyArray<LinkTag> = Array.map(AI_INDEXES, ({ name, url }) => ({
   rel: "alternate",
@@ -51,6 +52,7 @@ export const AI_INDEX_LINKS: ReadonlyArray<LinkTag> = Array.map(AI_INDEXES, ({ n
   title: name,
   href: url,
 }));
-export const AI_INDEX_LINK_HEADER = joinLinkHeader(AI_INDEX_LINKS);
+export const AI_DISCOVERY_LINKS: ReadonlyArray<LinkTag> = [LLMS_DISCOVERY_LINK, ...AI_INDEX_LINKS];
+export const AI_DISCOVERY_LINK_HEADER = joinLinkHeader(AI_DISCOVERY_LINKS);
 
 export const ME_LINKS: ReadonlyArray<LinkTag> = Array.map(SOCIAL_LINKS, (href) => ({ rel: "me", href }));

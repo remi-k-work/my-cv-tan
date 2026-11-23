@@ -1,26 +1,11 @@
 import { assert, it } from "@effect/vitest";
-import { Array, pipe } from "effect";
 import { ROOT_HEAD } from "../root-head";
 import { rootHead } from "../root-head";
 import { homeHead, contactHead, educationHead, experienceHead } from "../page-head";
-import { AI_INDEX_LINKS, AI_INDEX_LINK_HEADER } from "../discovery";
+import { AI_DISCOVERY_LINK_HEADER, AI_DISCOVERY_LINKS, AI_INDEX_LINKS } from "../discovery";
 import { joinLinkHeader } from "../link-tags";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 import { stablePageTitles } from "./fixtures";
-import type { MetaTag } from "../models";
-
-// Dedupe meta tags by name/property, keeping the last occurrence (mirrors TanStack's merge).
-const dedupeMeta = (tags: ReadonlyArray<MetaTag>): ReadonlyArray<MetaTag> =>
-  pipe(
-    Array.reduce(tags, new Map<string, MetaTag>(), (merged, tag) =>
-      merged.set(
-        "title" in tag ? "title" : "name" in tag ? `name:${tag.name}` : "property" in tag ? `property:${tag.property}` : "charset",
-        tag
-      )
-    ),
-    Array.fromIterable,
-    Array.map(([, tag]) => tag)
-  );
 
 it("root metadata defaults to noindex and complete page heads explicitly allow indexing", () => {
   assert.include(JSON.stringify(ROOT_HEAD.meta), `"content":"${NOINDEX_FOLLOW}"`);
@@ -35,7 +20,7 @@ it("root metadata defaults to noindex and complete page heads explicitly allow i
   assert.include(JSON.stringify(ROOT_HEAD.links), "https://www.remiforge.dev/llms.txt");
   assert.include(JSON.stringify(ROOT_HEAD.links), "https://www.remiforge.dev/llms-full.txt");
   // llms.txt auto-discovery link relation
-  assert.include(JSON.stringify(ROOT_HEAD.links), '"rel":"llms"');
+  assert.include(JSON.stringify(ROOT_HEAD.links), '"rel":"describedby"');
   // Author attribution as a followable link
   assert.include(JSON.stringify(ROOT_HEAD.links), '"rel":"author"');
   assert.include(JSON.stringify(ROOT_HEAD.links), "https://www.remiforge.dev/");
@@ -74,10 +59,10 @@ it("root metadata carries the authored site description on every surface", () =>
 });
 
 it("the root head publishes the site-wide discovery and author links exactly once", () => {
-  // rel="llms" lets AI crawlers find the index from HTTP headers alone (https://llmstxt.com).
+  // rel="describedby" lets AI crawlers find the index from HTTP headers alone (https://llmstxt.com).
   // The root declares it once for the whole site; a leaf page that restated it would only emit a
   // byte-identical duplicate the router then has to dedupe.
-  assert.include(JSON.stringify(ROOT_HEAD.links), '"rel":"llms"');
+  assert.include(JSON.stringify(ROOT_HEAD.links), '"rel":"describedby"');
   assert.include(JSON.stringify(ROOT_HEAD.links), "https://www.remiforge.dev/llms.txt");
   // rel="author" gives parsers that don't read OpenGraph a followable profile URL (GEO attribution)
   assert.include(JSON.stringify(ROOT_HEAD.links), '"rel":"author"');
@@ -101,7 +86,7 @@ it("the root head publishes the site-wide discovery and author links exactly onc
       preferredLanguage: "en",
     }),
   ]) {
-    assert.notInclude(JSON.stringify(head.links), '"rel":"llms"');
+    assert.notInclude(JSON.stringify(head.links), '"rel":"describedby"');
     assert.notInclude(JSON.stringify(head.links), '"rel":"author"');
   }
 });
@@ -126,11 +111,11 @@ it("the AI indexes project into both the <head> advertisements and the Link head
   ]);
 
   assert.strictEqual(
-    AI_INDEX_LINK_HEADER,
-    '<https://www.remiforge.dev/llms.txt>; rel="alternate"; type="text/plain"; title="llms.txt", <https://www.remiforge.dev/llms-full.txt>; rel="alternate"; type="text/plain"; title="llms-full.txt"'
+    AI_DISCOVERY_LINK_HEADER,
+    '<https://www.remiforge.dev/llms.txt>; rel="describedby", <https://www.remiforge.dev/llms.txt>; rel="alternate"; type="text/plain"; title="llms.txt", <https://www.remiforge.dev/llms-full.txt>; rel="alternate"; type="text/plain"; title="llms-full.txt"'
   );
   // The joined constant is the joined list, not a second spelling of it
-  assert.strictEqual(AI_INDEX_LINK_HEADER, joinLinkHeader(AI_INDEX_LINKS));
+  assert.strictEqual(AI_DISCOVERY_LINK_HEADER, joinLinkHeader(AI_DISCOVERY_LINKS));
 
   // The site-wide head carries the <link> projection, so the HTML document advertises the indexes too
   assert.deepStrictEqual(
@@ -144,18 +129,16 @@ it("rootHead adds localized not-found metadata while retaining site-wide discove
 
   assert.include(JSON.stringify(fallback.meta), '"title":"Remi Forge ● Nie znaleziono"');
   assert.include(JSON.stringify(fallback.meta), NOINDEX_FOLLOW);
-  assert.include(JSON.stringify(fallback.links), '"rel":"llms"');
+  assert.include(JSON.stringify(fallback.links), '"rel":"describedby"');
   assert.include(JSON.stringify(fallback.links), '"rel":"sitemap"');
   assert.notInclude(JSON.stringify(fallback.links), '"rel":"canonical"');
   assert.strictEqual(fallback.scripts?.length, 1);
 });
 
-it("the not-found fallback wins the root's duplicate meta tags after TanStack's merge", () => {
+it("the not-found head replaces default page metadata instead of relying on TanStack's merge", () => {
   const head = rootHead([{ loaderData: { preferredLanguage: "pl" }, status: "success" }, { status: "notFound" }]);
-  const rendered = JSON.stringify(dedupeMeta(head.meta));
+  const rendered = JSON.stringify(head.meta);
 
-  // One title, description and robots directive, each carrying the not-found value rather than
-  // the root's own defaults
   assert.include(rendered, '"title":"Remi Forge ● Nie znaleziono"');
   assert.include(rendered, "Nie znaleziono żądanej strony.");
   assert.include(rendered, NOINDEX_FOLLOW);
@@ -176,7 +159,7 @@ it("rootHead serves the site-wide head with no scripts when no match is a not-fo
   assert.notInclude(JSON.stringify(head.meta), "Page unavailable");
   assert.notInclude(JSON.stringify(head.meta), "Not Found");
   // The site-wide identity and discovery links ride along unchanged
-  assert.include(JSON.stringify(head.links), '"rel":"llms"');
+  assert.include(JSON.stringify(head.links), '"rel":"describedby"');
   assert.include(JSON.stringify(head.links), '"rel":"sitemap"');
   assert.include(JSON.stringify(head.links), '"rel":"me"');
   assert.include(JSON.stringify(head.links), '"rel":"author"');
@@ -210,7 +193,7 @@ it("rootHead hands every document its own head arrays rather than sharing the si
   assert.deepStrictEqual(first.links, [...ROOT_HEAD.links]);
   assert.deepStrictEqual(first.meta, second.meta);
 
-  // The not-found branch merges the fallback into fresh arrays too
+  // The not-found branch replaces the default page identity in fresh arrays too
   const notFound = rootHead([{ loaderData: { preferredLanguage: "en" }, status: "success" }, { status: "notFound" }]);
   assert.notStrictEqual(notFound.meta, ROOT_HEAD.meta);
   assert.notStrictEqual(notFound.links, ROOT_HEAD.links);

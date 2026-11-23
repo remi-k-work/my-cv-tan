@@ -2,7 +2,7 @@
 import { Array, Record, pipe } from "effect";
 import { partitionExperiences } from "@/features/experience/domain/helpers";
 import { experienceSeo } from "@/features/meta/domain/seo";
-import { absoluteUrl, encodeDestination, markdownTwinUrl } from "@/features/meta/domain/urls";
+import { absoluteUrl, markdownTwinUrl } from "@/features/meta/domain/urls";
 import {
   demoteHeadings,
   fencedFacts,
@@ -18,7 +18,7 @@ import {
   mdQuote,
   mdTitledSection,
 } from "./format";
-import { escapeMd, escapeMdInline } from "./escape";
+import { escapeMd } from "./escape";
 import { experienceEntry, pageEntry } from "./catalogue";
 import { SOURCE_CONTEXT } from "./context";
 import { buildExperienceMd } from "./detail-twin";
@@ -175,15 +175,15 @@ export const buildLlmsFullTxt = (content: SourceContent) => {
 
   return mdDocument([
     ...SITE_OPENING,
-    `Complete Markdown content of every page, concatenated for single-request ingestion. Each section begins with its canonical HTML URL after "Source:", its Markdown twin after "Markdown:", and its identity facts as YAML, then includes the twin content with headings demoted to preserve one document hierarchy. Cite the canonical HTML URL, not this file.`,
+    `Complete Markdown content of every page, concatenated for single-request ingestion. Each section begins with Source and Markdown links and its identity facts as YAML, then includes the twin content with headings demoted to preserve one document hierarchy. Cite the canonical HTML URL, not this file.`,
     ABOUT_SECTION,
     mdTitledSection("Table of Contents", mdBulletList(Array.map(documents, ({ entry }) => mdIndexEntry(entry.name, entry.canonical, entryTwinUrl(entry))))),
     DISCOVERY_SECTION,
     ...Array.map(documents, ({ entry, twin }) =>
       mdBody([
         mdHeading(2, entry.name),
-        `Source: ${escapeMdInline(entry.canonical)}`,
-        `Markdown: ${encodeDestination(entryTwinUrl(entry))}`,
+        mdLink("Source", entry.canonical),
+        mdLink("Markdown", entryTwinUrl(entry)),
         fencedFacts(twin.facts),
         demoteHeadings(twin.body),
       ])

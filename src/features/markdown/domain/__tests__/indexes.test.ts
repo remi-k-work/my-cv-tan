@@ -2,7 +2,8 @@ import { assert, it } from "@effect/vitest";
 import { AI_NOTES, buildLlmsFullTxt, buildLlmsTxt, DISCOVERY_LINES, SITE_OPENING, unavailableIndexBody } from "../indexes";
 import { escapeMd } from "../escape";
 import { buildExperienceMd } from "../detail-twin";
-import { buildHomeMd, unavailableMarkdownBody } from "../twins";
+import { unavailableMarkdownBody } from "../fallback";
+import { buildHomeMd } from "../twins";
 import { twinDocument } from "../format";
 import { SOURCE_CONTEXT } from "../context";
 import { LANG_PARAM, PERSON_DESCRIPTION } from "@/features/meta/domain/site";
@@ -30,7 +31,7 @@ it("buildLlmsTxt indexes pages, about facts, grouped experience and negotiated l
   // above prints, so one document never advertises two different entry shapes.
   assert.include(
     txt,
-    `- [Full-Stack Developer at Sample Co](https://www.remiforge.dev/my%20project): Built things with \\*\\*care\\*\\* and #hashtags. (Mar 2026) Markdown: https://www.remiforge.dev/my%20project.md?lang=en`
+    `- [Full-Stack Developer at Sample Co](https://www.remiforge.dev/my%20project): Built things with \\*\\*care\\*\\* and #hashtags. (Mar 2026) [Markdown](https://www.remiforge.dev/my%20project.md?lang=en)`
   );
   assert.include(txt, `## Notes for AI systems`);
   // The single-fetch document is surfaced in Pages, not only in the trailing notes
@@ -84,14 +85,14 @@ it("buildLlmsTxt indexes pages, about facts, grouped experience and negotiated l
   // is the static page catalogue's own, the same name the twins' "Pages" section prints.
   assert.include(
     txt,
-    `- [Home page](https://www.remiforge.dev/): portfolio overview with experience and project lists. Markdown: https://www.remiforge.dev/index.md?lang=en`
+    `- [Home page](https://www.remiforge.dev/): portfolio overview with experience and project lists. [Markdown](https://www.remiforge.dev/index.md?lang=en)`
   );
   assert.include(
     txt,
-    `- [Education \\& Certificates](https://www.remiforge.dev/education): schools, courses and certificates. Markdown: https://www.remiforge.dev/education.md?lang=en`
+    `- [Education \\& Certificates](https://www.remiforge.dev/education): schools, courses and certificates. [Markdown](https://www.remiforge.dev/education.md?lang=en)`
   );
   // Summaries are authored sentences: the entry adds no second full stop
-  assert.notInclude(txt, ".. Markdown:");
+  assert.notInclude(txt, ".. [Markdown]");
   assert.notInclude(txt, ".md)");
 });
 
@@ -163,7 +164,7 @@ it("the index and the home twin render one experience list, differing only in th
     .map((line) => line.replace(/^-\s*/, ""))
     .find((line) => line.startsWith(canonical));
   assert.isDefined(indexEntry, "the index lists the employment experience under its canonical URL");
-  const summary = (indexEntry ?? "").slice(canonical.length + 2, (indexEntry ?? "").indexOf(" Markdown:"));
+  const summary = (indexEntry ?? "").slice(canonical.length + 2, (indexEntry ?? "").indexOf(" [Markdown]("));
   assert.isNotEmpty(summary);
   assert.include(twin, `[${entry}](${twinRoute}): ${summary}`);
 
@@ -190,7 +191,7 @@ it("both AI indexes carry the same single-sourced reuse notes", () => {
   assert.include(index, note);
   assert.include(full, note);
   // The notes land after the concatenated twins so a single-request ingestion is self-describing
-  assert.isTrue(full.lastIndexOf("Notes for AI systems") > full.lastIndexOf("Source: "));
+  assert.isTrue(full.lastIndexOf("Notes for AI systems") > full.lastIndexOf("[Source]("));
 });
 
 it("only the index points at the single-request companion; the companion never points at itself", () => {
@@ -240,8 +241,8 @@ it("the full-content companion gives every concatenated document its own section
     assert.include(txt, `## ${name}`);
   }
   // The heading precedes the attribution block it introduces
-  assert.isTrue(txt.indexOf("## Home page") < txt.indexOf("Source: https://www.remiforge.dev/"));
-  assert.isTrue(txt.indexOf("## Full-Stack Developer at Sample Co") < txt.indexOf("Source: https://www.remiforge.dev/sample-role"));
+  assert.isTrue(txt.indexOf("## Home page") < txt.indexOf("[Source](https://www.remiforge.dev/)"));
+  assert.isTrue(txt.indexOf("## Full-Stack Developer at Sample Co") < txt.indexOf("[Source](https://www.remiforge.dev/sample-role)"));
   // Each twin's own headline still reads as that document's headline, now nested under it
   assert.include(txt, "### Full-Stack Developer at Sample Co");
 });
@@ -255,7 +256,7 @@ it("buildLlmsFullTxt concatenates every twin behind its canonical URL", () => {
 
   // One Source marker per twin: the three pages plus the single experience, in catalogue order
   // then portfolio order — the same order the table of contents advertises
-  const sources = [...txt.matchAll(/^Source: (.+)$/gm)].map(([, url]) => url);
+  const sources = [...txt.matchAll(/^\[Source\]\((.+)\)$/gm)].map(([, url]) => url);
   assert.deepStrictEqual(sources, [
     "https://www.remiforge.dev/",
     "https://www.remiforge.dev/education",
@@ -274,7 +275,7 @@ it("buildLlmsFullTxt concatenates every twin behind its canonical URL", () => {
   assert.include(txt, `## Table of Contents`);
   // Pinned in full, not by prefix: the three index entry lists render one shape, and the
   // summary-less table of contents is the variant no other assertion below covers
-  assert.include(txt, `- [Home page](https://www.remiforge.dev/): Markdown: https://www.remiforge.dev/index.md?lang=en`);
+  assert.include(txt, `- [Home page](https://www.remiforge.dev/): [Markdown](https://www.remiforge.dev/index.md?lang=en)`);
   assert.include(txt, `- [Home page](https://www.remiforge.dev/)`);
   assert.include(txt, `- [Education \\& Certificates](https://www.remiforge.dev/education)`);
   assert.include(txt, `- [Full-Stack Developer at Sample Co](https://www.remiforge.dev/sample-role)`);
@@ -283,8 +284,8 @@ it("buildLlmsFullTxt concatenates every twin behind its canonical URL", () => {
   assert.include(txt, "with headings demoted to preserve one document hierarchy");
   // Every document names both spellings of its identity: the canonical URL to cite above the
   // Markdown twin URL to fetch, so a crawler never has to resolve one from the other
-  assert.include(txt, `Markdown: https://www.remiforge.dev/education.md?lang=en`);
-  assert.include(txt, `Markdown: https://www.remiforge.dev/sample-role.md?lang=en`);
+  assert.include(txt, `[Markdown](https://www.remiforge.dev/education.md?lang=en)`);
+  assert.include(txt, `[Markdown](https://www.remiforge.dev/sample-role.md?lang=en)`);
   // The concatenated twins stay UI-chrome free: only content and frontmatter are ingested
   assert.notInclude(txt.toLowerCase(), "<nav");
   assert.notInclude(txt.toLowerCase(), "<footer");
@@ -375,56 +376,40 @@ it("index entries encode a paren-bearing slug so the twin destination survives",
   const txt = buildLlmsTxt([{ ...sampleExperience, slug: "role (senior)" }]);
 
   assert.include(txt, "](https://www.remiforge.dev/role%20%28senior%29)");
-  assert.include(txt, "Markdown: https://www.remiforge.dev/role%20%28senior%29.md?lang=en");
+  assert.include(txt, "[Markdown](https://www.remiforge.dev/role%20%28senior%29.md?lang=en)");
   // No raw parenthesis reaches either destination
   assert.notInclude(txt, "(senior)");
 });
 
 it("the companion encodes every slug-derived twin URL exactly as its table of contents does", () => {
-  // The companion prints each twin URL twice: once in its table of contents, and once in the
-  // document's own attribution block above the fenced facts. A slug whose path carries parentheses
-  // truncates the second one at the first ")" unless it takes the same encoding the first did, so
-  // the two spellings of one twin are compared rather than assumed to agree.
   const txt = buildLlmsFullTxt({
     pageTitles: stablePageTitles,
     experienceList: [{ ...sampleExperience, slug: "role (senior)" }],
     educationList: [],
   });
 
-  // Every attribution line spells its twin URL exactly as the table of contents entry for the same
-  // document does, so the one string is a destination a fetcher can resolve from either position.
-  for (const line of txt.split("\n").filter((line) => line.startsWith("Markdown: "))) {
-    const spelling = `Markdown: ${line.slice("Markdown: ".length)}`;
-
-    assert.strictEqual(txt.split(spelling).length - 1, 2, `${spelling} is not spelled the same way twice`);
-    assert.notInclude(line, "(", "a raw parenthesis would close the destination at the first one");
+  for (const [, url] of txt.matchAll(/^\[Markdown\]\((\S+)\)$/gm)) {
+    const link = `[Markdown](${url})`;
+    assert.strictEqual(txt.split(link).length - 1, 2, `${link} must match in the contents and attribution links`);
+    assert.notInclude(url, "(", "a raw parenthesis would close the destination early");
   }
 
-  // The paren-bearing slug itself survives in both spellings, so the loop above is not vacuous:
-  // the encoded URL appears in the table of contents and in the document's own attribution block,
-  // beside the raw spelling the home twin's body embeds for the same page.
   const encoded = "role%20%28senior%29.md";
   assert.isAbove((txt.match(new RegExp(encoded, "g")) ?? []).length, 1);
-  assert.notInclude(txt.split("Markdown: https://www.remiforge.dev/" + encoded + "?lang=en").join(""), "(senior)");
+  assert.notInclude(txt, "(senior)");
 });
 
-it("the companion's Source line escapes an underscore-bearing slug from becoming emphasis", () => {
-  // The canonical is a site-derived URL, so a slug whose first and last character is `_` reads as an
-  // emphasis run: half of the citation URL ends up inside `<em>`. The `Markdown:` sibling beside it
-  // already encodes its destination, so the Source line takes the same inline escape every other
-  // content line in the feature takes — and the escape is transparent for the URLs the site publishes.
+it("the companion's Source and Markdown links preserve slug characters as destinations", () => {
   const underscore = { ...sampleExperience, slug: "_role_" };
   const paren = { ...sampleExperience, slug: "role (senior)" };
 
   const doc = buildLlmsFullTxt({ pageTitles: stablePageTitles, experienceList: [underscore], educationList: [] });
-  assert.include(doc, `Source: https://www.remiforge.dev/\\_role\\_`);
-  // The raw spelling would parse as emphasis and split the citation URL
-  assert.notInclude(doc, "Source: https://www.remiforge.dev/_role_");
-  // The rest of the document is untouched by the one escape
-  assert.include(doc, `Markdown: https://www.remiforge.dev/_role_.md?lang=en`);
+  assert.include(doc, `[Source](https://www.remiforge.dev/_role_)`);
+  assert.include(doc, `[Markdown](https://www.remiforge.dev/_role_.md?lang=en)`);
+  assert.notInclude(doc, "\\_role\\_");
 
   const encoded = buildLlmsFullTxt({ pageTitles: stablePageTitles, experienceList: [paren], educationList: [] });
-  assert.include(encoded, "Source: https://www.remiforge.dev/role%20%28senior%29");
+  assert.include(encoded, "[Source](https://www.remiforge.dev/role%20%28senior%29)");
 });
 
 it("the unavailable twin escapes its prose the way every other body string does", () => {

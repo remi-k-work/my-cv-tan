@@ -101,7 +101,7 @@ it("a successful page's merged document declares its own title, description, rob
 });
 
 it("the site-wide discovery and identity links are declared once per document and never by a leaf", () => {
-  // rel="me", rel="author", rel="llms" and rel="sitemap" are the root's: a leaf that restated one
+  // rel="me", rel="author", rel="describedby" and rel="sitemap" are the root's: a leaf that restated one
   // would emit a duplicate the router only drops when byte-identical, and two <link> elements for
   // one relation is a contradiction a verifier has to reconcile. `me` is the one relation published
   // once per social profile, so its count is the profile count.
@@ -109,12 +109,12 @@ it("the site-wide discovery and identity links are declared once per document an
     const document = mergeHeads([rootHead(successMatches), head]);
 
     assert.strictEqual(relsOf(document.links, "me").length, SOCIAL_LINKS.length);
-    for (const rel of ["author", "llms", "sitemap"]) {
+    for (const rel of ["author", "describedby", "sitemap"]) {
       assert.strictEqual(relsOf(document.links, rel).length, 1, `${rel} must be declared once per document`);
     }
     // No relation and destination pair is emitted twice, whatever rel it is
     assert.strictEqual(new Set(document.links.map((link) => `${link.rel}:${link.href}`)).size, document.links.length);
-    for (const rel of ["me", "author", "llms", "sitemap"]) {
+    for (const rel of ["me", "author", "describedby", "sitemap"]) {
       assert.deepStrictEqual(relsOf(head.links, rel), [], `a leaf must not declare ${rel}`);
     }
   }
@@ -142,7 +142,7 @@ it("a not-found document carries the root's fallback copy and no canonical, whil
   assert.notStrictEqual(document.tagsOf("name", "description"), SITE_DESCRIPTION);
   assert.deepStrictEqual(relsOf(document.links, "canonical"), []);
   // The site-wide discovery links survive a not-found document, and it still publishes the entities
-  assert.strictEqual(relsOf(document.links, "llms").length, 1);
+  assert.strictEqual(relsOf(document.links, "describedby").length, 1);
   assert.strictEqual(document.scripts.length, 1);
 });
 
@@ -164,7 +164,7 @@ it("a page whose data is unavailable publishes its own fallback beside the site-
   assert.strictEqual(document.tagsOf("name", "robots"), NOINDEX_FOLLOW);
   assert.deepStrictEqual(relsOf(document.links, "canonical"), [{ rel: "canonical", href: "https://www.remiforge.dev/contact" }]);
   // The root's discovery links and the fallback's graph are still one block together
-  assert.strictEqual(relsOf(document.links, "llms").length, 1);
+  assert.strictEqual(relsOf(document.links, "describedby").length, 1);
   assert.strictEqual(document.scripts.length, 1);
 });
 

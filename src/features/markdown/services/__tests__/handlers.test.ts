@@ -4,11 +4,11 @@ import gtConfig from "../../../../../gt.config.json";
 import { loadTranslations } from "@/lib/gt-translations";
 import { INDEXABLE_ROBOTS } from "@/domain/http";
 import { absoluteUrl, experienceMarkdownPath, experiencePath, markdownTwinUrl } from "@/features/meta/domain/urls";
-import { CACHEABLE_HEADERS } from "@/features/meta/domain/responses";
+import { CACHEABLE_HEADERS } from "@/features/meta/services/responses";
 import { CONTENT_SIGNAL, LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/discovery";
 import { contactHandler, educationHandler, experienceHandler, homeHandler, llmsFullTxtHandler, llmsTxtHandler } from "../handlers";
-import { sitemapHandler } from "@/features/meta/domain/sitemap";
-import { robotsHandler } from "@/features/meta/domain/robots";
+import { sitemapHandler } from "@/features/meta/services/sitemap";
+import { robotsHandler } from "@/features/meta/services/robots";
 import { STATIC_PAGES, STATIC_PAGE_PATHS } from "@/features/meta/domain/pages";
 import { DEFAULT_LANGUAGE } from "@/domain/constants";
 import experienceEn from "@/assets/data/en/experience.json";
@@ -261,13 +261,13 @@ it("llms-full.txt concatenates every twin body beneath its canonical URL", async
   assert.strictEqual(response.headers.get("Content-Location"), LLMS_FULL_TXT_INDEX.url);
 
   const txt = await response.text();
-  assert.strictEqual((txt.match(/^Source: /gm) ?? []).length, 3 + slugs.size);
-  for (const slug of slugs) assert.include(txt, `Source: https://www.remiforge.dev${experiencePath(slug)}`);
+  assert.strictEqual((txt.match(/^\[Source\]\(/gm) ?? []).length, 3 + slugs.size);
+  for (const slug of slugs) assert.include(txt, `[Source](https://www.remiforge.dev${experiencePath(slug)})`);
 });
 
 it("every twin URL the index advertises is the address the twin routes answer on", async () => {
   const txt = await (await llmsTxtHandler({ request: new Request(LLMS_TXT_INDEX.url) })).text();
-  const advertised = [...txt.matchAll(/Markdown: (\S+)/g)].map(([, url]) => url!);
+  const advertised = [...txt.matchAll(/\[Markdown\]\((\S+?)\)/g)].map(([, url]) => url!);
 
   assert.deepStrictEqual([...new Set(advertised)].sort(), advertisedTwins.map(([twinUrl]) => twinUrl).sort());
 
