@@ -18,9 +18,8 @@ const mergeNodes = (nodes: ReadonlyArray<JsonLdNode>): ReadonlyArray<JsonLdNode>
   const merged = Array.reduce(
     nodes,
     new Map<string | number, JsonLdNode>(),
-    // A Map keeps its entries in first-insertion order and leaves a re-set entry where it was, so
-    // the first occurrence of an @id owns the node's slot and every later node with that @id merges
-    // its defined fields into it: no index bookkeeping or in-place graph writes are needed
+    // Re-setting a Map key preserves its first-insertion position, so the first occurrence of an
+    // @id owns the node's slot and later nodes merge their defined fields into it
     (graph, node, index) => {
       const defined = Record.filter(node, Predicate.isNotUndefined);
       const id = defined["@id"];

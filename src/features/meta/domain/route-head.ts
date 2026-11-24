@@ -43,9 +43,8 @@ export const routeHead = <TData>({ loaderData, matches, matchStatus, fallbackPat
 
   const preferredLanguage = headLanguage(matches);
 
-  // An unresolved match — or an errored one anywhere in the chain — must publish the degraded
-  // head, never one built from a payload the match did not produce
-  if (matchStatus !== "success" || Array.some(matches, ({ status }) => status === "error")) {
+  // No metadata built from a stale leaf may outlive an unresolved or failed match in its chain
+  if (matchStatus !== "success" || Array.some(matches, ({ status }) => status === "pending" || status === "error")) {
     return unavailableHead(fallbackPath, preferredLanguage);
   }
 

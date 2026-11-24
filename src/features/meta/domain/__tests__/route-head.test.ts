@@ -53,6 +53,30 @@ it("routeHead leaves not-found metadata to the root boundary, even with stale lo
   assert.include(JSON.stringify(rootFallback.meta), NOINDEX_FOLLOW);
 });
 
+it("routeHead suppresses a stale successful leaf when another match is not found", () => {
+  let builderCalled = false;
+  const matches = [
+    { loaderData: { preferredLanguage: "pl" }, status: "success" },
+    { loaderData: { stale: "data" }, status: "success" },
+    { status: "notFound" },
+  ] as const;
+
+  const head = routeHead({
+    loaderData: { stale: "data" },
+    matches,
+    matchStatus: "success",
+    fallbackPath: "/missing",
+    build: () => {
+      builderCalled = true;
+      return pageHeadFromInput("Stale page data", "pl");
+    },
+  });
+
+  assert.deepStrictEqual(head, { meta: [], links: [], scripts: [] });
+  assert.isFalse(builderCalled);
+  assert.include(JSON.stringify(rootHead(matches).meta), '"title":"Remi Forge ● Nie znaleziono"');
+});
+
 it("routeHead uses a noindex unavailable head instead of stale loader data after an error", () => {
   let builderCalled = false;
   const fallback = routeHead({
@@ -93,6 +117,31 @@ it("routeHead ignores stale loader data while the current match is pending", () 
   assert.include(JSON.stringify(fallback.meta), NOINDEX_FOLLOW);
   assert.deepStrictEqual(fallback.links, [{ rel: "canonical", href: "https://www.remiforge.dev/contact" }]);
   assert.strictEqual(fallback.scripts?.length, 1);
+});
+
+it("routeHead suppresses a stale successful leaf while another match is pending", () => {
+  let builderCalled = false;
+  const matches = [
+    { loaderData: { preferredLanguage: "pl" }, status: "success" },
+    { status: "pending" },
+    { loaderData: { stale: "data" }, status: "success" },
+  ] as const;
+
+  const head = routeHead({
+    loaderData: { stale: "data" },
+    matches,
+    matchStatus: "success",
+    fallbackPath: "/contact",
+    build: () => {
+      builderCalled = true;
+      return pageHeadFromInput("Stale page data", "pl");
+    },
+  });
+
+  assert.isFalse(builderCalled);
+  assert.include(JSON.stringify(head.meta), '"title":"Remi Forge ● Strona niedostępna"');
+  assert.include(JSON.stringify(head.meta), NOINDEX_FOLLOW);
+  assert.deepStrictEqual(head.links, [{ rel: "canonical", href: "https://www.remiforge.dev/contact" }]);
 });
 
 it("routeHead delegates to the builder when loader data is present, resolving language from matches", () => {

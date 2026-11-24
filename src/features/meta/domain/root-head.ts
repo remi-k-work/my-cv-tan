@@ -44,8 +44,8 @@ export const rootHead = (matches: MatchChain): PageHead => {
   const fallback = notFoundHead(headLanguage(matches));
 
   return {
-    // A root-level 404 owns the whole document head, so replace the default page identity instead
-    // of emitting duplicate tags and relying on TanStack's merge to hide them.
+    // The root owns 404 copy for the whole match chain: replace the default page identity instead
+    // of emitting duplicate tags and relying on TanStack's merge to hide them
     meta: [...SHELL_META, ...fallback.meta],
     links: [...ROOT_HEAD.links, ...fallback.links],
     scripts: fallback.scripts,

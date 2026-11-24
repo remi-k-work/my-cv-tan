@@ -64,8 +64,8 @@ const markdownHeaders = (preferredLanguage: PreferredLanguage, links: string) =>
   Link: links,
 });
 
-const markdownLinks = (canonical: string, markdownUrl: string) =>
-  joinLinkHeader([canonicalLink(canonical), ...AI_DISCOVERY_LINKS, ...languageVariantLinks(markdownUrl)]);
+const markdownLinks = (canonical: string, markdownPath: string) =>
+  joinLinkHeader([canonicalLink(canonical), ...AI_DISCOVERY_LINKS, ...languageVariantLinks(markdownPath)]);
 
 export const mdResponse = (input: {
   readonly body: string;
@@ -78,7 +78,7 @@ export const mdResponse = (input: {
   return new Response(input.body, {
     status: 200,
     headers: {
-      ...markdownHeaders(input.preferredLanguage, markdownLinks(input.canonical, markdownUrl)),
+      ...markdownHeaders(input.preferredLanguage, markdownLinks(input.canonical, input.markdownPath)),
       ...CACHEABLE_HEADERS,
       ...INDEXABLE_HEADERS,
       "Content-Location": markdownUrl,

@@ -40,19 +40,25 @@ it("pageHead builds a flat head with title, description, robots and social tags"
   assert.strictEqual(head.meta.length, 22);
 });
 
-it("pageHead publishes the page's own canonical and Markdown alternate links", () => {
+it("pageHead publishes the page's canonical and every language-qualified Markdown alternate", () => {
   const head = pageHead({ social, markdownPath: "/test.md", graph });
 
-  assert.deepStrictEqual(head.links?.[0], { rel: "canonical", href: "https://www.remiforge.dev/test" });
-  assert.deepStrictEqual(head.links?.[1], {
-    rel: "alternate",
-    type: "text/markdown",
-    href: "https://www.remiforge.dev/test.md?lang=en",
-  });
+  assert.deepStrictEqual(head.links, [
+    { rel: "canonical", href: "https://www.remiforge.dev/test" },
+    { rel: "alternate", type: "text/markdown", hrefLang: "en", href: "https://www.remiforge.dev/test.md?lang=en" },
+    { rel: "alternate", type: "text/markdown", hrefLang: "pl", href: "https://www.remiforge.dev/test.md?lang=pl" },
+    { rel: "alternate", type: "text/markdown", hrefLang: "x-default", href: "https://www.remiforge.dev/test.md?lang=en" },
+  ]);
   // Site-wide discovery and identity links live on the root head; the leaf adds nothing site-wide
-  assert.strictEqual(head.links?.length, 2);
   assert.notInclude(JSON.stringify(head.links), '"rel":"describedby"');
   assert.notInclude(JSON.stringify(head.links), '"rel":"author"');
+});
+
+it("pageHead advertises the same Markdown variants in every negotiated HTML language", () => {
+  const linksFor = (preferredLanguage: PreferredLanguage) =>
+    pageHead({ social: { ...social, preferredLanguage }, markdownPath: "/test.md", graph }).links;
+
+  assert.deepStrictEqual(linksFor("pl"), linksFor("en"));
 });
 
 it("pageHead publishes exactly one JSON-LD block merging site entities with the page graph", () => {
@@ -258,17 +264,18 @@ it("localized metadata uses authored SEO copy and emits canonical plus Markdown 
   assert.include(html, `Remi Forge ● ${STATIC_PAGES["/"].copy.pl.title}`);
   assert.include(html, '"content":"pl_PL"');
   assert.include(html, "https://www.remiforge.dev/index.md");
-  // The HTML pages are language-negotiated from one URL, so hreflang alternates must not claim
-  // distinct documents; a leaf page advertises only its canonical and the Markdown twin — the
-  // site-wide discovery and identity links are the root head's concern.
-  assert.notInclude(html, "hrefLang");
+  // The HTML page remains language-negotiated at one URL. hreflang belongs only to the Markdown
+  // alternates, whose pinned URLs identify real, distinct language variants.
   assert.deepStrictEqual(
-    head.links?.map(({ rel }) => rel),
-    ["canonical", "alternate"]
+    head.links.map(({ rel }) => rel),
+    ["canonical", "alternate", "alternate", "alternate"]
   );
-  assert.strictEqual(head.links?.[0]?.href, "https://www.remiforge.dev/");
-  // The Polish page advertises the Polish twin, not a negotiated variant
-  assert.strictEqual(head.links?.[1]?.href, "https://www.remiforge.dev/index.md?lang=pl");
+  assert.deepStrictEqual(
+    head.links.map(({ hrefLang }) => hrefLang),
+    [undefined, "en", "pl", "x-default"]
+  );
+  assert.strictEqual(head.links[0]?.href, "https://www.remiforge.dev/");
+  assert.strictEqual(head.links.find(({ hrefLang }) => hrefLang === "pl")?.href, "https://www.remiforge.dev/index.md?lang=pl");
 });
 
 it("og:url is byte-equal to the canonical link on every page kind", () => {

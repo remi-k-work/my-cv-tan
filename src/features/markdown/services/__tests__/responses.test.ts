@@ -54,6 +54,13 @@ it("pins a response to its URL language while retaining other cache metadata", a
   assert.strictEqual(await pinned.text(), "# Portfolio");
 });
 
+it("a pinned response deletes Vary when language negotiation was its only cause", () => {
+  const response = new Response("# Portfolio", { headers: { Vary: "Cookie, Accept-Language" } });
+  const pinned = pinCacheVariant(response);
+
+  assert.isNull(pinned.headers.get("Vary"));
+});
+
 it("a response that carries no Vary header stays Vary-free", async () => {
   // Strips Vary cleanly without introducing an empty header.
   const bare = pinCacheVariant(new Response("# Gone", { status: 404, headers: { "Content-Type": "text/markdown; charset=utf-8" } }));

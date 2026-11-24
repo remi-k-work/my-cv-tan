@@ -19,8 +19,8 @@ it("buildLlmsTxt indexes pages, about facts, grouped experience and negotiated l
   assert.include(txt, `# Remi Forge`);
   assert.include(txt, `## Pages`);
   assert.include(txt, `https://www.remiforge.dev/index.md`);
-  // Key facts are dense, extractable claims for AI citation
-  assert.include(txt, `## About`);
+  // Key facts are dense, extractable claims in the free-form introduction before the file lists.
+  assert.notInclude(txt, `## About`);
   // The canonical site root gives AI systems a single citation target for the whole site
   assert.include(txt, `- Website: https://www.remiforge.dev`);
   assert.include(txt, `- Role: Web Developer (self-taught)`);
@@ -33,13 +33,14 @@ it("buildLlmsTxt indexes pages, about facts, grouped experience and negotiated l
     txt,
     `- [Full-Stack Developer at Sample Co](https://www.remiforge.dev/my%20project): Built things with \\*\\*care\\*\\* and #hashtags. (Mar 2026) [Markdown](https://www.remiforge.dev/my%20project.md?lang=en)`
   );
-  assert.include(txt, `## Notes for AI systems`);
-  // The single-fetch document is surfaced in Pages, not only in the trailing notes
+  assert.notInclude(txt, `## Notes for AI systems`);
+  // The single-fetch document is surfaced in Pages and in the introductory guidance.
   assert.include(txt, `- [Full site content](https://www.remiforge.dev/llms-full.txt): every page above in one document, for single-request ingestion.`);
   assert.include(txt, `- The complete content of every page is also available in a single request: https://www.remiforge.dev/llms-full.txt.`);
   assert.include(txt, `Append \`?lang=pl\` to any \`.md\` URL to request Polish explicitly`);
-  assert.include(txt, "Markdown responses follow the request's language preferences.");
+  assert.include(txt, "Markdown page twins follow the request's language preferences.");
   assert.include(txt, "English is the fallback when no supported preference is present.");
+  assert.include(txt, "The llms.txt indexes are English discovery documents.");
   // The language-variants line is pinned in full: mdBulletList owns the bullet prefix, and a
   // caller that hand-prefixed its item as well would publish a nested `- -` bullet an AI parser
   // reads as a list inside a list
@@ -52,10 +53,10 @@ it("buildLlmsTxt indexes pages, about facts, grouped experience and negotiated l
   // tell an AI reader two different sections are the retrieval surface
   assert.include(txt, `- [sitemap.xml](https://www.remiforge.dev/sitemap.xml): sitemap.`);
   assert.strictEqual((txt.match(/sitemap\.xml\]/gm) ?? []).length, 1);
-  // Profiles are labeled from the same declaration the contact twin prints, so an AI reader
-  // learns which URL is which instead of matching bare URLs against a guessed identity
-  assert.include(txt, "- GitHub: https://github.com/remi-k-work");
-  assert.include(txt, "- LinkedIn: https://linkedin.com/in/remi-k-work");
+  // Profiles use the same labelled source declaration as the contact twin, projected as the
+  // Markdown links every llms.txt file-list item requires.
+  assert.include(txt, "- [GitHub](https://github.com/remi-k-work)");
+  assert.include(txt, "- [LinkedIn](https://linkedin.com/in/remi-k-work)");
   // Every machine-readable entry point is collected in one section, so a crawler that fetched
   // nothing else still learns the whole retrieval surface from this single document
   assert.include(txt, `## Discovery`);
@@ -72,8 +73,9 @@ it("buildLlmsTxt indexes pages, about facts, grouped experience and negotiated l
   assert.include(txt, `- [CV (English)](https://www.remiforge.dev/my-cv.pdf)`);
   assert.include(txt, `- [Certificates](https://www.remiforge.dev/my-certificates.pdf)`);
   // llms.txt names its last section "Optional", the convention an AI fetcher reads as "skip this
-  // and you still have the site": PDF downloads are exactly that
+  // and you still have the site": PDF downloads are exactly that.
   assert.include(txt, `## Optional`);
+  assert.strictEqual(txt.lastIndexOf("## Optional"), txt.lastIndexOf("## "));
   // ...and the full-content companion carries the twins, not the skippable pointers
   assert.notInclude(fullDocument, `## Optional`);
   // Every indexed twin URL carries the ?lang= pin, so a crawler never lands on a negotiated variant
@@ -94,6 +96,26 @@ it("buildLlmsTxt indexes pages, about facts, grouped experience and negotiated l
   // Summaries are authored sentences: the entry adds no second full stop
   assert.notInclude(txt, ".. [Markdown]");
   assert.notInclude(txt, ".md)");
+});
+
+it("llms.txt reserves every H2 section for a non-empty Markdown-link file list", () => {
+  const txt = buildLlmsTxt([sampleExperience]);
+  const sections = txt.split(/^## /m).slice(1);
+
+  assert.isAbove(sections.length, 0);
+  for (const section of sections) {
+    const items = section
+      .split("\n")
+      .slice(1)
+      .filter((line) => line.trim().length > 0);
+
+    assert.isAbove(items.length, 0, `empty file list: ${section.split("\n")[0]}`);
+    for (const item of items) assert.isTrue(item.startsWith("- [") && item.includes("]("), `not a linked file-list item: ${item}`);
+  }
+
+  const empty = buildLlmsTxt([]);
+  assert.notInclude(empty, "## Work Experience");
+  assert.notInclude(empty, "## Portfolio Projects");
 });
 
 it("the index's language guidance covers every language the site publishes and no others", () => {

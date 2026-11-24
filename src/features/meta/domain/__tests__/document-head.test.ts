@@ -91,9 +91,10 @@ it("a successful page's merged document declares its own title, description, rob
     assert.strictEqual(document.tagsOf("name", "description"), description !== undefined && "content" in description ? description.content : undefined);
     assert.strictEqual(document.tagsOf("name", "robots"), INDEXABLE_ROBOTS);
 
-    // One canonical, one Markdown alternate beside the root's two AI indexes, one JSON-LD block
+    // One canonical, three language-qualified Markdown alternates beside the root's two AI indexes,
+    // and one JSON-LD block
     assert.strictEqual(relsOf(document.links, "canonical").length, 1);
-    assert.strictEqual(relsOf(document.links, "alternate").length, 3);
+    assert.strictEqual(relsOf(document.links, "alternate").length, 5);
     assert.strictEqual(document.scripts.length, 1);
     // The page's canonical and its og:url are one address in the merged document too
     assert.strictEqual(document.tagsOf("property", "og:url"), relsOf(document.links, "canonical")[0]?.href);
@@ -112,8 +113,9 @@ it("the site-wide discovery and identity links are declared once per document an
     for (const rel of ["author", "describedby", "sitemap"]) {
       assert.strictEqual(relsOf(document.links, rel).length, 1, `${rel} must be declared once per document`);
     }
-    // No relation and destination pair is emitted twice, whatever rel it is
-    assert.strictEqual(new Set(document.links.map((link) => `${link.rel}:${link.href}`)).size, document.links.length);
+    // No byte-identical declaration is emitted twice. The English and x-default Markdown links share
+    // a destination deliberately, but their different hreflang values make them distinct declarations.
+    assert.strictEqual(new Set(document.links.map((link) => JSON.stringify(link))).size, document.links.length);
     for (const rel of ["me", "author", "describedby", "sitemap"]) {
       assert.deepStrictEqual(relsOf(head.links, rel), [], `a leaf must not declare ${rel}`);
     }

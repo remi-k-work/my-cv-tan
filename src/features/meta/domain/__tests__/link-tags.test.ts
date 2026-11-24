@@ -1,22 +1,21 @@
 import { assert, it } from "@effect/vitest";
 import { AI_DISCOVERY_LINK_HEADER, AI_DISCOVERY_LINKS, AI_INDEX_LINKS, LLMS_DISCOVERY_LINK, SITEMAP_LINK } from "../discovery";
 import { ROOT_HEAD } from "../root-head";
-import { authorLink, canonicalLink, joinLinkHeader, languageVariantLinks, markdownAlternateLink } from "../link-tags";
+import { authorLink, canonicalLink, joinLinkHeader, languageVariantLinks } from "../link-tags";
 import type { LinkTag } from "../models";
 
 // The three parameters the serializer writes, and nothing else: a link declaring a fourth would
 // have it silently dropped, so the declaration and the emitted header would disagree.
-const SERIALIZABLE_PARAMETERS = ["type", "title", "hreflang"] as const;
+const SERIALIZABLE_PARAMETERS = { type: "type", title: "title", hrefLang: "hreflang" } as const;
 
 // Every link the site publishes, from every declaration that emits one: the site-wide root head,
 // the AI-index advertisements, the twin language variants, and the page-level builders.
 const publishedLinks: ReadonlyArray<LinkTag> = [
   ...ROOT_HEAD.links,
   ...AI_INDEX_LINKS,
-  ...languageVariantLinks("https://www.remiforge.dev/index.md"),
+  ...languageVariantLinks("/index.md"),
   canonicalLink("https://www.remiforge.dev/education"),
   authorLink("https://www.remiforge.dev/"),
-  markdownAlternateLink("/index.md", "pl"),
   SITEMAP_LINK,
   LLMS_DISCOVERY_LINK,
 ];
@@ -31,7 +30,7 @@ it("a link serializes as a URI-reference with its parameters in a fixed order", 
   // The order is rel, type, title, hreflang whether or not the declaring literal listed them in it,
   // so two responses advertising the same links are byte-equal regardless of how each was written
   assert.strictEqual(
-    joinLinkHeader([{ rel: "alternate", hreflang: "en", type: "text/markdown", href: "https://www.remiforge.dev/index.md" }]),
+    joinLinkHeader([{ rel: "alternate", hrefLang: "en", type: "text/markdown", href: "https://www.remiforge.dev/index.md" }]),
     '<https://www.remiforge.dev/index.md>; rel="alternate"; type="text/markdown"; hreflang="en"'
   );
   assert.strictEqual(
@@ -40,8 +39,15 @@ it("a link serializes as a URI-reference with its parameters in a fixed order", 
   );
 });
 
+it("quoted Link parameters cannot escape their values", () => {
+  assert.strictEqual(
+    joinLinkHeader([{ rel: "alternate", href: "https://www.remiforge.dev/llms.txt", title: 'A "quoted" \\ title' }]),
+    '<https://www.remiforge.dev/llms.txt>; rel="alternate"; title="A \\"quoted\\" \\\\ title"'
+  );
+});
+
 it("language variants list every supported language and close with the x-default", () => {
-  assert.deepStrictEqual(joinLinkHeader(languageVariantLinks("https://www.remiforge.dev/index.md")).split(", "), [
+  assert.deepStrictEqual(joinLinkHeader(languageVariantLinks("/index.md")).split(", "), [
     '<https://www.remiforge.dev/index.md?lang=en>; rel="alternate"; type="text/markdown"; hreflang="en"',
     '<https://www.remiforge.dev/index.md?lang=pl>; rel="alternate"; type="text/markdown"; hreflang="pl"',
     // The x-default is the English document, the site's source language
@@ -56,7 +62,7 @@ it("every link the site publishes carries only the three parameters the serializ
   for (const link of publishedLinks) {
     for (const parameter of Object.keys(link)) {
       if (parameter === "href" || parameter === "rel") continue;
-      assert.include(SERIALIZABLE_PARAMETERS, parameter, `${JSON.stringify(link)} declares an unknown parameter "${parameter}"`);
+      assert.include(Object.keys(SERIALIZABLE_PARAMETERS), parameter, `${JSON.stringify(link)} declares an unknown parameter "${parameter}"`);
     }
   }
 
@@ -65,30 +71,23 @@ it("every link the site publishes carries only the three parameters the serializ
   for (const link of publishedLinks) {
     const header = joinLinkHeader([link]);
 
-    for (const parameter of SERIALIZABLE_PARAMETERS) {
-      const value = link[parameter];
+    for (const [property, parameter] of Object.entries(SERIALIZABLE_PARAMETERS)) {
+      const value = link[property as keyof typeof SERIALIZABLE_PARAMETERS];
       if (value === undefined) {
-        assert.notInclude(header, `${parameter}="`, `${JSON.stringify(link)} declares no ${parameter} but the header emits one`);
+        assert.notInclude(header, `${parameter}="`, `${JSON.stringify(link)} declares no ${property} but the header emits one`);
         continue;
       }
-      assert.include(header, `${parameter}="${value}"`, `${JSON.stringify(link)} loses its ${parameter} in the header`);
+      assert.include(header, `${parameter}="${value}"`, `${JSON.stringify(link)} loses its ${property} in the header`);
     }
   }
 });
 
-it("link builders name the canonical, author, and language-pinned Markdown twin", () => {
+it("link builders name the canonical and author documents", () => {
   assert.deepStrictEqual(canonicalLink("https://www.remiforge.dev/education"), {
     rel: "canonical",
     href: "https://www.remiforge.dev/education",
   });
   assert.deepStrictEqual(authorLink("https://www.remiforge.dev/"), { rel: "author", href: "https://www.remiforge.dev/" });
-  // The HTML alternate is pinned to the negotiated language but deliberately carries no hreflang:
-  // the HTML pages are one URL, so claiming distinct language documents would be false.
-  assert.deepStrictEqual(markdownAlternateLink("/index.md", "pl"), {
-    rel: "alternate",
-    type: "text/markdown",
-    href: "https://www.remiforge.dev/index.md?lang=pl",
-  });
 });
 
 it("the AI indexes project into both the <head> advertisements and the Link header from one record", () => {

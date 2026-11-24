@@ -12,13 +12,12 @@ import type { MarkdownTwin } from "./models";
 const FRONTMATTER_DELIMITER = "---";
 const DEMOTE_HEADINGS = /^(#{1,4})(?= )/gm;
 
-const isBlank = flow(String.trim, String.isEmpty);
-
 // Escapes DEL, C1 controls, and Unicode line separators for YAML double-quoted scalars
 const YAML_UNSAFE_CHARACTERS = /[\u007f-\u009f\u2028\u2029]/g;
 
-// `String.replace` only takes a string replacement in this version, so the codepoint escape goes
-// through the prototype's function replacer; the `String` module still owns the padding
+const isBlank = flow(String.trim, String.isEmpty);
+
+// JSON quoting leaves these characters literal, so escape them for YAML double-quoted scalars
 const yamlValue = (value: string) =>
   JSON.stringify(value).replace(YAML_UNSAFE_CHARACTERS, (char) => `\\u${pipe(char.charCodeAt(0).toString(16), String.padStart(4, "0"))}`);
 

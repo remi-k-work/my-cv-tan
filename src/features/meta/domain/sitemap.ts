@@ -9,8 +9,6 @@ import { STATIC_PAGE_PATHS } from "./pages";
 const STATIC_URLS = Array.map([...STATIC_PAGE_PATHS, ...DOWNLOADABLE_DOCUMENT_PATHS], absoluteUrl);
 const XML_ENTITIES: Readonly<Record<string, string>> = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" };
 
-// The character class is exactly the entity table's key set, so a lookup miss can only mean the
-// class and the table drifted: publishing the character unchanged keeps it well-formed XML
 const escapeXml = (value: string) => value.replace(/[&<>"']/g, (character) => XML_ENTITIES[character] ?? character);
 
 // Generates XML sitemap containing canonical URLs for static pages, downloads, and experience items

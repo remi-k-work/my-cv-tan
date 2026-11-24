@@ -10,9 +10,15 @@ import { contactHandler, educationHandler, experienceHandler, homeHandler, llmsF
 import { sitemapHandler } from "@/features/meta/services/sitemap";
 import { robotsHandler } from "@/features/meta/services/robots";
 import { STATIC_PAGES, STATIC_PAGE_PATHS } from "@/features/meta/domain/pages";
+import { contactHead, educationHead, homeHead } from "@/features/meta/domain/page-head";
+import { joinLinkHeader } from "@/features/meta/domain/link-tags";
+import { stablePageTitles } from "@/features/markdown/__tests__/fixtures";
 import { DEFAULT_LANGUAGE } from "@/domain/constants";
 import experienceEn from "@/assets/data/en/experience.json";
 import experiencePl from "@/assets/data/pl/experience.json";
+
+// types
+import type { PreferredLanguage } from "@/domain/models";
 
 // Initializes translation dictionary runtime for unit testing.
 initializeGT({ ...gtConfig, loadTranslations, _reload: () => {} });
@@ -89,6 +95,29 @@ it("a served twin's response canonical names the very page its frontmatter cites
   assert.include(await detail.text(), `canonical: ${JSON.stringify(detailCanonical)}`);
 });
 
+it("HTML heads and Markdown responses publish the same reciprocal language cluster", async () => {
+  const pages = [
+    [homeHandler, (preferredLanguage: PreferredLanguage) => homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage })],
+    [educationHandler, (preferredLanguage: PreferredLanguage) => educationHead({ pageTitles: stablePageTitles, educationList: [], preferredLanguage })],
+    [contactHandler, (preferredLanguage: PreferredLanguage) => contactHead({ pageTitles: stablePageTitles, preferredLanguage })],
+  ] as const;
+
+  for (const [handler, headFor] of pages) {
+    for (const preferredLanguage of ["en", "pl"] as const) {
+      const variants = headFor(preferredLanguage).links.filter(({ type }) => type === "text/markdown");
+      const requested = variants.find(({ hrefLang }) => hrefLang === preferredLanguage);
+      assert.isDefined(requested);
+
+      const response = await handler({ request: new Request(requested!.href) });
+      const responseLinks = response.headers.get("Link") ?? "";
+
+      assert.strictEqual(response.status, 200);
+      assert.strictEqual(response.headers.get("Content-Location"), requested!.href);
+      for (const variant of variants) assert.include(responseLinks, joinLinkHeader([variant]));
+    }
+  }
+});
+
 it("the home twin serves the full indexable envelope behind the pinned language", async () => {
   const response = await homeHandler({ request: pinned2("/index.md", "en") });
 
@@ -160,6 +189,21 @@ it("an unknown slug is a noindex 404 that still names the queried twin", async (
   assert.include(body, "# Not Found");
   assert.include(body, "No page for slug");
   assert.include(body, "https://www.remiforge.dev/llms.txt");
+});
+
+it("a Polish missing-slug response localizes its body and envelope", async () => {
+  const response = await experienceHandler({ request: pinned2("/no-such-page.md", "pl") });
+
+  assert.strictEqual(response.status, 404);
+  assert.strictEqual(response.headers.get("Content-Language"), "pl");
+  assert.strictEqual(response.headers.get("Content-Location"), "https://www.remiforge.dev/no-such-page.md?lang=pl");
+  assert.strictEqual(response.headers.get("X-Robots-Tag"), "noindex, follow");
+
+  const body = await response.text();
+  assert.include(body, 'lang: "pl"');
+  assert.include(body, "# Nie znaleziono");
+  assert.include(body, "Nie znaleziono strony dla identyfikatora");
+  assert.include(body, "Dokument Markdown dla adresu /no-such-page nie istnieje.");
 });
 
 it("paths the twin route cannot represent are 404s without a fabricated location", async () => {
@@ -239,16 +283,24 @@ it("llms.txt serves the real portfolio assets as the AI index with the full disc
 });
 
 it("the GEO index documents answer every request with the same English document", async () => {
-  // Discovery indexes are unilingual English documents and ignore ?lang= overrides.
+  // Discovery indexes are unilingual English documents and ignore both query overrides and headers.
   const english = await llmsTxtHandler({ request: new Request(LLMS_TXT_INDEX.url) });
+  const negotiated = await llmsTxtHandler({ request: new Request(LLMS_TXT_INDEX.url, { headers: { "Accept-Language": "pl" } }) });
   const pinned = await llmsTxtHandler({ request: new Request(`${LLMS_TXT_INDEX.url}?lang=pl`) });
 
-  assert.strictEqual(pinned.headers.get("Content-Language"), "en");
-  assert.isNull(pinned.headers.get("Vary"));
-  assert.strictEqual(await pinned.text(), await english.text());
+  for (const response of [negotiated, pinned]) {
+    assert.strictEqual(response.headers.get("Content-Language"), "en");
+    assert.isNull(response.headers.get("Vary"));
+  }
+  const englishBody = await english.text();
+  assert.strictEqual(await negotiated.text(), englishBody);
+  assert.strictEqual(await pinned.text(), englishBody);
 
-  const full = await llmsFullTxtHandler({ request: new Request(`${LLMS_FULL_TXT_INDEX.url}?lang=pl`) });
+  const full = await llmsFullTxtHandler({
+    request: new Request(`${LLMS_FULL_TXT_INDEX.url}?lang=pl`, { headers: { "Accept-Language": "pl" } }),
+  });
   assert.strictEqual(full.headers.get("Content-Language"), "en");
+  assert.isNull(full.headers.get("Vary"));
   const englishFull = await llmsFullTxtHandler({ request: new Request(LLMS_FULL_TXT_INDEX.url) });
   assert.strictEqual(await full.text(), await englishFull.text());
 });

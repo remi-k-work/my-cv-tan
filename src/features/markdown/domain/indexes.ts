@@ -14,7 +14,6 @@ import {
   mdHeading,
   mdIndexEntry,
   mdLink,
-  mdProfileLinks,
   mdQuote,
   mdTitledSection,
 } from "./format";
@@ -23,20 +22,13 @@ import { experienceEntry, pageEntry } from "./catalogue";
 import { SOURCE_CONTEXT } from "./context";
 import { buildExperienceMd } from "./detail-twin";
 import { experienceLines } from "./listings";
-import { buildContactMd, buildEducationMd, buildHomeMd } from "./twins";
+import { buildPageDocument } from "./page-documents";
 
 // types
-import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
-import type { PagePath, PageTitles } from "@/domain/models";
 import type { IndexEntry } from "./catalogue";
 import type { MarkdownTwin } from "./models";
-
-interface SourceContent {
-  readonly pageTitles: PageTitles;
-  readonly experienceList: ExperienceList;
-  readonly educationList: EducationList;
-}
+import type { PageContent } from "./page-documents";
 
 interface SourceDocument {
   readonly entry: IndexEntry;
@@ -57,7 +49,7 @@ import {
   SITE_URL,
   SOCIAL_PROFILES,
 } from "@/features/meta/domain/site";
-import { CONTACT_PATH, DEFAULT_LANGUAGE, EDUCATION_PATH, HOME_PATH, SITE_LANGUAGE_NAMES, SITE_LANGUAGES } from "@/domain/constants";
+import { DEFAULT_LANGUAGE, HOME_PATH, SITE_LANGUAGE_NAMES, SITE_LANGUAGES } from "@/domain/constants";
 import { STATIC_PAGES, STATIC_PAGE_PATHS } from "@/features/meta/domain/pages";
 import { PAGE_ENTRIES } from "./catalogue";
 
@@ -69,7 +61,7 @@ const LANGUAGE_PINS = Array.map(
 
 export const AI_NOTES = [
   `Reuse is permitted for search, AI input and AI training (\`Content-Signal: ${CONTENT_SIGNAL}\`).`,
-  `Markdown responses follow the request's language preferences. ${Array.join(LANGUAGE_PINS, "; ")}; ${SITE_LANGUAGE_NAMES[DEFAULT_LANGUAGE]} is the fallback when no supported preference is present.`,
+  `Markdown page twins follow the request's language preferences. ${Array.join(LANGUAGE_PINS, "; ")}; ${SITE_LANGUAGE_NAMES[DEFAULT_LANGUAGE]} is the fallback when no supported preference is present. The llms.txt indexes are English discovery documents.`,
   "Every page has a machine-readable Markdown twin; fetch one linked `.md` page at a time, or the single-request full-content document for everything at once.",
   "Always cite the clean canonical HTML URL from each document's frontmatter (`canonical:`), not the `.md` URL.",
   "Structured data (JSON-LD) is embedded in every page head.",
@@ -78,25 +70,26 @@ export const AI_NOTES = [
 
 const SINGLE_REQUEST_NOTE = `The complete content of every page is also available in a single request: ${LLMS_FULL_TXT_INDEX.url}.`;
 
-const ABOUT_SECTION = mdTitledSection(
-  "About",
-  mdBody([
-    "Self-taught web developer portfolio. Every page has a machine-readable Markdown twin.",
-    mdBulletList([
-      mdFact("Name", SITE_NAME),
-      mdFact("Website", SITE_URL),
-      mdFact("Role", `${JOB_TITLE} (self-taught)`),
-      mdFact("Based in", `${HOME_LOCATION} (${HOME_COUNTRY})`),
-      mdFact("Site languages", pipe(SITE_LANGUAGE_NAMES, Record.values, Array.join(" and "))),
-      mdFact("Focus", Array.join(KNOWS_ABOUT, ", ")),
-    ]),
-  ])
-);
+const ABOUT_DETAILS = mdBody([
+  "Self-taught web developer portfolio. Every page has a machine-readable Markdown twin.",
+  mdBulletList([
+    mdFact("Name", SITE_NAME),
+    mdFact("Website", SITE_URL),
+    mdFact("Role", `${JOB_TITLE} (self-taught)`),
+    mdFact("Based in", `${HOME_LOCATION} (${HOME_COUNTRY})`),
+    mdFact("Site languages", pipe(SITE_LANGUAGE_NAMES, Record.values, Array.join(" and "))),
+    mdFact("Focus", Array.join(KNOWS_ABOUT, ", ")),
+  ]),
+]);
 
-const notesSection = (additional: ReadonlyArray<string>) => mdTitledSection("Notes for AI systems", mdBulletList([...AI_NOTES, ...additional]));
+const ABOUT_SECTION = mdTitledSection("About", ABOUT_DETAILS);
 
-const INDEX_NOTES_SECTION = notesSection([SINGLE_REQUEST_NOTE]);
-const COMPANION_NOTES_SECTION = notesSection([]);
+const notes = (additional: ReadonlyArray<string>) => mdBulletList([...AI_NOTES, ...additional]);
+
+// Background and guidance belong before the first H2 in llms.txt: every H2 in that discovery
+// document is reserved for a file list; the full-content companion is free to use headed sections
+const INDEX_NOTES = notes([SINGLE_REQUEST_NOTE]);
+const COMPANION_NOTES_SECTION = mdTitledSection("Notes for AI systems", notes([]));
 
 export const DISCOVERY_LINES: ReadonlyArray<string> = Array.map(
   [
@@ -123,28 +116,26 @@ const PAGES_SECTION = mdTitledSection(
 );
 
 const OPTIONAL_SECTION = mdTitledSection("Optional", mdDocumentLinks(DOWNLOADABLE_DOCUMENTS, SOURCE_CONTEXT.translate));
-const PROFILES_SECTION = mdTitledSection("Profiles", mdBulletList(mdProfileLinks(SOCIAL_PROFILES)));
+const PROFILES_SECTION = mdTitledSection("Profiles", mdBulletList(Array.map(SOCIAL_PROFILES, ({ name, href }) => mdLink(name, href))));
 
-const LANGUAGE_VARIANTS_SECTION = mdTitledSection(
-  "Language Variants",
-  mdBulletList(
-    Array.map(
-      PINNABLE_LANGUAGES,
-      (language) =>
-        `${SITE_LANGUAGE_NAMES[language]}: every page above is also available at its twin URL with \`?${LANG_PARAM}=${language}\` appended (e.g. ${markdownTwinUrl(STATIC_PAGES[HOME_PATH].mdHref, language)}). ${SITE_LANGUAGE_NAMES[DEFAULT_LANGUAGE]} is the source language.`
-    )
+const LANGUAGE_VARIANTS = mdBulletList(
+  Array.map(
+    PINNABLE_LANGUAGES,
+    (language) =>
+      `${SITE_LANGUAGE_NAMES[language]}: every page above is also available at its twin URL with \`?${LANG_PARAM}=${language}\` appended (e.g. ${markdownTwinUrl(STATIC_PAGES[HOME_PATH].mdHref, language)}). ${SITE_LANGUAGE_NAMES[DEFAULT_LANGUAGE]} is the source language.`
   )
 );
 
-// The English source documents, keyed exhaustively so a page added to the catalogue must be built here too
-const SOURCE_PAGE_DOCUMENTS: Record<PagePath, (content: SourceContent) => MarkdownTwin> = {
-  [HOME_PATH]: ({ pageTitles, experienceList }) => buildHomeMd({ pageTitles, experienceList, ...SOURCE_CONTEXT }),
-  [EDUCATION_PATH]: ({ pageTitles, educationList }) => buildEducationMd({ pageTitles, educationList, ...SOURCE_CONTEXT }),
-  [CONTACT_PATH]: ({ pageTitles }) => buildContactMd({ pageTitles, ...SOURCE_CONTEXT }),
-};
+const experienceSection = (title: string, experiences: ExperienceList) =>
+  Array.match(experiences, {
+    // An empty file list has no discovery value; omit its section rather than publishing a bullet
+    // without the link every llms.txt file-list item requires.
+    onEmpty: () => "",
+    onNonEmpty: () => mdTitledSection(title, experienceLines({ experiences, ...SOURCE_CONTEXT, mode: "index" })),
+  });
 
-const sourceDocuments = (content: SourceContent): ReadonlyArray<SourceDocument> => [
-  ...Array.map(STATIC_PAGE_PATHS, (pagePath) => ({ entry: pageEntry(pagePath), twin: SOURCE_PAGE_DOCUMENTS[pagePath](content) })),
+const sourceDocuments = (content: PageContent): ReadonlyArray<SourceDocument> => [
+  ...Array.map(STATIC_PAGE_PATHS, (pagePath) => ({ entry: pageEntry(pagePath), twin: buildPageDocument(pagePath, content, SOURCE_CONTEXT) })),
   ...Array.map(content.experienceList, (experience) => {
     const seo = experienceSeo({ experience, preferredLanguage: DEFAULT_LANGUAGE });
     return { entry: experienceEntry(seo), twin: buildExperienceMd({ seo, translate: SOURCE_CONTEXT.translate }) };
@@ -157,20 +148,20 @@ export const buildLlmsTxt = (experienceList: ExperienceList) => {
 
   return mdDocument([
     ...SITE_OPENING,
-    ABOUT_SECTION,
+    ABOUT_DETAILS,
+    INDEX_NOTES,
+    LANGUAGE_VARIANTS,
     PAGES_SECTION,
-    mdTitledSection("Work Experience", experienceLines({ experiences: employment, ...SOURCE_CONTEXT, mode: "index" })),
-    mdTitledSection("Portfolio Projects", experienceLines({ experiences: projects, ...SOURCE_CONTEXT, mode: "index" })),
-    LANGUAGE_VARIANTS_SECTION,
+    experienceSection("Work Experience", employment),
+    experienceSection("Portfolio Projects", projects),
     PROFILES_SECTION,
     DISCOVERY_SECTION,
     OPTIONAL_SECTION,
-    INDEX_NOTES_SECTION,
   ]);
 };
 
 // Builds the full concatenated llms-full.txt document for single-request ingestion
-export const buildLlmsFullTxt = (content: SourceContent) => {
+export const buildLlmsFullTxt = (content: PageContent) => {
   const documents = sourceDocuments(content);
 
   return mdDocument([

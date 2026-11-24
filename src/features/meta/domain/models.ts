@@ -21,7 +21,8 @@ export interface LinkTag {
   readonly href: string;
   readonly type?: string;
   readonly title?: string;
-  readonly hreflang?: string;
+  // TanStack forwards link descriptors to React, which names this property hrefLang
+  readonly hrefLang?: string;
 }
 
 export interface JsonLdScript {

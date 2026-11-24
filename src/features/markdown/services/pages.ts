@@ -1,8 +1,8 @@
 // services, features, and other libraries
-import { Effect } from "effect";
+import { Effect, Record } from "effect";
 import { Datasets } from "@/features/data/services/datasets";
 import { pageEntry } from "@/features/markdown/domain/catalogue";
-import { buildContactMd, buildEducationMd, buildHomeMd } from "@/features/markdown/domain/twins";
+import { buildPageDocument } from "@/features/markdown/domain/page-documents";
 
 // types
 import type { PagePath } from "@/domain/models";
@@ -20,41 +20,37 @@ import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/domain/constants";
 
 const pageTwin = (pagePath: PagePath, document: PageTwin["document"]): PageTwin => ({ entry: pageEntry(pagePath), document });
 
-const homeTwin = pageTwin(
-  HOME_PATH,
-  Effect.fnUntraced(function* ({ preferredLanguage, translate }) {
-    const datasets = yield* Datasets;
-    const data = yield* Effect.all(
-      { pageTitles: datasets.pageTitles(preferredLanguage), experienceList: datasets.experienceList(preferredLanguage) },
-      { concurrency: "unbounded" }
-    );
+const homeDocument = Effect.fnUntraced(function* ({ preferredLanguage, translate }: TwinContext) {
+  const datasets = yield* Datasets;
+  const data = yield* Effect.all(
+    { pageTitles: datasets.pageTitles(preferredLanguage), experienceList: datasets.experienceList(preferredLanguage) },
+    { concurrency: "unbounded" }
+  );
 
-    return buildHomeMd({ ...data, preferredLanguage, translate });
-  })
-);
+  return buildPageDocument(HOME_PATH, data, { preferredLanguage, translate });
+});
 
-const educationTwin = pageTwin(
-  EDUCATION_PATH,
-  Effect.fnUntraced(function* ({ preferredLanguage, translate }) {
-    const datasets = yield* Datasets;
-    const data = yield* Effect.all(
-      { pageTitles: datasets.pageTitles(preferredLanguage), educationList: datasets.educationList(preferredLanguage) },
-      { concurrency: "unbounded" }
-    );
+const educationDocument = Effect.fnUntraced(function* ({ preferredLanguage, translate }: TwinContext) {
+  const datasets = yield* Datasets;
+  const data = yield* Effect.all(
+    { pageTitles: datasets.pageTitles(preferredLanguage), educationList: datasets.educationList(preferredLanguage) },
+    { concurrency: "unbounded" }
+  );
 
-    return buildEducationMd({ ...data, preferredLanguage, translate });
-  })
-);
+  return buildPageDocument(EDUCATION_PATH, data, { preferredLanguage, translate });
+});
 
-const contactTwin = pageTwin(
-  CONTACT_PATH,
-  Effect.fnUntraced(function* ({ preferredLanguage, translate }) {
-    const datasets = yield* Datasets;
-    const pageTitles = yield* datasets.pageTitles(preferredLanguage);
+const contactDocument = Effect.fnUntraced(function* ({ preferredLanguage, translate }: TwinContext) {
+  const datasets = yield* Datasets;
+  const pageTitles = yield* datasets.pageTitles(preferredLanguage);
 
-    return buildContactMd({ pageTitles, preferredLanguage, translate });
-  })
-);
+  return buildPageDocument(CONTACT_PATH, { pageTitles }, { preferredLanguage, translate });
+});
 
-// Exhaustive over PagePath: adding a page is a compile error until its document pipeline exists
-export const PAGE_TWINS: Record<PagePath, PageTwin> = { [HOME_PATH]: homeTwin, [EDUCATION_PATH]: educationTwin, [CONTACT_PATH]: contactTwin };
+const PAGE_DOCUMENTS = { [HOME_PATH]: homeDocument, [EDUCATION_PATH]: educationDocument, [CONTACT_PATH]: contactDocument } satisfies Record<
+  PagePath,
+  PageTwin["document"]
+>;
+
+// Exhaustive over PagePath: adding a page requires its data pipeline and shared pure builder
+export const PAGE_TWINS: Record<PagePath, PageTwin> = Record.map(PAGE_DOCUMENTS, (document, pagePath) => pageTwin(pagePath, document));

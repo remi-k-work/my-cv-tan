@@ -93,9 +93,9 @@ it("each static page's head and twin publish the same canonical, title and descr
     // spelling the head's <title> a different way.
     assert.include(JSON.stringify(head.meta), JSON.stringify({ title: BRANDED_TITLE(copy.seoTitle) }));
     assert.include(twin, `title: ${JSON.stringify(BRANDED_TITLE(copy.seoTitle))}`);
-    // The twin route the head advertises is the route the catalogue declares.
+    // The current-language twin the head advertises is the route the catalogue declares.
     assert.strictEqual(
-      head.links?.find(({ rel }) => rel === "alternate")?.href,
+      head.links.find(({ rel, hrefLang }) => rel === "alternate" && hrefLang === preferredLanguage)?.href,
       `https://www.remiforge.dev${STATIC_PAGES[path].mdHref}?lang=${preferredLanguage}`
     );
   }
@@ -130,7 +130,8 @@ it("a page's advertised twin URL is the very URL the twin route answers on", asy
   // builds the URL from the page's twin path, the twin response builds it from its own route — so
   // only comparing them catches a crawler following the head's link onto a document that denies
   // being the one that page advertised.
-  const twinLocationOf = (head: PageHead) => head.links?.find(({ rel }) => rel === "alternate")?.href;
+  const twinLocationOf = (head: PageHead, preferredLanguage: PreferredLanguage) =>
+    head.links.find(({ rel, hrefLang }) => rel === "alternate" && hrefLang === preferredLanguage)?.href;
 
   for (const preferredLanguage of ["en", "pl"] as const satisfies ReadonlyArray<PreferredLanguage>) {
     // Keyed by PagePath rather than listed by hand, so a page added to the catalogue is a compile
@@ -144,7 +145,7 @@ it("a page's advertised twin URL is the very URL the twin route answers on", asy
     for (const path of STATIC_PAGE_PATHS) {
       const response = mdResponse({ body: "", preferredLanguage, canonical: absoluteUrl(path), markdownPath: STATIC_PAGES[path].mdHref });
 
-      assert.strictEqual(twinLocationOf(heads[path]), response.headers.get("Content-Location"), `${path} (${preferredLanguage}) advertised twin URL`);
+      assert.strictEqual(twinLocationOf(heads[path], preferredLanguage), response.headers.get("Content-Location"), `${path} (${preferredLanguage}) advertised twin URL`);
     }
   }
 
@@ -157,5 +158,5 @@ it("a page's advertised twin URL is the very URL the twin route answers on", asy
     markdownPath: experienceSeo({ experience: sampleExperience, preferredLanguage: "en" }).markdownPath,
   });
 
-  assert.strictEqual(twinLocationOf(detail), detailResponse.headers.get("Content-Location"), "detail page advertised twin URL");
+  assert.strictEqual(twinLocationOf(detail, "en"), detailResponse.headers.get("Content-Location"), "detail page advertised twin URL");
 });
