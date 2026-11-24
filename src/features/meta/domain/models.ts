@@ -50,12 +50,6 @@ export interface PageHead {
   readonly scripts: Array<JsonLdScript>;
 }
 
-// The site-shell head: the same elements as a page head, minus the JSON-LD graph the root omits
-export interface RootHead {
-  readonly meta: ReadonlyArray<MetaTag>;
-  readonly links: ReadonlyArray<LinkTag>;
-}
-
 export interface SocialImageFacts {
   readonly src: string;
   readonly mime: "image/jpeg" | "image/webp";

@@ -23,7 +23,7 @@ import type { PreferredLanguage } from "@/domain/models";
 // Initializes translation dictionary runtime for unit testing.
 initializeGT({ ...gtConfig, loadTranslations, _reload: () => {} });
 
-const pinned = (path: string) => new Request(`https://www.remiforge.dev${path}?lang=pl`);
+const pinned = (path: string, lang: "en" | "pl" = "pl") => new Request(`https://www.remiforge.dev${path}?lang=${lang}`);
 
 it("a pinned Polish twin resolves its section copy from the runtime translation dictionary", async () => {
   const home = await (await homeHandler({ request: pinned("/index.md") })).text();
@@ -40,7 +40,7 @@ it("a pinned Polish twin resolves its section copy from the runtime translation 
 
   const contact = await (await contactHandler({ request: pinned("/contact.md") })).text();
   assert.include(contact, "## Kanały");
-  assert.include(contact, "Formularz Kontaktowy:");
+  assert.include(contact, "[Formularz Kontaktowy](https://www.remiforge.dev/contact)");
   assert.include(contact, "Lokalizacja: Rzeszów, Polska");
 });
 
@@ -63,9 +63,6 @@ it("an English-pinned twin stays the source language no dictionary lookup can ch
   assert.notInclude(home, "## Doświadczenie");
 });
 
-// Builds a language-pinned request URL.
-const pinned2 = (path: string, lang: "en" | "pl") => new Request(`https://www.remiforge.dev${path}?lang=${lang}`);
-
 // Extracts the canonical URI reference from RFC 8288 Link header.
 const headerCanonical = (header: string | null) =>
   header
@@ -81,14 +78,14 @@ it("a served twin's response canonical names the very page its frontmatter cites
     [educationHandler, "/education.md"],
     [contactHandler, "/contact.md"],
   ] as const) {
-    const response = await handler({ request: pinned2(path, "en") });
+    const response = await handler({ request: pinned(path, "en") });
     const canonical = headerCanonical(response.headers.get("Link"));
 
     assert.isDefined(canonical, `${path} advertised no canonical in its Link header`);
     assert.include(await response.text(), `canonical: ${JSON.stringify(canonical)}`);
   }
 
-  const detail = await experienceHandler({ request: pinned2(`/${encodeURIComponent(firstSlug)}.md`, "en") });
+  const detail = await experienceHandler({ request: pinned(`/${encodeURIComponent(firstSlug)}.md`, "en") });
   const detailCanonical = headerCanonical(detail.headers.get("Link"));
 
   assert.strictEqual(detailCanonical, absoluteUrl(experiencePath(firstSlug)));
@@ -119,7 +116,7 @@ it("HTML heads and Markdown responses publish the same reciprocal language clust
 });
 
 it("the home twin serves the full indexable envelope behind the pinned language", async () => {
-  const response = await homeHandler({ request: pinned2("/index.md", "en") });
+  const response = await homeHandler({ request: pinned("/index.md", "en") });
 
   assert.strictEqual(response.status, 200);
   assert.strictEqual(response.headers.get("Content-Type"), "text/markdown; charset=utf-8");
@@ -145,7 +142,7 @@ it("the home twin serves the full indexable envelope behind the pinned language"
 });
 
 it("the education twin resolves the school list dataset through the runtime", async () => {
-  const response = await educationHandler({ request: pinned2("/education.md", "en") });
+  const response = await educationHandler({ request: pinned("/education.md", "en") });
 
   assert.strictEqual(response.status, 200);
   assert.strictEqual(response.headers.get("Content-Type"), "text/markdown; charset=utf-8");
@@ -155,7 +152,7 @@ it("the education twin resolves the school list dataset through the runtime", as
 });
 
 it("a pinned Polish request localizes the document envelope and its frontmatter", async () => {
-  const response = await contactHandler({ request: pinned2("/contact.md", "pl") });
+  const response = await contactHandler({ request: pinned("/contact.md", "pl") });
 
   assert.strictEqual(response.status, 200);
   assert.strictEqual(response.headers.get("Content-Language"), "pl");
@@ -168,7 +165,7 @@ it("a pinned Polish request localizes the document envelope and its frontmatter"
 });
 
 it("the experience twin renders the real page identity behind its canonical URL", async () => {
-  const response = await experienceHandler({ request: pinned2(`/${encodeURIComponent(firstSlug)}.md`, "en") });
+  const response = await experienceHandler({ request: pinned(`/${encodeURIComponent(firstSlug)}.md`, "en") });
 
   assert.strictEqual(response.status, 200);
   const body = await response.text();
@@ -177,7 +174,7 @@ it("the experience twin renders the real page identity behind its canonical URL"
 });
 
 it("an unknown slug is a noindex 404 that still names the queried twin", async () => {
-  const response = await experienceHandler({ request: pinned2("/no-such-page.md", "en") });
+  const response = await experienceHandler({ request: pinned("/no-such-page.md", "en") });
 
   assert.strictEqual(response.status, 404);
   assert.strictEqual(response.headers.get("X-Robots-Tag"), "noindex, follow");
@@ -192,7 +189,7 @@ it("an unknown slug is a noindex 404 that still names the queried twin", async (
 });
 
 it("a Polish missing-slug response localizes its body and envelope", async () => {
-  const response = await experienceHandler({ request: pinned2("/no-such-page.md", "pl") });
+  const response = await experienceHandler({ request: pinned("/no-such-page.md", "pl") });
 
   assert.strictEqual(response.status, 404);
   assert.strictEqual(response.headers.get("Content-Language"), "pl");
@@ -207,23 +204,23 @@ it("a Polish missing-slug response localizes its body and envelope", async () =>
 });
 
 it("paths the twin route cannot represent are 404s without a fabricated location", async () => {
-  const nested = await experienceHandler({ request: pinned2("/parent/child.md", "en") });
+  const nested = await experienceHandler({ request: pinned("/parent/child.md", "en") });
   assert.strictEqual(nested.status, 404);
   assert.isNull(nested.headers.get("Content-Location"));
 
-  const malformed = await experienceHandler({ request: pinned2("/%zz.md", "en") });
+  const malformed = await experienceHandler({ request: pinned("/%zz.md", "en") });
   assert.strictEqual(malformed.status, 404);
   assert.isNull(malformed.headers.get("Content-Location"));
 });
 
 it("the detail twin the home page links to is the document the detail route answers", async () => {
-  const home = await (await homeHandler({ request: pinned2("/index.md", "en") })).text();
+  const home = await (await homeHandler({ request: pinned("/index.md", "en") })).text();
   const slug = experienceEn[0]!.slug;
   const advertised = `${absoluteUrl(experienceMarkdownPath(slug))}?lang=en`;
 
   assert.include(home, advertised, "the home twin must advertise the detail twin a crawler can fetch");
 
-  const detail = await experienceHandler({ request: pinned2(`/${encodeURIComponent(slug)}.md`, "en") });
+  const detail = await experienceHandler({ request: pinned(`/${encodeURIComponent(slug)}.md`, "en") });
 
   assert.strictEqual(detail.status, 200);
   assert.include(await detail.text(), `canonical: ${JSON.stringify(absoluteUrl(experiencePath(slug)))}`);

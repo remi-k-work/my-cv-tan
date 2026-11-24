@@ -118,6 +118,7 @@ it("sitemap success responses carry the XML content type, noindex, and hour-long
   const ok = sitemapResponse(buildSitemapXml([sampleExperience.slug]));
   assert.strictEqual(ok.status, 200);
   assert.strictEqual(ok.headers.get("Content-Type"), "application/xml; charset=utf-8");
+  assert.strictEqual(ok.headers.get("Content-Location"), "https://www.remiforge.dev/sitemap.xml");
   assert.strictEqual(ok.headers.get("Cache-Control"), "public, max-age=3600, stale-while-revalidate=86400");
   // Crawlable but excluded from search indexes.
   assert.strictEqual(ok.headers.get("X-Robots-Tag"), "noindex, follow");

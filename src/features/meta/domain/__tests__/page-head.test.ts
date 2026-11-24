@@ -37,7 +37,7 @@ it("pageHead builds a flat head with title, description, robots and social tags"
   assert.strictEqual(tagContent(tags, "property", "og:title"), "Headline");
   assert.strictEqual(tagContent(tags, "property", "og:description"), "Description.");
   // title + description + robots + social tags (og + twitter + alternate locales)
-  assert.strictEqual(head.meta.length, 22);
+  assert.strictEqual(head.meta.length, 20);
 });
 
 it("pageHead publishes the page's canonical and every language-qualified Markdown alternate", () => {
@@ -157,26 +157,18 @@ it("a detail page publishes the article card and its author, while the list page
   }
 });
 
-it("every card image is addressable under both the bare and the structured og:image spelling", () => {
-  // Facebook's crawler reads the og:image:* family as one record and og:image:url as its canonical
-  // address. A card publishing only the bare og:image beside the family's other members leaves the
-  // image ambiguous, so both spellings are published for the same src on every page kind.
-  const sourcesOf = (tags: ReadonlyArray<Record<string, string>>) => ({
-    bare: tags.filter((tag) => tag["property"] === "og:image").map((tag) => tag["content"]),
-    url: tags.filter((tag) => tag["property"] === "og:image:url").map((tag) => tag["content"]),
-  });
-
+it("every card publishes one absolute HTTPS og:image without duplicate URL aliases", () => {
   for (const head of [
     homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" }),
     experienceHead({ experience: sampleExperience, preferredLanguage: "en" }),
-    // A screenshot-less experience falls back to the banner on both cards, so the banner is the
-    // published address either way
     experienceHead({ experience: { ...sampleExperience, imageName: "" }, preferredLanguage: "pl" }),
   ]) {
-    const { bare, url } = sourcesOf(metaOf(head));
-    assert.deepStrictEqual(url, bare);
-    // Declared absolute, so a scraper never has to resolve an origin
-    assert.isTrue(bare.every((src) => src.startsWith("https://")));
+    const tags = metaOf(head);
+    const sources = tags.filter((tag) => tag["property"] === "og:image").map((tag) => tag["content"]);
+
+    assert.strictEqual(sources.length, 1);
+    assert.isTrue(sources.every((src) => src.startsWith("https://")));
+    assert.isFalse(tags.some((tag) => tag["property"] === "og:image:url" || tag["property"] === "og:image:secure_url"));
   }
 });
 

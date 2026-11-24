@@ -60,6 +60,7 @@ export const articleNode = ({ id, headline, description, preferredLanguage, abou
   headline,
   description,
   inLanguage: preferredLanguage,
+  url: mainEntityOfPage,
   author: { "@id": PERSON_ID },
   publisher: { "@id": PUBLISHER_ID },
   about: { "@id": about },

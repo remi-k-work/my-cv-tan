@@ -101,6 +101,7 @@ it("experienceJsonLd assembles WebPage, Article and the item node for a project"
 
   assert.deepStrictEqual(page?.mainEntity, { "@id": "https://www.remiforge.dev/sample-role#article" });
   assert.deepStrictEqual(article?.about, { "@id": "https://www.remiforge.dev/sample-role#project" });
+  assert.strictEqual(article?.url, page?.url);
   assert.deepStrictEqual(project?.mainEntityOfPage, { "@id": "https://www.remiforge.dev/sample-role" });
   assert.deepStrictEqual(project?.creator, { "@id": "https://www.remiforge.dev/#person" });
   assert.strictEqual(project?.codeRepository, "https://github.com/example/repo");

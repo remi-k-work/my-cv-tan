@@ -1,9 +1,10 @@
 import { assert, it } from "@effect/vitest";
-import { Effect } from "effect";
+import { Effect, Layer } from "effect";
 import { Datasets } from "@/features/data/services/datasets";
 import { RequiredDataError } from "@/features/data/domain/required";
 import { HOME_PATH } from "@/domain/constants";
 import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/discovery";
+import { sampleExperience, stablePageTitles } from "@/features/markdown/__tests__/fixtures";
 import { Markdown } from "../markdown";
 
 const failed = (dataset: string) => Effect.fail(new RequiredDataError({ dataset, message: `test outage: ${dataset}` }));
@@ -14,9 +15,28 @@ const unavailableDatasets = {
   educationList: () => failed("education list"),
 };
 
+const availableDatasets = {
+  pageTitles: () => Effect.succeed(stablePageTitles),
+  experienceList: () => Effect.succeed([sampleExperience]),
+  educationList: () => Effect.succeed([]),
+};
+
+const testLayer = (datasets: Datasets["Service"]) => Markdown.layer.pipe(Layer.provide(Layer.succeed(Datasets, datasets)));
+
+it.effect("Markdown.layer composes its translation and dataset dependencies", () =>
+  Effect.gen(function* () {
+    const markdown = yield* Markdown;
+    const response = yield* markdown.page(HOME_PATH)(new Request("https://www.remiforge.dev/index.md?lang=en"));
+
+    assert.strictEqual(response.status, 200);
+    assert.strictEqual(response.headers.get("Content-Language"), "en");
+    assert.include(yield* Effect.promise(() => response.text()), "Stable home title");
+  }).pipe(Effect.provide(testLayer(availableDatasets)))
+);
+
 it.effect("Markdown documents recover required-data failures as fresh non-cacheable 503 responses", () =>
   Effect.gen(function* () {
-    const markdown = yield* Markdown.make.pipe(Effect.provideService(Datasets, unavailableDatasets));
+    const markdown = yield* Markdown;
     const firstIndex = yield* markdown.siteIndex(new Request(LLMS_TXT_INDEX.url));
     const secondIndex = yield* markdown.siteIndex(new Request(LLMS_TXT_INDEX.url));
     assert.notStrictEqual(firstIndex, secondIndex);
@@ -36,5 +56,5 @@ it.effect("Markdown documents recover required-data failures as fresh non-cachea
       assert.strictEqual(response.headers.get("Retry-After"), "300");
       assert.include(yield* Effect.promise(() => response.text()), "temporarily unavailable");
     }
-  })
+  }).pipe(Effect.provide(testLayer(unavailableDatasets)))
 );

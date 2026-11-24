@@ -34,6 +34,7 @@ it("articleNode builds an Article with author, publisher, about and mainEntityOf
     headline: "Headline",
     description: "Description.",
     inLanguage: language,
+    url: "https://www.remiforge.dev/test",
     author: { "@id": PERSON_ID },
     publisher: { "@id": PUBLISHER_ID },
     about: { "@id": "https://www.remiforge.dev/#item" },

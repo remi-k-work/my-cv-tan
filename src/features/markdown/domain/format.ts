@@ -84,5 +84,6 @@ export const mdIndexEntry = (label: string, canonical: string, twinUrl: string, 
 export const mdDocumentLinks = (documents: ReadonlyArray<{ readonly label: string; readonly href: string }>, translate: Translate) =>
   mdBulletList(Array.map(documents, ({ label, href }) => translatedLink(label, absoluteUrl(href), translate)));
 
+// Explicit links keep profile citations actionable without relying on optional bare-URL autolinking
 export const mdProfileLinks = (profiles: ReadonlyArray<{ readonly name: string; readonly href: string }>) =>
-  Array.map(profiles, ({ name, href }) => mdFact(name, href));
+  Array.map(profiles, ({ name, href }) => mdLink(name, href));

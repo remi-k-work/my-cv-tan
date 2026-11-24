@@ -20,7 +20,7 @@ import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/domain/constants";
 
 const pageTwin = (pagePath: PagePath, document: PageTwin["document"]): PageTwin => ({ entry: pageEntry(pagePath), document });
 
-const homeDocument = Effect.fnUntraced(function* ({ preferredLanguage, translate }: TwinContext) {
+const homeDocument = Effect.fn("Markdown.page.home")(function* ({ preferredLanguage, translate }: TwinContext) {
   const datasets = yield* Datasets;
   const data = yield* Effect.all(
     { pageTitles: datasets.pageTitles(preferredLanguage), experienceList: datasets.experienceList(preferredLanguage) },
@@ -30,7 +30,7 @@ const homeDocument = Effect.fnUntraced(function* ({ preferredLanguage, translate
   return buildPageDocument(HOME_PATH, data, { preferredLanguage, translate });
 });
 
-const educationDocument = Effect.fnUntraced(function* ({ preferredLanguage, translate }: TwinContext) {
+const educationDocument = Effect.fn("Markdown.page.education")(function* ({ preferredLanguage, translate }: TwinContext) {
   const datasets = yield* Datasets;
   const data = yield* Effect.all(
     { pageTitles: datasets.pageTitles(preferredLanguage), educationList: datasets.educationList(preferredLanguage) },
@@ -40,7 +40,7 @@ const educationDocument = Effect.fnUntraced(function* ({ preferredLanguage, tran
   return buildPageDocument(EDUCATION_PATH, data, { preferredLanguage, translate });
 });
 
-const contactDocument = Effect.fnUntraced(function* ({ preferredLanguage, translate }: TwinContext) {
+const contactDocument = Effect.fn("Markdown.page.contact")(function* ({ preferredLanguage, translate }: TwinContext) {
   const datasets = yield* Datasets;
   const pageTitles = yield* datasets.pageTitles(preferredLanguage);
 

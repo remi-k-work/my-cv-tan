@@ -77,13 +77,13 @@ it("mdEmptyMarker wraps the translated text in emphasis after escaping", () => {
   );
 });
 
-it("mdProfileLinks renders one fact line per profile", () => {
+it("mdProfileLinks renders one explicit Markdown link per profile", () => {
   const profiles = [
     { name: "GitHub", href: "https://github.com/remi-k-work" },
     { name: "LinkedIn", href: "https://linkedin.com/in/remi-k-work" },
   ];
   const lines = mdProfileLinks(profiles);
-  assert.deepStrictEqual(lines, ["GitHub: https://github.com/remi-k-work", "LinkedIn: https://linkedin.com/in/remi-k-work"]);
+  assert.deepStrictEqual(lines, ["[GitHub](https://github.com/remi-k-work)", "[LinkedIn](https://linkedin.com/in/remi-k-work)"]);
 });
 
 it("mdDocumentLinks makes every href absolute and translates labels", () => {

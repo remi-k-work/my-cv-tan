@@ -5,7 +5,7 @@ import { headLanguage, isNotFoundMatch } from "./route-head";
 import { authorLink } from "./link-tags";
 
 // types
-import type { MatchChain, MetaTag, PageHead, RootHead } from "./models";
+import type { MatchChain, MetaTag, PageHead } from "./models";
 
 // constants
 import { AI_DISCOVERY_LINKS, ME_LINKS, SITEMAP_LINK } from "./discovery";
@@ -25,7 +25,7 @@ const DEFAULT_ROOT_META: ReadonlyArray<MetaTag> = [
   { name: "robots", content: NOINDEX_FOLLOW },
 ];
 
-export const ROOT_HEAD: RootHead = {
+export const ROOT_HEAD: Pick<PageHead, "meta" | "links"> = {
   meta: [...SHELL_META, ...DEFAULT_ROOT_META],
   links: [
     { rel: "icon", href: "/icon.svg", type: "image/svg+xml" },

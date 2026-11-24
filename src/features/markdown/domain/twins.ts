@@ -4,8 +4,8 @@ import { msg } from "gt-i18n";
 import { partitionExperiences } from "@/features/experience/domain/helpers";
 import { staticPageCopy } from "@/features/meta/domain/pages";
 import { pagesSection } from "./twin-nav";
-import { mdBody, mdBulletList, mdDocumentLinks, mdEmptyMarker, mdFact, mdHeading, mdProfileLinks, mdQuote, mdTitledSection } from "./format";
-import { escapeMd } from "./escape";
+import { mdBody, mdBulletList, mdDocumentLinks, mdEmptyMarker, mdFact, mdHeading, mdLink, mdProfileLinks, mdQuote, mdTitledSection } from "./format";
+import { escapeMd, escapeMdInline } from "./escape";
 import { pageFacts } from "./identity";
 import { experienceLines } from "./listings";
 
@@ -50,7 +50,7 @@ const documentsSection = (translate: Translate) => mdTitledSection(translate(msg
 const contactChannels = (canonical: string, translate: Translate) =>
   mdTitledSection(
     translate(msg("Channels")),
-    mdBulletList([mdFact(translate(msg("Contact Form")), `${canonical} (${translate(msg("same page in HTML"))})`), ...profileLinks(translate)])
+    mdBulletList([`${mdLink(translate(msg("Contact Form")), canonical)} (${escapeMdInline(translate(msg("same page in HTML")))})`, ...profileLinks(translate)])
   );
 
 const staticTwinDocument = (

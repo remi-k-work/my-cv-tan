@@ -127,7 +127,7 @@ it("the education twin stays localized and a missing document has no canonical",
 
   const missingPl = contactTwin({ pageTitles: stablePageTitles, preferredLanguage: "pl", translate: translatePl });
   assert.include(missingPl, "## Kanały");
-  assert.include(missingPl, "Formularz Kontaktowy:");
+  assert.include(missingPl, "[Formularz Kontaktowy](https://www.remiforge.dev/contact)");
   assert.include(missingPl, "Lokalizacja: Rzeszów, Polska");
 });
 
@@ -148,16 +148,16 @@ it("the contact twin advertises the same social profiles as the HTML page", () =
   assert.notInclude(md, "Notes for AI systems");
   // The Channels line names the contact page's canonical — the same URL the contact <head>
   // publishes — read from the copy the shared frame resolved rather than derived a second time
-  assert.include(md, "Contact Form: https://www.remiforge.dev/contact (same page in HTML)");
-  assert.include(md, `GitHub: https://github.com/remi-k-work`);
-  assert.include(md, `LinkedIn: https://linkedin.com/in/remi-k-work`);
+  assert.include(md, "[Contact Form](https://www.remiforge.dev/contact) (same page in HTML)");
+  assert.include(md, `[GitHub](https://github.com/remi-k-work)`);
+  assert.include(md, `[LinkedIn](https://linkedin.com/in/remi-k-work)`);
   // The base location is one authored string routed through the dictionary, so the English twin and
   // the AI index's "Based in" fact state the same constant and a Polish reader gets its own spelling
   assert.include(md, "- Base: Rzeszów, Poland");
 
   const polish = contactTwin({ pageTitles: stablePageTitles, preferredLanguage: "pl", translate: translatePl });
   assert.include(polish, "## Kanały");
-  assert.include(polish, "Formularz Kontaktowy:");
+  assert.include(polish, "[Formularz Kontaktowy](https://www.remiforge.dev/contact)");
   assert.include(polish, "Lokalizacja: Rzeszów, Polska");
 });
 

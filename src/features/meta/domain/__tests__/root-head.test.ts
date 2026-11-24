@@ -94,8 +94,7 @@ it("the root head publishes the site-wide discovery and author links exactly onc
 it("root head carries no JSON-LD, so a page's single block is not duplicated", () => {
   // TanStack concatenates the scripts of every match in the chain rather than replacing them, so a
   // root-level graph would render beside a page's own. Asserting the root declares none is what
-  // keeps the "exactly one block per page" invariant below from silently regressing (the compile
-  // guard for it lives on the RootHead type in root-head.ts).
+  // keeps the "exactly one block per page" invariant below from silently regressing.
   assert.notInclude(JSON.stringify(ROOT_HEAD), "ld+json");
   // The root still declares the site-wide facts every page shares: icons, identity links, and the
   // AI discovery documents an unmatched route needs to point AI fetchers at the document graph

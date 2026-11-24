@@ -11,8 +11,8 @@ it("robots.txt allows content, disallows API endpoints, and advertises the sitem
   assert.include(robots, "Sitemap: https://www.remiforge.dev/sitemap.xml");
   // Permissive content reuse signal.
   assert.include(robots, "Content-Signal: search=yes, ai-input=yes, ai-train=yes");
-  // Global crawl delay.
-  assert.include(robots, "Crawl-delay: 10");
+  // Willing search and AI crawlers are not arbitrarily throttled by a non-standard delay.
+  assert.notInclude(robots, "Crawl-delay");
   const userAgents = robots.match(/^User-agent: .*/gm) ?? [];
   assert.deepStrictEqual(userAgents, ["User-agent: *"]);
   assert.strictEqual((robots.match(/^Content-Signal: /gm) ?? []).length, userAgents.length);

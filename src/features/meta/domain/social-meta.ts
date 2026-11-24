@@ -46,13 +46,12 @@ export const socialMeta = ({
   return [
     { property: "og:title", content: title },
     { property: "og:description", content: description },
+    // The absolute HTTPS og:image makes the optional url and secure_url aliases redundant
     { property: "og:image", content: image.src },
-    { property: "og:image:url", content: image.src },
     { property: "og:image:alt", content: image.alt },
     { property: "og:image:type", content: image.mime },
     { property: "og:image:width", content: `${image.width}` },
     { property: "og:image:height", content: `${image.height}` },
-    { property: "og:image:secure_url", content: image.src },
     { property: "og:type", content: ogType },
     { property: "og:url", content: canonical },
     { property: "og:site_name", content: SITE_NAME },

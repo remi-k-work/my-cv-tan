@@ -2,6 +2,7 @@
 
 // services, features, and other libraries
 import { Array } from "effect";
+import { absoluteUrl } from "@/features/meta/domain/urls";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
@@ -9,7 +10,7 @@ import type { PreferredLanguage } from "@/domain/models";
 // constants
 import { DEFAULT_LANGUAGE } from "@/domain/constants";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW, NO_STORE, RETRY_AFTER } from "@/domain/http";
-import { AI_DISCOVERY_LINK_HEADER, CONTENT_SIGNAL } from "@/features/meta/domain/discovery";
+import { AI_DISCOVERY_LINK_HEADER, CONTENT_SIGNAL, SITEMAP_HREF } from "@/features/meta/domain/discovery";
 
 // Pinned Markdown variants remove these tokens; every other negotiated document emits them.
 export const NEGOTIATION_VARY_TOKENS = ["Cookie", "Accept-Language"] as const;
@@ -46,6 +47,10 @@ const instructionsHeaders = (contentLocation?: string) => ({
 
 export const txtResponse = (body: string, contentLocation?: string) => new Response(body, { status: 200, headers: instructionsHeaders(contentLocation) });
 export const txtUnavailableResponse = (body: string) => new Response(body, { status: 503, headers: { ...TXT_HEADERS, ...SERVICE_UNAVAILABLE_HEADERS } });
-export const sitemapResponse = (xml: string) => new Response(xml, { status: 200, headers: { ...SITEMAP_HEADERS, ...CACHEABLE_HEADERS, ...NOINDEX_HEADERS } });
+export const sitemapResponse = (xml: string) =>
+  new Response(xml, {
+    status: 200,
+    headers: { ...SITEMAP_HEADERS, ...CACHEABLE_HEADERS, ...NOINDEX_HEADERS, "Content-Location": absoluteUrl(SITEMAP_HREF) },
+  });
 export const sitemapUnavailableResponse = () =>
   new Response(SITEMAP_UNAVAILABLE_XML, { status: 503, headers: { ...SITEMAP_HEADERS, ...SERVICE_UNAVAILABLE_HEADERS } });

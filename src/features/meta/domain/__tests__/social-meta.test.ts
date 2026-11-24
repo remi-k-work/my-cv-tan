@@ -40,19 +40,17 @@ it("socialMeta publishes the Open Graph core tags for a website", () => {
   assert.strictEqual(tagContent(tags, "property", "og:locale"), "en_US");
 });
 
-it("socialMeta publishes the og:image family with both spellings of the src", () => {
+it("socialMeta publishes one HTTPS image with its structured properties", () => {
   const tags = tagsOf(input);
 
-  const imageTags = tags.filter((tag) => tag.property === "og:image" || tag.property === "og:image:url");
-  assert.deepStrictEqual(imageTags, [
-    { property: "og:image", content: "https://www.remiforge.dev/images/01-a.webp" },
-    { property: "og:image:url", content: "https://www.remiforge.dev/images/01-a.webp" },
-  ]);
+  assert.deepStrictEqual(tags.filter((tag) => tag.property === "og:image"), [{ property: "og:image", content: "https://www.remiforge.dev/images/01-a.webp" }]);
   assert.strictEqual(tagContent(tags, "property", "og:image:alt"), "Screenshot of Full-Stack Developer");
   assert.strictEqual(tagContent(tags, "property", "og:image:type"), "image/webp");
   assert.strictEqual(tagContent(tags, "property", "og:image:width"), "1600");
   assert.strictEqual(tagContent(tags, "property", "og:image:height"), "900");
-  assert.strictEqual(tagContent(tags, "property", "og:image:secure_url"), "https://www.remiforge.dev/images/01-a.webp");
+  // og:image:url is equivalent to og:image, and secure_url is redundant for an HTTPS source
+  assert.isUndefined(tagContent(tags, "property", "og:image:url"));
+  assert.isUndefined(tagContent(tags, "property", "og:image:secure_url"));
 });
 
 it("socialMeta lists every other supported locale as og:locale:alternate, never its own", () => {
