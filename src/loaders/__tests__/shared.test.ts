@@ -15,9 +15,11 @@ it("abandoning a client loader interrupts its in-flight Effect", async () => {
     () =>
       Effect.sync(markStarted).pipe(
         Effect.andThen(Effect.never),
-        Effect.ensuring(Effect.sync(() => {
-          finalized = true;
-        }))
+        Effect.ensuring(
+          Effect.sync(() => {
+            finalized = true;
+          })
+        )
       ),
     abortController.signal
   );

@@ -48,9 +48,7 @@ it.effect("each page twin reads only the datasets its document declares", () =>
     const home = yield* PAGE_TWINS[HOME_PATH].document(context).pipe(Effect.provide(datasetsLayer({ pageTitles: true, experienceList: true })));
     assert.include(home.body, "Stable home title");
 
-    const education = yield* PAGE_TWINS[EDUCATION_PATH]
-      .document(context)
-      .pipe(Effect.provide(datasetsLayer({ pageTitles: true, educationList: true })));
+    const education = yield* PAGE_TWINS[EDUCATION_PATH].document(context).pipe(Effect.provide(datasetsLayer({ pageTitles: true, educationList: true })));
     assert.include(education.body, "Stable education title");
 
     const contact = yield* PAGE_TWINS[CONTACT_PATH].document(context).pipe(Effect.provide(datasetsLayer({ pageTitles: true })));

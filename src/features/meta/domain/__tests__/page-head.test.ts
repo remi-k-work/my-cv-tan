@@ -55,8 +55,7 @@ it("pageHead publishes the page's canonical and every language-qualified Markdow
 });
 
 it("pageHead advertises the same Markdown variants in every negotiated HTML language", () => {
-  const linksFor = (preferredLanguage: PreferredLanguage) =>
-    pageHead({ social: { ...social, preferredLanguage }, markdownPath: "/test.md", graph }).links;
+  const linksFor = (preferredLanguage: PreferredLanguage) => pageHead({ social: { ...social, preferredLanguage }, markdownPath: "/test.md", graph }).links;
 
   assert.deepStrictEqual(linksFor("pl"), linksFor("en"));
 });

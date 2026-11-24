@@ -42,7 +42,10 @@ describe("chunkTextByWords", () => {
     const text = "the quick brown fox jumps over the lazy dog and keeps running";
     const words = text.split(" ");
 
-    assert.deepStrictEqual(chunkTextByWords(text, 12).flatMap((chunk) => chunk.split(" ")), words);
+    assert.deepStrictEqual(
+      chunkTextByWords(text, 12).flatMap((chunk) => chunk.split(" ")),
+      words
+    );
   });
 
   it("honours the page's own chunk length as a workable limit", () => {

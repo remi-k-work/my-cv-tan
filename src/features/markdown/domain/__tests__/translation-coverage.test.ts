@@ -29,7 +29,11 @@ const context = { preferredLanguage: "pl", translate: record } as const;
 // Each builder runs for both arms of every emptiness match, so the fallback copy is requested too
 buildHomeMd({ ...context, pageTitles: stablePageTitles, experienceList: [sampleExperience] });
 buildHomeMd({ ...context, pageTitles: stablePageTitles, experienceList: [] });
-buildEducationMd({ ...context, pageTitles: stablePageTitles, educationList: [{ name: "Example School", year: "2020", location: "Poland", info: "Studied interaction design." }] });
+buildEducationMd({
+  ...context,
+  pageTitles: stablePageTitles,
+  educationList: [{ name: "Example School", year: "2020", location: "Poland", info: "Studied interaction design." }],
+});
 buildEducationMd({ ...context, pageTitles: stablePageTitles, educationList: [] });
 buildContactMd({ ...context, pageTitles: stablePageTitles });
 buildExperienceMd({ seo: experienceSeo({ experience: sampleExperience, preferredLanguage: "pl" }), translate: record });

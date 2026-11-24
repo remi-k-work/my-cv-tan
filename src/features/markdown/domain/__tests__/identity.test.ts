@@ -145,7 +145,11 @@ it("a page's advertised twin URL is the very URL the twin route answers on", asy
     for (const path of STATIC_PAGE_PATHS) {
       const response = mdResponse({ body: "", preferredLanguage, canonical: absoluteUrl(path), markdownPath: STATIC_PAGES[path].mdHref });
 
-      assert.strictEqual(twinLocationOf(heads[path], preferredLanguage), response.headers.get("Content-Location"), `${path} (${preferredLanguage}) advertised twin URL`);
+      assert.strictEqual(
+        twinLocationOf(heads[path], preferredLanguage),
+        response.headers.get("Content-Location"),
+        `${path} (${preferredLanguage}) advertised twin URL`
+      );
     }
   }
 

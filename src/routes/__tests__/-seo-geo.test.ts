@@ -40,10 +40,7 @@ const headOf = async (route: HeadRoute, { loaderData, params = {}, matchStatus =
   const head = route.options.head;
   if (head === undefined) throw new Error("Route must declare head()");
 
-  const matches: MatchChain = [
-    { loaderData: { preferredLanguage }, status: "success" },
-    { status: matchStatus },
-  ];
+  const matches: MatchChain = [{ loaderData: { preferredLanguage }, status: "success" }, { status: matchStatus }];
 
   // Route callbacks receive a large TanStack context; these tests exercise only the fields the
   // application declared it reads, without mocking the head builders themselves.
@@ -70,7 +67,10 @@ it("the index route builds home and detail heads from their respective loader pa
 
   assert.strictEqual(metaContent(home, "property", "og:locale"), "pl_PL");
   assert.strictEqual(metaContent(home, "name", "robots"), INDEXABLE_ROBOTS);
-  assert.deepStrictEqual(home.links.find(({ rel }) => rel === "canonical"), { rel: "canonical", href: HOME_URL });
+  assert.deepStrictEqual(
+    home.links.find(({ rel }) => rel === "canonical"),
+    { rel: "canonical", href: HOME_URL }
+  );
   assert.include(JSON.stringify(home.meta), JSON.stringify({ title: BRANDED_TITLE(STATIC_PAGES[HOME_PATH].copy.pl.title) }));
 
   const detail = await headOf(IndexRoute, {
@@ -80,10 +80,13 @@ it("the index route builds home and detail heads from their respective loader pa
 
   assert.strictEqual(metaContent(detail, "property", "og:type"), "article");
   assert.strictEqual(metaContent(detail, "property", "og:locale"), "pl_PL");
-  assert.deepStrictEqual(detail.links.find(({ rel }) => rel === "canonical"), {
-    rel: "canonical",
-    href: absoluteUrl(experiencePath(sampleExperience.slug)),
-  });
+  assert.deepStrictEqual(
+    detail.links.find(({ rel }) => rel === "canonical"),
+    {
+      rel: "canonical",
+      href: absoluteUrl(experiencePath(sampleExperience.slug)),
+    }
+  );
 });
 
 it("static HTML routes connect their loader data to the correct localized page heads", async () => {
@@ -95,11 +98,17 @@ it("static HTML routes connect their loader data to the correct localized page h
   });
 
   assert.strictEqual(metaContent(education, "property", "og:locale"), "pl_PL");
-  assert.deepStrictEqual(education.links.find(({ rel }) => rel === "canonical"), { rel: "canonical", href: absoluteUrl("/education") });
+  assert.deepStrictEqual(
+    education.links.find(({ rel }) => rel === "canonical"),
+    { rel: "canonical", href: absoluteUrl("/education") }
+  );
   assert.include(JSON.stringify(education.scripts), "Pratt Institute");
 
   assert.strictEqual(metaContent(contact, "property", "og:locale"), "pl_PL");
-  assert.deepStrictEqual(contact.links.find(({ rel }) => rel === "canonical"), { rel: "canonical", href: absoluteUrl("/contact") });
+  assert.deepStrictEqual(
+    contact.links.find(({ rel }) => rel === "canonical"),
+    { rel: "canonical", href: absoluteUrl("/contact") }
+  );
   assert.include(JSON.stringify(contact.scripts), "ContactPoint");
 });
 

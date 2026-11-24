@@ -39,7 +39,10 @@ describe("Captcha", () => {
         assert.strictEqual(captcha.length, STRENGTH);
         // The input schema caps the answer at this length and the alphabet is all it accepts, so a
         // generated value must satisfy both for the gate to be passable at all
-        assert.isTrue(Array.every(Array.fromIterable(captcha), (char) => PERMITTED_CHARS.includes(char)), `"${captcha}" left the alphabet`);
+        assert.isTrue(
+          Array.every(Array.fromIterable(captcha), (char) => PERMITTED_CHARS.includes(char)),
+          `"${captcha}" left the alphabet`
+        );
       }
     }).pipe(Effect.provide(CAPTCHA))
   );

@@ -4,20 +4,26 @@ import { translateSource } from "@/domain/helpers";
 import { resolveTranslation } from "../translation";
 
 it.effect("a supported translation keeps its requested language and dictionary", () =>
-  Effect.map(resolveTranslation("pl", () => Effect.succeed((source: string) => `pl:${source}`)), (resolved) => {
-    assert.strictEqual(resolved.fallback, false);
-    assert.strictEqual(resolved.context.preferredLanguage, "pl");
-    assert.strictEqual(resolved.context.translate("Pages"), "pl:Pages");
-  })
+  Effect.map(
+    resolveTranslation("pl", () => Effect.succeed((source: string) => `pl:${source}`)),
+    (resolved) => {
+      assert.strictEqual(resolved.fallback, false);
+      assert.strictEqual(resolved.context.preferredLanguage, "pl");
+      assert.strictEqual(resolved.context.translate("Pages"), "pl:Pages");
+    }
+  )
 );
 
 it.effect("an unavailable translation falls back to the whole English context, not English copy behind Polish metadata", () =>
-  Effect.map(resolveTranslation("pl", () => Effect.tryPromise(() => Promise.reject(new Error("snapshot unavailable")))), (resolved) => {
-    assert.strictEqual(resolved.fallback, true);
-    assert.strictEqual(resolved.context.preferredLanguage, "en");
-    assert.strictEqual(resolved.context.translate, translateSource);
-    assert.strictEqual(resolved.context.translate("Pages"), "Pages");
-  })
+  Effect.map(
+    resolveTranslation("pl", () => Effect.tryPromise(() => Promise.reject(new Error("snapshot unavailable")))),
+    (resolved) => {
+      assert.strictEqual(resolved.fallback, true);
+      assert.strictEqual(resolved.context.preferredLanguage, "en");
+      assert.strictEqual(resolved.context.translate, translateSource);
+      assert.strictEqual(resolved.context.translate("Pages"), "Pages");
+    }
+  )
 );
 
 it.effect("the source language never loads a dictionary and is never marked as a fallback", () => {

@@ -61,7 +61,10 @@ const mergeHeads = (heads: ReadonlyArray<PageHead>): MergedHead => {
       const tag = metaByKey.get(`${key}:${value}`);
       return tag !== undefined && "content" in tag ? tag.content : undefined;
     },
-    links: Array.dedupeWith(heads.flatMap((head) => head.links), (self, that) => JSON.stringify(self) === JSON.stringify(that)),
+    links: Array.dedupeWith(
+      heads.flatMap((head) => head.links),
+      (self, that) => JSON.stringify(self) === JSON.stringify(that)
+    ),
     scripts: [...new Set(heads.flatMap((head) => head.scripts.map((script) => script.children)))],
   };
 };
