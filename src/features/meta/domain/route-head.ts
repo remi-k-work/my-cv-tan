@@ -43,13 +43,10 @@ export const routeHead = <TData>({ loaderData, matches, matchStatus, fallbackPat
 
   const preferredLanguage = headLanguage(matches);
 
-  // No metadata built from a stale leaf may outlive an unresolved or failed match in its chain
-  if (matchStatus !== "success" || Array.some(matches, isPendingOrErrorMatch)) {
-    return unavailableHead(fallbackPath, preferredLanguage);
-  }
-
+  // Guard before Option.map so stale leaf loaderData never builds a head during pending/error states
   return pipe(
     Option.fromNullishOr(loaderData),
+    Option.filter(() => matchStatus === "success" && !Array.some(matches, isPendingOrErrorMatch)),
     Option.map((data) => build(data, preferredLanguage)),
     Option.getOrElse(() => unavailableHead(fallbackPath, preferredLanguage))
   );

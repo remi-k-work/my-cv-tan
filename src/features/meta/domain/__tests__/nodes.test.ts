@@ -45,7 +45,7 @@ it("articleNode builds an Article with author, publisher, about and mainEntityOf
   assert.isUndefined(node.image);
 });
 
-it("articleNode publishes the page image when one is verified", () => {
+it("articleNode publishes the page image and section when verified", () => {
   const image = imageObject("https://www.remiforge.dev/images/01-a.webp", 1600, 900);
   const node = articleNode({
     id: "https://www.remiforge.dev/#article",
@@ -53,12 +53,14 @@ it("articleNode publishes the page image when one is verified", () => {
     description: "Description.",
     preferredLanguage: language,
     keywords: ["TypeScript", "React"],
+    articleSection: "portfolio",
     about: "https://www.remiforge.dev/#item",
     mainEntityOfPage: "https://www.remiforge.dev/test",
     image,
   });
 
   assert.deepStrictEqual(node.image, image);
+  assert.strictEqual(node.articleSection, "portfolio");
 });
 
 it("webPageNode builds a WebPage node with optional fields conditionally included", () => {
@@ -84,14 +86,16 @@ it("webPageNode builds a WebPage node with optional fields conditionally include
   });
 });
 
-it("webPageNode omits undefined optional fields", () => {
+it("webPageNode omits undefined and empty optional fields", () => {
   const node = webPageNode({
     type: "ContactPage",
     ...baseWebPageInput,
+    hasPart: [],
   });
   assert.isUndefined(node.breadcrumb);
   assert.isUndefined(node.mainEntity);
   assert.isUndefined(node.primaryImageOfPage);
+  assert.isUndefined(node.hasPart);
 });
 
 it("collectionNode builds a Collection with parts and optional url", () => {

@@ -18,21 +18,21 @@ export const AI_INDEX_MARKDOWN_LINKS: ReadonlyArray<string> = Array.map(AI_INDEX
 // Standalone twins carry their citation target in the body; aggregated documents provide their own Source link
 export const canonicalSourceLink = (canonical: string) => mdLink("Canonical HTML", canonical);
 
-const homeLink = (preferredLanguage: PreferredLanguage, translate: Translate) =>
-  translatedLink(STATIC_PAGES[HOME_PATH].label, markdownTwinUrl(STATIC_PAGES[HOME_PATH].mdHref, preferredLanguage), translate);
+const staticTwinLink = (path: PagePath, preferredLanguage: PreferredLanguage, translate: Translate) =>
+  translatedLink(STATIC_PAGES[path].label, markdownTwinUrl(STATIC_PAGES[path].mdHref, preferredLanguage), translate);
 
 // Sibling twins for a static page, plus AI indexes (excludes self)
 const twinIndexLinks = (pagePath: PagePath, preferredLanguage: PreferredLanguage, translate: Translate) =>
   mdBulletList([
     ...Array.map(
       Array.filter(STATIC_PAGE_PATHS, (path) => path !== pagePath),
-      (path) => translatedLink(STATIC_PAGES[path].label, markdownTwinUrl(STATIC_PAGES[path].mdHref, preferredLanguage), translate)
+      (path) => staticTwinLink(path, preferredLanguage, translate)
     ),
     ...AI_INDEX_MARKDOWN_LINKS,
   ]);
 
 const detailIndexLinks = (preferredLanguage: PreferredLanguage, translate: Translate) =>
-  mdBulletList([homeLink(preferredLanguage, translate), ...AI_INDEX_MARKDOWN_LINKS]);
+  mdBulletList([staticTwinLink(HOME_PATH, preferredLanguage, translate), ...AI_INDEX_MARKDOWN_LINKS]);
 
 export const pagesSection = (pagePath: PagePath, preferredLanguage: PreferredLanguage, translate: Translate) =>
   mdTitledSection(translate(msg("Pages")), twinIndexLinks(pagePath, preferredLanguage, translate));
@@ -42,5 +42,5 @@ export const detailPagesSection = (preferredLanguage: PreferredLanguage, transla
 
 export const deadEndEscapeLine = (preferredLanguage: PreferredLanguage, translate: Translate) => {
   const indexLink = mdLink(LLMS_TXT_INDEX.name, LLMS_TXT_INDEX.url);
-  return `${escapeMdInline(translate(msg("See")))} ${homeLink(preferredLanguage, translate)} ${escapeMdInline(translate(msg("or")))} ${indexLink}.`;
+  return `${escapeMdInline(translate(msg("See")))} ${staticTwinLink(HOME_PATH, preferredLanguage, translate)} ${escapeMdInline(translate(msg("or")))} ${indexLink}.`;
 };

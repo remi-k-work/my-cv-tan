@@ -2,7 +2,7 @@
 import { Array, Match, Option, pipe } from "effect";
 import { excerpt, isEmployment, partitionExperiences } from "@/features/experience/domain/helpers";
 import { matchPreferredLanguage } from "@/domain/helpers";
-import { experienceSeo } from "./seo";
+import { experienceSection, experienceSeo } from "./seo";
 import { absoluteUrl, validatedHref } from "./urls";
 import { articleNode, breadcrumb, collectionNode, experienceItemNode, imageObject, personEdge, webPageNode } from "./nodes";
 
@@ -200,6 +200,7 @@ export const experienceJsonLd = ({ experience, preferredLanguage, path, headline
     description,
     preferredLanguage,
     keywords: skillsUsed,
+    articleSection: experienceSection(experience),
     about: itemId,
     mainEntityOfPage: url,
     image,

@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Array, Option } from "effect";
+import { Array, Option, pipe } from "effect";
 import { msg } from "gt-i18n";
 import { isEmployment, partitionExperiences } from "@/features/experience/domain/helpers";
 import { staticPageCopy } from "@/features/meta/domain/pages";
@@ -106,11 +106,15 @@ export const buildExperienceMd = ({ seo, translate, includeNavigation = true }: 
   const { experience, preferredLanguage, canonical, headline, description } = seo;
   const { role, company, txt, skillsUsed, year } = experience;
 
-  const links = Array.getSomes([
-    optionalLink(translate(msg("GitHub Repo")), experience.gitHubLink),
-    optionalLink(translate(msg("Live Link")), experience.liveLink),
-    optionalLink(translate(msg("Watch Video")), experience.videoLink),
-  ]);
+  const links = pipe(
+    [
+      [msg("GitHub Repo"), experience.gitHubLink],
+      [msg("Live Link"), experience.liveLink],
+      [msg("Watch Video"), experience.videoLink],
+    ] as const,
+    Array.map(([label, href]) => optionalLink(translate(label), href)),
+    Array.getSomes
+  );
 
   return {
     facts: {

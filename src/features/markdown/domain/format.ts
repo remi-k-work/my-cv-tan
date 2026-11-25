@@ -35,7 +35,7 @@ export const twinDocument = ({ facts, body }: MarkdownTwin) => mdDocument([front
 // Demotes heading levels by 2 (e.g. H1 -> H3) for embedding inside concatenated companion documents
 export const demoteHeadings = (markdown: string) =>
   // Markdown has no H7/H8: deep source headings clamp to H6 instead of publishing invalid structure
-  markdown.replace(DEMOTE_HEADINGS, (hashes) => "#".repeat(Number.min(6, hashes.length + 2)));
+  markdown.replace(DEMOTE_HEADINGS, (hashes) => pipe("#", String.repeat(Number.min(6, hashes.length + 2))));
 
 // Determines the minimum backtick fence length to avoid collisions with contained code
 const fenceFor = (content: string) => {
@@ -46,7 +46,7 @@ const fenceFor = (content: string) => {
     Option.map(Array.reduce(0, (max: number, run: string) => Number.max(max, run.length))),
     Option.getOrElse(() => 0)
   );
-  return "`".repeat(Number.max(3, longest + 1));
+  return pipe("`", String.repeat(Number.max(3, longest + 1)));
 };
 
 export const fencedFacts = (facts: Readonly<Record<string, string>>) => {
@@ -55,21 +55,17 @@ export const fencedFacts = (facts: Readonly<Record<string, string>>) => {
   return `${fence}yaml\n${fields}\n${fence}`;
 };
 
-export const mdHeading = (level: 1 | 2 | 3, text: string) =>
+// Shared inline prefix formatter: drops blank values so headings and blockquotes never emit stray markers
+const prefixedInline = (prefix: string, text: string) =>
   pipe(
     text,
     Option.liftPredicate(nonBlank),
-    Option.map((value) => `${"#".repeat(level)} ${escapeMdInline(value)}`),
+    Option.map((value) => `${prefix} ${escapeMdInline(value)}`),
     Option.getOrElse(() => "")
   );
 
-export const mdQuote = (text: string) =>
-  pipe(
-    text,
-    Option.liftPredicate(nonBlank),
-    Option.map((value) => `> ${escapeMdInline(value)}`),
-    Option.getOrElse(() => "")
-  );
+export const mdHeading = (level: 1 | 2 | 3, text: string) => prefixedInline(pipe("#", String.repeat(level)), text);
+export const mdQuote = (text: string) => prefixedInline(">", text);
 
 export const mdBulletList = (items: ReadonlyArray<string>) =>
   pipe(

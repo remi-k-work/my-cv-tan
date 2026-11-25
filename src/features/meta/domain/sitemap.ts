@@ -32,12 +32,12 @@ const experienceImages = (seo: ExperienceSeo) =>
       `    <image:title>${escapeXml(seo.headline)}</image:title>`,
       "  </image:image>",
     ]),
-    Option.getOrElse((): ReadonlyArray<string> => [])
+    Option.getOrElse(Array.empty<string>)
   );
 
 // Reuses each page's SEO identity so sitemap URLs and image metadata cannot drift from HTML or Markdown
 export const buildSitemapXml = (experiences: ExperienceList) => {
-  const staticEntries = Array.map(STATIC_URLS, (loc) => ({ loc, images: [] as ReadonlyArray<string> }));
+  const staticEntries = Array.map(STATIC_URLS, (loc) => ({ loc, images: Array.empty<string>() }));
   const experienceEntries = pipe(
     experiences,
     Array.map((experience) => experienceSeo({ experience, preferredLanguage: DEFAULT_LANGUAGE })),
@@ -56,7 +56,7 @@ export const buildSitemapXml = (experiences: ExperienceList) => {
     [
       '<?xml version="1.0" encoding="UTF-8"?>',
       '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">',
-      ...pipe(entries, Array.map(urlElement), Array.flatten),
+      ...Array.flatMap(entries, urlElement),
       "</urlset>",
     ],
     "\n"

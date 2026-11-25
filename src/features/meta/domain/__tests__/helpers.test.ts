@@ -5,7 +5,7 @@
 import { assert, it } from "@effect/vitest";
 import { Option, pipe } from "effect";
 import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain/constants";
-import { experienceScreenshot, experienceSeo } from "../seo";
+import { experienceScreenshot, experienceSection, experienceSeo } from "../seo";
 import { experienceHead } from "../page-head";
 import { documentHeaders } from "@/features/meta/services/responses";
 import { notFoundHead, unavailableHead } from "../fallback";
@@ -25,6 +25,8 @@ it("derives canonical, path, markdownPath, headline and description from one exp
   assert.strictEqual(seo.description, "Built things with care.");
   assert.strictEqual(seo.preferredLanguage, "en");
   assert.deepStrictEqual(seo.experience, sampleExperience);
+  assert.strictEqual(experienceSection(sampleExperience), "portfolio");
+  assert.strictEqual(experienceSection({ type: "e" }), "employment");
 });
 
 it("localizes headline and description for Polish", () => {

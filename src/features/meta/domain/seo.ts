@@ -3,13 +3,13 @@
 
 // services, features, and other libraries
 import { Option, String, pipe } from "effect";
-import { excerpt, experienceHeadline, experienceImagePath } from "@/features/experience/domain/helpers";
+import { excerpt, experienceHeadline, experienceImagePath, isEmployment } from "@/features/experience/domain/helpers";
 import { absoluteUrl, experienceMarkdownPath, experiencePath } from "./urls";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
 import type { Experience } from "@/features/experience/domain/models";
-import type { ExperienceSeo, SocialImageFacts } from "./models";
+import type { ExperienceSection, ExperienceSeo, SocialImageFacts } from "./models";
 
 // What every caller must supply to derive an experience's SEO identity
 export interface ExperienceHeadInput {
@@ -34,6 +34,9 @@ export const experienceScreenshot = (imageName: string): Option.Option<SocialIma
       height: SCREENSHOT_HEIGHT,
     }))
   );
+
+// Single source of truth for experience section classification shared across Open Graph and JSON-LD
+export const experienceSection = (experience: Pick<Experience, "type">): ExperienceSection => (isEmployment(experience) ? "employment" : "portfolio");
 
 export const experienceSeo = ({ experience, preferredLanguage }: ExperienceHeadInput): ExperienceSeo => {
   const path = experiencePath(experience.slug);

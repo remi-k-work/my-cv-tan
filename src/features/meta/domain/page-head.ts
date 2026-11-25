@@ -1,8 +1,7 @@
 // services, features, and other libraries
 import { Option } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
-import { isEmployment } from "@/features/experience/domain/helpers";
-import { experienceSeo } from "./seo";
+import { experienceSection, experienceSeo } from "./seo";
 import { jsonLdGraph } from "./jsonld";
 import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd } from "./page-graphs";
 import { globalSocialImage, socialMeta } from "./social-meta";
@@ -67,7 +66,7 @@ export const experienceHead = (input: ExperienceHeadInput): PageHead => {
       image: experienceCardImage(seo.headline, seo.screenshot, seo.preferredLanguage),
       preferredLanguage: seo.preferredLanguage,
       ogType: "article",
-      articleSection: isEmployment(seo.experience) ? "employment" : "portfolio",
+      articleSection: experienceSection(seo.experience),
     },
     markdownPath: seo.markdownPath,
     graph: experienceJsonLd(seo),

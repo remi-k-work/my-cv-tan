@@ -1,10 +1,10 @@
 // services, features, and other libraries
-import { Array, Match, Predicate, Record } from "effect";
+import { Array, Match, Option, Predicate, Record, pipe } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
-import type { JsonLdNode, JsonLdNodes, JsonLdObject } from "./models";
+import type { ExperienceSection, JsonLdNode, JsonLdNodes, JsonLdObject } from "./models";
 
 // The page-node vocabulary this module's builders share with the graph assemblers
 export type PageNodeType = "WebPage" | "ContactPage" | "CollectionPage" | "ProfilePage";
@@ -15,6 +15,7 @@ interface ArticleNodeInput {
   readonly description: string;
   readonly preferredLanguage: PreferredLanguage;
   readonly keywords: ReadonlyArray<string>;
+  readonly articleSection?: ExperienceSection;
   readonly about: string;
   readonly mainEntityOfPage: string;
   readonly image?: JsonLdNode;
@@ -60,7 +61,21 @@ import { HOME_URL, PERSON_ID, PUBLISHER_ID, WEBSITE_ID } from "./site";
 // Strip undefined properties so JSON-LD nodes never publish unset optional keys
 const definedNode = <T extends JsonLdObject>(node: T): JsonLdNode => Record.filter(node, Predicate.isNotUndefined);
 
-export const articleNode = ({ id, headline, description, preferredLanguage, keywords, about, mainEntityOfPage, image }: ArticleNodeInput): JsonLdNode =>
+// Converts undefined or empty arrays to undefined so JSON-LD nodes omit empty relation lists
+const nonEmptyOrUndefined = <A>(items: ReadonlyArray<A> | undefined): ReadonlyArray<A> | undefined =>
+  pipe(Option.fromUndefinedOr(items), Option.filter(Array.isReadonlyArrayNonEmpty), Option.getOrUndefined);
+
+export const articleNode = ({
+  id,
+  headline,
+  description,
+  preferredLanguage,
+  keywords,
+  articleSection,
+  about,
+  mainEntityOfPage,
+  image,
+}: ArticleNodeInput): JsonLdNode =>
   definedNode({
     "@type": "Article",
     "@id": id,
@@ -68,6 +83,7 @@ export const articleNode = ({ id, headline, description, preferredLanguage, keyw
     description,
     inLanguage: preferredLanguage,
     keywords: Array.join(keywords, ", "),
+    articleSection,
     url: mainEntityOfPage,
     author: { "@id": PERSON_ID },
     publisher: { "@id": PUBLISHER_ID },
@@ -99,7 +115,7 @@ export const webPageNode = ({
     breadcrumb: hasBreadcrumb ? { "@id": `${id}#breadcrumb` } : undefined,
     mainEntity,
     primaryImageOfPage,
-    hasPart: hasPart !== undefined && hasPart.length > 0 ? hasPart : undefined,
+    hasPart: nonEmptyOrUndefined(hasPart),
   });
 
 export const collectionNode = ({ id, name, preferredLanguage, parts, url }: CollectionNodeInput): JsonLdNode =>
@@ -162,7 +178,7 @@ export const experienceItemNode = ({
         // The same join the Markdown twin's `skills` fact publishes, so the two spellings cannot drift
         keywords: Array.join(keywords, ", "),
         codeRepository: repository,
-        relatedLink: relatedLinks !== undefined && relatedLinks.length > 0 ? relatedLinks : undefined,
+        relatedLink: nonEmptyOrUndefined(relatedLinks),
       })
     ),
     Match.exhaustive

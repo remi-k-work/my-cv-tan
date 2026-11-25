@@ -61,6 +61,8 @@ export interface SocialImage extends SocialImageFacts {
   readonly alt: string;
 }
 
+export type ExperienceSection = "employment" | "portfolio";
+
 export interface SocialMetaInput {
   readonly title: string;
   readonly description: string;
@@ -68,7 +70,7 @@ export interface SocialMetaInput {
   readonly image: SocialImage;
   readonly preferredLanguage: PreferredLanguage;
   readonly ogType?: "website" | "article";
-  readonly articleSection?: "employment" | "portfolio";
+  readonly articleSection?: ExperienceSection;
 }
 
 // The SEO identity of one experience: the single record the HTML head, the JSON-LD graph and the

@@ -326,6 +326,8 @@ it("project details use SoftwareSourceCode linked to the canonical WebPage, pers
   assert.strictEqual(project?.inLanguage, "pl");
   assert.strictEqual(project?.keywords, "TypeScript, React");
   assert.strictEqual(article?.keywords, project?.keywords);
+  // Article.articleSection matches og:article:section so JSON-LD and Open Graph agree
+  assert.strictEqual(article?.articleSection, "portfolio");
   // Schema.org's link to the source repository, single-sourced from the content's GitHub URL
   assert.strictEqual(project?.codeRepository, "https://github.com/example/repo");
   // The image is a sized ImageObject: scrapers learn the dimensions without fetching the file
@@ -352,6 +354,7 @@ it("employment details use EmployeeRole linked to the person and canonical WebPa
 
   assert.isDefined(role);
   assert.isDefined(article);
+  assert.strictEqual(article?.articleSection, "employment");
   // schema.org Role has no inLanguage; the WebPage node carries the page language instead
   assert.isUndefined(role?.inLanguage);
   assert.strictEqual(page?.inLanguage, "en");

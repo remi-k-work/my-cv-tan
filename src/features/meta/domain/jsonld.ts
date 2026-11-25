@@ -35,7 +35,10 @@ const mergeNodes = (nodes: ReadonlyArray<JsonLdNode>): ReadonlyArray<JsonLdNode>
     });
 
     return {
-      order: Option.isNone(existing) ? [...state.order, key] : state.order,
+      order: Option.match(existing, {
+        onNone: () => Array.append(state.order, key),
+        onSome: () => state.order,
+      }),
       nodes: HashMap.set(state.nodes, key, combined),
     };
   });
