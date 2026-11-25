@@ -24,8 +24,8 @@ const LLMS_FULL_TXT_HREF = "/llms-full.txt";
 const SITEMAP_HREF = "/sitemap.xml";
 const ROBOTS_TXT_HREF = "/robots.txt";
 
-export const CV_EN_HREF = "/my-cv.pdf";
-export const CV_PL_HREF = "/my-cv-pl.pdf";
+const CV_EN_HREF = "/my-cv.pdf";
+const CV_PL_HREF = "/my-cv-pl.pdf";
 export const CERTIFICATES_HREF = "/my-certificates.pdf";
 
 export const DOWNLOADABLE_DOCUMENTS = [

@@ -40,6 +40,6 @@ export class Translation extends Context.Service<
     readonly resolve: (preferredLanguage: PreferredLanguage) => Effect.Effect<ResolvedTranslation>;
   }
 >()("my-cv-v4-tan/features/markdown/services/Translation") {
-  static readonly layerFrom = (load: LoadTranslation) => Layer.succeed(this, makeTranslation(load));
+  static readonly layerFrom = (load: LoadTranslation) => Layer.succeed(this, this.of(makeTranslation(load)));
   static readonly layer = this.layerFrom(translateForLanguage);
 }

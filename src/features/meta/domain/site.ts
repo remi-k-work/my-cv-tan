@@ -72,9 +72,9 @@ export const UNAVAILABLE_COPY = {
   pl: { title: "Strona niedostępna", description: "Ta strona jest tymczasowo niedostępna." },
 } as const satisfies Readonly<Record<PreferredLanguage, { title: string; description: string }>>;
 
-export const POSTAL_ADDRESS = { "@type": "PostalAddress", addressLocality: HOME_LOCALITY, addressCountry: HOME_COUNTRY } as const;
-export const HOME_PLACE = { "@type": "Place", name: `${HOME_LOCALITY}, ${HOME_COUNTRY_NAME}`, address: POSTAL_ADDRESS } as const;
-export const AVATAR_IMAGE_OBJECT = { "@type": "ImageObject", url: AVATAR.src, width: AVATAR.width, height: AVATAR.height } as const;
+const POSTAL_ADDRESS = { "@type": "PostalAddress", addressLocality: HOME_LOCALITY, addressCountry: HOME_COUNTRY } as const;
+const HOME_PLACE = { "@type": "Place", name: `${HOME_LOCALITY}, ${HOME_COUNTRY_NAME}`, address: POSTAL_ADDRESS } as const;
+const AVATAR_IMAGE_OBJECT = { "@type": "ImageObject", url: AVATAR.src, width: AVATAR.width, height: AVATAR.height } as const;
 
 // Site-wide root entities included in every page graph
 export const SITE_NODES: ReadonlyArray<JsonLdNode> = [

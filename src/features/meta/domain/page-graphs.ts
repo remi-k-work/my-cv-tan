@@ -37,7 +37,10 @@ interface LocalizedCopy {
 
 // constants
 import { SITE_LANGUAGES, CONTACT_PATH, EDUCATION_PATH } from "@/domain/constants";
-import { EXPERIENCE_LIST_ID, HOME_URL, META_DESCRIPTION_LENGTH, PERSON_ID, PORTFOLIO_LIST_ID, PROFILE_ID } from "./site";
+import { EXPERIENCE_LIST_ID, GLOBAL_SOCIAL_IMAGE, HOME_URL, META_DESCRIPTION_LENGTH, PERSON_ID, PORTFOLIO_LIST_ID, PROFILE_ID } from "./site";
+
+// Matches the og:image published on static pages so JSON-LD extractors see the same sized asset
+const STATIC_PRIMARY_IMAGE = imageObject(GLOBAL_SOCIAL_IMAGE.src, GLOBAL_SOCIAL_IMAGE.width, GLOBAL_SOCIAL_IMAGE.height);
 
 // Builds the page node and its breadcrumb trail using absolute URL as @id
 const pageGraph = ({ type, path, name, description, preferredLanguage, mainEntity, primaryImageOfPage }: PageGraphSpec): JsonLdNodes => {
@@ -137,6 +140,7 @@ export const educationJsonLd = ({
       description,
       preferredLanguage,
       mainEntity: { "@id": PERSON_ID },
+      primaryImageOfPage: STATIC_PRIMARY_IMAGE,
     }),
     ...schools,
   ];
@@ -154,6 +158,7 @@ export const contactJsonLd = ({ pageName, description, preferredLanguage }: Loca
       description,
       preferredLanguage,
       mainEntity: { "@id": PERSON_ID },
+      primaryImageOfPage: STATIC_PRIMARY_IMAGE,
     }),
     personEdge({ contactPoint: { "@id": contactPointId } }),
     {
@@ -180,9 +185,10 @@ export const experienceJsonLd = ({ experience, preferredLanguage, path, headline
     Option.map(({ src, width, height }) => imageObject(src, width, height)),
     Option.getOrUndefined
   );
+  const keywords = Array.dedupe(skillsUsed);
   const repository = pipe(gitHubLink, validatedHref, Option.getOrUndefined);
   const relatedLinks = pipe([liveLink, videoLink], Array.map(validatedHref), Array.getSomes, Array.dedupe);
-  const item = experienceItemNode({ employment, id: itemId, url, role, description, preferredLanguage, keywords: skillsUsed, image, repository, relatedLinks });
+  const item = experienceItemNode({ employment, id: itemId, url, role, description, preferredLanguage, keywords, image, repository, relatedLinks });
 
   const itemNodes: JsonLdNodes = Match.value(employment).pipe(
     Match.when(true, () => [
@@ -201,7 +207,7 @@ export const experienceJsonLd = ({ experience, preferredLanguage, path, headline
     description,
     articleBody: txt,
     preferredLanguage,
-    keywords: skillsUsed,
+    keywords,
     articleSection: experienceSection(experience),
     about: itemId,
     mainEntityOfPage: url,
@@ -234,6 +240,7 @@ export const homeJsonLd = ({
       description,
       preferredLanguage,
       mainEntity: { "@id": PERSON_ID },
+      primaryImageOfPage: STATIC_PRIMARY_IMAGE,
       // Connect the profile to its collections so parsers need not infer their relationship
       hasPart: collectionRefs,
     }),

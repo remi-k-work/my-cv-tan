@@ -6,7 +6,7 @@ import { absoluteUrl } from "@/features/meta/domain/urls";
 import { documentHeaders, txtResponse, txtUnavailableResponse } from "@/features/meta/services/responses";
 import { requireData, recoverDataFailure } from "@/features/data/domain/required";
 import { experienceFromList } from "@/features/experience/domain/helpers";
-import { mdNotFoundResponse, mdResponse, mdUnavailableResponse, pinCacheVariant, withoutCaching, withoutNegotiationVary } from "../responses";
+import { applyRepresentationPolicy, mdNotFoundResponse, mdResponse, mdUnavailableResponse, pinCacheVariant, withoutCaching, withoutNegotiationVary } from "../responses";
 import { sampleExperience } from "@/features/markdown/__tests__/fixtures";
 
 describe("withoutNegotiationVary", () => {
@@ -211,3 +211,25 @@ it.effect("required-content failures map to non-cacheable 503s and valid missing
     assert.strictEqual(notFound.headers.get("X-Robots-Tag"), "noindex, follow");
   })
 );
+
+it("applyRepresentationPolicy bypasses caching on fallback and strips negotiation Vary when pinned", () => {
+  const base = () =>
+    new Response("# Portfolio", {
+      headers: {
+        "Cache-Control": "public, max-age=3600",
+        Vary: "Cookie, Accept-Language",
+      },
+    });
+
+  const fallback = applyRepresentationPolicy(base(), true, Option.some("pl"));
+  assert.strictEqual(fallback.headers.get("Cache-Control"), "no-store");
+  assert.strictEqual(fallback.headers.get("Vary"), "Cookie, Accept-Language");
+
+  const pinned = applyRepresentationPolicy(base(), false, Option.some("pl"));
+  assert.strictEqual(pinned.headers.get("Cache-Control"), "public, max-age=3600");
+  assert.isNull(pinned.headers.get("Vary"));
+
+  const negotiated = applyRepresentationPolicy(base(), false, Option.none());
+  assert.strictEqual(negotiated.headers.get("Cache-Control"), "public, max-age=3600");
+  assert.strictEqual(negotiated.headers.get("Vary"), "Cookie, Accept-Language");
+});

@@ -129,13 +129,16 @@ const experienceSection = (title: string, experiences: ExperienceList) =>
 
 const COMPANION_CONTEXT = { ...SOURCE_CONTEXT, includeNavigation: false } as const;
 
-const sourceDocuments = (content: PageContent): ReadonlyArray<SourceDocument> => [
-  ...Array.map(STATIC_PAGE_PATHS, (pagePath) => ({ entry: pageEntry(pagePath), twin: buildPageDocument(pagePath, content, COMPANION_CONTEXT) })),
-  ...Array.map(content.experienceList, (experience) => {
-    const seo = experienceSeo({ experience, preferredLanguage: DEFAULT_LANGUAGE });
-    return { entry: experienceEntry(seo), twin: buildExperienceMd({ seo, ...COMPANION_CONTEXT }) };
-  }),
-];
+const sourceDocuments = (content: PageContent): ReadonlyArray<SourceDocument> =>
+  pipe(
+    Array.map(STATIC_PAGE_PATHS, (pagePath) => ({ entry: pageEntry(pagePath), twin: buildPageDocument(pagePath, content, COMPANION_CONTEXT) })),
+    Array.appendAll(
+      Array.map(content.experienceList, (experience) => {
+        const seo = experienceSeo({ experience, preferredLanguage: DEFAULT_LANGUAGE });
+        return { entry: experienceEntry(seo), twin: buildExperienceMd({ seo, ...COMPANION_CONTEXT }) };
+      })
+    )
+  );
 
 // Builds the concise llms.txt discovery index
 export const buildLlmsTxt = (experienceList: ExperienceList) => {

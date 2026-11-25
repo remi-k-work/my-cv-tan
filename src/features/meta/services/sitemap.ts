@@ -9,18 +9,25 @@ import { sitemapResponse, sitemapUnavailableResponse } from "./responses";
 import { DEFAULT_LANGUAGE } from "@/domain/constants";
 
 // Encapsulates sitemap XML generation against the Datasets service for testability and runtime composition
-export class Sitemap extends Context.Service<Sitemap>()("my-cv-v4-tan/features/meta/services/Sitemap", {
-  make: Effect.gen(function* () {
-    const { experienceList } = yield* Datasets;
+export class Sitemap extends Context.Service<
+  Sitemap,
+  {
+    readonly document: Effect.Effect<Response>;
+  }
+>()("my-cv-v4-tan/features/meta/services/Sitemap") {
+  static readonly layer = Layer.effect(
+    Sitemap,
+    Effect.gen(function* () {
+      const { experienceList } = yield* Datasets;
 
-    // Localized experience assets guarantee identical unique slugs across languages, so one default-language read suffices
-    const document = Effect.map(experienceList(DEFAULT_LANGUAGE), (experiences) => sitemapResponse(buildSitemapXml(experiences))).pipe(
-      recoverDataFailure(() => "[SITEMAP.XML]", sitemapUnavailableResponse),
-      Effect.withSpan("Sitemap.document")
-    );
+      // Localized experience assets guarantee identical unique slugs across languages, so one default-language read suffices
+      const document = experienceList(DEFAULT_LANGUAGE).pipe(
+        Effect.map((experiences) => sitemapResponse(buildSitemapXml(experiences))),
+        recoverDataFailure(() => "[SITEMAP.XML]", sitemapUnavailableResponse),
+        Effect.withSpan("Sitemap.document")
+      );
 
-    return { document } as const;
-  }),
-}) {
-  static readonly layer = Layer.effect(this, this.make);
+      return Sitemap.of({ document });
+    })
+  );
 }

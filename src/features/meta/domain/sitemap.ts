@@ -45,7 +45,8 @@ export const buildSitemapXml = (experiences: ExperienceList) => {
 
   // Static pages win collisions, so malformed input cannot attach an experience image to a static URL
   const entries = pipe(
-    [...staticEntries, ...experienceEntries],
+    staticEntries,
+    Array.appendAll(experienceEntries),
     Array.dedupeWith((left, right) => left.loc === right.loc)
   );
 

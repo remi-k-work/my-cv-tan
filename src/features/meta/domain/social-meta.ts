@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Array, Match, Option, Result } from "effect";
+import { Array, Match, Option, Result, pipe } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
 
 // types
@@ -26,7 +26,11 @@ const articleTags = (ogType: "website" | "article", articleSection: SocialMetaIn
     Match.when("article", () => [
       { property: "article:author", content: AUTHOR_URL },
       { property: "article:publisher", content: PUBLISHER_URL },
-      ...Option.toArray(Option.map(Option.fromUndefinedOr(articleSection), (section) => ({ property: "article:section", content: section }))),
+      ...pipe(
+        Option.fromUndefinedOr(articleSection),
+        Option.map((section) => ({ property: "article:section", content: section })),
+        Option.toArray
+      ),
     ]),
     Match.exhaustive
   );

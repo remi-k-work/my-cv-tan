@@ -170,3 +170,18 @@ it("authored prose beginning with an indent cannot revive the marker its indent 
   // The later block keeps its indent, and so the code block the author actually wrote
   assert.strictEqual(escapeMd("para\n\n    # indented heading"), "para\n\n    # indented heading");
 });
+
+it("buildExperienceMd deduplicates repeated skills in frontmatter and body", () => {
+  const md = twinDocument(
+    buildExperienceMd({
+      seo: experienceSeo({
+        experience: { ...sampleExperience, skillsUsed: ["TypeScript", "React", "TypeScript"] },
+        preferredLanguage: "en",
+      }),
+      translate: translateEn,
+    })
+  );
+
+  assert.include(md, `skills: "TypeScript, React"`);
+  assert.strictEqual((md.match(/^- TypeScript$/gm) ?? []).length, 1);
+});

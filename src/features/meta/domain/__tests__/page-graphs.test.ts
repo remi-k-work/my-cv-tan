@@ -5,7 +5,7 @@
 import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
 import { educationJsonLd, contactJsonLd, experienceCollections, experienceJsonLd, homeJsonLd, schoolSubgraph } from "../page-graphs";
-import { EXPERIENCE_LIST_ID, HOME_URL, PERSON_ID, PORTFOLIO_LIST_ID, PROFILE_ID, WEBSITE_ID } from "../site";
+import { EXPERIENCE_LIST_ID, GLOBAL_SOCIAL_IMAGE, HOME_URL, PERSON_ID, PORTFOLIO_LIST_ID, PROFILE_ID, WEBSITE_ID } from "../site";
 import { jsonLdGraph } from "../jsonld";
 import { LANGUAGE, graphOf, nodeOf, sampleEducation, sampleExperience } from "./fixtures";
 import type { PreferredLanguage } from "@/domain/models";
@@ -374,4 +374,38 @@ it("the page-node pair merges into the site entities as one document when a page
   assert.strictEqual(merged.filter((node) => node["@type"] === "BreadcrumbList").length, 1);
   assert.strictEqual(merged.filter((node) => node["@type"] === "ContactPage").length, 1);
   assert.isDefined(nodeOf(merged, "WebSite"));
+});
+
+it("static page graphs publish primaryImageOfPage matching the global social image", () => {
+  const expectedImage = {
+    "@type": "ImageObject",
+    url: GLOBAL_SOCIAL_IMAGE.src,
+    width: GLOBAL_SOCIAL_IMAGE.width,
+    height: GLOBAL_SOCIAL_IMAGE.height,
+  };
+
+  const home = nodeOf(homeJsonLd({ pageName: "Home", description: "Home.", experienceList: [], preferredLanguage: language }), "ProfilePage");
+  const education = nodeOf(
+    educationJsonLd({ pageName: "Education", description: "Education.", educationList: [], preferredLanguage: language }),
+    "CollectionPage"
+  );
+  const contact = nodeOf(contactJsonLd({ pageName: "Contact", description: "Contact.", preferredLanguage: language }), "ContactPage");
+
+  assert.deepStrictEqual(home?.primaryImageOfPage, expectedImage);
+  assert.deepStrictEqual(education?.primaryImageOfPage, expectedImage);
+  assert.deepStrictEqual(contact?.primaryImageOfPage, expectedImage);
+});
+
+it("experienceJsonLd deduplicates repeated skills in keywords", () => {
+  const nodes = experienceJsonLd({
+    experience: { ...sampleExperience, skillsUsed: ["TypeScript", "React", "TypeScript"] },
+    preferredLanguage: language,
+    path: "/sample-role",
+    headline: "Full-Stack Developer",
+    description: "Built things with care.",
+    screenshot: Option.none(),
+  });
+
+  assert.strictEqual(findByType(nodes, "SoftwareSourceCode")?.keywords, "TypeScript, React");
+  assert.strictEqual(findByType(nodes, "Article")?.keywords, "TypeScript, React");
 });

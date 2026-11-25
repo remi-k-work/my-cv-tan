@@ -105,6 +105,7 @@ const optionalLink = (label: string, href: string | undefined) => Option.map(val
 export const buildExperienceMd = ({ seo, translate, includeNavigation = true }: ExperienceMdInput): MarkdownTwin => {
   const { experience, preferredLanguage, canonical, headline, description } = seo;
   const { role, company, txt, skillsUsed, year } = experience;
+  const skills = Array.dedupe(skillsUsed);
 
   const links = pipe(
     [
@@ -123,7 +124,7 @@ export const buildExperienceMd = ({ seo, translate, includeNavigation = true }: 
       role,
       company,
       year,
-      skills: Array.join(skillsUsed, ", "),
+      skills: Array.join(skills, ", "),
     },
     body: mdBody([
       mdHeading(1, headline),
@@ -134,7 +135,7 @@ export const buildExperienceMd = ({ seo, translate, includeNavigation = true }: 
         translate(msg("Details")),
         mdBulletList([mdFact(translate(msg("Role")), role), mdFact(translate(msg("Company")), company), mdFact(translate(msg("Year")), year)])
       ),
-      mdTitledSection(translate(msg("Skills Used")), mdBulletList(Array.map(skillsUsed, escapeMdInline))),
+      mdTitledSection(translate(msg("Skills Used")), mdBulletList(Array.map(skills, escapeMdInline))),
       // An experience with no publishable link gets no Links section at all, rather than an empty one
       ...Array.match(links, {
         onEmpty: () => [],

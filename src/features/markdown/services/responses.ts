@@ -56,6 +56,17 @@ export const pinCacheVariant = (response: Response) =>
 // A translation fallback is a temporary English representation: never let a shared cache pin it
 export const withoutCaching = (response: Response) => withHeaders(response, (headers) => headers.set("Cache-Control", NO_STORE));
 
+// Enforces cache and Vary policy based on whether the response is a fallback or language-pinned
+export const applyRepresentationPolicy = (response: Response, fallback: boolean, langOverride: Option.Option<PreferredLanguage>) => {
+  // A fallback is temporary negotiated content, so it must bypass both caching and language pinning
+  if (fallback) return withoutCaching(response);
+
+  return Option.match(langOverride, {
+    onNone: () => response,
+    onSome: () => pinCacheVariant(response),
+  });
+};
+
 const markdownHeaders = (preferredLanguage: PreferredLanguage, links: string) => ({
   ...documentHeaders(preferredLanguage),
   "Content-Type": MD_CONTENT_TYPE,

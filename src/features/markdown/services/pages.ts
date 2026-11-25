@@ -10,7 +10,7 @@ import type { RequiredDataError } from "@/features/data/domain/required";
 import type { IndexEntry } from "@/features/markdown/domain/catalogue";
 import type { MarkdownTwin, PageDocumentContent, TwinContext } from "@/features/markdown/domain/models";
 
-export interface PageTwin {
+interface PageTwin {
   readonly entry: IndexEntry;
   readonly document: (context: TwinContext) => Effect.Effect<MarkdownTwin, RequiredDataError, Datasets>;
 }

@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Array, Option, String } from "effect";
+import { Array, Option, String, pipe } from "effect";
 import { absoluteUrl, withLanguageParam } from "./urls";
 
 // types
@@ -13,12 +13,13 @@ const linkParam = (key: string, value: string | undefined) =>
   Option.fromUndefinedOr(value).pipe(Option.map((parameter) => `${key}="${quoteParam(parameter)}"`));
 
 // Serializes a link tag in RFC 8288 parameter order: rel, type, title, hreflang.
-const linkHeader = ({ href, rel, type, title, hrefLang }: LinkTag) => {
-  // `rel` is the one required parameter, so it is written directly instead of being lifted into an
-  // Option only to be taken straight back out of `getSomes`
-  const parameters = [`rel="${rel}"`, ...Array.getSomes([linkParam("type", type), linkParam("title", title), linkParam("hreflang", hrefLang)])];
-  return `<${href}>; ${Array.join(parameters, "; ")}`;
-};
+const linkHeader = ({ href, rel, type, title, hrefLang }: LinkTag) =>
+  pipe(
+    [Option.some(`rel="${quoteParam(rel)}"`), linkParam("type", type), linkParam("title", title), linkParam("hreflang", hrefLang)],
+    Array.getSomes,
+    Array.prepend(`<${href}>`),
+    Array.join("; ")
+  );
 
 export const joinLinkHeader = (links: ReadonlyArray<LinkTag>) => Array.join(Array.map(links, linkHeader), ", ");
 export const canonicalLink = (href: string): LinkTag => ({ rel: "canonical", href });
