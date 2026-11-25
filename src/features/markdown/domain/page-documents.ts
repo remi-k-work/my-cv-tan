@@ -16,7 +16,7 @@ export interface PageContent {
   readonly educationList: EducationList;
 }
 
-interface PageDocumentContent {
+export interface PageDocumentContent {
   readonly [HOME_PATH]: Pick<PageContent, "pageTitles" | "experienceList">;
   readonly [EDUCATION_PATH]: Pick<PageContent, "pageTitles" | "educationList">;
   readonly [CONTACT_PATH]: Pick<PageContent, "pageTitles">;

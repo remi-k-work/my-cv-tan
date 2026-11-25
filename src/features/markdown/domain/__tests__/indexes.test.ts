@@ -57,12 +57,13 @@ it("buildLlmsTxt indexes pages, about facts, grouped experience and negotiated l
   // Markdown links every llms.txt file-list item requires.
   assert.include(txt, "- [GitHub](https://github.com/remi-k-work)");
   assert.include(txt, "- [LinkedIn](https://linkedin.com/in/remi-k-work)");
-  // Every machine-readable entry point is collected in one section, so a crawler that fetched
-  // nothing else still learns the whole retrieval surface from this single document
+  // The other machine-readable entry points are collected in one section, so a crawler that
+  // fetched nothing else still learns the retrieval surface without a redundant self-link.
   assert.include(txt, `## Discovery`);
   // Discovery entries are markdown links, the shape llms.txt specifies for list items and the
-  // same shape the twins' "Pages" section already prints for these two documents
-  assert.include(txt, `- [llms.txt](https://www.remiforge.dev/llms.txt): this index.`);
+  // same shape the twins' "Pages" section already prints for these documents. The index omits
+  // its own URL because fetching the current document again adds no information.
+  assert.notInclude(txt, `- [llms.txt](https://www.remiforge.dev/llms.txt): this index.`);
   assert.include(txt, `- [llms-full.txt](https://www.remiforge.dev/llms-full.txt): the complete site in one document.`);
   assert.include(txt, `- [robots.txt](https://www.remiforge.dev/robots.txt): crawl directives.`);
   // robots.txt carries the Content-Signal; repeating it here means a fetcher reading only this
@@ -239,13 +240,18 @@ it("the companion carries the retrieval-surface map, so a direct entry does not 
   const index = buildLlmsTxt([]);
 
   assert.include(full, "## Discovery");
-  // The same lines the index prints, byte for byte, so the two documents cannot describe
-  // different retrieval surfaces
-  for (const line of DISCOVERY_LINES) assert.include(full, `- ${line}`);
+  // Each document lists the other crawl surfaces, not a redundant link to itself.
+  for (const line of DISCOVERY_LINES) {
+    if (line.includes("[llms-full.txt]")) assert.notInclude(full, `- ${line}`);
+    else assert.include(full, `- ${line}`);
+  }
   // The map lands before the reuse notes, so a fetcher reads the surface before the policy
   assert.isTrue(full.indexOf("## Discovery") < full.indexOf("## Notes for AI systems"));
-  // The index keeps it too: both surfaces, one declaration
-  for (const line of DISCOVERY_LINES) assert.include(index, `- ${line}`);
+  // The concise index links to its companion and the shared non-index surfaces, but not itself.
+  for (const line of DISCOVERY_LINES) {
+    if (line.includes("[llms.txt]")) assert.notInclude(index, `- ${line}`);
+    else assert.include(index, `- ${line}`);
+  }
 });
 
 it("the discovery list projects every crawl document from the shared catalogue", () => {
@@ -288,15 +294,16 @@ it("buildLlmsFullTxt concatenates every twin behind its canonical URL", () => {
     "https://www.remiforge.dev/contact",
     "https://www.remiforge.dev/sample-role",
   ]);
-  // Twins are verbatim in content: every word of the body survives concatenation, only the heading
-  // depth shifts so the companion keeps exactly one H1 and four distinguishable levels below it
+  // Every substantive block survives concatenation; only heading depth shifts. Standalone twins
+  // retain their crawl graph, while the companion's table of contents replaces repeated page nav.
+  assert.notInclude(txt, "#### Pages");
   assert.include(txt, `### Stable home title`);
   assert.include(txt, `### Full-Stack Developer at Sample Co`);
   assert.include(txt, `type: "overview"`);
   assert.include(txt, `type: "education"`);
   assert.include(txt, `type: "contact"`);
   assert.include(txt, `type: "work-experience"`);
-  // A table of contents names every document up front, before the verbatim bodies
+  // A table of contents names every document up front, before the content bodies
   assert.include(txt, `## Table of Contents`);
   // Pinned in full, not by prefix: the three index entry lists render one shape, and the
   // summary-less table of contents is the variant no other assertion below covers

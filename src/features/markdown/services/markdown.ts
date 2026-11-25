@@ -16,7 +16,7 @@ import { mdNotFoundResponse, mdResponse, mdUnavailableResponse, pinCacheVariant,
 import { Translation } from "./translation";
 
 // types
-import type { PagePath } from "@/domain/models";
+import type { PagePath, PreferredLanguage } from "@/domain/models";
 import type { RequiredDataError } from "@/features/data/domain/required";
 import type { MarkdownTwin, TwinContext } from "@/features/markdown/domain/models";
 
@@ -31,7 +31,7 @@ import { DEFAULT_LANGUAGE } from "@/domain/constants";
 import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/discovery";
 import { PAGE_TWINS } from "./pages";
 
-const applyRepresentationPolicy = (response: Response, fallback: boolean, langOverride: Option.Option<string>) => {
+const applyRepresentationPolicy = (response: Response, fallback: boolean, langOverride: Option.Option<PreferredLanguage>) => {
   // A fallback is temporary negotiated content, so it must bypass both caching and language pinning.
   if (fallback) return withoutCaching(response);
 
@@ -149,5 +149,6 @@ export class Markdown extends Context.Service<Markdown>()("my-cv-v4-tan/features
     } as const;
   }),
 }) {
-  static readonly layer = Layer.effect(this, this.make).pipe(Layer.provide(Translation.layer));
+  // Translation is supplied at composition so tests and alternate runtimes can replace its snapshot loader
+  static readonly layer = Layer.effect(this, this.make);
 }

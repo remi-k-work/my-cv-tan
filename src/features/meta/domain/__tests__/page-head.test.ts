@@ -325,6 +325,7 @@ it("project details use SoftwareSourceCode linked to the canonical WebPage, pers
   assert.deepStrictEqual(project?.creator, { "@id": "https://www.remiforge.dev/#person" });
   assert.strictEqual(project?.inLanguage, "pl");
   assert.strictEqual(project?.keywords, "TypeScript, React");
+  assert.strictEqual(article?.keywords, project?.keywords);
   // Schema.org's link to the source repository, single-sourced from the content's GitHub URL
   assert.strictEqual(project?.codeRepository, "https://github.com/example/repo");
   // The image is a sized ImageObject: scrapers learn the dimensions without fetching the file
@@ -340,12 +341,12 @@ it("project details use SoftwareSourceCode linked to the canonical WebPage, pers
   assert.isDefined(nodeOf(parsed, "BreadcrumbList"));
 });
 
-it("employment details use OrganizationRole linked to the person and canonical WebPage without fabricated dates", () => {
+it("employment details use EmployeeRole linked to the person and canonical WebPage without fabricated dates", () => {
   const experience = { ...sampleExperience, type: "e" as const, slug: "sample-job" };
   const head = experienceHead({ experience, preferredLanguage: "en" });
   const parsed = graphOf(head.scripts?.[0]?.children);
   const page = nodeOf(parsed, "WebPage");
-  const role = nodeOf(parsed, "OrganizationRole");
+  const role = nodeOf(parsed, "EmployeeRole");
   const organization = nodeOf(parsed, "Organization", "#organization");
   const article = nodeOf(parsed, "Article");
 
@@ -363,8 +364,8 @@ it("employment details use OrganizationRole linked to the person and canonical W
   assert.strictEqual(organization?.name, "Sample Co");
   // The employer points at the role, whose own member edge above points back to the person.
   assert.deepStrictEqual(organization?.member, { "@id": "https://www.remiforge.dev/sample-job#organization-role" });
-  // The reciprocal Person edge: "works for" is readable from the person side of the graph too
-  assert.deepStrictEqual(nodeOf(parsed, "Person")?.worksFor, { "@id": "https://www.remiforge.dev/sample-job#organization" });
+  // A dated role is historical data; worksFor would incorrectly claim that every job is current.
+  assert.isUndefined(nodeOf(parsed, "Person")?.worksFor);
   assert.notInclude(JSON.stringify(role), "startDate");
   assert.notInclude(JSON.stringify(role), "endDate");
   // Employment pages render screenshots too, so their WebPage claims the same main image

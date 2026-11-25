@@ -314,6 +314,23 @@ it("llms-full.txt concatenates every twin body beneath its canonical URL", async
   for (const slug of slugs) assert.include(txt, `[Source](https://www.remiforge.dev${experiencePath(slug)})`);
 });
 
+it("public machine-readable documents revalidate without downloading an unchanged body", async () => {
+  const url = "https://www.remiforge.dev/index.md?lang=en";
+  const initial = await homeHandler({ request: new Request(url) });
+  const etag = initial.headers.get("ETag");
+
+  assert.strictEqual(initial.status, 200);
+  assert.match(etag ?? "", /^"[a-f0-9]{64}"$/);
+
+  const revalidated = await homeHandler({ request: new Request(url, { headers: { "If-None-Match": etag! } }) });
+
+  assert.strictEqual(revalidated.status, 304);
+  assert.strictEqual(revalidated.headers.get("ETag"), etag);
+  assert.strictEqual(revalidated.headers.get("Content-Location"), url);
+  assert.strictEqual(revalidated.headers.get("Cache-Control"), CACHEABLE_HEADERS["Cache-Control"]);
+  assert.isNull(revalidated.body);
+});
+
 it("every twin URL the index advertises is the address the twin routes answer on", async () => {
   const txt = await (await llmsTxtHandler({ request: new Request(LLMS_TXT_INDEX.url) })).text();
   const advertised = [...txt.matchAll(/\]\((https:\/\/www\.remiforge\.dev\/[^)\s]+\.md\?lang=en)\)/g)].map(([, url]) => url!);

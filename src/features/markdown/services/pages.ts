@@ -5,9 +5,10 @@ import { pageEntry } from "@/features/markdown/domain/catalogue";
 import { buildPageDocument } from "@/features/markdown/domain/page-documents";
 
 // types
-import type { PagePath } from "@/domain/models";
+import type { PagePath, PreferredLanguage } from "@/domain/models";
 import type { RequiredDataError } from "@/features/data/domain/required";
 import type { IndexEntry } from "@/features/markdown/domain/catalogue";
+import type { PageDocumentContent } from "@/features/markdown/domain/page-documents";
 import type { MarkdownTwin, TwinContext } from "@/features/markdown/domain/models";
 
 export interface PageTwin {
@@ -15,39 +16,32 @@ export interface PageTwin {
   readonly document: (context: TwinContext) => Effect.Effect<MarkdownTwin, RequiredDataError, Datasets>;
 }
 
+type LoadPageContent<P extends PagePath> = (
+  datasets: Datasets["Service"],
+  preferredLanguage: PreferredLanguage
+) => Effect.Effect<PageDocumentContent[P], RequiredDataError>;
+
 // constants
 import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/domain/constants";
+import { STATIC_PAGES } from "@/features/meta/domain/pages";
 
-const homeDocument = Effect.fn("Markdown.page.home")(function* ({ preferredLanguage, translate }: TwinContext) {
-  const datasets = yield* Datasets;
-  const data = yield* Effect.all(
-    { pageTitles: datasets.pageTitles(preferredLanguage), experienceList: datasets.experienceList(preferredLanguage) },
-    { concurrency: "unbounded" }
-  );
-
-  return buildPageDocument(HOME_PATH, data, { preferredLanguage, translate });
+// One pipeline owns catalogue lookup, dataset loading, tracing and pure rendering for every page
+const pageTwin = <P extends PagePath>(pagePath: P, load: LoadPageContent<P>): PageTwin => ({
+  entry: pageEntry(pagePath),
+  document: Effect.fn(`Markdown.page.${STATIC_PAGES[pagePath].type}`)(function* (context: TwinContext) {
+    const datasets = yield* Datasets;
+    const content = yield* load(datasets, context.preferredLanguage);
+    return buildPageDocument(pagePath, content, context);
+  }),
 });
 
-const educationDocument = Effect.fn("Markdown.page.education")(function* ({ preferredLanguage, translate }: TwinContext) {
-  const datasets = yield* Datasets;
-  const data = yield* Effect.all(
-    { pageTitles: datasets.pageTitles(preferredLanguage), educationList: datasets.educationList(preferredLanguage) },
-    { concurrency: "unbounded" }
-  );
-
-  return buildPageDocument(EDUCATION_PATH, data, { preferredLanguage, translate });
-});
-
-const contactDocument = Effect.fn("Markdown.page.contact")(function* ({ preferredLanguage, translate }: TwinContext) {
-  const datasets = yield* Datasets;
-  const pageTitles = yield* datasets.pageTitles(preferredLanguage);
-
-  return buildPageDocument(CONTACT_PATH, { pageTitles }, { preferredLanguage, translate });
-});
-
-// Exhaustive over PagePath: each page owns its data pipeline, catalogue entry and shared pure builder
+// Exhaustive over PagePath; each entry declares only the datasets its pure builder actually reads
 export const PAGE_TWINS = {
-  [HOME_PATH]: { entry: pageEntry(HOME_PATH), document: homeDocument },
-  [EDUCATION_PATH]: { entry: pageEntry(EDUCATION_PATH), document: educationDocument },
-  [CONTACT_PATH]: { entry: pageEntry(CONTACT_PATH), document: contactDocument },
+  [HOME_PATH]: pageTwin(HOME_PATH, (datasets, preferredLanguage) =>
+    Effect.all({ pageTitles: datasets.pageTitles(preferredLanguage), experienceList: datasets.experienceList(preferredLanguage) }, { concurrency: "unbounded" })
+  ),
+  [EDUCATION_PATH]: pageTwin(EDUCATION_PATH, (datasets, preferredLanguage) =>
+    Effect.all({ pageTitles: datasets.pageTitles(preferredLanguage), educationList: datasets.educationList(preferredLanguage) }, { concurrency: "unbounded" })
+  ),
+  [CONTACT_PATH]: pageTwin(CONTACT_PATH, (datasets, preferredLanguage) => Effect.map(datasets.pageTitles(preferredLanguage), (pageTitles) => ({ pageTitles }))),
 } satisfies Record<PagePath, PageTwin>;

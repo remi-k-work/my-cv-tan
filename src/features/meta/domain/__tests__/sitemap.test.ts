@@ -10,12 +10,7 @@ import experienceEn from "@/assets/data/en/experience.json";
 import experiencePl from "@/assets/data/pl/experience.json";
 import { Datasets } from "@/features/data/services/datasets";
 import { RequiredDataError } from "@/features/data/domain/required";
-
-type Experience = { readonly slug: string };
-
-const sampleExperience: Experience = {
-  slug: "sample-role",
-};
+import { sampleExperience } from "./fixtures";
 
 // Verifies end-to-end runtime wiring of the sitemap route using real portfolio assets.
 it("sitemap route resolves the real portfolio assets into one canonical URL per page", async () => {
@@ -50,7 +45,7 @@ it("sitemap route resolves the real portfolio assets into one canonical URL per 
 });
 
 it("sitemap omits fabricated last-modification dates and leads with the canonical homepage", () => {
-  const xml = buildSitemapXml([sampleExperience.slug]);
+  const xml = buildSitemapXml([sampleExperience]);
   assert.include(xml, "https://www.remiforge.dev/sample-role");
   assert.notInclude(xml, "<lastmod>");
   // Canonical homepage leads the sitemap document.
@@ -81,26 +76,41 @@ it("sitemap lists every advertised downloadable document", () => {
 });
 
 it("sitemap lists canonical site URLs only — never the Markdown twins", () => {
-  const xml = buildSitemapXml([sampleExperience.slug]);
+  const xml = buildSitemapXml([sampleExperience]);
   assert.notInclude(xml, ".md");
 });
 
+it("sitemap publishes verified experience screenshots and omits pages without one", () => {
+  const xml = buildSitemapXml([sampleExperience, { ...sampleExperience, slug: "without-image", imageName: "" }]);
+
+  assert.include(xml, 'xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"');
+  assert.include(xml, "<image:loc>https://www.remiforge.dev/images/01-a.webp</image:loc>");
+  assert.include(xml, "<image:title>Full-Stack Developer</image:title>");
+  assert.strictEqual((xml.match(/<image:image>/g) ?? []).length, 1);
+});
+
+it("sitemap escapes image titles with the same XML boundary as URLs", () => {
+  const xml = buildSitemapXml([{ ...sampleExperience, role: `<Role> & "Studio"` }]);
+
+  assert.include(xml, "<image:title>&lt;Role&gt; &amp; &quot;Studio&quot;</image:title>");
+});
+
 it("sitemap percent-encodes unsafe slug characters in generated URLs", () => {
-  const xml = buildSitemapXml([`danger<&>"'`]);
+  const xml = buildSitemapXml([{ ...sampleExperience, slug: `danger<&>"'` }]);
   assert.include(xml, "https://www.remiforge.dev/danger%3C%26%3E%22&apos;");
   assert.notInclude(xml, "<loc>https://www.remiforge.dev/danger<&>");
 });
 
 it("sitemap encodes experience paths the same way canonical pages and twins do", () => {
   // Percent-encodes parentheses in experience paths for markdown and XML compatibility.
-  const xml = buildSitemapXml(["role (senior) & more"]);
+  const xml = buildSitemapXml([{ ...sampleExperience, slug: "role (senior) & more" }]);
   assert.include(xml, "<loc>https://www.remiforge.dev/role%20%28senior%29%20%26%20more</loc>");
   assert.notInclude(xml, "role%20(senior)");
 });
 
 it("sitemap preserves distinct slugs in caller order without emitting duplicate URLs", () => {
   const translatedOnly = { ...sampleExperience, slug: "translated-only" };
-  const xml = buildSitemapXml([sampleExperience.slug, translatedOnly.slug]);
+  const xml = buildSitemapXml([sampleExperience, translatedOnly]);
 
   assert.strictEqual((xml.match(/<loc>https:\/\/www\.remiforge\.dev\/sample-role<\/loc>/g) ?? []).length, 1);
   // Preserves insertion order during deduplication.
@@ -108,7 +118,7 @@ it("sitemap preserves distinct slugs in caller order without emitting duplicate 
 });
 
 it("sitemap builder removes duplicate locations regardless of its caller", () => {
-  const xml = buildSitemapXml([sampleExperience.slug, sampleExperience.slug, "education"]);
+  const xml = buildSitemapXml([sampleExperience, sampleExperience, { ...sampleExperience, slug: "education" }]);
 
   assert.strictEqual((xml.match(/<loc>https:\/\/www\.remiforge\.dev\/sample-role<\/loc>/g) ?? []).length, 1);
   // Dedupes against static paths.
@@ -116,7 +126,7 @@ it("sitemap builder removes duplicate locations regardless of its caller", () =>
 });
 
 it("sitemap success responses carry the XML content type, noindex, and hour-long public caching", () => {
-  const ok = sitemapResponse(buildSitemapXml([sampleExperience.slug]));
+  const ok = sitemapResponse(buildSitemapXml([sampleExperience]));
   assert.strictEqual(ok.status, 200);
   assert.strictEqual(ok.headers.get("Content-Type"), "application/xml; charset=utf-8");
   assert.strictEqual(ok.headers.get("Content-Location"), "https://www.remiforge.dev/sitemap.xml");

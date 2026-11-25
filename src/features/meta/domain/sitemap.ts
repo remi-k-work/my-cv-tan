@@ -1,8 +1,14 @@
 // services, features, and other libraries
-import { Array, pipe } from "effect";
-import { absoluteUrl, experiencePath } from "./urls";
+import { Array, Option, pipe } from "effect";
+import { absoluteUrl } from "./urls";
+import { experienceSeo } from "./seo";
+
+// types
+import type { ExperienceList } from "@/features/experience/domain/models";
+import type { ExperienceSeo } from "./models";
 
 // constants
+import { DEFAULT_LANGUAGE } from "@/domain/constants";
 import { DOWNLOADABLE_DOCUMENT_PATHS } from "./discovery";
 import { STATIC_PAGE_PATHS } from "./pages";
 
@@ -11,15 +17,39 @@ const XML_ENTITIES: Readonly<Record<string, string>> = { "&": "&amp;", "<": "&lt
 
 const escapeXml = (value: string) => value.replace(/[&<>"']/g, (character) => XML_ENTITIES[character] ?? character);
 
-// Generates XML sitemap containing canonical URLs for static pages, downloads, and experience items
-export const buildSitemapXml = (slugs: ReadonlyArray<string>) => {
-  const locs = pipe([...STATIC_URLS, ...Array.map(slugs, (slug) => absoluteUrl(experiencePath(slug)))], Array.dedupe);
+const experienceImages = (seo: ExperienceSeo) =>
+  pipe(
+    seo.screenshot,
+    Option.map(({ src }) => [
+      "  <image:image>",
+      `    <image:loc>${escapeXml(src)}</image:loc>`,
+      `    <image:title>${escapeXml(seo.headline)}</image:title>`,
+      "  </image:image>",
+    ]),
+    Option.getOrElse((): ReadonlyArray<string> => [])
+  );
+
+// Reuses each page's SEO identity so sitemap URLs and image metadata cannot drift from HTML or Markdown
+export const buildSitemapXml = (experiences: ExperienceList) => {
+  const staticEntries = Array.map(STATIC_URLS, (loc) => ({ loc, images: [] as ReadonlyArray<string> }));
+  const experienceEntries = pipe(
+    experiences,
+    Array.map((experience) => experienceSeo({ experience, preferredLanguage: DEFAULT_LANGUAGE })),
+    Array.map((seo) => ({ loc: seo.canonical, images: experienceImages(seo) }))
+  );
+  // Static pages win collisions, so malformed input cannot attach an experience image to a static URL
+  const entries = pipe(
+    [...staticEntries, ...experienceEntries],
+    Array.dedupeWith((left, right) => left.loc === right.loc)
+  );
+
+  const urlElement = ({ loc, images }: (typeof entries)[number]) => ["<url>", `  <loc>${escapeXml(loc)}</loc>`, ...images, "</url>"];
 
   return Array.join(
     [
       '<?xml version="1.0" encoding="UTF-8"?>',
-      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-      ...Array.map(locs, (loc) => `<url><loc>${escapeXml(loc)}</loc></url>`),
+      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">',
+      ...pipe(entries, Array.map(urlElement), Array.flatten),
       "</urlset>",
     ],
     "\n"

@@ -1,7 +1,8 @@
 // services, features, and other libraries
 import { Array } from "effect";
-import { absoluteUrl, experienceMarkdownPath, experiencePath, markdownTwinUrl } from "@/features/meta/domain/urls";
-import { excerpt, experienceHeadline } from "@/features/experience/domain/helpers";
+import { markdownTwinUrl } from "@/features/meta/domain/urls";
+import { experienceSeo } from "@/features/meta/domain/seo";
+import { excerpt } from "@/features/experience/domain/helpers";
 import { mdBulletList, mdEmptyMarker, mdIndexEntry, mdLink } from "./format";
 import { escapeMdInline } from "./escape";
 
@@ -18,13 +19,11 @@ interface ExperienceLinesInput extends TwinContext {
 const LIST_EXCERPT_LENGTH = 140;
 
 const experienceLine = (experience: Experience, preferredLanguage: TwinContext["preferredLanguage"], mode: ExperienceLinesInput["mode"]) => {
-  const headline = experienceHeadline(experience, preferredLanguage);
+  const seo = experienceSeo({ experience, preferredLanguage });
   const summary = `${excerpt(experience.txt, LIST_EXCERPT_LENGTH)} (${experience.year})`;
-  const twin = markdownTwinUrl(experienceMarkdownPath(experience.slug), preferredLanguage);
+  const twin = markdownTwinUrl(seo.markdownPath, preferredLanguage);
 
-  return mode === "twin"
-    ? `${mdLink(headline, twin)}: ${escapeMdInline(summary)}`
-    : mdIndexEntry(headline, absoluteUrl(experiencePath(experience.slug)), twin, summary);
+  return mode === "twin" ? `${mdLink(seo.headline, twin)}: ${escapeMdInline(summary)}` : mdIndexEntry(seo.headline, seo.canonical, twin, summary);
 };
 
 // One projection shared by the index and home twin; only the index adds the canonical citation link

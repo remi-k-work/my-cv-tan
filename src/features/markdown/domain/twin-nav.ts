@@ -15,6 +15,9 @@ import { AI_INDEXES, LLMS_TXT_INDEX } from "@/features/meta/domain/discovery";
 
 export const AI_INDEX_MARKDOWN_LINKS: ReadonlyArray<string> = Array.map(AI_INDEXES, ({ name, url }) => mdLink(name, url));
 
+// Standalone twins carry their citation target in the body; aggregated documents provide their own Source link
+export const canonicalSourceLink = (canonical: string) => mdLink("Canonical HTML", canonical);
+
 const homeLink = (preferredLanguage: PreferredLanguage, translate: Translate) =>
   translatedLink(STATIC_PAGES[HOME_PATH].label, markdownTwinUrl(STATIC_PAGES[HOME_PATH].mdHref, preferredLanguage), translate);
 

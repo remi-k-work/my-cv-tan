@@ -165,7 +165,7 @@ export const contactJsonLd = ({ pageName, description, preferredLanguage }: Loca
 };
 
 export const experienceJsonLd = ({ experience, preferredLanguage, path, headline, description, screenshot }: ExperienceGraphInput): JsonLdNodes => {
-  const { role, company, skillsUsed, gitHubLink } = experience;
+  const { role, company, skillsUsed, gitHubLink, liveLink, videoLink } = experience;
 
   const employment = isEmployment(experience);
   const url = absoluteUrl(path);
@@ -181,16 +181,14 @@ export const experienceJsonLd = ({ experience, preferredLanguage, path, headline
     Option.getOrUndefined
   );
   const repository = pipe(gitHubLink, validatedHref, Option.getOrUndefined);
-
-  const item = experienceItemNode({ employment, id: itemId, url, role, description, preferredLanguage, keywords: skillsUsed, image, repository });
+  const relatedLinks = pipe([liveLink, videoLink], Array.map(validatedHref), Array.getSomes, Array.dedupe);
+  const item = experienceItemNode({ employment, id: itemId, url, role, description, preferredLanguage, keywords: skillsUsed, image, repository, relatedLinks });
 
   const itemNodes: JsonLdNodes = employment
     ? [
-        // Schema.org's OrganizationRole pattern: the employer's member edge points at the role,
-        // and the role's member edge points at the person, keeping employer, role and person connected.
+        // The employer-to-role-to-person path also represents historical employment honestly
         { "@type": "Organization", "@id": `${url}#organization`, name: company, member: { "@id": itemId } },
         item,
-        personEdge({ worksFor: { "@id": `${url}#organization` } }),
       ]
     : [item];
 
@@ -199,6 +197,7 @@ export const experienceJsonLd = ({ experience, preferredLanguage, path, headline
     headline,
     description,
     preferredLanguage,
+    keywords: skillsUsed,
     about: itemId,
     mainEntityOfPage: url,
     image,

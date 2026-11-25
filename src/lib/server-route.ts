@@ -1,5 +1,5 @@
 // The plumbing every machine-readable document route shares: run its Effect pipeline on the server
-// runtime, then strip the visitor state a shared cache would otherwise pin to a public document
+// runtime, attach its cache validator, then strip visitor state from public documents
 // Kept out of both features so the server runtime is entered in exactly one place
 
 // tanstack
@@ -8,6 +8,7 @@ import { removeResponseHeader } from "@tanstack/react-start/server";
 // services, features, and other libraries
 import { Effect } from "effect";
 import { RuntimeServer } from "./runtime-server";
+import { EntityTags } from "./entity-tags";
 
 // types
 import type { ServerServices } from "./runtime-server";
@@ -41,6 +42,7 @@ export const documentRoute = (
       // interrupts it — the same guarantee try/finally gave at the promise boundary
       RuntimeServer.runPromise(
         document(request).pipe(
+          Effect.flatMap((response) => EntityTags.pipe(Effect.flatMap(({ apply }) => apply(request, response)))),
           Effect.ensuring(
             Effect.sync(() => {
               if (!keepsVisitorState(request)) removeSetCookieHeader();

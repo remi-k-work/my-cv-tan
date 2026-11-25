@@ -24,6 +24,7 @@ it("articleNode builds an Article with author, publisher, about and mainEntityOf
     headline: "Headline",
     description: "Description.",
     preferredLanguage: language,
+    keywords: ["TypeScript", "React"],
     about: "https://www.remiforge.dev/#item",
     mainEntityOfPage: "https://www.remiforge.dev/test",
   });
@@ -34,6 +35,7 @@ it("articleNode builds an Article with author, publisher, about and mainEntityOf
     headline: "Headline",
     description: "Description.",
     inLanguage: language,
+    keywords: "TypeScript, React",
     url: "https://www.remiforge.dev/test",
     author: { "@id": PERSON_ID },
     publisher: { "@id": PUBLISHER_ID },
@@ -50,6 +52,7 @@ it("articleNode publishes the page image when one is verified", () => {
     headline: "Headline",
     description: "Description.",
     preferredLanguage: language,
+    keywords: ["TypeScript", "React"],
     about: "https://www.remiforge.dev/#item",
     mainEntityOfPage: "https://www.remiforge.dev/test",
     image,
@@ -160,7 +163,12 @@ const itemInput = {
 
 it("experienceItemNode builds the project node with its verified repository and sized image", () => {
   const image = imageObject("https://www.remiforge.dev/images/01-a.webp", 1600, 900);
-  const node = experienceItemNode({ ...itemInput, image, repository: "https://github.com/example/repo" });
+  const node = experienceItemNode({
+    ...itemInput,
+    image,
+    repository: "https://github.com/example/repo",
+    relatedLinks: ["https://example.com/demo", "https://example.com/video"],
+  });
 
   assert.deepStrictEqual(node, {
     "@type": "SoftwareSourceCode",
@@ -175,6 +183,7 @@ it("experienceItemNode builds the project node with its verified repository and 
     publisher: { "@id": PUBLISHER_ID },
     keywords: "TypeScript, React",
     codeRepository: "https://github.com/example/repo",
+    relatedLink: ["https://example.com/demo", "https://example.com/video"],
   });
 });
 
@@ -191,7 +200,7 @@ it("experienceItemNode drops the source-code claim and the image when neither is
   assert.deepStrictEqual(node.creator, { "@id": PERSON_ID });
 });
 
-it("experienceItemNode builds the employment role without a url, language or image", () => {
+it("experienceItemNode builds an EmployeeRole without a url, language or image", () => {
   const node = experienceItemNode({
     ...itemInput,
     employment: true,
@@ -202,7 +211,7 @@ it("experienceItemNode builds the employment role without a url, language or ima
   // schema.org Role has no inLanguage and carries no url: the WebPage node states the language,
   // and the role is reached through the Article's subject rather than fetched directly
   assert.deepStrictEqual(node, {
-    "@type": "OrganizationRole",
+    "@type": "EmployeeRole",
     "@id": "https://www.remiforge.dev/sample-job#organization-role",
     roleName: "Full-Stack Developer",
     description: "Built things with care.",

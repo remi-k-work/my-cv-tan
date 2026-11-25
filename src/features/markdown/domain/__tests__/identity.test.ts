@@ -9,7 +9,7 @@ import { DOWNLOADABLE_DOCUMENTS } from "@/features/meta/domain/discovery";
 import { absoluteUrl } from "@/features/meta/domain/urls";
 import { buildSitemapXml } from "@/features/meta/domain/sitemap";
 import { mdResponse } from "../../services/responses";
-import { buildLlmsTxt } from "../indexes";
+import { buildLlmsFullTxt, buildLlmsTxt } from "../indexes";
 import { buildContactMd, buildEducationMd, buildHomeMd } from "../twins";
 import { buildExperienceMd } from "../detail-twin";
 import { twinDocument } from "../format";
@@ -48,6 +48,7 @@ it("the head, JSON-LD, Markdown twin and visible detail heading share one experi
   assert.strictEqual(metaContent("og:url"), seo.canonical);
   assert.strictEqual(webPage?.["url"], seo.canonical);
   assert.include(twin, `canonical: ${JSON.stringify(seo.canonical)}`);
+  assert.include(twin, `[Canonical HTML](${seo.canonical})`);
 
   // The route's visible H1 uses this same localized headline rather than the homepage heading.
   const identity = renderToStaticMarkup(createElement(ExperienceIdentity, { experience: sampleExperience, heading: seo.headline, headingLevel: 1 }));
@@ -84,6 +85,7 @@ it("each static page's head and twin publish the same canonical, title and descr
     assert.strictEqual(canonical, copy.canonical, `${path} canonical`);
     assert.strictEqual(metaContent("og:url"), copy.canonical, `${path} og:url`);
     assert.include(twin, `canonical: ${JSON.stringify(copy.canonical)}`, `${path} twin canonical`);
+    assert.include(twin, `[Canonical HTML](${copy.canonical})`, `${path} twin source link`);
 
     assert.strictEqual(metaContent("description"), copy.description, `${path} description`);
     assert.include(twin, `description: ${JSON.stringify(copy.description)}`, `${path} twin description`);
@@ -99,6 +101,13 @@ it("each static page's head and twin publish the same canonical, title and descr
       `https://www.remiforge.dev${STATIC_PAGES[path].mdHref}?lang=${preferredLanguage}`
     );
   }
+});
+
+it("the full-content companion keeps one source link per embedded twin", () => {
+  const document = buildLlmsFullTxt({ pageTitles: stablePageTitles, experienceList: [sampleExperience], educationList: [] });
+
+  assert.strictEqual((document.match(/\[Source\]\(/g) ?? []).length, STATIC_PAGE_PATHS.length + 1);
+  assert.notInclude(document, "[Canonical HTML]");
 });
 
 it("every advertised download is published by the sitemap, the AI index and the education twin alike", () => {

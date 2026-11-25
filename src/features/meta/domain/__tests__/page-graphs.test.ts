@@ -152,7 +152,28 @@ it("experienceJsonLd drops the source-code type when the experience publishes no
   assert.isUndefined(findByType(nodes, "SoftwareSourceCode"));
 });
 
-it("experienceJsonLd uses OrganizationRole for employment type", () => {
+it("experienceJsonLd publishes only validated, distinct project resources", () => {
+  const nodes = experienceJsonLd({
+    experience: {
+      ...sampleExperience,
+      liveLink: "https://example.com/demo",
+      videoLink: "javascript:alert(1)",
+    },
+    preferredLanguage: language,
+    path: "/sample-role",
+    headline: "Full-Stack Developer",
+    description: "Built things with care.",
+    screenshot: Option.none(),
+  });
+  const project = findByType(nodes, "SoftwareSourceCode");
+  const article = findByType(nodes, "Article");
+
+  assert.deepStrictEqual(project?.relatedLink, ["https://example.com/demo"]);
+  assert.strictEqual(article?.keywords, "TypeScript, React");
+  assert.notInclude(JSON.stringify(nodes), "javascript:");
+});
+
+it("experienceJsonLd uses EmployeeRole without claiming historical employment is current", () => {
   const employment = { ...sampleExperience, type: "e" as const, slug: "sample-job" };
   const nodes = experienceJsonLd({
     experience: employment,
@@ -163,7 +184,7 @@ it("experienceJsonLd uses OrganizationRole for employment type", () => {
     screenshot: Option.none(),
   });
 
-  const role = findByType(nodes, "OrganizationRole");
+  const role = findByType(nodes, "EmployeeRole");
   const organization = findByType(nodes, "Organization", "#organization");
   const article = findByType(nodes, "Article");
 
@@ -175,6 +196,7 @@ it("experienceJsonLd uses OrganizationRole for employment type", () => {
   assert.deepStrictEqual(organization?.member, { "@id": "https://www.remiforge.dev/sample-job#organization-role" });
   assert.isUndefined(role?.inLanguage);
   assert.deepStrictEqual(article?.about, { "@id": "https://www.remiforge.dev/sample-job#organization-role" });
+  assert.isUndefined(findByType(nodes, "Person")?.worksFor);
 });
 
 it("homeJsonLd builds a ProfilePage linking site entities plus grouped collections", () => {

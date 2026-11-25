@@ -3,7 +3,7 @@ import { Array } from "effect";
 import { msg } from "gt-i18n";
 import { partitionExperiences } from "@/features/experience/domain/helpers";
 import { staticPageCopy } from "@/features/meta/domain/pages";
-import { pagesSection } from "./twin-nav";
+import { canonicalSourceLink, pagesSection } from "./twin-nav";
 import { mdBody, mdBulletList, mdDocumentLinks, mdEmptyMarker, mdFact, mdHeading, mdLink, mdProfileLinks, mdQuote, mdTitledSection } from "./format";
 import { escapeMd, escapeMdInline } from "./escape";
 import { pageFacts } from "./identity";
@@ -65,9 +65,10 @@ const staticTwinDocument = (
     body: mdBody([
       mdHeading(1, copy.pageName),
       mdQuote(copy.description),
+      ...(input.includeNavigation === false ? [] : [canonicalSourceLink(copy.canonical)]),
       escapeMd(copy.intro),
       ...sections(copy),
-      pagesSection(copy.path, copy.preferredLanguage, input.translate),
+      ...(input.includeNavigation === false ? [] : [pagesSection(copy.path, copy.preferredLanguage, input.translate)]),
     ]),
   };
 };

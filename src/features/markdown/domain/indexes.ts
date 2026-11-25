@@ -19,7 +19,6 @@ import {
 } from "./format";
 import { escapeMd } from "./escape";
 import { experienceEntry, pageEntry } from "./catalogue";
-import { SOURCE_CONTEXT } from "./context";
 import { buildExperienceMd } from "./detail-twin";
 import { experienceLines } from "./listings";
 import { buildPageDocument } from "./page-documents";
@@ -36,7 +35,7 @@ interface SourceDocument {
 }
 
 // constants
-import { CONTENT_SIGNAL, DISCOVERY_DOCUMENTS, DOWNLOADABLE_DOCUMENTS, LLMS_FULL_TXT_INDEX } from "@/features/meta/domain/discovery";
+import { CONTENT_SIGNAL, DISCOVERY_DOCUMENTS, DOWNLOADABLE_DOCUMENTS, LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/discovery";
 import {
   HOME_COUNTRY,
   HOME_LOCATION,
@@ -52,6 +51,7 @@ import {
 import { DEFAULT_LANGUAGE, HOME_PATH, SITE_LANGUAGE_NAMES, SITE_LANGUAGES } from "@/domain/constants";
 import { STATIC_PAGES, STATIC_PAGE_PATHS } from "@/features/meta/domain/pages";
 import { PAGE_ENTRIES } from "./catalogue";
+import { SOURCE_CONTEXT } from "./context";
 
 const PINNABLE_LANGUAGES = Array.filter(SITE_LANGUAGES, (language) => language !== DEFAULT_LANGUAGE);
 const LANGUAGE_PINS = Array.map(
@@ -91,9 +91,13 @@ const notes = (additional: ReadonlyArray<string>) => mdBulletList([...AI_NOTES, 
 const INDEX_NOTES = notes([SINGLE_REQUEST_NOTE]);
 const COMPANION_NOTES_SECTION = mdTitledSection("Notes for AI systems", notes([]));
 
-export const DISCOVERY_LINES: ReadonlyArray<string> = Array.map(DISCOVERY_DOCUMENTS, ({ name, summary, url }) => `${mdLink(name, url)}: ${summary}.`);
+const discoveryLines = (documents: ReadonlyArray<(typeof DISCOVERY_DOCUMENTS)[number]>) =>
+  Array.map(documents, ({ name, summary, url }) => `${mdLink(name, url)}: ${summary}.`);
 
-const DISCOVERY_SECTION = mdTitledSection("Discovery", mdBulletList(DISCOVERY_LINES));
+export const DISCOVERY_LINES = discoveryLines(DISCOVERY_DOCUMENTS);
+// An index already is its own discovery document; only list the other crawl surfaces
+const discoverySection = (selfUrl: string) =>
+  mdTitledSection("Discovery", mdBulletList(discoveryLines(Array.filter(DISCOVERY_DOCUMENTS, ({ url }) => url !== selfUrl))));
 export const SITE_OPENING: ReadonlyArray<string> = [mdHeading(1, SITE_NAME), mdQuote(HOME_TITLE), escapeMd(PERSON_DESCRIPTION)];
 const entryTwinUrl = (entry: IndexEntry) => markdownTwinUrl(entry.mdHref, SOURCE_CONTEXT.preferredLanguage);
 
@@ -126,11 +130,13 @@ const experienceSection = (title: string, experiences: ExperienceList) =>
     onNonEmpty: () => mdTitledSection(title, experienceLines({ experiences, ...SOURCE_CONTEXT, mode: "index" })),
   });
 
+const COMPANION_CONTEXT = { ...SOURCE_CONTEXT, includeNavigation: false } as const;
+
 const sourceDocuments = (content: PageContent): ReadonlyArray<SourceDocument> => [
-  ...Array.map(STATIC_PAGE_PATHS, (pagePath) => ({ entry: pageEntry(pagePath), twin: buildPageDocument(pagePath, content, SOURCE_CONTEXT) })),
+  ...Array.map(STATIC_PAGE_PATHS, (pagePath) => ({ entry: pageEntry(pagePath), twin: buildPageDocument(pagePath, content, COMPANION_CONTEXT) })),
   ...Array.map(content.experienceList, (experience) => {
     const seo = experienceSeo({ experience, preferredLanguage: DEFAULT_LANGUAGE });
-    return { entry: experienceEntry(seo), twin: buildExperienceMd({ seo, translate: SOURCE_CONTEXT.translate }) };
+    return { entry: experienceEntry(seo), twin: buildExperienceMd({ seo, translate: COMPANION_CONTEXT.translate, includeNavigation: false }) };
   }),
 ];
 
@@ -147,7 +153,7 @@ export const buildLlmsTxt = (experienceList: ExperienceList) => {
     experienceSection("Work Experience", employment),
     experienceSection("Portfolio Projects", projects),
     PROFILES_SECTION,
-    DISCOVERY_SECTION,
+    discoverySection(LLMS_TXT_INDEX.url),
     OPTIONAL_SECTION,
   ]);
 };
@@ -158,10 +164,10 @@ export const buildLlmsFullTxt = (content: PageContent) => {
 
   return mdDocument([
     ...SITE_OPENING,
-    `Complete Markdown content of every page, concatenated for single-request ingestion. Each section begins with Source and Markdown links and its identity facts as YAML, then includes the twin content with headings demoted to preserve one document hierarchy. Cite the canonical HTML URL, not this file.`,
+    `Complete Markdown content of every page, concatenated for single-request ingestion. Each section begins with Source and Markdown links and its identity facts as YAML, then includes the twin content with headings demoted to preserve one document hierarchy and without its repeated navigation section. Cite the canonical HTML URL, not this file.`,
     ABOUT_SECTION,
     mdTitledSection("Table of Contents", mdBulletList(Array.map(documents, ({ entry }) => mdIndexEntry(entry.name, entry.canonical, entryTwinUrl(entry))))),
-    DISCOVERY_SECTION,
+    discoverySection(LLMS_FULL_TXT_INDEX.url),
     ...Array.map(documents, ({ entry, twin }) =>
       mdBody([
         mdHeading(2, entry.name),

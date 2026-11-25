@@ -3,24 +3,23 @@ import { Array, Option } from "effect";
 import { msg } from "gt-i18n";
 import { isEmployment } from "@/features/experience/domain/helpers";
 import { validatedHref } from "@/features/meta/domain/urls";
-import { detailPagesSection } from "./twin-nav";
+import { canonicalSourceLink, detailPagesSection } from "./twin-nav";
 import { mdBody, mdBulletList, mdFact, mdHeading, mdLink, mdQuote, mdTitledSection } from "./format";
 import { escapeMd, escapeMdInline } from "./escape";
 import { twinIdentity } from "./identity";
 
 // types
-import type { Translate } from "@/domain/models";
 import type { ExperienceSeo } from "@/features/meta/domain/models";
+import type { TwinContext } from "./models";
 
-interface ExperienceMdInput {
+interface ExperienceMdInput extends Pick<TwinContext, "translate" | "includeNavigation"> {
   readonly seo: ExperienceSeo;
-  readonly translate: Translate;
 }
 
 const optionalLink = (label: string, href: string | undefined) => Option.map(validatedHref(href), (url) => mdLink(label, url));
 
 // Builds the Markdown twin for an experience detail page
-export const buildExperienceMd = ({ seo, translate }: ExperienceMdInput) => {
+export const buildExperienceMd = ({ seo, translate, includeNavigation = true }: ExperienceMdInput) => {
   const { experience, preferredLanguage, canonical, headline, description } = seo;
   const { role, company, txt, skillsUsed, year } = experience;
 
@@ -42,6 +41,7 @@ export const buildExperienceMd = ({ seo, translate }: ExperienceMdInput) => {
     body: mdBody([
       mdHeading(1, headline),
       mdQuote(description),
+      ...(includeNavigation ? [canonicalSourceLink(canonical)] : []),
       mdTitledSection(translate(msg("Overview")), escapeMd(txt)),
       mdTitledSection(
         translate(msg("Details")),
@@ -53,7 +53,7 @@ export const buildExperienceMd = ({ seo, translate }: ExperienceMdInput) => {
         onEmpty: () => [],
         onNonEmpty: (entries) => [mdTitledSection(translate(msg("Links")), mdBulletList(entries))],
       }),
-      detailPagesSection(preferredLanguage, translate),
+      ...(includeNavigation ? [detailPagesSection(preferredLanguage, translate)] : []),
     ]),
   };
 };

@@ -11,4 +11,6 @@ export interface MarkdownTwin {
 export interface TwinContext {
   readonly preferredLanguage: PreferredLanguage;
   readonly translate: Translate;
+  // Aggregated documents own discovery links, so embedded twins omit their repeated navigation
+  readonly includeNavigation?: boolean;
 }

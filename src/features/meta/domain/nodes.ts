@@ -14,6 +14,7 @@ interface ArticleNodeInput {
   readonly headline: string;
   readonly description: string;
   readonly preferredLanguage: PreferredLanguage;
+  readonly keywords: ReadonlyArray<string>;
   readonly about: string;
   readonly mainEntityOfPage: string;
   readonly image?: JsonLdNode;
@@ -50,17 +51,19 @@ interface ExperienceItemNodeInput {
   readonly keywords: ReadonlyArray<string>;
   readonly image?: JsonLdNode;
   readonly repository?: string;
+  readonly relatedLinks?: ReadonlyArray<string>;
 }
 
 // constants
 import { HOME_URL, PERSON_ID, PUBLISHER_ID, WEBSITE_ID } from "./site";
 
-export const articleNode = ({ id, headline, description, preferredLanguage, about, mainEntityOfPage, image }: ArticleNodeInput): JsonLdNode => ({
+export const articleNode = ({ id, headline, description, preferredLanguage, keywords, about, mainEntityOfPage, image }: ArticleNodeInput): JsonLdNode => ({
   "@type": "Article",
   "@id": id,
   headline,
   description,
   inLanguage: preferredLanguage,
+  keywords: Array.join(keywords, ", "),
   url: mainEntityOfPage,
   author: { "@id": PERSON_ID },
   publisher: { "@id": PUBLISHER_ID },
@@ -115,7 +118,7 @@ export const breadcrumb = (preferredLanguage: PreferredLanguage, url: string, na
     ],
   }) as const;
 
-// Builds an OrganizationRole for employment or SoftwareSourceCode/CreativeWork for projects.
+// Builds an EmployeeRole for employment or SoftwareSourceCode/CreativeWork for projects
 export const experienceItemNode = ({
   employment,
   id,
@@ -126,11 +129,12 @@ export const experienceItemNode = ({
   keywords,
   image,
   repository,
+  relatedLinks,
 }: ExperienceItemNodeInput): JsonLdNode =>
   employment
     ? {
-        // Role has no url property; mainEntityOfPage connects it to the canonical WebPage
-        "@type": "OrganizationRole",
+        // EmployeeRole describes employment without implying that a historical role is current
+        "@type": "EmployeeRole",
         "@id": id,
         roleName: role,
         description,
@@ -151,9 +155,10 @@ export const experienceItemNode = ({
         // The same join the Markdown twin's `skills` fact publishes, so the two spellings cannot drift
         keywords: Array.join(keywords, ", "),
         ...(repository === undefined ? {} : { codeRepository: repository }),
+        ...(relatedLinks !== undefined && relatedLinks.length > 0 ? { relatedLink: relatedLinks } : {}),
       };
 
-// Extends the site Person entity with an additional edge during graph merging.
+// Extends the site Person entity with an additional edge during graph merging
 export const personEdge = (fields: JsonLdObject): JsonLdNode => ({
   "@type": "Person",
   "@id": PERSON_ID,
