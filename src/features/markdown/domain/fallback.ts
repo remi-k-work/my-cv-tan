@@ -3,7 +3,7 @@ import { Option } from "effect";
 import { msg } from "gt-i18n";
 import { experiencePath } from "@/features/meta/domain/urls";
 import { deadEndEscapeLine } from "./twin-nav";
-import { twinBaseFacts } from "./identity";
+import { twinBaseFacts } from "./models";
 import { mdBody, mdDocument, mdHeading } from "./format";
 import { escapeMd, escapeMdInline } from "./escape";
 

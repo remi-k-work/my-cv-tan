@@ -6,7 +6,7 @@ import { HOME_PATH } from "@/domain/constants";
 import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/discovery";
 import { sampleExperience, stablePageTitles } from "@/features/markdown/__tests__/fixtures";
 import { Markdown } from "../markdown";
-import { makeTranslation, Translation } from "../translation";
+import { Translation } from "../translation";
 
 const failed = (dataset: string) => Effect.fail(new RequiredDataError({ dataset, message: `test outage: ${dataset}` }));
 
@@ -37,10 +37,7 @@ it.effect("Markdown.layer composes its translation and dataset dependencies", ()
 );
 
 it.effect("Markdown.layer accepts an injected translation snapshot loader", () => {
-  const translation = Layer.succeed(
-    Translation,
-    makeTranslation(() => Effect.succeed(() => "Injected section"))
-  );
+  const translation = Translation.layerFrom(() => Effect.succeed(() => "Injected section"));
 
   return Effect.gen(function* () {
     const markdown = yield* Markdown;

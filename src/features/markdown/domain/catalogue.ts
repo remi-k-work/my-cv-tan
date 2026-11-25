@@ -1,10 +1,16 @@
 // services, features, and other libraries
-import { Array } from "effect";
-import { absoluteUrl } from "@/features/meta/domain/urls";
+import { Array, Match } from "effect";
+import { excerpt } from "@/features/experience/domain/helpers";
+import { experienceSeo } from "@/features/meta/domain/seo";
+import { absoluteUrl, markdownTwinUrl } from "@/features/meta/domain/urls";
+import { escapeMdInline } from "./escape";
+import { mdBulletList, mdEmptyMarker, mdIndexEntry, mdLink } from "./format";
 
 // types
 import type { PagePath } from "@/domain/models";
+import type { Experience, ExperienceList } from "@/features/experience/domain/models";
 import type { ExperienceSeo } from "@/features/meta/domain/models";
+import type { TwinContext } from "./models";
 
 // The metadata every indexed document carries; URLs are computed with an explicit language at use
 export interface IndexEntry {
@@ -14,8 +20,15 @@ export interface IndexEntry {
   readonly summary?: string;
 }
 
+interface ExperienceLinesInput extends TwinContext {
+  readonly experiences: ExperienceList;
+  readonly mode: "twin" | "index";
+}
+
 // constants
 import { STATIC_PAGES, STATIC_PAGE_PATHS } from "@/features/meta/domain/pages";
+
+const LIST_EXCERPT_LENGTH = 140;
 
 export const pageEntry = (pagePath: PagePath): IndexEntry => {
   const { label, mdHref, indexSummary } = STATIC_PAGES[pagePath];
@@ -30,3 +43,22 @@ export const experienceEntry = (seo: ExperienceSeo): IndexEntry => ({
   canonical: seo.canonical,
   mdHref: seo.markdownPath,
 });
+
+const experienceLine = (experience: Experience, preferredLanguage: TwinContext["preferredLanguage"], mode: ExperienceLinesInput["mode"]) => {
+  const seo = experienceSeo({ experience, preferredLanguage });
+  const summary = `${excerpt(experience.txt, LIST_EXCERPT_LENGTH)} (${experience.year})`;
+  const twin = markdownTwinUrl(seo.markdownPath, preferredLanguage);
+
+  return Match.value(mode).pipe(
+    Match.when("twin", () => `${mdLink(seo.headline, twin)}: ${escapeMdInline(summary)}`),
+    Match.when("index", () => mdIndexEntry(seo.headline, seo.canonical, twin, summary)),
+    Match.exhaustive
+  );
+};
+
+// One projection shared by the index and home twin; only the index adds the canonical citation link
+export const experienceLines = ({ experiences, mode, translate, preferredLanguage }: ExperienceLinesInput) =>
+  Array.match(experiences, {
+    onEmpty: () => mdEmptyMarker(translate),
+    onNonEmpty: (entries) => mdBulletList(Array.map(entries, (experience) => experienceLine(experience, preferredLanguage, mode))),
+  });

@@ -31,24 +31,23 @@ export const headLanguage = (matches: MatchChain): PreferredLanguage =>
   );
 
 export const isNotFoundMatch = (match: MatchChain[number]): boolean => match.status === "notFound" || match._notFound === true;
+const isPendingOrErrorMatch = (match: MatchChain[number]): boolean => match.status === "pending" || match.status === "error";
 
-// A not-found route contributes no head of its own: the root boundary owns the failure copy, so a
-// stale loader payload can never publish the previous page's canonical or graph over the failure
 // A fresh empty head per call keeps callers from sharing (and mutating) one module-level object
 const emptyHead = (): PageHead => ({ meta: [], links: [], scripts: [] });
 
 // Builds route head metadata, suppressing stale data on errors and delegating 404s to root
 export const routeHead = <TData>({ loaderData, matches, matchStatus, fallbackPath, build }: RouteHeadSpec<TData>): PageHead => {
+  // Root boundary owns 404 metadata so stale leaf data cannot overwrite a not-found state
   if (matchStatus === "notFound" || Array.some(matches, isNotFoundMatch)) return emptyHead();
 
   const preferredLanguage = headLanguage(matches);
 
   // No metadata built from a stale leaf may outlive an unresolved or failed match in its chain
-  if (matchStatus !== "success" || Array.some(matches, ({ status }) => status === "pending" || status === "error")) {
+  if (matchStatus !== "success" || Array.some(matches, isPendingOrErrorMatch)) {
     return unavailableHead(fallbackPath, preferredLanguage);
   }
 
-  // TanStack represents a missing payload with either null or undefined
   return pipe(
     Option.fromNullishOr(loaderData),
     Option.map((data) => build(data, preferredLanguage)),

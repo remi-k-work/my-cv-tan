@@ -1,11 +1,10 @@
 import { assert, it } from "@effect/vitest";
 import { AI_NOTES, buildLlmsFullTxt, buildLlmsTxt, DISCOVERY_LINES, SITE_OPENING, unavailableIndexBody } from "../indexes";
 import { escapeMd } from "../escape";
-import { buildExperienceMd } from "../detail-twin";
 import { unavailableMarkdownBody } from "../fallback";
-import { buildHomeMd } from "../twins";
+import { buildExperienceMd, buildHomeMd } from "../twins";
 import { twinDocument } from "../format";
-import { SOURCE_CONTEXT } from "../context";
+import { SOURCE_CONTEXT } from "../models";
 import { LANG_PARAM, PERSON_DESCRIPTION } from "@/features/meta/domain/site";
 import { DISCOVERY_DOCUMENTS } from "@/features/meta/domain/discovery";
 import { experienceSeo } from "@/features/meta/domain/seo";

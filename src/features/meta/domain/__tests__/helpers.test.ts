@@ -179,6 +179,12 @@ it("site graph URLs match the homepage canonical byte for byte and close the Per
   // Reciprocal of the page-graph publisher edges: the organization claims its person by @id
   assert.deepStrictEqual(nodeOf(siteGraph, "Organization")?.member, { "@id": "https://www.remiforge.dev/#person" });
   assert.deepStrictEqual(nodeOf(siteGraph, "WebSite")?.author, { "@id": "https://www.remiforge.dev/#person" });
+  assert.deepStrictEqual(nodeOf(siteGraph, "WebSite")?.mainEntity, { "@id": "https://www.remiforge.dev/#person" });
+  assert.deepStrictEqual(nodeOf(siteGraph, "Person")?.homeLocation, {
+    "@type": "Place",
+    name: "Rzeszów, Poland",
+    address: { "@type": "PostalAddress", addressLocality: "Rzeszów", addressCountry: "PL" },
+  });
   // @ids stay host-rooted fragments, so the site entities merge one-to-one with the page graphs
   assert.strictEqual(nodeOf(siteGraph, "WebSite")?.["@id"], "https://www.remiforge.dev/#website");
 });

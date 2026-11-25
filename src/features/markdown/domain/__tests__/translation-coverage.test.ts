@@ -8,9 +8,8 @@ import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
 import { loadTranslations } from "@/lib/gt-translations";
 import { experienceSeo } from "@/features/meta/domain/seo";
-import { buildExperienceMd } from "../detail-twin";
 import { buildNotFoundMd, unavailableMarkdownBody } from "../fallback";
-import { buildContactMd, buildEducationMd, buildHomeMd } from "../twins";
+import { buildContactMd, buildEducationMd, buildExperienceMd, buildHomeMd } from "../twins";
 import { sampleExperience, stablePageTitles } from "@/features/markdown/__tests__/fixtures";
 
 // types

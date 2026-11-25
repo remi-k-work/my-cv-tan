@@ -1,6 +1,5 @@
 // services, features, and other libraries
-import { Effect } from "effect";
-import { documentRoute } from "@/lib/server-route";
+import { Context, Effect, Layer } from "effect";
 import { recoverDataFailure } from "@/features/data/domain/required";
 import { Datasets } from "@/features/data/services/datasets";
 import { buildSitemapXml } from "@/features/meta/domain/sitemap";
@@ -9,16 +8,19 @@ import { sitemapResponse, sitemapUnavailableResponse } from "./responses";
 // constants
 import { DEFAULT_LANGUAGE } from "@/domain/constants";
 
-// Localized experience assets already guarantee the same unique slugs in every available language
-// One source-language read therefore describes every canonical route without a redundant dataset
-// dependency; buildSitemapXml still dedupes against the static paths at its own boundary
-export const sitemapDocument = Effect.gen(function* () {
-  const { experienceList } = yield* Datasets;
-  const experiences = yield* experienceList(DEFAULT_LANGUAGE);
-  return sitemapResponse(buildSitemapXml(experiences));
-}).pipe(
-  recoverDataFailure(() => "[SITEMAP.XML]", sitemapUnavailableResponse),
-  Effect.withSpan("sitemapDocument")
-);
+// Encapsulates sitemap XML generation against the Datasets service for testability and runtime composition
+export class Sitemap extends Context.Service<Sitemap>()("my-cv-v4-tan/features/meta/services/Sitemap", {
+  make: Effect.gen(function* () {
+    const { experienceList } = yield* Datasets;
 
-export const sitemapHandler = documentRoute(() => sitemapDocument);
+    // Localized experience assets guarantee identical unique slugs across languages, so one default-language read suffices
+    const document = Effect.map(experienceList(DEFAULT_LANGUAGE), (experiences) => sitemapResponse(buildSitemapXml(experiences))).pipe(
+      recoverDataFailure(() => "[SITEMAP.XML]", sitemapUnavailableResponse),
+      Effect.withSpan("Sitemap.document")
+    );
+
+    return { document } as const;
+  }),
+}) {
+  static readonly layer = Layer.effect(this, this.make);
+}

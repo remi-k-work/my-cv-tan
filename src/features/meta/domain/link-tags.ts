@@ -23,10 +23,10 @@ export const joinLinkHeader = (links: ReadonlyArray<LinkTag>) => Array.join(Arra
 export const canonicalLink = (href: string): LinkTag => ({ rel: "canonical", href });
 export const authorLink = (href: string): LinkTag => ({ rel: "author", href });
 
-const markdownLink = (href: string, hrefLang?: string): LinkTag => ({
+const markdownLink = (href: string, hrefLang: string): LinkTag => ({
   rel: "alternate",
   type: "text/markdown",
-  ...(hrefLang !== undefined ? { hrefLang } : {}),
+  hrefLang,
   href,
 });
 

@@ -1,8 +1,9 @@
 // services, features, and other libraries
-import { Array, Option, pipe } from "effect";
-import { excerpt, experienceHeadline, isEmployment, partitionExperiences } from "@/features/experience/domain/helpers";
+import { Array, Match, Option, pipe } from "effect";
+import { excerpt, isEmployment, partitionExperiences } from "@/features/experience/domain/helpers";
 import { matchPreferredLanguage } from "@/domain/helpers";
-import { absoluteUrl, experiencePath, validatedHref } from "./urls";
+import { experienceSeo } from "./seo";
+import { absoluteUrl, validatedHref } from "./urls";
 import { articleNode, breadcrumb, collectionNode, experienceItemNode, imageObject, personEdge, webPageNode } from "./nodes";
 
 // types
@@ -78,8 +79,9 @@ const experienceCollection = ({
           name,
           preferredLanguage,
           parts: Array.map(entries, (experience) => {
-            const url = absoluteUrl(experiencePath(experience.slug));
-            return { "@type": "WebPage", "@id": url, url, name: experienceHeadline(experience, preferredLanguage) };
+            // Derive URL and headline through experienceSeo so collection items never drift from detail heads
+            const { canonical, headline } = experienceSeo({ experience, preferredLanguage });
+            return { "@type": "WebPage", "@id": canonical, url: canonical, name: headline };
           }),
         })
       ),
@@ -173,8 +175,6 @@ export const experienceJsonLd = ({ experience, preferredLanguage, path, headline
   const itemId = `${url}#${employment ? "organization-role" : "project"}`;
   const articleId = `${url}#article`;
 
-  // Both optional projections stay Options until the node inputs collapse them, and read as one
-  // pipe rather than a nested pair of calls
   const image = pipe(
     screenshot,
     Option.map(({ src, width, height }) => imageObject(src, width, height)),
@@ -184,13 +184,15 @@ export const experienceJsonLd = ({ experience, preferredLanguage, path, headline
   const relatedLinks = pipe([liveLink, videoLink], Array.map(validatedHref), Array.getSomes, Array.dedupe);
   const item = experienceItemNode({ employment, id: itemId, url, role, description, preferredLanguage, keywords: skillsUsed, image, repository, relatedLinks });
 
-  const itemNodes: JsonLdNodes = employment
-    ? [
-        // The employer-to-role-to-person path also represents historical employment honestly
-        { "@type": "Organization", "@id": `${url}#organization`, name: company, member: { "@id": itemId } },
-        item,
-      ]
-    : [item];
+  const itemNodes: JsonLdNodes = Match.value(employment).pipe(
+    Match.when(true, () => [
+      // The employer-to-role-to-person path also represents historical employment honestly
+      { "@type": "Organization", "@id": `${url}#organization`, name: company, member: { "@id": itemId } },
+      item,
+    ]),
+    Match.when(false, () => [item]),
+    Match.exhaustive
+  );
 
   const article = articleNode({
     id: articleId,

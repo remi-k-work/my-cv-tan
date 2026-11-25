@@ -18,16 +18,14 @@ import {
   mdTitledSection,
 } from "./format";
 import { escapeMd } from "./escape";
-import { experienceEntry, pageEntry } from "./catalogue";
-import { buildExperienceMd } from "./detail-twin";
-import { experienceLines } from "./listings";
-import { buildPageDocument } from "./page-documents";
+import { experienceEntry, experienceLines, pageEntry, PAGE_ENTRIES } from "./catalogue";
+import { SOURCE_CONTEXT } from "./models";
+import { buildExperienceMd, buildPageDocument } from "./twins";
 
 // types
 import type { ExperienceList } from "@/features/experience/domain/models";
 import type { IndexEntry } from "./catalogue";
-import type { MarkdownTwin } from "./models";
-import type { PageContent } from "./page-documents";
+import type { MarkdownTwin, PageContent } from "./models";
 
 interface SourceDocument {
   readonly entry: IndexEntry;
@@ -50,8 +48,6 @@ import {
 } from "@/features/meta/domain/site";
 import { DEFAULT_LANGUAGE, HOME_PATH, SITE_LANGUAGE_NAMES, SITE_LANGUAGES } from "@/domain/constants";
 import { STATIC_PAGES, STATIC_PAGE_PATHS } from "@/features/meta/domain/pages";
-import { PAGE_ENTRIES } from "./catalogue";
-import { SOURCE_CONTEXT } from "./context";
 
 const PINNABLE_LANGUAGES = Array.filter(SITE_LANGUAGES, (language) => language !== DEFAULT_LANGUAGE);
 const LANGUAGE_PINS = Array.map(
@@ -136,7 +132,7 @@ const sourceDocuments = (content: PageContent): ReadonlyArray<SourceDocument> =>
   ...Array.map(STATIC_PAGE_PATHS, (pagePath) => ({ entry: pageEntry(pagePath), twin: buildPageDocument(pagePath, content, COMPANION_CONTEXT) })),
   ...Array.map(content.experienceList, (experience) => {
     const seo = experienceSeo({ experience, preferredLanguage: DEFAULT_LANGUAGE });
-    return { entry: experienceEntry(seo), twin: buildExperienceMd({ seo, translate: COMPANION_CONTEXT.translate, includeNavigation: false }) };
+    return { entry: experienceEntry(seo), twin: buildExperienceMd({ seo, ...COMPANION_CONTEXT }) };
   }),
 ];
 

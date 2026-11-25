@@ -1,6 +1,6 @@
 // services, features, and other libraries
-import { Array, HashSet, Option, String, pipe } from "effect";
-import { documentHeaders } from "@/features/meta/services/responses";
+import { Array, HashSet, Match, Option, String, pipe } from "effect";
+import { documentHeaders, locationHeader } from "@/features/meta/services/responses";
 import { markdownTwinUrl } from "@/features/meta/domain/urls";
 import { canonicalLink, joinLinkHeader, languageVariantLinks } from "@/features/meta/domain/link-tags";
 
@@ -46,9 +46,7 @@ const withHeaders = (response: Response, update: (headers: Headers) => void) => 
 // Drops language negotiation Vary tokens when the URL contains an explicit ?lang= pin
 export const pinCacheVariant = (response: Response) =>
   withHeaders(response, (headers) => {
-    const vary = withoutNegotiationVary(headers.get("vary"));
-
-    Option.match(vary, {
+    Option.match(withoutNegotiationVary(headers.get("vary")), {
       // Nothing worth negotiating on: the pinned URL already names its language, so drop Vary entirely
       onNone: () => headers.delete("vary"),
       onSome: (value) => headers.set("vary", value),
@@ -86,13 +84,20 @@ export const mdResponse = (input: {
   });
 };
 
+const failureStatusHeaders = (status: 404 | 503) =>
+  Match.value(status).pipe(
+    Match.when(503, () => SERVICE_UNAVAILABLE_HEADERS),
+    Match.when(404, () => UNAVAILABLE_HEADERS),
+    Match.exhaustive
+  );
+
 const mdFailureResponse = (body: string, preferredLanguage: PreferredLanguage, status: 404 | 503, contentLocation?: string) =>
   new Response(body, {
     status,
     headers: {
       ...markdownHeaders(preferredLanguage, AI_DISCOVERY_LINK_HEADER),
-      ...(status === 503 ? SERVICE_UNAVAILABLE_HEADERS : UNAVAILABLE_HEADERS),
-      ...(contentLocation === undefined ? {} : { "Content-Location": contentLocation }),
+      ...failureStatusHeaders(status),
+      ...locationHeader(contentLocation),
     },
   });
 

@@ -2,14 +2,13 @@
 import { Effect } from "effect";
 import { Datasets } from "@/features/data/services/datasets";
 import { pageEntry } from "@/features/markdown/domain/catalogue";
-import { buildPageDocument } from "@/features/markdown/domain/page-documents";
+import { buildPageDocument } from "@/features/markdown/domain/twins";
 
 // types
 import type { PagePath, PreferredLanguage } from "@/domain/models";
 import type { RequiredDataError } from "@/features/data/domain/required";
 import type { IndexEntry } from "@/features/markdown/domain/catalogue";
-import type { PageDocumentContent } from "@/features/markdown/domain/page-documents";
-import type { MarkdownTwin, TwinContext } from "@/features/markdown/domain/models";
+import type { MarkdownTwin, PageDocumentContent, TwinContext } from "@/features/markdown/domain/models";
 
 export interface PageTwin {
   readonly entry: IndexEntry;

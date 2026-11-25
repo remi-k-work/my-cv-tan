@@ -1,7 +1,7 @@
 // Shared HTTP policy and response envelopes for HTML and machine-readable documents.
 
 // services, features, and other libraries
-import { Array } from "effect";
+import { Array, Predicate, Record } from "effect";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
@@ -36,9 +36,8 @@ export const documentHeaders = (preferredLanguage: PreferredLanguage) =>
     Vary: Array.join(NEGOTIATION_VARY_TOKENS, ", "),
   }) as const;
 
-// HTTP response envelope helpers for plain-text and XML discovery endpoints
-const locationHeader = (contentLocation?: string): Readonly<Record<string, string>> =>
-  contentLocation === undefined ? {} : { "Content-Location": contentLocation };
+export const locationHeader = (contentLocation?: string): Readonly<Record<string, string>> =>
+  Record.filter({ "Content-Location": contentLocation }, Predicate.isNotUndefined);
 
 const instructionsHeaders = (contentLocation?: string) => ({
   ...TXT_HEADERS,

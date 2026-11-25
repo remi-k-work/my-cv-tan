@@ -1,39 +1,45 @@
 // services, features, and other libraries
-import { Array } from "effect";
+import { Array, Option } from "effect";
 import { msg } from "gt-i18n";
-import { partitionExperiences } from "@/features/experience/domain/helpers";
+import { isEmployment, partitionExperiences } from "@/features/experience/domain/helpers";
 import { staticPageCopy } from "@/features/meta/domain/pages";
-import { canonicalSourceLink, pagesSection } from "./twin-nav";
-import { mdBody, mdBulletList, mdDocumentLinks, mdEmptyMarker, mdFact, mdHeading, mdLink, mdProfileLinks, mdQuote, mdTitledSection } from "./format";
+import { validatedHref } from "@/features/meta/domain/urls";
+import { experienceLines } from "./catalogue";
 import { escapeMd, escapeMdInline } from "./escape";
-import { pageFacts } from "./identity";
-import { experienceLines } from "./listings";
+import { mdBody, mdBulletList, mdDocumentLinks, mdEmptyMarker, mdFact, mdHeading, mdLink, mdProfileLinks, mdQuote, mdTitledSection } from "./format";
+import { pageFacts, twinIdentity } from "./models";
+import { canonicalSourceLink, detailPagesSection, pagesSection } from "./twin-nav";
 
 // types
-import type { StaticPageCopy } from "@/features/meta/domain/models";
 import type { PagePath, PageTitles, Translate } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
-import type { TwinContext } from "./models";
+import type { ExperienceSeo, StaticPageCopy } from "@/features/meta/domain/models";
+import type { MarkdownTwin, PageDocumentContent, TwinContext } from "./models";
 
-// What each twin builder reads, named so the tests and any other caller can spell the input
-// without recomputing it from the builder's own signature
 export type HomeMdInput = TwinContext & { readonly pageTitles: PageTitles; readonly experienceList: ExperienceList };
 export type EducationMdInput = TwinContext & { readonly pageTitles: PageTitles; readonly educationList: EducationList };
 export type ContactMdInput = TwinContext & { readonly pageTitles: PageTitles };
+
+interface ExperienceMdInput extends Pick<TwinContext, "translate" | "includeNavigation"> {
+  readonly seo: ExperienceSeo;
+}
+
+type PageDocumentBuilder<P extends PagePath> = (content: PageDocumentContent[P], context: TwinContext) => MarkdownTwin;
 
 // constants
 import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/domain/constants";
 import { DOWNLOADABLE_DOCUMENTS } from "@/features/meta/domain/discovery";
 import { HOME_LOCATION, SOCIAL_PROFILES } from "@/features/meta/domain/site";
 
+// Standalone twins carry their canonical citation and sibling nav; embedded companion twins omit them
+const navBlock = (includeNavigation: boolean | undefined, render: () => string) => (includeNavigation === false ? "" : render());
+
 const profileLinks = (translate: Translate) => [...mdProfileLinks(SOCIAL_PROFILES), mdFact(translate(msg("Base")), translate(HOME_LOCATION))];
 
 const schoolSections = (educationList: EducationList, translate: Translate) =>
   mdTitledSection(
     translate(msg("Education")),
-    // The two arms are the whole decision, so matching on emptiness names it instead of leaving a
-    // length read for the reader to interpret
     Array.match(educationList, {
       onEmpty: () => mdEmptyMarker(translate),
       onNonEmpty: (entries) =>
@@ -57,7 +63,7 @@ const staticTwinDocument = (
   input: TwinContext & { readonly pageTitles: PageTitles },
   pagePath: PagePath,
   sections: (copy: StaticPageCopy) => ReadonlyArray<string>
-) => {
+): MarkdownTwin => {
   const copy = staticPageCopy(input.pageTitles, pagePath, input.preferredLanguage);
 
   return {
@@ -65,15 +71,15 @@ const staticTwinDocument = (
     body: mdBody([
       mdHeading(1, copy.pageName),
       mdQuote(copy.description),
-      ...(input.includeNavigation === false ? [] : [canonicalSourceLink(copy.canonical)]),
+      navBlock(input.includeNavigation, () => canonicalSourceLink(copy.canonical)),
       escapeMd(copy.intro),
       ...sections(copy),
-      ...(input.includeNavigation === false ? [] : [pagesSection(copy.path, copy.preferredLanguage, input.translate)]),
+      navBlock(input.includeNavigation, () => pagesSection(copy.path, copy.preferredLanguage, input.translate)),
     ]),
   };
 };
 
-export const buildHomeMd = (input: HomeMdInput) => {
+export const buildHomeMd = (input: HomeMdInput): MarkdownTwin => {
   const { translate, experienceList, preferredLanguage } = input;
   const [employment, projects] = partitionExperiences(experienceList);
 
@@ -83,12 +89,63 @@ export const buildHomeMd = (input: HomeMdInput) => {
   ]);
 };
 
-export const buildEducationMd = (input: EducationMdInput) => {
+export const buildEducationMd = (input: EducationMdInput): MarkdownTwin => {
   const { translate, educationList } = input;
   return staticTwinDocument(input, EDUCATION_PATH, () => [schoolSections(educationList, translate), documentsSection(translate)]);
 };
 
-export const buildContactMd = (input: ContactMdInput) => {
+export const buildContactMd = (input: ContactMdInput): MarkdownTwin => {
   const { translate } = input;
   return staticTwinDocument(input, CONTACT_PATH, (copy) => [contactChannels(copy.canonical, translate)]);
 };
+
+const optionalLink = (label: string, href: string | undefined) => Option.map(validatedHref(href), (url) => mdLink(label, url));
+
+// Builds the Markdown twin for an experience detail page
+export const buildExperienceMd = ({ seo, translate, includeNavigation = true }: ExperienceMdInput): MarkdownTwin => {
+  const { experience, preferredLanguage, canonical, headline, description } = seo;
+  const { role, company, txt, skillsUsed, year } = experience;
+
+  const links = Array.getSomes([
+    optionalLink(translate(msg("GitHub Repo")), experience.gitHubLink),
+    optionalLink(translate(msg("Live Link")), experience.liveLink),
+    optionalLink(translate(msg("Watch Video")), experience.videoLink),
+  ]);
+
+  return {
+    facts: {
+      ...twinIdentity(headline, description, canonical, preferredLanguage),
+      type: isEmployment(experience) ? "work-experience" : "project",
+      role,
+      company,
+      year,
+      skills: Array.join(skillsUsed, ", "),
+    },
+    body: mdBody([
+      mdHeading(1, headline),
+      mdQuote(description),
+      navBlock(includeNavigation, () => canonicalSourceLink(canonical)),
+      mdTitledSection(translate(msg("Overview")), escapeMd(txt)),
+      mdTitledSection(
+        translate(msg("Details")),
+        mdBulletList([mdFact(translate(msg("Role")), role), mdFact(translate(msg("Company")), company), mdFact(translate(msg("Year")), year)])
+      ),
+      mdTitledSection(translate(msg("Skills Used")), mdBulletList(Array.map(skillsUsed, escapeMdInline))),
+      // An experience with no publishable link gets no Links section at all, rather than an empty one
+      ...Array.match(links, {
+        onEmpty: () => [],
+        onNonEmpty: (entries) => [mdTitledSection(translate(msg("Links")), mdBulletList(entries))],
+      }),
+      navBlock(includeNavigation, () => detailPagesSection(preferredLanguage, translate)),
+    ]),
+  };
+};
+
+const PAGE_DOCUMENT_BUILDERS: { readonly [P in PagePath]: PageDocumentBuilder<P> } = {
+  [HOME_PATH]: (content, context) => buildHomeMd({ ...content, ...context }),
+  [EDUCATION_PATH]: (content, context) => buildEducationMd({ ...content, ...context }),
+  [CONTACT_PATH]: (content, context) => buildContactMd({ ...content, ...context }),
+};
+
+export const buildPageDocument = <P extends PagePath>(pagePath: P, content: PageDocumentContent[P], context: TwinContext): MarkdownTwin =>
+  PAGE_DOCUMENT_BUILDERS[pagePath](content, context);

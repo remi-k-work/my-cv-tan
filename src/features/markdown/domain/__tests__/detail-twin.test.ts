@@ -1,6 +1,6 @@
 import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
-import { buildExperienceMd } from "../detail-twin";
+import { buildExperienceMd } from "../twins";
 import { buildNotFoundMd } from "../fallback";
 import { twinDocument } from "../format";
 import { escapeMd } from "../escape";

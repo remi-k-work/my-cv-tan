@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Array } from "effect";
+import { Array, Match, Option } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
 
 // types
@@ -20,6 +20,21 @@ export const globalSocialImage = (preferredLanguage: PreferredLanguage): SocialI
 });
 
 const alternateLocales = (preferredLanguage: PreferredLanguage) => Array.filter(SITE_LANGUAGES, (language) => language !== preferredLanguage);
+
+const articleTags = (ogType: "website" | "article", articleSection: SocialMetaInput["articleSection"]): ReadonlyArray<MetaTag> =>
+  Match.value(ogType).pipe(
+    Match.when("website", () => []),
+    // Only document-like detail pages claim article authorship and a section
+    Match.when("article", () => [
+      { property: "article:author", content: AUTHOR_URL },
+      { property: "article:publisher", content: PUBLISHER_URL },
+      ...Option.match(Option.fromUndefinedOr(articleSection), {
+        onNone: () => [],
+        onSome: (section) => [{ property: "article:section", content: section }],
+      }),
+    ]),
+    Match.exhaustive
+  );
 
 export const socialMeta = ({
   title,
@@ -46,14 +61,7 @@ export const socialMeta = ({
     property: "og:locale:alternate",
     content: OPEN_GRAPH_LOCALES[language],
   })),
-  // Only document-like detail pages claim article authorship and a section
-  ...(ogType === "article"
-    ? [
-        { property: "article:author", content: AUTHOR_URL },
-        { property: "article:publisher", content: PUBLISHER_URL },
-        ...(articleSection === undefined ? [] : [{ property: "article:section", content: articleSection }]),
-      ]
-    : []),
+  ...articleTags(ogType, articleSection),
   { name: "twitter:card", content: "summary_large_image" },
   { name: "twitter:title", content: title },
   { name: "twitter:description", content: description },

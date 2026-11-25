@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Array, Number, Option, Predicate, String, flow, pipe, Record } from "effect";
+import { Array, Number, Option, Predicate, Record, String, flow, pipe } from "effect";
 import { msg } from "gt-i18n";
 import { absoluteUrl, encodeDestination, httpUrlOption } from "@/features/meta/domain/urls";
 import { escapeMdInline } from "./escape";
@@ -16,6 +16,7 @@ const DEMOTE_HEADINGS = /^(#+)(?= )/gm;
 const YAML_UNSAFE_CHARACTERS = /[\u007f-\u009f\u2028\u2029]/g;
 
 const isBlank = flow(String.trim, String.isEmpty);
+const nonBlank = Predicate.not(isBlank);
 
 // JSON quoting leaves these characters literal, so escape them for YAML double-quoted scalars
 const yamlValue = (value: string) =>
@@ -54,8 +55,22 @@ export const fencedFacts = (facts: Readonly<Record<string, string>>) => {
   return `${fence}yaml\n${fields}\n${fence}`;
 };
 
-export const mdHeading = (level: 1 | 2 | 3, text: string) => (isBlank(text) ? "" : `${"#".repeat(level)} ${escapeMdInline(text)}`);
-export const mdQuote = (text: string) => (isBlank(text) ? "" : `> ${escapeMdInline(text)}`);
+export const mdHeading = (level: 1 | 2 | 3, text: string) =>
+  pipe(
+    text,
+    Option.liftPredicate(nonBlank),
+    Option.map((value) => `${"#".repeat(level)} ${escapeMdInline(value)}`),
+    Option.getOrElse(() => "")
+  );
+
+export const mdQuote = (text: string) =>
+  pipe(
+    text,
+    Option.liftPredicate(nonBlank),
+    Option.map((value) => `> ${escapeMdInline(value)}`),
+    Option.getOrElse(() => "")
+  );
+
 export const mdBulletList = (items: ReadonlyArray<string>) =>
   pipe(
     items,
@@ -63,7 +78,7 @@ export const mdBulletList = (items: ReadonlyArray<string>) =>
     Array.join("\n")
   );
 export const mdFact = (label: string, value: string) => `${escapeMdInline(label)}: ${escapeMdInline(value)}`;
-export const mdBody = (blocks: ReadonlyArray<string>) => pipe(blocks, Array.filter(Predicate.not(isBlank)), Array.join("\n\n"));
+export const mdBody = (blocks: ReadonlyArray<string>) => pipe(blocks, Array.filter(nonBlank), Array.join("\n\n"));
 export const mdTitledSection = (title: string, body: string) => mdBody([mdHeading(2, title), body]);
 export const mdDocument = (blocks: ReadonlyArray<string>) => `${mdBody(blocks)}\n`;
 export const mdEmptyMarker = (translate: Translate) => `_${escapeMdInline(translate(msg("No entries.")))}_`;
@@ -84,7 +99,7 @@ export const translatedLink = (label: string, href: string, translate: Translate
 export const mdIndexEntry = (label: string, canonical: string, markdownUrl: string, summary?: string) => {
   const summaryPrefix = pipe(
     Option.fromUndefinedOr(summary),
-    Option.filter(Predicate.not(isBlank)),
+    Option.filter(nonBlank),
     Option.map((value) => `${escapeMdInline(value)} `),
     Option.getOrElse(() => "")
   );

@@ -2,10 +2,17 @@
 // page graphs into the site entities by `@id`.
 
 // services, features, and other libraries
-import { Array, Predicate, Record, String, pipe } from "effect";
+import { Array, HashMap, Option, Predicate, Record, String, pipe } from "effect";
 
 // types
 import type { JsonLdNode, JsonLdObject, JsonLdScript } from "./models";
+
+type NodeKey = string | number;
+
+interface MergeState {
+  readonly order: ReadonlyArray<NodeKey>;
+  readonly nodes: HashMap.HashMap<NodeKey, JsonLdNode>;
+}
 
 // Escapes '<' so serialized content cannot close the HTML script tag
 const jsonLdScript = (data: JsonLdObject): JsonLdScript => ({
@@ -13,27 +20,27 @@ const jsonLdScript = (data: JsonLdObject): JsonLdScript => ({
   children: pipe(JSON.stringify(data), String.replaceAll(/</g, "\\u003C")),
 });
 
-// Merges nodes by @id, preserving initial order and letting subsequent defined fields override
+// Merges nodes by @id, preserving first-occurrence order and letting subsequent defined fields override
 const mergeNodes = (nodes: ReadonlyArray<JsonLdNode>): ReadonlyArray<JsonLdNode> => {
-  const merged = Array.reduce(
-    nodes,
-    new Map<string | number, JsonLdNode>(),
-    // Re-setting a Map key preserves its first-insertion position, so the first occurrence of an
-    // @id owns the node's slot and later nodes merge their defined fields into it
-    (graph, node, index) => {
-      const defined = Record.filter(node, Predicate.isNotUndefined);
-      const id = defined["@id"];
+  const { order, nodes: merged } = Array.reduce(nodes, { order: [], nodes: HashMap.empty<NodeKey, JsonLdNode>() } as MergeState, (state, node, index) => {
+    const defined = Record.filter(node, Predicate.isNotUndefined);
+    const id = defined["@id"];
 
-      // Only an @id-identified node can merge into an earlier one: an anonymous node gets its own
-      // slot, keyed by its position (a key no string @id can collide with), instead of being
-      // folded into some other node's fields
-      const key = Predicate.isString(id) ? id : index;
+    // Anonymous nodes key by position so they never fold into an earlier entity's slot
+    const key: NodeKey = Predicate.isString(id) ? id : index;
+    const existing = HashMap.get(state.nodes, key);
+    const combined: JsonLdNode = Option.match(existing, {
+      onNone: () => defined,
+      onSome: (previous) => ({ ...previous, ...defined }),
+    });
 
-      return graph.set(key, { ...graph.get(key), ...defined });
-    }
-  );
+    return {
+      order: Option.isNone(existing) ? [...state.order, key] : state.order,
+      nodes: HashMap.set(state.nodes, key, combined),
+    };
+  });
 
-  return Array.fromIterable(merged.values());
+  return Array.getSomes(Array.map(order, (key) => HashMap.get(merged, key)));
 };
 
 export const jsonLdGraph = (nodes: ReadonlyArray<JsonLdNode>) => jsonLdScript({ "@context": "https://schema.org", "@graph": mergeNodes(nodes) });

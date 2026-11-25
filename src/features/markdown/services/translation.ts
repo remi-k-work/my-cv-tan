@@ -16,7 +16,7 @@ export type LoadTranslation = (language: PreferredLanguage) => Effect.Effect<Tra
 
 // constants
 import { DEFAULT_LANGUAGE } from "@/domain/constants";
-import { SOURCE_CONTEXT } from "@/features/markdown/domain/context";
+import { SOURCE_CONTEXT } from "@/features/markdown/domain/models";
 
 export const makeTranslation = (load: LoadTranslation) => ({
   // A failed snapshot falls back to the complete English context, never English copy behind Polish metadata
@@ -40,5 +40,6 @@ export class Translation extends Context.Service<
     readonly resolve: (preferredLanguage: PreferredLanguage) => Effect.Effect<ResolvedTranslation>;
   }
 >()("my-cv-v4-tan/features/markdown/services/Translation") {
-  static readonly layer = Layer.succeed(this, makeTranslation(translateForLanguage));
+  static readonly layerFrom = (load: LoadTranslation) => Layer.succeed(this, makeTranslation(load));
+  static readonly layer = this.layerFrom(translateForLanguage);
 }

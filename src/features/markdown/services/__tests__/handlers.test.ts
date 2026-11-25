@@ -7,8 +7,7 @@ import { absoluteUrl, experienceMarkdownPath, experiencePath, markdownTwinUrl } 
 import { CACHEABLE_HEADERS } from "@/features/meta/services/responses";
 import { CONTENT_SIGNAL, LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/discovery";
 import { contactHandler, educationHandler, experienceHandler, homeHandler, llmsFullTxtHandler, llmsTxtHandler } from "../handlers";
-import { sitemapHandler } from "@/features/meta/services/sitemap";
-import { robotsHandler } from "@/features/meta/services/robots";
+import { robotsHandler, sitemapHandler } from "@/features/meta/services/handlers";
 import { STATIC_PAGES, STATIC_PAGE_PATHS } from "@/features/meta/domain/pages";
 import { contactHead, educationHead, homeHead } from "@/features/meta/domain/page-head";
 import { joinLinkHeader } from "@/features/meta/domain/link-tags";

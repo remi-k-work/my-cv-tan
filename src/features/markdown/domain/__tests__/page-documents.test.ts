@@ -1,9 +1,8 @@
 import { assert, it } from "@effect/vitest";
 import { STATIC_PAGE_PATHS } from "@/features/meta/domain/pages";
 import { sampleExperience, stablePageTitles } from "@/features/markdown/__tests__/fixtures";
-import { SOURCE_CONTEXT } from "../context";
-import { buildPageDocument } from "../page-documents";
-import { buildContactMd, buildEducationMd, buildHomeMd } from "../twins";
+import { SOURCE_CONTEXT } from "../models";
+import { buildContactMd, buildEducationMd, buildHomeMd, buildPageDocument } from "../twins";
 import type { PagePath } from "@/domain/models";
 import type { MarkdownTwin } from "../models";
 

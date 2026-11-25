@@ -1,9 +1,10 @@
 import { assert, it } from "@effect/vitest";
-import { Effect } from "effect";
+import { Effect, Layer } from "effect";
 import { STATIC_PAGE_PATHS } from "../pages";
 import { CONTENT_SIGNAL, DOWNLOADABLE_DOCUMENTS } from "../discovery";
 import { experiencePath } from "../urls";
-import { sitemapDocument, sitemapHandler } from "../../services/sitemap";
+import { Sitemap } from "../../services/sitemap";
+import { sitemapHandler } from "../../services/handlers";
 import { buildSitemapXml } from "../sitemap";
 import { sitemapResponse, sitemapUnavailableResponse } from "@/features/meta/services/responses";
 import experienceEn from "@/assets/data/en/experience.json";
@@ -138,16 +139,22 @@ it("sitemap success responses carry the XML content type, noindex, and hour-long
 it.effect("the sitemap document reads the shared canonical slug set only from the default language", () =>
   Effect.gen(function* () {
     const reads: Array<string> = [];
-    const response = yield* sitemapDocument.pipe(
-      Effect.provideService(Datasets, {
-        pageTitles: () => Effect.die("sitemap must not read page titles"),
-        experienceList: (language) =>
-          Effect.sync(() => {
-            reads.push(language);
-            return [];
-          }),
-        educationList: () => Effect.die("sitemap must not read education"),
-      })
+    const response = yield* Sitemap.use((sitemap) => sitemap.document).pipe(
+      Effect.provide(
+        Sitemap.layer.pipe(
+          Layer.provide(
+            Layer.succeed(Datasets, {
+              pageTitles: () => Effect.die("sitemap must not read page titles"),
+              experienceList: (language) =>
+                Effect.sync(() => {
+                  reads.push(language);
+                  return [];
+                }),
+              educationList: () => Effect.die("sitemap must not read education"),
+            })
+          )
+        )
+      )
     );
 
     assert.strictEqual(response.status, 200);
@@ -158,12 +165,18 @@ it.effect("the sitemap document reads the shared canonical slug set only from th
 it.effect("the sitemap document recovers a dataset failure as a non-cacheable 503", () =>
   Effect.gen(function* () {
     const failed = Effect.fail(new RequiredDataError({ dataset: "experience list", message: "test outage" }));
-    const response = yield* sitemapDocument.pipe(
-      Effect.provideService(Datasets, {
-        pageTitles: () => failed,
-        experienceList: () => failed,
-        educationList: () => failed,
-      })
+    const response = yield* Sitemap.use((sitemap) => sitemap.document).pipe(
+      Effect.provide(
+        Sitemap.layer.pipe(
+          Layer.provide(
+            Layer.succeed(Datasets, {
+              pageTitles: () => failed,
+              experienceList: () => failed,
+              educationList: () => failed,
+            })
+          )
+        )
+      )
     );
 
     assert.strictEqual(response.status, 503);

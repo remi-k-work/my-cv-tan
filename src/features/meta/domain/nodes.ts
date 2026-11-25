@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Array } from "effect";
+import { Array, Match, Predicate, Record } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
 
 // types
@@ -57,20 +57,24 @@ interface ExperienceItemNodeInput {
 // constants
 import { HOME_URL, PERSON_ID, PUBLISHER_ID, WEBSITE_ID } from "./site";
 
-export const articleNode = ({ id, headline, description, preferredLanguage, keywords, about, mainEntityOfPage, image }: ArticleNodeInput): JsonLdNode => ({
-  "@type": "Article",
-  "@id": id,
-  headline,
-  description,
-  inLanguage: preferredLanguage,
-  keywords: Array.join(keywords, ", "),
-  url: mainEntityOfPage,
-  author: { "@id": PERSON_ID },
-  publisher: { "@id": PUBLISHER_ID },
-  about: { "@id": about },
-  mainEntityOfPage: { "@id": mainEntityOfPage },
-  ...(image !== undefined ? { image } : {}),
-});
+// Strip undefined properties so JSON-LD nodes never publish unset optional keys
+const definedNode = <T extends JsonLdObject>(node: T): JsonLdNode => Record.filter(node, Predicate.isNotUndefined);
+
+export const articleNode = ({ id, headline, description, preferredLanguage, keywords, about, mainEntityOfPage, image }: ArticleNodeInput): JsonLdNode =>
+  definedNode({
+    "@type": "Article",
+    "@id": id,
+    headline,
+    description,
+    inLanguage: preferredLanguage,
+    keywords: Array.join(keywords, ", "),
+    url: mainEntityOfPage,
+    author: { "@id": PERSON_ID },
+    publisher: { "@id": PUBLISHER_ID },
+    about: { "@id": about },
+    mainEntityOfPage: { "@id": mainEntityOfPage },
+    image,
+  });
 
 export const webPageNode = ({
   type,
@@ -83,28 +87,30 @@ export const webPageNode = ({
   mainEntity,
   primaryImageOfPage,
   hasPart,
-}: WebPageNodeInput): JsonLdNode => ({
-  "@type": type,
-  "@id": id,
-  url,
-  name,
-  description,
-  inLanguage: preferredLanguage,
-  isPartOf: { "@id": WEBSITE_ID },
-  ...(hasBreadcrumb ? { breadcrumb: { "@id": `${id}#breadcrumb` } } : {}),
-  ...(mainEntity !== undefined ? { mainEntity } : {}),
-  ...(primaryImageOfPage !== undefined ? { primaryImageOfPage } : {}),
-  ...(hasPart !== undefined && hasPart.length > 0 ? { hasPart } : {}),
-});
+}: WebPageNodeInput): JsonLdNode =>
+  definedNode({
+    "@type": type,
+    "@id": id,
+    url,
+    name,
+    description,
+    inLanguage: preferredLanguage,
+    isPartOf: { "@id": WEBSITE_ID },
+    breadcrumb: hasBreadcrumb ? { "@id": `${id}#breadcrumb` } : undefined,
+    mainEntity,
+    primaryImageOfPage,
+    hasPart: hasPart !== undefined && hasPart.length > 0 ? hasPart : undefined,
+  });
 
-export const collectionNode = ({ id, name, preferredLanguage, parts, url }: CollectionNodeInput): JsonLdNode => ({
-  "@type": "Collection",
-  "@id": id,
-  ...(url !== undefined ? { url } : {}),
-  name,
-  inLanguage: preferredLanguage,
-  hasPart: parts,
-});
+export const collectionNode = ({ id, name, preferredLanguage, parts, url }: CollectionNodeInput): JsonLdNode =>
+  definedNode({
+    "@type": "Collection",
+    "@id": id,
+    url,
+    name,
+    inLanguage: preferredLanguage,
+    hasPart: parts,
+  });
 
 export const imageObject = (url: string, width: number, height: number) => ({ "@type": "ImageObject", url, width, height }) as const;
 
@@ -131,22 +137,23 @@ export const experienceItemNode = ({
   repository,
   relatedLinks,
 }: ExperienceItemNodeInput): JsonLdNode =>
-  employment
-    ? {
-        // EmployeeRole describes employment without implying that a historical role is current
-        "@type": "EmployeeRole",
-        "@id": id,
-        roleName: role,
-        description,
-        member: { "@id": PERSON_ID },
-        mainEntityOfPage: { "@id": url },
-      }
-    : {
+  Match.value(employment).pipe(
+    Match.when(true, () => ({
+      // EmployeeRole describes employment without implying that a historical role is current
+      "@type": "EmployeeRole",
+      "@id": id,
+      roleName: role,
+      description,
+      member: { "@id": PERSON_ID },
+      mainEntityOfPage: { "@id": url },
+    })),
+    Match.when(false, () =>
+      definedNode({
         "@type": repository === undefined ? "CreativeWork" : "SoftwareSourceCode",
         "@id": id,
         name: role,
         description,
-        ...(image !== undefined ? { image } : {}),
+        image,
         url,
         mainEntityOfPage: { "@id": url },
         inLanguage: preferredLanguage,
@@ -154,9 +161,12 @@ export const experienceItemNode = ({
         publisher: { "@id": PUBLISHER_ID },
         // The same join the Markdown twin's `skills` fact publishes, so the two spellings cannot drift
         keywords: Array.join(keywords, ", "),
-        ...(repository === undefined ? {} : { codeRepository: repository }),
-        ...(relatedLinks !== undefined && relatedLinks.length > 0 ? { relatedLink: relatedLinks } : {}),
-      };
+        codeRepository: repository,
+        relatedLink: relatedLinks !== undefined && relatedLinks.length > 0 ? relatedLinks : undefined,
+      })
+    ),
+    Match.exhaustive
+  );
 
 // Extends the site Person entity with an additional edge during graph merging
 export const personEdge = (fields: JsonLdObject): JsonLdNode => ({
