@@ -7,6 +7,7 @@ import { buildHomeMd } from "../twins";
 import { twinDocument } from "../format";
 import { SOURCE_CONTEXT } from "../context";
 import { LANG_PARAM, PERSON_DESCRIPTION } from "@/features/meta/domain/site";
+import { DISCOVERY_DOCUMENTS } from "@/features/meta/domain/discovery";
 import { experienceSeo } from "@/features/meta/domain/seo";
 import { SITE_LANGUAGE_NAMES, SITE_LANGUAGES } from "@/domain/constants";
 import { sampleExperience, stablePageTitles, translateEn } from "@/features/markdown/__tests__/fixtures";
@@ -26,12 +27,11 @@ it("buildLlmsTxt indexes pages, about facts, grouped experience and negotiated l
   assert.include(txt, `- Role: Web Developer (self-taught)`);
   assert.include(txt, `- Based in: Rzeszów, Poland (PL)`);
   assert.include(txt, `## Work Experience`);
-  // Every entry leads with the clean canonical HTML URL the notes name as the citation target, and
-  // states the deterministic ?lang-pinned twin beside it — the same two spellings the Pages section
-  // above prints, so one document never advertises two different entry shapes.
+  // Every entry leads with the deterministic Markdown representation an agent should retrieve, and
+  // keeps the canonical HTML URL beside it as the citation target — the same entry shape everywhere.
   assert.include(
     txt,
-    `- [Full-Stack Developer at Sample Co](https://www.remiforge.dev/my%20project): Built things with \\*\\*care\\*\\* and #hashtags. (Mar 2026) [Markdown](https://www.remiforge.dev/my%20project.md?lang=en)`
+    `- [Full-Stack Developer at Sample Co](https://www.remiforge.dev/my%20project.md?lang=en): Built things with \\*\\*care\\*\\* and #hashtags. (Mar 2026) [HTML](https://www.remiforge.dev/my%20project)`
   );
   assert.notInclude(txt, `## Notes for AI systems`);
   // The single-fetch document is surfaced in Pages and in the introductory guidance.
@@ -82,16 +82,15 @@ it("buildLlmsTxt indexes pages, about facts, grouped experience and negotiated l
   for (const twin of ["index.md?lang=en", "education.md?lang=en", "contact.md?lang=en", "my%20project.md?lang=en"]) {
     assert.include(txt, twin);
   }
-  // Each page entry links the canonical HTML URL — the citation target the notes name — and states
-  // its Markdown twin beside it, so a fetcher learns both documents from a single entry. The label
-  // is the static page catalogue's own, the same name the twins' "Pages" section prints.
+  // Each page entry leads with its Markdown twin and names the canonical HTML citation target beside
+  // it, so a fetcher can retrieve clean content without first fetching and converting the HTML page.
   assert.include(
     txt,
-    `- [Home page](https://www.remiforge.dev/): portfolio overview with experience and project lists. [Markdown](https://www.remiforge.dev/index.md?lang=en)`
+    `- [Home page](https://www.remiforge.dev/index.md?lang=en): portfolio overview with experience and project lists. [HTML](https://www.remiforge.dev/)`
   );
   assert.include(
     txt,
-    `- [Education \\& Certificates](https://www.remiforge.dev/education): schools, courses and certificates. [Markdown](https://www.remiforge.dev/education.md?lang=en)`
+    `- [Education \\& Certificates](https://www.remiforge.dev/education.md?lang=en): schools, courses and certificates. [HTML](https://www.remiforge.dev/education)`
   );
   // Summaries are authored sentences: the entry adds no second full stop
   assert.notInclude(txt, ".. [Markdown]");
@@ -142,13 +141,13 @@ it("the index opening escapes its bio the way every other content string is esca
   assert.include(buildLlmsTxt([]), PERSON_DESCRIPTION);
 });
 
-it("the reuse note names the frontmatter facts every page twin actually publishes", () => {
+it("the reuse note names the frontmatter facts every published page twin actually publishes", () => {
   // The note is the one place an AI reader is told which keys to read a document's facts from.
   // A key it names that no page twin publishes guides the reader to a field that is not there, and a
   // key every page twin publishes that the note omits is never read at all — so the claim in the
   // note and the facts the builders emit are compared rather than trusted to agree. (The 404 twin
   // is deliberately outside the claim: it has no canonical URL or page type to publish.)
-  const factsNote = AI_NOTES.find((note) => note.startsWith("Every page twin states its headline facts"));
+  const factsNote = AI_NOTES.find((note) => note.startsWith("Every published page twin states its headline facts"));
   assert.isDefined(factsNote, "the reuse notes say nothing about frontmatter");
 
   const claimedKeys = factsNote!.match(/`([^`]+)`/g)!.map((key) => key.slice(1, -1));
@@ -167,32 +166,31 @@ it("the reuse note names the frontmatter facts every page twin actually publishe
   assert.deepStrictEqual([...claimedKeys].sort(), [...sharedKeys].sort());
 });
 
-it("the index and the home twin render one experience list, differing only in the URL lead", () => {
-  // The index's listing and the home twin's listing are the same projection of the same dataset:
-  // the twin links its siblings' twin routes, the index links every page's canonical HTML URL and
-  // then names the twin. They are built by one shared builder, so the two surfaces cannot group,
-  // trim or order an experience differently — only the lead URL each surface exists to advertise.
+it("the index and home twin share one experience listing, with canonical citations only in the index", () => {
+  // Both surfaces lead with the same Markdown twin and summary. The index alone adds the clean HTML
+  // citation target, keeping its retrieval and citation roles explicit without duplicating list logic.
   const experienceList = [{ ...sampleExperience, type: "e" as const, slug: "sample-job", role: "Backend Developer", company: "Sample Co" }];
   const index = buildLlmsTxt(experienceList);
   const twin = twinDocument(buildHomeMd({ ...SOURCE_CONTEXT, pageTitles: stablePageTitles, experienceList }));
   const entry = "Backend Developer at Sample Co";
-  const canonical = `[${entry}](https://www.remiforge.dev/sample-job)`;
+  const canonical = "https://www.remiforge.dev/sample-job";
   const twinRoute = "https://www.remiforge.dev/sample-job.md?lang=en";
+  const retrievalLink = `[${entry}](${twinRoute})`;
 
   // Read the index's own entry back and require the twin to carry the very same escaped summary,
   // rather than restating the excerpt by hand: one builder, one grouping, one escape pass.
   const indexEntry = index
     .split("\n")
     .map((line) => line.replace(/^-\s*/, ""))
-    .find((line) => line.startsWith(canonical));
-  assert.isDefined(indexEntry, "the index lists the employment experience under its canonical URL");
-  const summary = (indexEntry ?? "").slice(canonical.length + 2, (indexEntry ?? "").indexOf(" [Markdown]("));
+    .find((line) => line.startsWith(retrievalLink));
+  assert.isDefined(indexEntry, "the index lists the employment experience under its Markdown twin");
+  const summary = (indexEntry ?? "").slice(retrievalLink.length + 2, (indexEntry ?? "").indexOf(" [HTML]("));
   assert.isNotEmpty(summary);
-  assert.include(twin, `[${entry}](${twinRoute}): ${summary}`);
+  assert.include(twin, `${retrievalLink}: ${summary}`);
+  assert.include(indexEntry ?? "", `[HTML](${canonical})`);
 
-  // The one readable difference: the twin leads with the twin route, the index names it
-  assert.notInclude(twin, `${canonical}:`);
-  assert.notInclude(index, `[${entry}](${twinRoute}):`);
+  // The standalone twin needs no second link to the HTML representation it describes.
+  assert.notInclude(twin, `[HTML](${canonical})`);
 
   // Both surfaces apply the same escape pass, so authored emphasis reaches both as text
   assert.notInclude(index, "**");
@@ -250,6 +248,11 @@ it("the companion carries the retrieval-surface map, so a direct entry does not 
   for (const line of DISCOVERY_LINES) assert.include(index, `- ${line}`);
 });
 
+it("the discovery list projects every crawl document from the shared catalogue", () => {
+  assert.strictEqual(DISCOVERY_LINES.length, DISCOVERY_DOCUMENTS.length);
+  for (const { name, summary, url } of DISCOVERY_DOCUMENTS) assert.include(DISCOVERY_LINES, `[${name}](${url}): ${summary}.`);
+});
+
 it("the full-content companion gives every concatenated document its own section heading", () => {
   const txt = buildLlmsFullTxt({
     pageTitles: stablePageTitles,
@@ -297,10 +300,9 @@ it("buildLlmsFullTxt concatenates every twin behind its canonical URL", () => {
   assert.include(txt, `## Table of Contents`);
   // Pinned in full, not by prefix: the three index entry lists render one shape, and the
   // summary-less table of contents is the variant no other assertion below covers
-  assert.include(txt, `- [Home page](https://www.remiforge.dev/): [Markdown](https://www.remiforge.dev/index.md?lang=en)`);
-  assert.include(txt, `- [Home page](https://www.remiforge.dev/)`);
-  assert.include(txt, `- [Education \\& Certificates](https://www.remiforge.dev/education)`);
-  assert.include(txt, `- [Full-Stack Developer at Sample Co](https://www.remiforge.dev/sample-role)`);
+  assert.include(txt, `- [Home page](https://www.remiforge.dev/index.md?lang=en): [HTML](https://www.remiforge.dev/)`);
+  assert.include(txt, `- [Education \\& Certificates](https://www.remiforge.dev/education.md?lang=en): [HTML](https://www.remiforge.dev/education)`);
+  assert.include(txt, `- [Full-Stack Developer at Sample Co](https://www.remiforge.dev/sample-role.md?lang=en): [HTML](https://www.remiforge.dev/sample-role)`);
   // Citations must land on canonical HTML URLs, never on the aggregation itself
   assert.include(txt, `Cite the canonical HTML URL, not this file.`);
   assert.include(txt, "with headings demoted to preserve one document hierarchy");
@@ -341,7 +343,7 @@ it("a content-derived index label cannot fabricate a Markdown link destination",
   // a crawler a destination the site never published.
   const txt = buildLlmsTxt([{ ...sampleExperience, type: "p", slug: "evil", role: "Evil](https://evil.test)" }]);
 
-  assert.include(txt, "- [Evil\\](https://evil.test)](https://www.remiforge.dev/evil):");
+  assert.include(txt, "- [Evil\\](https://evil.test)](https://www.remiforge.dev/evil.md?lang=en):");
   // The escape is transparent, so the line still parses as one bullet with one destination
   assert.notInclude(txt, "- [Evil](https://evil.test)](https");
   assert.isFalse(txt.includes("](https://evil.test)("));
@@ -398,7 +400,7 @@ it("index entries encode a paren-bearing slug so the twin destination survives",
   const txt = buildLlmsTxt([{ ...sampleExperience, slug: "role (senior)" }]);
 
   assert.include(txt, "](https://www.remiforge.dev/role%20%28senior%29)");
-  assert.include(txt, "[Markdown](https://www.remiforge.dev/role%20%28senior%29.md?lang=en)");
+  assert.include(txt, "](https://www.remiforge.dev/role%20%28senior%29.md?lang=en)");
   // No raw parenthesis reaches either destination
   assert.notInclude(txt, "(senior)");
 });
@@ -411,8 +413,7 @@ it("the companion encodes every slug-derived twin URL exactly as its table of co
   });
 
   for (const [, url] of txt.matchAll(/^\[Markdown\]\((\S+)\)$/gm)) {
-    const link = `[Markdown](${url})`;
-    assert.strictEqual(txt.split(link).length - 1, 2, `${link} must match in the contents and attribution links`);
+    assert.isAtLeast(txt.split(url!).length - 1, 2, `${url} must match in the contents and attribution links`);
     assert.notInclude(url, "(", "a raw parenthesis would close the destination early");
   }
 

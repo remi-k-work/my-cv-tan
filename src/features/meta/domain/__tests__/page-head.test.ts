@@ -173,9 +173,8 @@ it("every card publishes one absolute HTTPS og:image without duplicate URL alias
 });
 
 it("each card's alt describes the picture that card actually shows", () => {
-  // og:image and twitter:image publish different pictures — X rejects WebP, so the Twitter card
-  // falls back to the jpeg banner — and a card whose alt describes the other card's picture
-  // announces an image it is not showing. Read the alt back beside the image each card names.
+  // Both social cards use the same page-specific picture, so their alt text must agree too. Read
+  // each alt back beside the image its card names rather than assuming the two surfaces cannot drift.
   const contentOf = (head: PageHead, tag: "og:image:alt" | "twitter:image:alt") => {
     const meta = metaOf(head);
     return meta.find((entry) => entry[tag.startsWith("og:") ? "property" : "name"] === tag)?.content;
@@ -187,21 +186,21 @@ it("each card's alt describes the picture that card actually shows", () => {
   };
 
   const head = experienceHead({ experience: sampleExperience, preferredLanguage: "en" });
-  // og:image is the webp screenshot, so its alt names that screenshot
   assert.include(srcOf(head, "og:image") ?? "", "01-a.webp");
   assert.strictEqual(contentOf(head, "og:image:alt"), "Screenshot of Full-Stack Developer");
-  // twitter:image is the banner, so its alt names the banner
-  assert.strictEqual(srcOf(head, "twitter:image"), "https://www.remiforge.dev/opengraph-image.jpg");
-  assert.strictEqual(contentOf(head, "twitter:image:alt"), "Portfolio collage showing web development skills and project screenshots");
+  assert.strictEqual(srcOf(head, "twitter:image"), srcOf(head, "og:image"));
+  assert.strictEqual(contentOf(head, "twitter:image:alt"), contentOf(head, "og:image:alt"));
 
-  // A screenshot-less experience falls back to the banner on both cards, so both alts describe it
+  // A screenshot-less experience falls back to the localized banner on both cards
   const bare = experienceHead({ experience: { ...sampleExperience, imageName: "" }, preferredLanguage: "en" });
   assert.include(srcOf(bare, "og:image") ?? "", "opengraph-image.jpg");
+  assert.strictEqual(srcOf(bare, "twitter:image"), srcOf(bare, "og:image"));
   assert.strictEqual(contentOf(bare, "og:image:alt"), "Portfolio collage showing web development skills and project screenshots");
+  assert.strictEqual(contentOf(bare, "twitter:image:alt"), contentOf(bare, "og:image:alt"));
 
   const polish = experienceHead({ experience: sampleExperience, preferredLanguage: "pl" });
   assert.strictEqual(contentOf(polish, "og:image:alt"), "Zrzut ekranu przedstawiający Projekt osobisty: Full-Stack Developer");
-  assert.strictEqual(contentOf(polish, "twitter:image:alt"), "Kolaż portfolio przedstawiający umiejętności tworzenia stron i zrzuty projektów");
+  assert.strictEqual(contentOf(polish, "twitter:image:alt"), contentOf(polish, "og:image:alt"));
 
   // A screen-reader user hears a sentence, not a bare repeat of the title the card already shows
   assert.include(contentOf(head, "og:image:alt") ?? "", "Full-Stack Developer");
@@ -217,11 +216,11 @@ it("social tags share the verified share image and localized locale pair", () =>
   // the article card rather than the generic website type the three list pages carry
   assert.include(html, '"property":"og:type","content":"article"');
   assert.include(html, `"property":"og:url","content":"https://www.remiforge.dev/sample-role"`);
-  // og:image carries the webp screenshot with real dimensions; X/Twitter falls back to the global jpeg
+  // Both cards carry the WebP screenshot with its real dimensions and matching alternative text
   assert.include(html, '"property":"og:image:type","content":"image/webp"');
   assert.include(html, '"property":"og:image:width","content":"1600"');
   assert.include(html, '"property":"og:image:height","content":"900"');
-  assert.include(html, '"name":"twitter:image","content":"https://www.remiforge.dev/opengraph-image.jpg"');
+  assert.include(html, '"name":"twitter:image","content":"https://www.remiforge.dev/images/01-a.webp"');
   assert.include(html, '"name":"twitter:card","content":"summary_large_image"');
   // og:title carries the bare headline; the document <title> keeps the site prefix
   assert.include(html, '"title":"Remi Forge ● Projekt osobisty: Full-Stack Developer"');
@@ -402,6 +401,7 @@ it("home structured data is a first-party ProfilePage linking site entities plus
   assert.strictEqual(profile?.["@id"], PROFILE_ID);
   assert.deepStrictEqual(profile?.mainEntity, { "@id": "https://www.remiforge.dev/#person" });
   assert.deepStrictEqual(profile?.isPartOf, { "@id": "https://www.remiforge.dev/#website" });
+  assert.deepStrictEqual(profile?.hasPart, [{ "@id": "https://www.remiforge.dev/#portfolio-list" }]);
   // Collection nodes carry stable @ids like every other entity in the graph; the sample is a
   // project, so the employment group is absent and only the portfolio collection renders
   const portfolio = nodeOf(graph, "Collection");
@@ -417,6 +417,7 @@ it("home structured data is a first-party ProfilePage linking site entities plus
   const emptyGraph = graphOf(homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" }).scripts?.[0]?.children);
   assert.isTrue(emptyGraph.some((node) => node["@type"] === "ProfilePage"));
   assert.isFalse(emptyGraph.some((node) => node["@type"] === "Collection"));
+  assert.isUndefined(nodeOf(emptyGraph, "ProfilePage")?.hasPart);
 });
 
 it("no page head emits an ItemList: Google's Carousel beta only supports Course, Movie, Recipe and Restaurant", () => {

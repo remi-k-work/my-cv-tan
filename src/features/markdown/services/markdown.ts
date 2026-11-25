@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Context, Effect, Layer, Option, String } from "effect";
+import { Context, Effect, Layer, Option, Record, String } from "effect";
 import { Datasets } from "@/features/data/services/datasets";
 import { requestPreferredLanguage } from "@/features/data/services/request-language";
 import { recoverDataFailure } from "@/features/data/domain/required";
@@ -31,6 +31,16 @@ import { DEFAULT_LANGUAGE } from "@/domain/constants";
 import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/discovery";
 import { PAGE_TWINS } from "./pages";
 
+const applyRepresentationPolicy = (response: Response, fallback: boolean, langOverride: Option.Option<string>) => {
+  // A fallback is temporary negotiated content, so it must bypass both caching and language pinning.
+  if (fallback) return withoutCaching(response);
+
+  return Option.match(langOverride, {
+    onNone: () => response,
+    onSome: () => pinCacheVariant(response),
+  });
+};
+
 const documentResponse = (translation: Translation["Service"], render: DocumentBody): Document =>
   Effect.fn("Markdown.document")(function* (request: Request) {
     const langOverride = parseLangParam(request.url);
@@ -43,10 +53,7 @@ const documentResponse = (translation: Translation["Service"], render: DocumentB
       )
     );
 
-    // English fallback content stays uncached and negotiated instead of pinning the requested variant
-    const stable = fallback ? withoutCaching(rendered) : rendered;
-
-    return Option.isSome(langOverride) && !fallback ? pinCacheVariant(stable) : stable;
+    return applyRepresentationPolicy(rendered, fallback, langOverride);
   });
 
 const respond = (context: TwinContext, twin: MarkdownTwin, canonical: string, markdownPath: string) =>
@@ -111,6 +118,11 @@ export class Markdown extends Context.Service<Markdown>()("my-cv-v4-tan/features
     const translation = yield* Translation;
     const withDatasets = Effect.provideService(Datasets, datasets);
     const experience = experienceDocument(translation);
+    // Build each page pipeline once instead of allocating a new Effect.fn wrapper on every request
+    const pages = Record.map(PAGE_TWINS, (_twin, pagePath) => {
+      const document = pageDocument(translation, pagePath);
+      return (request: Request) => withDatasets(document(request));
+    });
 
     const siteIndex = discoveryDocument(LLMS_TXT_INDEX, Effect.map(datasets.experienceList(DEFAULT_LANGUAGE), buildLlmsTxt));
 
@@ -130,7 +142,7 @@ export class Markdown extends Context.Service<Markdown>()("my-cv-v4-tan/features
     );
 
     return {
-      page: (pagePath: PagePath) => (request: Request) => withDatasets(pageDocument(translation, pagePath)(request)),
+      page: (pagePath: PagePath) => pages[pagePath],
       experience: (request: Request) => withDatasets(experience(request)),
       siteIndex,
       siteIndexFull,

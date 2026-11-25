@@ -4,7 +4,7 @@
 
 import { assert, it } from "@effect/vitest";
 import { globalSocialImage, socialMeta } from "../social-meta";
-import { AUTHOR_URL, GLOBAL_SOCIAL_IMAGE, PUBLISHER_URL, SITE_NAME } from "../site";
+import { AUTHOR_URL, PUBLISHER_URL, SITE_NAME } from "../site";
 import { SocialImage, SocialMetaInput } from "../models";
 import { LANGUAGE, metaTagsOf, tagContent } from "./fixtures";
 import type { PreferredLanguage } from "@/domain/models";
@@ -89,14 +89,14 @@ it("socialMeta omits article attribution for website type", () => {
   assert.notInclude(JSON.stringify(tags), "article:section");
 });
 
-it("socialMeta publishes Twitter Card tags with the JPEG banner for X", () => {
+it("socialMeta publishes Twitter Card tags with the same page-specific image as Open Graph", () => {
   const tags = tagsOf(input);
 
   assert.strictEqual(tagContent(tags, "name", "twitter:card"), "summary_large_image");
   assert.strictEqual(tagContent(tags, "name", "twitter:title"), "Headline");
   assert.strictEqual(tagContent(tags, "name", "twitter:description"), "Description.");
-  // X rejects WebP, so the Twitter image is always the global JPEG banner
-  assert.strictEqual(tagContent(tags, "name", "twitter:image"), GLOBAL_SOCIAL_IMAGE.src);
-  assert.strictEqual(tagContent(tags, "name", "twitter:image:alt"), "Portfolio collage showing web development skills and project screenshots");
+  // X supports WebP, so a detail card can use its relevant screenshot instead of a generic banner
+  assert.strictEqual(tagContent(tags, "name", "twitter:image"), image.src);
+  assert.strictEqual(tagContent(tags, "name", "twitter:image:alt"), image.alt);
   assert.strictEqual(globalSocialImage("pl").alt, "Kolaż portfolio przedstawiający umiejętności tworzenia stron i zrzuty projektów");
 });

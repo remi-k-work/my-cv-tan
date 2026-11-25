@@ -2,7 +2,7 @@
 import { Array, Record, pipe } from "effect";
 import { partitionExperiences } from "@/features/experience/domain/helpers";
 import { experienceSeo } from "@/features/meta/domain/seo";
-import { absoluteUrl, markdownTwinUrl } from "@/features/meta/domain/urls";
+import { markdownTwinUrl } from "@/features/meta/domain/urls";
 import {
   demoteHeadings,
   fencedFacts,
@@ -36,7 +36,7 @@ interface SourceDocument {
 }
 
 // constants
-import { CONTENT_SIGNAL, DOWNLOADABLE_DOCUMENTS, LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX, ROBOTS_TXT_HREF, SITEMAP_HREF } from "@/features/meta/domain/discovery";
+import { CONTENT_SIGNAL, DISCOVERY_DOCUMENTS, DOWNLOADABLE_DOCUMENTS, LLMS_FULL_TXT_INDEX } from "@/features/meta/domain/discovery";
 import {
   HOME_COUNTRY,
   HOME_LOCATION,
@@ -65,7 +65,7 @@ export const AI_NOTES = [
   "Every page has a machine-readable Markdown twin; fetch one linked `.md` page at a time, or the single-request full-content document for everything at once.",
   "Always cite the clean canonical HTML URL from each document's frontmatter (`canonical:`), not the `.md` URL.",
   "Structured data (JSON-LD) is embedded in every page head.",
-  "Every page twin states its headline facts as frontmatter (`title`, `description`, `author`, `canonical`, `lang`, `type`), so a document can be indexed without reading the body.",
+  "Every published page twin states its headline facts as frontmatter (`title`, `description`, `author`, `canonical`, `lang`, `type`), so a document can be indexed without reading the body.",
 ] as const;
 
 const SINGLE_REQUEST_NOTE = `The complete content of every page is also available in a single request: ${LLMS_FULL_TXT_INDEX.url}.`;
@@ -91,15 +91,7 @@ const notes = (additional: ReadonlyArray<string>) => mdBulletList([...AI_NOTES, 
 const INDEX_NOTES = notes([SINGLE_REQUEST_NOTE]);
 const COMPANION_NOTES_SECTION = mdTitledSection("Notes for AI systems", notes([]));
 
-export const DISCOVERY_LINES: ReadonlyArray<string> = Array.map(
-  [
-    { name: LLMS_TXT_INDEX.name, summary: "this index", url: LLMS_TXT_INDEX.url },
-    { name: LLMS_FULL_TXT_INDEX.name, summary: "the complete site in one document", url: LLMS_FULL_TXT_INDEX.url },
-    { name: "robots.txt", summary: "crawl directives", url: absoluteUrl(ROBOTS_TXT_HREF) },
-    { name: "sitemap.xml", summary: "sitemap", url: absoluteUrl(SITEMAP_HREF) },
-  ],
-  ({ name, summary, url }) => `${mdLink(name, url)}: ${summary}.`
-);
+export const DISCOVERY_LINES: ReadonlyArray<string> = Array.map(DISCOVERY_DOCUMENTS, ({ name, summary, url }) => `${mdLink(name, url)}: ${summary}.`);
 
 const DISCOVERY_SECTION = mdTitledSection("Discovery", mdBulletList(DISCOVERY_LINES));
 export const SITE_OPENING: ReadonlyArray<string> = [mdHeading(1, SITE_NAME), mdQuote(HOME_TITLE), escapeMd(PERSON_DESCRIPTION)];

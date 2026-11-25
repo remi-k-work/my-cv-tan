@@ -21,7 +21,7 @@ import { DEFAULT_LANGUAGE } from "@/domain/constants";
 
 const decodeRootLoaderData = Schema.decodeUnknownOption(Schema.Struct({ preferredLanguage: PreferredLanguage }));
 
-// Extracts the negotiated preferred language from the root loader match
+// TanStack orders the root match first; missing or malformed loader data safely falls back to English
 export const headLanguage = (matches: MatchChain): PreferredLanguage =>
   pipe(
     Array.head(matches),

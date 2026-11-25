@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { Array, Number, Option, Predicate, String, flow, pipe, Record } from "effect";
 import { msg } from "gt-i18n";
-import { absoluteUrl, encodeDestination } from "@/features/meta/domain/urls";
+import { absoluteUrl, encodeDestination, httpUrlOption } from "@/features/meta/domain/urls";
 import { escapeMdInline } from "./escape";
 
 // types
@@ -10,7 +10,7 @@ import type { MarkdownTwin } from "./models";
 
 // constants
 const FRONTMATTER_DELIMITER = "---";
-const DEMOTE_HEADINGS = /^(#{1,4})(?= )/gm;
+const DEMOTE_HEADINGS = /^(#+)(?= )/gm;
 
 // Escapes DEL, C1 controls, and Unicode line separators for YAML double-quoted scalars
 const YAML_UNSAFE_CHARACTERS = /[\u007f-\u009f\u2028\u2029]/g;
@@ -32,7 +32,9 @@ export const frontmatter = (fields: Readonly<Record<string, string>>) => Array.j
 export const twinDocument = ({ facts, body }: MarkdownTwin) => mdDocument([frontmatter(facts), body]);
 
 // Demotes heading levels by 2 (e.g. H1 -> H3) for embedding inside concatenated companion documents
-export const demoteHeadings = (markdown: string) => markdown.replace(DEMOTE_HEADINGS, (hashes) => `${hashes}##`);
+export const demoteHeadings = (markdown: string) =>
+  // Markdown has no H7/H8: deep source headings clamp to H6 instead of publishing invalid structure
+  markdown.replace(DEMOTE_HEADINGS, (hashes) => "#".repeat(Number.min(6, hashes.length + 2)));
 
 // Determines the minimum backtick fence length to avoid collisions with contained code
 const fenceFor = (content: string) => {
@@ -66,19 +68,29 @@ export const mdTitledSection = (title: string, body: string) => mdBody([mdHeadin
 export const mdDocument = (blocks: ReadonlyArray<string>) => `${mdBody(blocks)}\n`;
 export const mdEmptyMarker = (translate: Translate) => `_${escapeMdInline(translate(msg("No entries.")))}_`;
 
-export const mdLink = (label: string, href: string) => `[${escapeMdInline(label)}](${encodeDestination(href)})`;
+export const mdLink = (label: string, href: string) =>
+  pipe(
+    // Encode before parsing so whitespace cannot be silently removed or terminate the destination
+    encodeDestination(href),
+    httpUrlOption,
+    Option.match({
+      // Unsafe or relative destinations remain readable text instead of becoming active links
+      onNone: () => escapeMdInline(label),
+      onSome: (url) => `[${escapeMdInline(label)}](${url})`,
+    })
+  );
 export const translatedLink = (label: string, href: string, translate: Translate) => mdLink(translate(label), href);
 
-export const mdIndexEntry = (label: string, canonical: string, twinUrl: string, summary?: string) => {
-  const beforeTwin = pipe(
+export const mdIndexEntry = (label: string, canonical: string, markdownUrl: string, summary?: string) => {
+  const summaryPrefix = pipe(
     Option.fromUndefinedOr(summary),
     Option.filter(Predicate.not(isBlank)),
     Option.map((value) => `${escapeMdInline(value)} `),
     Option.getOrElse(() => "")
   );
 
-  // Explicit links work without relying on GFM's optional bare-URL autolinking.
-  return `${mdLink(label, canonical)}: ${beforeTwin}${mdLink("Markdown", twinUrl)}`;
+  // llms.txt retrieval links lead to Markdown; the canonical HTML URL remains the citation source
+  return `${mdLink(label, markdownUrl)}: ${summaryPrefix}${mdLink("HTML", canonical)}`;
 };
 
 export const mdDocumentLinks = (documents: ReadonlyArray<{ readonly label: string; readonly href: string }>, translate: Translate) =>

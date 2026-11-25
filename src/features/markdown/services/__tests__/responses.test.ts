@@ -18,6 +18,7 @@ describe("withoutNegotiationVary", () => {
   it("preserves unrelated tokens the runtime added", () => {
     // Retains transport-level Vary tokens such as Accept-Encoding.
     assert.deepStrictEqual(withoutNegotiationVary("Cookie, Accept-Language, Accept-Encoding"), Option.some("Accept-Encoding"));
+    assert.deepStrictEqual(withoutNegotiationVary("Cookie, Accept-Encoding, Accept-Language, Origin"), Option.some("Accept-Encoding, Origin"));
     assert.deepStrictEqual(withoutNegotiationVary("Accept-Encoding"), Option.some("Accept-Encoding"));
   });
 
@@ -107,6 +108,7 @@ it("response helpers set content types, indexing, cache, canonical, and language
     '<https://www.remiforge.dev/>; rel="canonical", <https://www.remiforge.dev/llms.txt>; rel="describedby", <https://www.remiforge.dev/llms.txt>; rel="alternate"; type="text/plain"; title="llms.txt", <https://www.remiforge.dev/llms-full.txt>; rel="alternate"; type="text/plain"; title="llms-full.txt", <https://www.remiforge.dev/index.md?lang=en>; rel="alternate"; type="text/markdown"; hreflang="en", <https://www.remiforge.dev/index.md?lang=pl>; rel="alternate"; type="text/markdown"; hreflang="pl", <https://www.remiforge.dev/index.md?lang=en>; rel="alternate"; type="text/markdown"; hreflang="x-default"'
   );
   assert.strictEqual(ok.headers.get("Content-Signal"), "search=yes, ai-input=yes, ai-train=yes");
+  assert.strictEqual(ok.headers.get("X-Content-Type-Options"), "nosniff");
 
   // 404 twin advertises AI indexes so crawlers can navigate back to the graph.
   const missing = mdNotFoundResponse("# Gone", "pl", Option.some("/gone.md"));
@@ -114,6 +116,7 @@ it("response helpers set content types, indexing, cache, canonical, and language
   assert.strictEqual(missing.headers.get("Content-Type"), "text/markdown; charset=utf-8");
   assert.strictEqual(missing.headers.get("Content-Location"), "https://www.remiforge.dev/gone.md?lang=pl");
   assert.strictEqual(missing.headers.get("X-Robots-Tag"), "noindex, follow");
+  assert.strictEqual(missing.headers.get("X-Content-Type-Options"), "nosniff");
   assert.isNull(missing.headers.get("Retry-After"));
   assert.strictEqual(
     missing.headers.get("Link"),
@@ -132,6 +135,7 @@ it("response helpers set content types, indexing, cache, canonical, and language
   assert.strictEqual(unavailable.headers.get("Content-Language"), "pl");
   assert.strictEqual(unavailable.headers.get("Cache-Control"), "no-store");
   assert.strictEqual(unavailable.headers.get("X-Robots-Tag"), "noindex, follow");
+  assert.strictEqual(unavailable.headers.get("X-Content-Type-Options"), "nosniff");
   // Transient failure retry timing.
   assert.strictEqual(unavailable.headers.get("Retry-After"), "300");
   assert.strictEqual(
@@ -145,6 +149,7 @@ it("response helpers set content types, indexing, cache, canonical, and language
   assert.strictEqual(txt.headers.get("Content-Language"), "en");
   assert.isNull(txt.headers.get("Content-Location"));
   assert.strictEqual(txt.headers.get("Content-Signal"), CONTENT_SIGNAL);
+  assert.strictEqual(txt.headers.get("X-Content-Type-Options"), "nosniff");
 
   const unavailableTxt = txtUnavailableResponse("Unavailable");
   assert.strictEqual(unavailableTxt.status, 503);
@@ -153,6 +158,7 @@ it("response helpers set content types, indexing, cache, canonical, and language
   assert.strictEqual(unavailableTxt.headers.get("X-Robots-Tag"), "noindex, follow");
   assert.strictEqual(unavailableTxt.headers.get("Retry-After"), "300");
   assert.strictEqual(unavailableTxt.headers.get("Content-Signal"), CONTENT_SIGNAL);
+  assert.strictEqual(unavailableTxt.headers.get("X-Content-Type-Options"), "nosniff");
   assert.include(unavailableTxt.headers.get("Link") ?? "", "https://www.remiforge.dev/llms.txt");
 
   const discovery = txtResponse("# Index", absoluteUrl("/llms.txt"));
@@ -160,6 +166,7 @@ it("response helpers set content types, indexing, cache, canonical, and language
   assert.strictEqual(discovery.headers.get("Content-Type"), "text/plain; charset=utf-8");
   assert.strictEqual(discovery.headers.get("Cache-Control"), "public, max-age=3600, stale-while-revalidate=86400");
   assert.strictEqual(discovery.headers.get("X-Robots-Tag"), NOINDEX_FOLLOW);
+  assert.strictEqual(discovery.headers.get("X-Content-Type-Options"), "nosniff");
   assert.strictEqual(discovery.headers.get("Content-Location"), "https://www.remiforge.dev/llms.txt");
   assert.strictEqual(
     discovery.headers.get("Link"),

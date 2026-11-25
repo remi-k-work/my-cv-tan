@@ -140,6 +140,7 @@ it("the root route publishes response headers for the language negotiated by its
 
   assert.strictEqual(result?.["Content-Language"], "pl");
   assert.strictEqual(result?.Vary, "Cookie, Accept-Language");
+  assert.strictEqual(result?.["X-Content-Type-Options"], "nosniff");
   assert.include(result?.Link ?? "", "https://www.remiforge.dev/llms.txt");
 });
 

@@ -68,37 +68,38 @@ const experienceCollection = ({
   readonly name: string;
   readonly experiences: ExperienceList;
   readonly preferredLanguage: PreferredLanguage;
-}): JsonLdNodes => {
-  return Array.match(experiences, {
-    onEmpty: () => [],
-    onNonEmpty: (entries) => [
-      collectionNode({
-        id,
-        name,
-        preferredLanguage,
-        parts: Array.map(entries, (experience) => {
-          const url = absoluteUrl(experiencePath(experience.slug));
-          return { "@type": "WebPage", "@id": url, url, name: experienceHeadline(experience, preferredLanguage) };
-        }),
-      }),
-    ],
+}): Option.Option<JsonLdNode> =>
+  Array.match(experiences, {
+    onEmpty: () => Option.none(),
+    onNonEmpty: (entries) =>
+      Option.some(
+        collectionNode({
+          id,
+          name,
+          preferredLanguage,
+          parts: Array.map(entries, (experience) => {
+            const url = absoluteUrl(experiencePath(experience.slug));
+            return { "@type": "WebPage", "@id": url, url, name: experienceHeadline(experience, preferredLanguage) };
+          }),
+        })
+      ),
   });
-};
 
-export const experienceCollections = (employment: ExperienceList, projects: ExperienceList, preferredLanguage: PreferredLanguage): JsonLdNodes => [
-  ...experienceCollection({
-    id: EXPERIENCE_LIST_ID,
-    name: matchPreferredLanguage(preferredLanguage, "Experience", "Doświadczenie"),
-    experiences: employment,
-    preferredLanguage,
-  }),
-  ...experienceCollection({
-    id: PORTFOLIO_LIST_ID,
-    name: matchPreferredLanguage(preferredLanguage, "Portfolio Projects", "Projekty do Portfolio"),
-    experiences: projects,
-    preferredLanguage,
-  }),
-];
+export const experienceCollections = (employment: ExperienceList, projects: ExperienceList, preferredLanguage: PreferredLanguage): JsonLdNodes =>
+  Array.getSomes([
+    experienceCollection({
+      id: EXPERIENCE_LIST_ID,
+      name: matchPreferredLanguage(preferredLanguage, "Experience", "Doświadczenie"),
+      experiences: employment,
+      preferredLanguage,
+    }),
+    experienceCollection({
+      id: PORTFOLIO_LIST_ID,
+      name: matchPreferredLanguage(preferredLanguage, "Portfolio Projects", "Projekty do Portfolio"),
+      experiences: projects,
+      preferredLanguage,
+    }),
+  ]);
 
 export const schoolSubgraph = (url: string, educationList: EducationList): JsonLdNodes =>
   Array.match(educationList, {
@@ -217,6 +218,8 @@ export const homeJsonLd = ({
   preferredLanguage,
 }: LocalizedCopy & { readonly experienceList: ExperienceList }): JsonLdNodes => {
   const [employment, projects] = partitionExperiences(experienceList);
+  const collections = experienceCollections(employment, projects, preferredLanguage);
+  const collectionRefs = Array.map(collections, ({ "@id": id }) => ({ "@id": id }));
 
   return [
     webPageNode({
@@ -227,7 +230,9 @@ export const homeJsonLd = ({
       description,
       preferredLanguage,
       mainEntity: { "@id": PERSON_ID },
+      // Connect the profile to its collections so parsers need not infer their relationship
+      hasPart: collectionRefs,
     }),
-    ...experienceCollections(employment, projects, preferredLanguage),
+    ...collections,
   ];
 };

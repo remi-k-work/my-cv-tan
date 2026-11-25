@@ -6,11 +6,23 @@ it("robots.txt allows content, disallows API endpoints, and advertises the sitem
   const robots = ROBOTS_TXT;
   assert.include(robots, "User-agent: *");
   assert.include(robots, "Allow: /");
-  // Excludes private API endpoints from crawling.
-  assert.include(robots, "Disallow: /api");
+  // Excludes API routes without matching public slugs that merely start with "api".
+  const directives = robots.split("\n");
+  assert.include(directives, "Disallow: /api/");
+  assert.notInclude(directives, "Disallow: /api");
+  const disallowedPrefixes = directives.filter((line) => line.startsWith("Disallow: ")).map((line) => line.slice("Disallow: ".length));
+  const isDisallowed = (path: string) => disallowedPrefixes.some((prefix) => path.startsWith(prefix));
+  for (const path of ["/api/captcha", "/api/rpc/captcha", "/api/rpc/contact-me", "/api/rpc/data"]) {
+    assert.isTrue(isDisallowed(path), `${path} must be excluded from crawling`);
+  }
+  for (const path of ["/api", "/api-portfolio", "/api.md"]) {
+    assert.isFalse(isDisallowed(path), `${path} is a public slug, not an API endpoint`);
+  }
   assert.include(robots, "Sitemap: https://www.remiforge.dev/sitemap.xml");
   // Permissive content reuse signal.
   assert.include(robots, "Content-Signal: search=yes, ai-input=yes, ai-train=yes");
+  // Absolute discovery links remain actionable without resolving them against the request origin
+  assert.include(robots, "# AI discovery: https://www.remiforge.dev/llms.txt and https://www.remiforge.dev/llms-full.txt");
   // Willing search and AI crawlers are not arbitrarily throttled by a non-standard delay.
   assert.notInclude(robots, "Crawl-delay");
   const userAgents = robots.match(/^User-agent: .*/gm) ?? [];
@@ -27,7 +39,7 @@ it("robots.txt allows content, disallows API endpoints, and advertises the sitem
   assert.strictEqual(response.status, 200);
   assert.strictEqual(response.headers.get("Content-Type"), "text/plain; charset=utf-8");
   assert.strictEqual(response.headers.get("Content-Language"), "en");
-  assert.isNull(response.headers.get("Content-Location"));
+  assert.strictEqual(response.headers.get("Content-Location"), "https://www.remiforge.dev/robots.txt");
   assert.strictEqual(response.headers.get("Cache-Control"), "public, max-age=3600, stale-while-revalidate=86400");
   // Advertises machine-readable AI indexes in Link header.
   assert.include(response.headers.get("Link") ?? "", "https://www.remiforge.dev/llms.txt");

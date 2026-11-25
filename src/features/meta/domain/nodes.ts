@@ -4,7 +4,7 @@ import { matchPreferredLanguage } from "@/domain/helpers";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
-import type { JsonLdNode, JsonLdObject } from "./models";
+import type { JsonLdNode, JsonLdNodes, JsonLdObject } from "./models";
 
 // The page-node vocabulary this module's builders share with the graph assemblers
 export type PageNodeType = "WebPage" | "ContactPage" | "CollectionPage" | "ProfilePage";
@@ -29,6 +29,7 @@ interface WebPageNodeInput {
   readonly breadcrumb?: boolean;
   readonly mainEntity?: JsonLdNode;
   readonly primaryImageOfPage?: JsonLdNode;
+  readonly hasPart?: JsonLdNodes;
 }
 
 interface CollectionNodeInput {
@@ -78,6 +79,7 @@ export const webPageNode = ({
   breadcrumb: hasBreadcrumb,
   mainEntity,
   primaryImageOfPage,
+  hasPart,
 }: WebPageNodeInput): JsonLdNode => ({
   "@type": type,
   "@id": id,
@@ -89,6 +91,7 @@ export const webPageNode = ({
   ...(hasBreadcrumb ? { breadcrumb: { "@id": `${id}#breadcrumb` } } : {}),
   ...(mainEntity !== undefined ? { mainEntity } : {}),
   ...(primaryImageOfPage !== undefined ? { primaryImageOfPage } : {}),
+  ...(hasPart !== undefined && hasPart.length > 0 ? { hasPart } : {}),
 });
 
 export const collectionNode = ({ id, name, preferredLanguage, parts, url }: CollectionNodeInput): JsonLdNode => ({
@@ -126,6 +129,7 @@ export const experienceItemNode = ({
 }: ExperienceItemNodeInput): JsonLdNode =>
   employment
     ? {
+        // Role has no url property; mainEntityOfPage connects it to the canonical WebPage
         "@type": "OrganizationRole",
         "@id": id,
         roleName: role,

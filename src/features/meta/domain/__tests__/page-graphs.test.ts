@@ -192,6 +192,7 @@ it("homeJsonLd builds a ProfilePage linking site entities plus grouped collectio
   assert.strictEqual(profile?.url, HOME_URL);
   assert.deepStrictEqual(profile?.mainEntity, { "@id": PERSON_ID });
   assert.deepStrictEqual(profile?.isPartOf, { "@id": WEBSITE_ID });
+  assert.deepStrictEqual(profile?.hasPart, [{ "@id": EXPERIENCE_LIST_ID }, { "@id": PORTFOLIO_LIST_ID }]);
   // The homepage is the site root, so its page node has no redundant breadcrumb trail.
   assert.isUndefined(profile?.breadcrumb);
 

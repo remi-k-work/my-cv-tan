@@ -3,6 +3,7 @@ import { Option } from "effect";
 import { msg } from "gt-i18n";
 import { experiencePath } from "@/features/meta/domain/urls";
 import { deadEndEscapeLine } from "./twin-nav";
+import { twinBaseFacts } from "./identity";
 import { mdBody, mdDocument, mdHeading } from "./format";
 import { escapeMd, escapeMdInline } from "./escape";
 
@@ -11,7 +12,7 @@ import type { PreferredLanguage, Translate } from "@/domain/models";
 import type { TwinContext } from "./models";
 
 // constants
-import { BRANDED_TITLE, NOT_FOUND_COPY, SITE_NAME } from "@/features/meta/domain/site";
+import { NOT_FOUND_COPY } from "@/features/meta/domain/site";
 
 interface NotFoundMdInput extends TwinContext {
   readonly slug: Option.Option<string>;
@@ -52,7 +53,7 @@ export const buildNotFoundMd = ({ slug, preferredLanguage, translate }: NotFound
   });
 
   return {
-    facts: { title: BRANDED_TITLE(title), description, lang: preferredLanguage, author: SITE_NAME },
+    facts: twinBaseFacts(title, description, preferredLanguage),
     body: mdBody([mdHeading(1, title), missing, deadEndEscapeLine(preferredLanguage, translate)]),
   };
 };

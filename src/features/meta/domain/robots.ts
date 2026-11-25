@@ -1,20 +1,20 @@
 // services, features, and other libraries
 import { Array } from "effect";
-import { absoluteUrl } from "./urls";
 
 // constants
-import { CONTENT_SIGNAL, LLMS_TXT_HREF, SITEMAP_HREF } from "./discovery";
+import { CONTENT_SIGNAL, LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX, SITEMAP_INDEX } from "./discovery";
 
 export const ROBOTS_TXT = Array.join(
   [
     "# The same public-content and reuse policy applies to current and future crawlers",
     "User-agent: *",
     "Allow: /",
-    "Disallow: /api",
+    // The trailing slash blocks API routes without also blocking public slugs such as /api-portfolio
+    "Disallow: /api/",
     `Content-Signal: ${CONTENT_SIGNAL}`,
     "",
-    `# See ${LLMS_TXT_HREF} for the Markdown page index`,
-    `Sitemap: ${absoluteUrl(SITEMAP_HREF)}`,
+    `# AI discovery: ${LLMS_TXT_INDEX.url} and ${LLMS_FULL_TXT_INDEX.url}`,
+    `Sitemap: ${SITEMAP_INDEX.url}`,
     "",
   ],
   "\n"

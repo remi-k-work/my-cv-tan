@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Effect, Record } from "effect";
+import { Effect } from "effect";
 import { Datasets } from "@/features/data/services/datasets";
 import { pageEntry } from "@/features/markdown/domain/catalogue";
 import { buildPageDocument } from "@/features/markdown/domain/page-documents";
@@ -17,8 +17,6 @@ export interface PageTwin {
 
 // constants
 import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/domain/constants";
-
-const pageTwin = (pagePath: PagePath, document: PageTwin["document"]): PageTwin => ({ entry: pageEntry(pagePath), document });
 
 const homeDocument = Effect.fn("Markdown.page.home")(function* ({ preferredLanguage, translate }: TwinContext) {
   const datasets = yield* Datasets;
@@ -47,10 +45,9 @@ const contactDocument = Effect.fn("Markdown.page.contact")(function* ({ preferre
   return buildPageDocument(CONTACT_PATH, { pageTitles }, { preferredLanguage, translate });
 });
 
-const PAGE_DOCUMENTS = { [HOME_PATH]: homeDocument, [EDUCATION_PATH]: educationDocument, [CONTACT_PATH]: contactDocument } satisfies Record<
-  PagePath,
-  PageTwin["document"]
->;
-
-// Exhaustive over PagePath: adding a page requires its data pipeline and shared pure builder
-export const PAGE_TWINS: Record<PagePath, PageTwin> = Record.map(PAGE_DOCUMENTS, (document, pagePath) => pageTwin(pagePath, document));
+// Exhaustive over PagePath: each page owns its data pipeline, catalogue entry and shared pure builder
+export const PAGE_TWINS = {
+  [HOME_PATH]: { entry: pageEntry(HOME_PATH), document: homeDocument },
+  [EDUCATION_PATH]: { entry: pageEntry(EDUCATION_PATH), document: educationDocument },
+  [CONTACT_PATH]: { entry: pageEntry(CONTACT_PATH), document: contactDocument },
+} satisfies Record<PagePath, PageTwin>;

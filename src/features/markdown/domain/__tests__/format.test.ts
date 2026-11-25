@@ -102,14 +102,14 @@ it("translatedLink translates the label before building the link", () => {
   assert.strictEqual(translatedLink("Home page", "https://www.remiforge.dev/index.md", pl), "[Strona główna](https://www.remiforge.dev/index.md)");
 });
 
-it("mdIndexEntry prints label, canonical, twin and an optional inline summary", () => {
+it("mdIndexEntry leads with its Markdown twin and retains the canonical citation link", () => {
   assert.strictEqual(
     mdIndexEntry("Role", "https://site.test/role", "https://site.test/role.md"),
-    "[Role](https://site.test/role): [Markdown](https://site.test/role.md)"
+    "[Role](https://site.test/role.md): [HTML](https://site.test/role)"
   );
   assert.strictEqual(
     mdIndexEntry("Role", "https://site.test/role", "https://site.test/role.md", "A *bold* summary"),
-    "[Role](https://site.test/role): A \\*bold\\* summary [Markdown](https://site.test/role.md)"
+    "[Role](https://site.test/role.md): A \\*bold\\* summary [HTML](https://site.test/role)"
   );
 });
 
@@ -119,19 +119,19 @@ it("mdIndexEntry treats a whitespace-only summary as no summary at all", () => {
   for (const blank of ["", " ", "\t", "\n", " \n\t "]) {
     assert.strictEqual(
       mdIndexEntry("Role", "https://site.test/role", "https://site.test/role.md", blank),
-      "[Role](https://site.test/role): [Markdown](https://site.test/role.md)",
+      "[Role](https://site.test/role.md): [HTML](https://site.test/role)",
       `a ${JSON.stringify(blank)} summary must not render`
     );
   }
 });
 
-it("mdIndexEntry encodes parens in the twin URL exactly like mdLink encodes its href", () => {
+it("mdIndexEntry encodes parens in both destinations exactly like mdLink", () => {
   // Every URL the toolkit embeds is a Markdown destination, and a raw ")" would close it early.
-  // The label goes through mdLink, so the twin spelling beside it has to take the same treatment.
+  // Both the retrieval link and its canonical citation go through the same destination encoder.
   const entry = mdIndexEntry("Role", "https://site.test/role(1)", "https://site.test/role(1).md");
 
   assert.include(entry, "](https://site.test/role%281%29)");
-  assert.include(entry, "[Markdown](https://site.test/role%281%29.md)");
+  assert.include(entry, "[HTML](https://site.test/role%281%29)");
   assert.notInclude(entry, "(1)");
 });
 
@@ -153,10 +153,23 @@ it("mdLink keeps a raw destination intact by encoding the whitespace that would 
   assert.strictEqual(mdLink("Label", "https://x.test/a-b"), "[Label](https://x.test/a-b)");
 });
 
-it("demoteHeadings appends two levels to every heading", () => {
+it("mdLink publishes only absolute HTTP(S) destinations and degrades unsafe input to text", () => {
+  for (const href of ["javascript:alert(1)", "data:text/html,hello", "vbscript:msgbox(1)", "/relative", "//other.test/path"]) {
+    assert.strictEqual(mdLink("Unsafe *label*", href), "Unsafe \\*label\\*");
+  }
+
+  assert.strictEqual(mdLink("Secure", "HTTPS://x.test/a(b)"), "[Secure](https://x.test/a%28b%29)");
+  // Padding must not be preserved as a bogus percent-encoded host or scheme
+  assert.strictEqual(mdLink("Padded", " https://x.test/a "), "Padded");
+});
+
+it("demoteHeadings appends two levels without exceeding Markdown's H6 limit", () => {
   // The companion document wraps twins under a site H1, so each twin heading is demoted by two
   // (H1 document title → H3, H2 section → H4, etc.) to keep a single-document hierarchy.
   assert.strictEqual(demoteHeadings("# Home\n## Section\n### Deep"), "### Home\n#### Section\n##### Deep");
+  // Deep source headings cannot become invalid H7/H8 markers; clamp them to the deepest valid level.
+  assert.strictEqual(demoteHeadings("#### Four\n##### Five\n###### Six"), "###### Four\n###### Five\n###### Six");
+  assert.strictEqual(demoteHeadings("####### Seven\n######## Eight"), "###### Seven\n###### Eight");
   assert.strictEqual(demoteHeadings("no headings here"), "no headings here");
 });
 

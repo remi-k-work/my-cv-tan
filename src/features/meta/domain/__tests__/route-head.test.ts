@@ -30,6 +30,24 @@ it("routeHead keeps a canonical noindex fallback when loader data is missing", (
   assert.isAbove(graphOf(fallback.scripts?.[0]?.children).length, 0);
 });
 
+it("routeHead treats null loader data as unavailable without invoking the page builder", () => {
+  let builderCalled = false;
+  const fallback = routeHead({
+    loaderData: null,
+    matches: [{ loaderData: { preferredLanguage: "pl" }, status: "success" }],
+    matchStatus: "success",
+    fallbackPath: "/missing",
+    build: () => {
+      builderCalled = true;
+      return pageHeadFromInput("Stale page data", "pl");
+    },
+  });
+
+  assert.isFalse(builderCalled);
+  assert.include(JSON.stringify(fallback.meta), '"title":"Remi Forge ● Strona niedostępna"');
+  assert.deepStrictEqual(fallback.links, [{ rel: "canonical", href: "https://www.remiforge.dev/missing" }]);
+});
+
 it("routeHead leaves not-found metadata to the root boundary, even with stale loader data", () => {
   let builderCalled = false;
   const build = () => {

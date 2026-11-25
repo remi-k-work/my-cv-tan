@@ -27,7 +27,7 @@ const experienceLine = (experience: Experience, preferredLanguage: TwinContext["
     : mdIndexEntry(headline, absoluteUrl(experiencePath(experience.slug)), twin, summary);
 };
 
-// One projection of the experience list, shared by the index and the home twin; only the lead URL differs
+// One projection shared by the index and home twin; only the index adds the canonical citation link
 export const experienceLines = ({ experiences, mode, translate, preferredLanguage }: ExperienceLinesInput) =>
   Array.match(experiences, {
     onEmpty: () => mdEmptyMarker(translate),

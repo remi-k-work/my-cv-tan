@@ -18,10 +18,10 @@ import { SOCIAL_LINKS, SITE_URL } from "./site";
 // Content signal defining crawler permissions across robots.txt and HTTP headers
 export const CONTENT_SIGNAL = "search=yes, ai-input=yes, ai-train=yes";
 
-export const LLMS_TXT_HREF = "/llms.txt";
-export const LLMS_FULL_TXT_HREF = "/llms-full.txt";
-export const SITEMAP_HREF = "/sitemap.xml";
-export const ROBOTS_TXT_HREF = "/robots.txt";
+const LLMS_TXT_HREF = "/llms.txt";
+const LLMS_FULL_TXT_HREF = "/llms-full.txt";
+const SITEMAP_HREF = "/sitemap.xml";
+const ROBOTS_TXT_HREF = "/robots.txt";
 
 export const CV_EN_HREF = "/my-cv.pdf";
 export const CV_PL_HREF = "/my-cv-pl.pdf";
@@ -37,12 +37,15 @@ export const DOWNLOADABLE_DOCUMENT_PATHS = Array.map(DOWNLOADABLE_DOCUMENTS, ({ 
 
 export const cvPdfHref = (preferredLanguage: PreferredLanguage) => matchPreferredLanguage(preferredLanguage, CV_EN_HREF, CV_PL_HREF);
 
-// Discovery indexes projected into <head> and Link headers
-export const LLMS_TXT_INDEX = { name: "llms.txt", url: `${SITE_URL}${LLMS_TXT_HREF}` } as const;
-export const LLMS_FULL_TXT_INDEX = { name: "llms-full.txt", url: `${SITE_URL}${LLMS_FULL_TXT_HREF}` } as const;
+// One crawl catalogue feeds HTML links, HTTP headers, robots.txt and the Markdown discovery lists
+export const LLMS_TXT_INDEX = { name: "llms.txt", summary: "this index", url: `${SITE_URL}${LLMS_TXT_HREF}` } as const;
+export const LLMS_FULL_TXT_INDEX = { name: "llms-full.txt", summary: "the complete site in one document", url: `${SITE_URL}${LLMS_FULL_TXT_HREF}` } as const;
+export const ROBOTS_TXT_INDEX = { name: "robots.txt", summary: "crawl directives", url: `${SITE_URL}${ROBOTS_TXT_HREF}` } as const;
+export const SITEMAP_INDEX = { name: "sitemap.xml", summary: "sitemap", url: `${SITE_URL}${SITEMAP_HREF}` } as const;
 export const AI_INDEXES = [LLMS_TXT_INDEX, LLMS_FULL_TXT_INDEX] as const;
+export const DISCOVERY_DOCUMENTS = [...AI_INDEXES, ROBOTS_TXT_INDEX, SITEMAP_INDEX] as const;
 
-export const SITEMAP_LINK = { rel: "sitemap", href: `${SITE_URL}${SITEMAP_HREF}` } as const;
+export const SITEMAP_LINK = { rel: "sitemap", href: SITEMAP_INDEX.url } as const;
 // Standard llms.txt discovery relation from https://llmstxt.org.
 export const LLMS_DISCOVERY_LINK: LinkTag = { rel: "describedby", href: LLMS_TXT_INDEX.url };
 

@@ -316,7 +316,7 @@ it("llms-full.txt concatenates every twin body beneath its canonical URL", async
 
 it("every twin URL the index advertises is the address the twin routes answer on", async () => {
   const txt = await (await llmsTxtHandler({ request: new Request(LLMS_TXT_INDEX.url) })).text();
-  const advertised = [...txt.matchAll(/\[Markdown\]\((\S+?)\)/g)].map(([, url]) => url!);
+  const advertised = [...txt.matchAll(/\]\((https:\/\/www\.remiforge\.dev\/[^)\s]+\.md\?lang=en)\)/g)].map(([, url]) => url!);
 
   assert.deepStrictEqual([...new Set(advertised)].sort(), advertisedTwins.map(([twinUrl]) => twinUrl).sort());
 

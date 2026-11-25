@@ -28,6 +28,7 @@ it("sitemap route resolves the real portfolio assets into one canonical URL per 
   assert.strictEqual(response.headers.get("X-Robots-Tag"), "noindex, follow");
   // Discovery signal and AI index Link header.
   assert.strictEqual(response.headers.get("Content-Signal"), CONTENT_SIGNAL);
+  assert.strictEqual(response.headers.get("X-Content-Type-Options"), "nosniff");
   assert.include(response.headers.get("Link") ?? "", "https://www.remiforge.dev/llms.txt");
 
   const xml = await response.text();
