@@ -167,7 +167,7 @@ export const contactJsonLd = ({ pageName, description, preferredLanguage }: Loca
 };
 
 export const experienceJsonLd = ({ experience, preferredLanguage, path, headline, description, screenshot }: ExperienceGraphInput): JsonLdNodes => {
-  const { role, company, skillsUsed, gitHubLink, liveLink, videoLink } = experience;
+  const { role, company, txt, skillsUsed, gitHubLink, liveLink, videoLink } = experience;
 
   const employment = isEmployment(experience);
   const url = absoluteUrl(path);
@@ -194,10 +194,12 @@ export const experienceJsonLd = ({ experience, preferredLanguage, path, headline
     Match.exhaustive
   );
 
+  // Publish the full narrative on Article.articleBody so JSON-LD extractors receive complete context beyond the 160-char snippet
   const article = articleNode({
     id: articleId,
     headline,
     description,
+    articleBody: txt,
     preferredLanguage,
     keywords: skillsUsed,
     articleSection: experienceSection(experience),

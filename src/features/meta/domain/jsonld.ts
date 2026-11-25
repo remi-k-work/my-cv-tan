@@ -28,19 +28,16 @@ const mergeNodes = (nodes: ReadonlyArray<JsonLdNode>): ReadonlyArray<JsonLdNode>
 
     // Anonymous nodes key by position so they never fold into an earlier entity's slot
     const key: NodeKey = Predicate.isString(id) ? id : index;
-    const existing = HashMap.get(state.nodes, key);
-    const combined: JsonLdNode = Option.match(existing, {
-      onNone: () => defined,
-      onSome: (previous) => ({ ...previous, ...defined }),
-    });
-
-    return {
-      order: Option.match(existing, {
-        onNone: () => Array.append(state.order, key),
-        onSome: () => state.order,
+    return Option.match(HashMap.get(state.nodes, key), {
+      onNone: () => ({
+        order: Array.append(state.order, key),
+        nodes: HashMap.set(state.nodes, key, defined),
       }),
-      nodes: HashMap.set(state.nodes, key, combined),
-    };
+      onSome: (previous) => ({
+        order: state.order,
+        nodes: HashMap.set(state.nodes, key, { ...previous, ...defined }),
+      }),
+    });
   });
 
   return Array.getSomes(Array.map(order, (key) => HashMap.get(merged, key)));

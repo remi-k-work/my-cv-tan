@@ -45,12 +45,13 @@ it("articleNode builds an Article with author, publisher, about and mainEntityOf
   assert.isUndefined(node.image);
 });
 
-it("articleNode publishes the page image and section when verified", () => {
+it("articleNode publishes the page image, section and full articleBody when provided", () => {
   const image = imageObject("https://www.remiforge.dev/images/01-a.webp", 1600, 900);
   const node = articleNode({
     id: "https://www.remiforge.dev/#article",
     headline: "Headline",
     description: "Description.",
+    articleBody: "Full narrative body for extractors.",
     preferredLanguage: language,
     keywords: ["TypeScript", "React"],
     articleSection: "portfolio",
@@ -61,6 +62,7 @@ it("articleNode publishes the page image and section when verified", () => {
 
   assert.deepStrictEqual(node.image, image);
   assert.strictEqual(node.articleSection, "portfolio");
+  assert.strictEqual(node.articleBody, "Full narrative body for extractors.");
 });
 
 it("webPageNode builds a WebPage node with optional fields conditionally included", () => {

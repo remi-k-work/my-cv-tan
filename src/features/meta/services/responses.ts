@@ -1,7 +1,7 @@
 // Shared HTTP policy and response envelopes for HTML and machine-readable documents.
 
 // services, features, and other libraries
-import { Array, Predicate, Record } from "effect";
+import { Array, Option, Record } from "effect";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
@@ -37,7 +37,10 @@ export const documentHeaders = (preferredLanguage: PreferredLanguage) =>
   }) as const;
 
 export const locationHeader = (contentLocation?: string): Readonly<Record<string, string>> =>
-  Record.filter({ "Content-Location": contentLocation }, Predicate.isNotUndefined);
+  Option.match(Option.fromUndefinedOr(contentLocation), {
+    onNone: Record.empty<string, string>,
+    onSome: (location) => ({ "Content-Location": location }),
+  });
 
 const instructionsHeaders = (contentLocation?: string) => ({
   ...TXT_HEADERS,

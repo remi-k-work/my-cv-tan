@@ -41,7 +41,7 @@ export const withLanguageParam = (url: string, preferredLanguage: PreferredLangu
 export const markdownTwinUrl = (mdPath: string, preferredLanguage: PreferredLanguage) => withLanguageParam(absoluteUrl(mdPath), preferredLanguage);
 
 // Percent-encodes parentheses which encodeURIComponent leaves raw
-export const encodeParens = (value: string) => pipe(value, String.replaceAll(/\(/g, "%28"), String.replaceAll(/\)/g, "%29"));
+export const encodeParens = (value: string) => pipe(value, String.replaceAll("(", "%28"), String.replaceAll(")", "%29"));
 
 // Percent-encodes parentheses and whitespace for Markdown link destinations
 export const encodeDestination = (value: string) => pipe(encodeParens(value), String.replaceAll(/\s/g, "%20"));

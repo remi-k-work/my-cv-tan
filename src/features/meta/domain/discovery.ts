@@ -7,13 +7,14 @@ import { Array } from "effect";
 import { msg } from "gt-i18n";
 import { matchPreferredLanguage } from "@/domain/helpers";
 import { joinLinkHeader } from "./link-tags";
+import { absoluteUrl } from "./urls";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
 import type { LinkTag } from "./models";
 
 // constants
-import { SOCIAL_LINKS, SITE_URL } from "./site";
+import { SOCIAL_LINKS } from "./site";
 
 // Content signal defining crawler permissions across robots.txt and HTTP headers
 export const CONTENT_SIGNAL = "search=yes, ai-input=yes, ai-train=yes";
@@ -38,10 +39,10 @@ export const DOWNLOADABLE_DOCUMENT_PATHS = Array.map(DOWNLOADABLE_DOCUMENTS, ({ 
 export const cvPdfHref = (preferredLanguage: PreferredLanguage) => matchPreferredLanguage(preferredLanguage, CV_EN_HREF, CV_PL_HREF);
 
 // One crawl catalogue feeds HTML links, HTTP headers, robots.txt and the Markdown discovery lists
-export const LLMS_TXT_INDEX = { name: "llms.txt", summary: "this index", url: `${SITE_URL}${LLMS_TXT_HREF}` } as const;
-export const LLMS_FULL_TXT_INDEX = { name: "llms-full.txt", summary: "the complete site in one document", url: `${SITE_URL}${LLMS_FULL_TXT_HREF}` } as const;
-export const ROBOTS_TXT_INDEX = { name: "robots.txt", summary: "crawl directives", url: `${SITE_URL}${ROBOTS_TXT_HREF}` } as const;
-export const SITEMAP_INDEX = { name: "sitemap.xml", summary: "sitemap", url: `${SITE_URL}${SITEMAP_HREF}` } as const;
+export const LLMS_TXT_INDEX = { name: "llms.txt", summary: "this index", url: absoluteUrl(LLMS_TXT_HREF) } as const;
+export const LLMS_FULL_TXT_INDEX = { name: "llms-full.txt", summary: "the complete site in one document", url: absoluteUrl(LLMS_FULL_TXT_HREF) } as const;
+export const ROBOTS_TXT_INDEX = { name: "robots.txt", summary: "crawl directives", url: absoluteUrl(ROBOTS_TXT_HREF) } as const;
+export const SITEMAP_INDEX = { name: "sitemap.xml", summary: "sitemap", url: absoluteUrl(SITEMAP_HREF) } as const;
 export const AI_INDEXES = [LLMS_TXT_INDEX, LLMS_FULL_TXT_INDEX] as const;
 export const DISCOVERY_DOCUMENTS = [...AI_INDEXES, ROBOTS_TXT_INDEX, SITEMAP_INDEX] as const;
 

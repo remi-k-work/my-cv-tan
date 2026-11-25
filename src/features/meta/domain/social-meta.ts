@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Array, Match, Option } from "effect";
+import { Array, Match, Option, Result } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
 
 // types
@@ -19,8 +19,6 @@ export const globalSocialImage = (preferredLanguage: PreferredLanguage): SocialI
   ),
 });
 
-const alternateLocales = (preferredLanguage: PreferredLanguage) => Array.filter(SITE_LANGUAGES, (language) => language !== preferredLanguage);
-
 const articleTags = (ogType: "website" | "article", articleSection: SocialMetaInput["articleSection"]): ReadonlyArray<MetaTag> =>
   Match.value(ogType).pipe(
     Match.when("website", () => []),
@@ -28,10 +26,7 @@ const articleTags = (ogType: "website" | "article", articleSection: SocialMetaIn
     Match.when("article", () => [
       { property: "article:author", content: AUTHOR_URL },
       { property: "article:publisher", content: PUBLISHER_URL },
-      ...Option.match(Option.fromUndefinedOr(articleSection), {
-        onNone: () => [],
-        onSome: (section) => [{ property: "article:section", content: section }],
-      }),
+      ...Option.toArray(Option.map(Option.fromUndefinedOr(articleSection), (section) => ({ property: "article:section", content: section }))),
     ]),
     Match.exhaustive
   );
@@ -57,10 +52,9 @@ export const socialMeta = ({
   { property: "og:url", content: canonical },
   { property: "og:site_name", content: SITE_NAME },
   { property: "og:locale", content: OPEN_GRAPH_LOCALES[preferredLanguage] },
-  ...Array.map(alternateLocales(preferredLanguage), (language) => ({
-    property: "og:locale:alternate",
-    content: OPEN_GRAPH_LOCALES[language],
-  })),
+  ...Array.filterMap(SITE_LANGUAGES, (language) =>
+    language === preferredLanguage ? Result.failVoid : Result.succeed({ property: "og:locale:alternate", content: OPEN_GRAPH_LOCALES[language] })
+  ),
   ...articleTags(ogType, articleSection),
   { name: "twitter:card", content: "summary_large_image" },
   { name: "twitter:title", content: title },

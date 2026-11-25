@@ -9,7 +9,8 @@ import type { LinkTag } from "./models";
 import { DEFAULT_LANGUAGE, SITE_LANGUAGES } from "@/domain/constants";
 
 const quoteParam = String.replaceAll(/["\\]/g, "\\$&");
-const linkParam = (key: string, value: string | undefined) => Option.fromNullishOr(value).pipe(Option.map((parameter) => `${key}="${quoteParam(parameter)}"`));
+const linkParam = (key: string, value: string | undefined) =>
+  Option.fromUndefinedOr(value).pipe(Option.map((parameter) => `${key}="${quoteParam(parameter)}"`));
 
 // Serializes a link tag in RFC 8288 parameter order: rel, type, title, hreflang.
 const linkHeader = ({ href, rel, type, title, hrefLang }: LinkTag) => {

@@ -34,7 +34,7 @@ const MD_ESCAPE_RULES = [...NORMALIZE_RULES, ...INLINE_RULES, ...EMPHASIS_RULES,
 // Escapes block-level markdown text
 export const escapeMd = (text: string) =>
   pipe(
-    Array.reduce(MD_ESCAPE_RULES, String.trimStart(text), (escaped, [pattern, replacement]) => String.replace(pattern, replacement)(escaped)),
+    Array.reduce(MD_ESCAPE_RULES, String.trimStart(text), (escaped, [pattern, replacement]) => pipe(escaped, String.replace(pattern, replacement))),
     String.trim
   );
 

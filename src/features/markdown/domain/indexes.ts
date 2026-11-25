@@ -14,6 +14,7 @@ import {
   mdHeading,
   mdIndexEntry,
   mdLink,
+  mdProfileLinks,
   mdQuote,
   mdTitledSection,
 } from "./format";
@@ -108,7 +109,7 @@ const PAGES_SECTION = mdTitledSection(
 );
 
 const OPTIONAL_SECTION = mdTitledSection("Optional", mdDocumentLinks(DOWNLOADABLE_DOCUMENTS, SOURCE_CONTEXT.translate));
-const PROFILES_SECTION = mdTitledSection("Profiles", mdBulletList(Array.map(SOCIAL_PROFILES, ({ name, href }) => mdLink(name, href))));
+const PROFILES_SECTION = mdTitledSection("Profiles", mdBulletList(mdProfileLinks(SOCIAL_PROFILES)));
 
 const LANGUAGE_VARIANTS = mdBulletList(
   Array.map(

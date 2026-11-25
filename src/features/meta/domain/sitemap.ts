@@ -38,11 +38,10 @@ const experienceImages = (seo: ExperienceSeo) =>
 // Reuses each page's SEO identity so sitemap URLs and image metadata cannot drift from HTML or Markdown
 export const buildSitemapXml = (experiences: ExperienceList) => {
   const staticEntries = Array.map(STATIC_URLS, (loc) => ({ loc, images: Array.empty<string>() }));
-  const experienceEntries = pipe(
-    experiences,
-    Array.map((experience) => experienceSeo({ experience, preferredLanguage: DEFAULT_LANGUAGE })),
-    Array.map((seo) => ({ loc: seo.canonical, images: experienceImages(seo) }))
-  );
+  const experienceEntries = Array.map(experiences, (experience) => {
+    const seo = experienceSeo({ experience, preferredLanguage: DEFAULT_LANGUAGE });
+    return { loc: seo.canonical, images: experienceImages(seo) };
+  });
 
   // Static pages win collisions, so malformed input cannot attach an experience image to a static URL
   const entries = pipe(

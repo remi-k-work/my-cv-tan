@@ -328,6 +328,8 @@ it("project details use SoftwareSourceCode linked to the canonical WebPage, pers
   assert.strictEqual(article?.keywords, project?.keywords);
   // Article.articleSection matches og:article:section so JSON-LD and Open Graph agree
   assert.strictEqual(article?.articleSection, "portfolio");
+  // Article.articleBody carries the unabridged narrative even when meta description is truncated
+  assert.strictEqual(article?.articleBody, sampleExperience.txt);
   // Schema.org's link to the source repository, single-sourced from the content's GitHub URL
   assert.strictEqual(project?.codeRepository, "https://github.com/example/repo");
   // The image is a sized ImageObject: scrapers learn the dimensions without fetching the file

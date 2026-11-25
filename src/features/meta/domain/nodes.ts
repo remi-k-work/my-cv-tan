@@ -13,6 +13,7 @@ interface ArticleNodeInput {
   readonly id: string;
   readonly headline: string;
   readonly description: string;
+  readonly articleBody?: string;
   readonly preferredLanguage: PreferredLanguage;
   readonly keywords: ReadonlyArray<string>;
   readonly articleSection?: ExperienceSection;
@@ -69,6 +70,7 @@ export const articleNode = ({
   id,
   headline,
   description,
+  articleBody,
   preferredLanguage,
   keywords,
   articleSection,
@@ -81,6 +83,7 @@ export const articleNode = ({
     "@id": id,
     headline,
     description,
+    articleBody,
     inLanguage: preferredLanguage,
     keywords: Array.join(keywords, ", "),
     articleSection,
@@ -165,7 +168,7 @@ export const experienceItemNode = ({
     })),
     Match.when(false, () =>
       definedNode({
-        "@type": repository === undefined ? "CreativeWork" : "SoftwareSourceCode",
+        "@type": Predicate.isUndefined(repository) ? "CreativeWork" : "SoftwareSourceCode",
         "@id": id,
         name: role,
         description,
