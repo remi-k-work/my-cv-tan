@@ -168,6 +168,7 @@ it.effect("the sitemap document recovers a dataset failure as a non-cacheable 50
 
     assert.strictEqual(response.status, 503);
     assert.strictEqual(response.headers.get("Cache-Control"), "no-store");
+    assert.strictEqual(response.headers.get("Content-Location"), "https://www.remiforge.dev/sitemap.xml");
     assert.strictEqual(response.headers.get("Retry-After"), "300");
     assert.include(yield* Effect.promise(() => response.text()), "<error>Sitemap is temporarily unavailable.</error>");
   })
@@ -178,6 +179,7 @@ it("sitemap data failures return non-cacheable noindex XML with status 503", asy
   assert.strictEqual(response.status, 503);
   assert.strictEqual(response.headers.get("Content-Type"), "application/xml; charset=utf-8");
   assert.strictEqual(response.headers.get("Cache-Control"), "no-store");
+  assert.strictEqual(response.headers.get("Content-Location"), "https://www.remiforge.dev/sitemap.xml");
   assert.strictEqual(response.headers.get("X-Robots-Tag"), "noindex, follow");
   // Transient data failure retry interval.
   assert.strictEqual(response.headers.get("Retry-After"), "300");

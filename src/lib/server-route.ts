@@ -31,6 +31,10 @@ const removeSetCookieHeader = () => {
   }
 };
 
+// HEAD returns the GET representation's metadata without transferring its body
+const headResponse = (request: Request, response: Response) =>
+  request.method === "HEAD" ? new Response(null, { status: response.status, statusText: response.statusText, headers: response.headers }) : response;
+
 // Most machine-readable documents are public and visitor-independent, so stripping is the default
 export const documentRoute = (
   document: (request: Request) => Effect.Effect<Response, never, ServerServices>,
@@ -43,6 +47,7 @@ export const documentRoute = (
       RuntimeServer.runPromise(
         document(request).pipe(
           Effect.flatMap((response) => EntityTags.pipe(Effect.flatMap(({ apply }) => apply(request, response)))),
+          Effect.map((response) => headResponse(request, response)),
           Effect.ensuring(
             Effect.sync(() => {
               if (!keepsVisitorState(request)) removeSetCookieHeader();

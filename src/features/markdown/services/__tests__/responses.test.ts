@@ -129,10 +129,11 @@ it("response helpers set content types, indexing, cache, canonical, and language
   assert.isNull(unparseable.headers.get("Content-Location"));
   assert.include(unparseable.headers.get("Link") ?? "", "llms-full.txt");
 
-  const unavailable = mdUnavailableResponse("# Temporarily unavailable", "pl");
+  const unavailable = mdUnavailableResponse("# Temporarily unavailable", "pl", Option.some("/sample-role.md"));
   assert.strictEqual(unavailable.status, 503);
   assert.strictEqual(unavailable.headers.get("Content-Type"), "text/markdown; charset=utf-8");
   assert.strictEqual(unavailable.headers.get("Content-Language"), "pl");
+  assert.strictEqual(unavailable.headers.get("Content-Location"), "https://www.remiforge.dev/sample-role.md?lang=pl");
   assert.strictEqual(unavailable.headers.get("Cache-Control"), "no-store");
   assert.strictEqual(unavailable.headers.get("X-Robots-Tag"), "noindex, follow");
   assert.strictEqual(unavailable.headers.get("X-Content-Type-Options"), "nosniff");
@@ -151,9 +152,10 @@ it("response helpers set content types, indexing, cache, canonical, and language
   assert.strictEqual(txt.headers.get("Content-Signal"), CONTENT_SIGNAL);
   assert.strictEqual(txt.headers.get("X-Content-Type-Options"), "nosniff");
 
-  const unavailableTxt = txtUnavailableResponse("Unavailable");
+  const unavailableTxt = txtUnavailableResponse("Unavailable", absoluteUrl("/llms.txt"));
   assert.strictEqual(unavailableTxt.status, 503);
   assert.strictEqual(unavailableTxt.headers.get("Content-Type"), "text/plain; charset=utf-8");
+  assert.strictEqual(unavailableTxt.headers.get("Content-Location"), absoluteUrl("/llms.txt"));
   assert.strictEqual(unavailableTxt.headers.get("Cache-Control"), "no-store");
   assert.strictEqual(unavailableTxt.headers.get("X-Robots-Tag"), "noindex, follow");
   assert.strictEqual(unavailableTxt.headers.get("Retry-After"), "300");
@@ -188,7 +190,7 @@ it.effect("a failed experience-list decode is an error, while a valid missing sl
 it.effect("required-content failures map to non-cacheable 503s and valid missing slugs map to 404s", () =>
   Effect.gen(function* () {
     const unavailableMarkdown = yield* requireData(Option.none(), "experience list").pipe(
-      Effect.catchTag("RequiredDataError", () => Effect.succeed(mdUnavailableResponse("# Temporarily unavailable", "pl")))
+      Effect.catchTag("RequiredDataError", () => Effect.succeed(mdUnavailableResponse("# Temporarily unavailable", "pl", Option.some("/sample-role.md"))))
     );
     assert.strictEqual(unavailableMarkdown.status, 503);
     assert.strictEqual(unavailableMarkdown.headers.get("Cache-Control"), "no-store");
@@ -196,7 +198,7 @@ it.effect("required-content failures map to non-cacheable 503s and valid missing
 
     const unavailableIndex = yield* recoverDataFailure(
       () => "[LLMS.TXT]",
-      () => txtUnavailableResponse("Unavailable")
+      () => txtUnavailableResponse("Unavailable", absoluteUrl("/llms.txt"))
     )(requireData(Option.none(), "experience list"));
     assert.strictEqual(unavailableIndex.status, 503);
     assert.strictEqual(unavailableIndex.headers.get("Content-Type"), "text/plain; charset=utf-8");

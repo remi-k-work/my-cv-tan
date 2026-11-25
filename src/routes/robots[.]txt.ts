@@ -4,4 +4,4 @@ import { createFileRoute } from "@tanstack/react-router";
 // services, features, and other libraries
 import { robotsHandler } from "@/features/meta/services/robots";
 
-export const Route = createFileRoute("/robots.txt")({ server: { handlers: { GET: robotsHandler } } });
+export const Route = createFileRoute("/robots.txt")({ server: { handlers: { GET: robotsHandler, HEAD: robotsHandler } } });

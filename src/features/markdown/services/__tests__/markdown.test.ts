@@ -37,7 +37,10 @@ it.effect("Markdown.layer composes its translation and dataset dependencies", ()
 );
 
 it.effect("Markdown.layer accepts an injected translation snapshot loader", () => {
-  const translation = Layer.succeed(Translation, makeTranslation(() => Effect.succeed(() => "Injected section")));
+  const translation = Layer.succeed(
+    Translation,
+    makeTranslation(() => Effect.succeed(() => "Injected section"))
+  );
 
   return Effect.gen(function* () {
     const markdown = yield* Markdown;
@@ -60,16 +63,17 @@ it.effect("Markdown documents recover required-data failures as fresh non-cachea
     assert.notStrictEqual(firstIndex, secondIndex);
 
     const responses = [
-      yield* markdown.page(HOME_PATH)(new Request("https://www.remiforge.dev/index.md?lang=en")),
-      yield* markdown.experience(new Request("https://www.remiforge.dev/sample-role.md?lang=en")),
-      firstIndex,
-      secondIndex,
-      yield* markdown.siteIndexFull(new Request(LLMS_FULL_TXT_INDEX.url)),
-    ];
+      [yield* markdown.page(HOME_PATH)(new Request("https://www.remiforge.dev/index.md?lang=en")), "https://www.remiforge.dev/index.md?lang=en"],
+      [yield* markdown.experience(new Request("https://www.remiforge.dev/sample-role.md?lang=en")), "https://www.remiforge.dev/sample-role.md?lang=en"],
+      [firstIndex, LLMS_TXT_INDEX.url],
+      [secondIndex, LLMS_TXT_INDEX.url],
+      [yield* markdown.siteIndexFull(new Request(LLMS_FULL_TXT_INDEX.url)), LLMS_FULL_TXT_INDEX.url],
+    ] as const;
 
-    for (const response of responses) {
+    for (const [response, contentLocation] of responses) {
       assert.strictEqual(response.status, 503);
       assert.strictEqual(response.headers.get("Cache-Control"), "no-store");
+      assert.strictEqual(response.headers.get("Content-Location"), contentLocation);
       assert.strictEqual(response.headers.get("X-Robots-Tag"), "noindex, follow");
       assert.strictEqual(response.headers.get("Retry-After"), "300");
       assert.include(yield* Effect.promise(() => response.text()), "temporarily unavailable");

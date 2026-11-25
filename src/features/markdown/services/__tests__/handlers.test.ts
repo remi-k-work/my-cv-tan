@@ -314,6 +314,47 @@ it("llms-full.txt concatenates every twin body beneath its canonical URL", async
   for (const slug of slugs) assert.include(txt, `[Source](https://www.remiforge.dev${experiencePath(slug)})`);
 });
 
+it("every public document endpoint answers HEAD with GET metadata, an ETag, and no body", async () => {
+  const documents = [
+    [homeHandler, absoluteUrl("/index.md?lang=en")],
+    [educationHandler, absoluteUrl("/education.md?lang=en")],
+    [contactHandler, absoluteUrl("/contact.md?lang=en")],
+    [experienceHandler, absoluteUrl(`${experienceMarkdownPath(firstSlug)}?lang=en`)],
+    [llmsTxtHandler, LLMS_TXT_INDEX.url],
+    [llmsFullTxtHandler, LLMS_FULL_TXT_INDEX.url],
+    [robotsHandler, absoluteUrl("/robots.txt")],
+    [sitemapHandler, absoluteUrl("/sitemap.xml")],
+  ] as const;
+
+  for (const [handler, url] of documents) {
+    const get = await handler({ request: new Request(url) });
+    const head = await handler({ request: new Request(url, { method: "HEAD" }) });
+
+    assert.strictEqual(head.status, get.status, url);
+    assert.deepStrictEqual(Object.fromEntries(head.headers), Object.fromEntries(get.headers), url);
+    assert.match(head.headers.get("ETag") ?? "", /^"[a-f0-9]{64}"$/, url);
+    assert.strictEqual(await head.text(), "", url);
+  }
+});
+
+it("both AI discovery indexes revalidate without downloading an unchanged body", async () => {
+  for (const [handler, url] of [
+    [llmsTxtHandler, LLMS_TXT_INDEX.url],
+    [llmsFullTxtHandler, LLMS_FULL_TXT_INDEX.url],
+  ] as const) {
+    const initial = await handler({ request: new Request(url) });
+    const etag = initial.headers.get("ETag");
+    assert.isNotNull(etag);
+
+    const revalidated = await handler({ request: new Request(url, { headers: { "If-None-Match": etag! } }) });
+
+    assert.strictEqual(revalidated.status, 304);
+    assert.strictEqual(revalidated.headers.get("ETag"), etag);
+    assert.strictEqual(revalidated.headers.get("Content-Location"), url);
+    assert.isNull(revalidated.body);
+  }
+});
+
 it("public machine-readable documents revalidate without downloading an unchanged body", async () => {
   const url = "https://www.remiforge.dev/index.md?lang=en";
   const initial = await homeHandler({ request: new Request(url) });

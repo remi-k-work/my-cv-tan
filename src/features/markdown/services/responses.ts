@@ -96,16 +96,16 @@ const mdFailureResponse = (body: string, preferredLanguage: PreferredLanguage, s
     },
   });
 
-export const mdNotFoundResponse = (body: string, preferredLanguage: PreferredLanguage, markdownPath: Option.Option<string>) =>
-  mdFailureResponse(
-    body,
-    preferredLanguage,
-    404,
-    pipe(
-      markdownPath,
-      Option.map((path) => markdownTwinUrl(path, preferredLanguage)),
-      Option.getOrUndefined
-    )
+const markdownLocation = (markdownPath: Option.Option<string>, preferredLanguage: PreferredLanguage) =>
+  pipe(
+    markdownPath,
+    Option.map((path) => markdownTwinUrl(path, preferredLanguage)),
+    Option.getOrUndefined
   );
 
-export const mdUnavailableResponse = (body: string, preferredLanguage: PreferredLanguage) => mdFailureResponse(body, preferredLanguage, 503);
+export const mdNotFoundResponse = (body: string, preferredLanguage: PreferredLanguage, markdownPath: Option.Option<string>) =>
+  mdFailureResponse(body, preferredLanguage, 404, markdownLocation(markdownPath, preferredLanguage));
+
+// A retryable error still identifies the language-pinned representation the crawler requested
+export const mdUnavailableResponse = (body: string, preferredLanguage: PreferredLanguage, markdownPath: Option.Option<string>) =>
+  mdFailureResponse(body, preferredLanguage, 503, markdownLocation(markdownPath, preferredLanguage));

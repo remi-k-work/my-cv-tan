@@ -5,4 +5,4 @@ import { createFileRoute } from "@tanstack/react-router";
 import { llmsFullTxtHandler } from "@/features/markdown/services/handlers";
 
 // Intentionally unilingual English site content for single-request AI ingestion (GEO)
-export const Route = createFileRoute("/llms-full.txt")({ server: { handlers: { GET: llmsFullTxtHandler } } });
+export const Route = createFileRoute("/llms-full.txt")({ server: { handlers: { GET: llmsFullTxtHandler, HEAD: llmsFullTxtHandler } } });

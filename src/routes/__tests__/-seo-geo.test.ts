@@ -144,7 +144,7 @@ it("the root route publishes response headers for the language negotiated by its
   assert.include(result?.Link ?? "", "https://www.remiforge.dev/llms.txt");
 });
 
-it("every public machine-readable route is bound to its implemented GET handler", () => {
+it("every public machine-readable route supports GET and HEAD through the same handler", () => {
   const bindings = [
     [HomeMdRoute, homeHandler],
     [EducationMdRoute, educationHandler],
@@ -159,6 +159,8 @@ it("every public machine-readable route is bound to its implemented GET handler"
   for (const [route, handler] of bindings) {
     const handlers: unknown = route.options.server?.handlers;
     const get = typeof handlers === "object" && handlers !== null && "GET" in handlers ? handlers.GET : undefined;
+    const head = typeof handlers === "object" && handlers !== null && "HEAD" in handlers ? handlers.HEAD : undefined;
     assert.strictEqual(get, handler);
+    assert.strictEqual(head, handler);
   }
 });

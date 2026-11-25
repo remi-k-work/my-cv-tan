@@ -37,19 +37,26 @@ export const documentHeaders = (preferredLanguage: PreferredLanguage) =>
   }) as const;
 
 // HTTP response envelope helpers for plain-text and XML discovery endpoints
+const locationHeader = (contentLocation?: string): Readonly<Record<string, string>> =>
+  contentLocation === undefined ? {} : { "Content-Location": contentLocation };
+
 const instructionsHeaders = (contentLocation?: string) => ({
   ...TXT_HEADERS,
   ...CACHEABLE_HEADERS,
   ...NOINDEX_HEADERS,
-  ...(contentLocation === undefined ? {} : { "Content-Location": contentLocation }),
+  ...locationHeader(contentLocation),
 });
 
 export const txtResponse = (body: string, contentLocation?: string) => new Response(body, { status: 200, headers: instructionsHeaders(contentLocation) });
-export const txtUnavailableResponse = (body: string) => new Response(body, { status: 503, headers: { ...TXT_HEADERS, ...SERVICE_UNAVAILABLE_HEADERS } });
+export const txtUnavailableResponse = (body: string, contentLocation?: string) =>
+  new Response(body, { status: 503, headers: { ...TXT_HEADERS, ...SERVICE_UNAVAILABLE_HEADERS, ...locationHeader(contentLocation) } });
 export const sitemapResponse = (xml: string) =>
   new Response(xml, {
     status: 200,
-    headers: { ...SITEMAP_HEADERS, ...CACHEABLE_HEADERS, ...NOINDEX_HEADERS, "Content-Location": SITEMAP_INDEX.url },
+    headers: { ...SITEMAP_HEADERS, ...CACHEABLE_HEADERS, ...NOINDEX_HEADERS, ...locationHeader(SITEMAP_INDEX.url) },
   });
 export const sitemapUnavailableResponse = () =>
-  new Response(SITEMAP_UNAVAILABLE_XML, { status: 503, headers: { ...SITEMAP_HEADERS, ...SERVICE_UNAVAILABLE_HEADERS } });
+  new Response(SITEMAP_UNAVAILABLE_XML, {
+    status: 503,
+    headers: { ...SITEMAP_HEADERS, ...SERVICE_UNAVAILABLE_HEADERS, ...locationHeader(SITEMAP_INDEX.url) },
+  });

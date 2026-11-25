@@ -41,7 +41,7 @@ const applyRepresentationPolicy = (response: Response, fallback: boolean, langOv
   });
 };
 
-const documentResponse = (translation: Translation["Service"], render: DocumentBody): Document =>
+const documentResponse = (translation: Translation["Service"], markdownPath: (request: Request) => Option.Option<string>, render: DocumentBody): Document =>
   Effect.fn("Markdown.document")(function* (request: Request) {
     const langOverride = parseLangParam(request.url);
     const { context, fallback } = yield* translation.resolve(requestPreferredLanguage(langOverride));
@@ -49,7 +49,7 @@ const documentResponse = (translation: Translation["Service"], render: DocumentB
     const rendered = yield* render(request, context).pipe(
       recoverDataFailure(
         () => `[${documentName(request.url)}]`,
-        () => mdUnavailableResponse(unavailableMarkdownBody(context.translate), context.preferredLanguage)
+        () => mdUnavailableResponse(unavailableMarkdownBody(context.translate), context.preferredLanguage, markdownPath(request))
       )
     );
 
@@ -64,12 +64,15 @@ const respond = (context: TwinContext, twin: MarkdownTwin, canonical: string, ma
     markdownPath,
   });
 
-const pageDocument = (translation: Translation["Service"], pagePath: PagePath) =>
-  documentResponse(translation, (_request, context) => {
-    const twin = PAGE_TWINS[pagePath];
+const pageDocument = (translation: Translation["Service"], pagePath: PagePath) => {
+  const twin = PAGE_TWINS[pagePath];
 
-    return Effect.map(twin.document(context), (document) => respond(context, document, twin.entry.canonical, twin.entry.mdHref));
-  });
+  return documentResponse(
+    translation,
+    () => Option.some(twin.entry.mdHref),
+    (_request, context) => Effect.map(twin.document(context), (document) => respond(context, document, twin.entry.canonical, twin.entry.mdHref))
+  );
+};
 
 const notFoundTwin = (slug: Option.Option<string>, context: TwinContext) =>
   mdNotFoundResponse(twinDocument(buildNotFoundMd({ slug, ...context })), context.preferredLanguage, Option.map(slug, experienceMarkdownPath));
@@ -77,6 +80,7 @@ const notFoundTwin = (slug: Option.Option<string>, context: TwinContext) =>
 const experienceDocument = (translation: Translation["Service"]): Document =>
   documentResponse(
     translation,
+    (request) => Option.map(slugFromMdPathname(request.url), experienceMarkdownPath),
     Effect.fn("Markdown.experience")(function* (request: Request, context: TwinContext) {
       // Reuse the parsed slug as the subject of both 404 branches
       const slug = slugFromMdPathname(request.url);
@@ -106,7 +110,7 @@ const discoveryDocument =
       Effect.map((body) => txtResponse(body, index.url)),
       recoverDataFailure(
         () => `[${String.toUpperCase(index.name)}]`,
-        () => txtUnavailableResponse(unavailableIndexBody(index.name))
+        () => txtUnavailableResponse(unavailableIndexBody(index.name), index.url)
       ),
       Effect.withSpan("Markdown.discovery", { attributes: { document: index.name } })
     );
