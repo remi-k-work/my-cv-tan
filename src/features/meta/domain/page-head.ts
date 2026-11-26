@@ -9,8 +9,7 @@ import { staticPageCopy } from "./pages";
 import { representationLinks } from "./link-tags";
 
 // types
-import type { ExperienceHeadInput } from "./seo";
-import type { JsonLdNodes, PageHead, SocialImage, SocialImageFacts, SocialMetaInput, StaticPageCopy } from "./models";
+import type { ExperienceHeadInput, JsonLdNodes, PageHead, SocialImage, SocialImageFacts, SocialMetaInput, StaticPageCopy } from "./models";
 import type { PageTitles, PreferredLanguage } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";

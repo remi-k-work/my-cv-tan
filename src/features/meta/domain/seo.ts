@@ -7,15 +7,8 @@ import { excerpt, experienceHeadline, experienceImagePath, isEmployment } from "
 import { absoluteUrl, experienceMarkdownPath, experiencePath } from "./urls";
 
 // types
-import type { PreferredLanguage } from "@/domain/models";
 import type { Experience } from "@/features/experience/domain/models";
-import type { ExperienceSection, ExperienceSeo, SocialImageFacts } from "./models";
-
-// What every caller must supply to derive an experience's SEO identity
-export interface ExperienceHeadInput {
-  readonly experience: Experience;
-  readonly preferredLanguage: PreferredLanguage;
-}
+import type { ExperienceSection, ExperienceHeadInput, ExperienceSeo, SocialImageFacts } from "./models";
 
 // constants
 import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain/constants";

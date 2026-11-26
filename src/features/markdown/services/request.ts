@@ -1,12 +1,10 @@
 // services, features, and other libraries
 import { Option, Predicate, String, flow, pipe } from "effect";
 import { decodePreferredLanguage } from "@/domain/models";
-import { decodeUrlOption } from "@/features/meta/domain/urls";
+import { decodeExperienceSlug, decodeUrlOption } from "@/features/meta/domain/urls";
 
 // constants
 import { LANG_PARAM } from "@/features/meta/domain/site";
-
-const decodeUrlComponent = Option.liftThrowable(decodeURIComponent);
 
 // Parses and validates the ?lang= query parameter from a request URL
 export const parseLangParam = (url: string) =>
@@ -26,8 +24,8 @@ export const slugFromMdPathname = (url: string) =>
     Option.filter(Predicate.not(String.includes("/"))),
     Option.filter(String.endsWith(".md")),
     Option.map(String.slice(0, -".md".length)),
-    Option.flatMap(decodeUrlComponent),
-    Option.filter(String.isNonEmpty)
+    // The shared codec is the exact inverse of experiencePath, so encoded slugs round-trip
+    Option.flatMap(decodeExperienceSlug)
   );
 
 // Names the failing document in a log line without trusting the URL to parse

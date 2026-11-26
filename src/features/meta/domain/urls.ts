@@ -44,5 +44,11 @@ export const encodeParens = (value: string) => pipe(value, String.replaceAll("("
 // Percent-encodes parentheses and whitespace for Markdown link destinations
 export const encodeDestination = (value: string) => pipe(encodeParens(value), String.replaceAll(/\s/g, "%20"));
 
+// Path encoding and its inverse live together so a change to one cannot silently break the other
+const decodeSegment = Option.liftThrowable(decodeURIComponent);
+
+// Rejects a decoded empty segment as well as a malformed escape, so a bare ".md" route cannot name an experience
+export const decodeExperienceSlug = (segment: string): Option.Option<string> => pipe(segment, decodeSegment, Option.filter(String.isNonEmpty));
+
 export const experiencePath = (slug: string) => `/${encodeParens(encodeURIComponent(slug))}`;
 export const experienceMarkdownPath = (slug: string) => `${experiencePath(slug)}.md`;

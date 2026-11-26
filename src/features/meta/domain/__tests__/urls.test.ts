@@ -1,6 +1,16 @@
 import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
-import { absoluteUrl, encodeParens, experienceMarkdownPath, experiencePath, httpUrlOption, markdownTwinUrl, validatedHref, withLanguageParam } from "../urls";
+import {
+  absoluteUrl,
+  decodeExperienceSlug,
+  encodeParens,
+  experienceMarkdownPath,
+  experiencePath,
+  httpUrlOption,
+  markdownTwinUrl,
+  validatedHref,
+  withLanguageParam,
+} from "../urls";
 
 // These tests pin the URL math the HTML heads, Markdown twins, discovery documents and HTTP
 // responses share. The Link-header serialization itself is covered in link-tags.test.ts.
@@ -66,4 +76,14 @@ it("experience paths encode one URL segment, including parentheses that would cl
   assert.strictEqual(experiencePath("résumé"), "/r%C3%A9sum%C3%A9");
   // The twin route is the detail path with one suffix, so both always name the same document
   assert.strictEqual(experienceMarkdownPath("role (senior)"), "/role%20%28senior%29.md");
+});
+
+it("decodeExperienceSlug is the exact inverse of experiencePath for every encoded segment", () => {
+  for (const slug of ["simple", "role (senior) & more", "résumé", "100% done", "a/b"]) {
+    const segment = experiencePath(slug).slice(1);
+    assert.deepStrictEqual(decodeExperienceSlug(segment), Option.some(slug));
+  }
+  // A malformed escape and an empty segment are both rejected rather than published as a slug
+  assert.deepStrictEqual(decodeExperienceSlug("%ZZ"), Option.none());
+  assert.deepStrictEqual(decodeExperienceSlug(""), Option.none());
 });

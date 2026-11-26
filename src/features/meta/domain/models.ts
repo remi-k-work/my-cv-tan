@@ -73,6 +73,12 @@ export interface SocialMetaInput {
   readonly articleSection?: ExperienceSection;
 }
 
+// What every caller must supply to derive an experience's SEO identity
+export interface ExperienceHeadInput {
+  readonly experience: Experience;
+  readonly preferredLanguage: PreferredLanguage;
+}
+
 // The SEO identity of one experience: the single record the HTML head, the JSON-LD graph and the
 // Markdown twin all derive from, so their canonical URL, headline and description can never drift.
 export interface ExperienceSeo {
