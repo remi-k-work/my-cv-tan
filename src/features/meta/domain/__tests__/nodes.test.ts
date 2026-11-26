@@ -138,6 +138,17 @@ it("collectionNode builds a Collection with parts and optional url", () => {
   });
 });
 
+it("collectionNode omits an empty parts list instead of publishing an empty array", () => {
+  const node = collectionNode({
+    id: "https://www.remiforge.dev/#list",
+    name: "List",
+    preferredLanguage: language,
+    parts: [],
+  });
+
+  assert.isUndefined(node.hasPart);
+});
+
 it("imageObject builds a sized ImageObject", () => {
   assert.deepStrictEqual(imageObject("https://www.remiforge.dev/img.jpg", 100, 200), {
     "@type": "ImageObject",

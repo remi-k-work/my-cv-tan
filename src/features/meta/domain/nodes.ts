@@ -134,7 +134,8 @@ export const collectionNode = ({ id, name, preferredLanguage, parts, url }: Coll
     url,
     name,
     inLanguage: preferredLanguage,
-    hasPart: parts,
+    // Same empty-list omission as webPageNode, so no builder publishes a redundant `hasPart: []`
+    hasPart: nonEmptyOrUndefined(parts),
   });
 
 export const imageObject = (url: string, width: number, height: number) => ({ "@type": "ImageObject", url, width, height }) as const;
