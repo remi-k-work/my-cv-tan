@@ -42,7 +42,18 @@ export const META_DESCRIPTION_LENGTH = 160;
 export const BRANDED_TITLE = (title: string) => `${SITE_NAME} ● ${title}`;
 
 export const JOB_TITLE = "Web Developer";
-export const KNOWS_ABOUT = ["Web Development", "TypeScript", "React", "Next.js", "Effect", "Front-End Development", "Full-Stack Development"] as const;
+export const KNOWS_ABOUT = [
+  "Web Development",
+  "TypeScript",
+  "React",
+  "Next.js",
+  "TanStack Start",
+  "Effect",
+  "PostgreSQL",
+  "Tailwind CSS",
+  "Front-End Development",
+  "Full-Stack Development",
+] as const;
 
 export const SOCIAL_PROFILES = [
   { name: "GitHub", href: "https://github.com/remi-k-work" },

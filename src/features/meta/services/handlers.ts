@@ -1,12 +1,7 @@
 // services, features, and other libraries
-import { Effect } from "effect";
 import { documentRoute } from "@/lib/server-route";
+import { Robots } from "./robots";
 import { Sitemap } from "./sitemap";
-import { txtResponse } from "./responses";
 
-// constants
-import { ROBOTS_TXT } from "@/features/meta/domain/robots";
-import { ROBOTS_TXT_INDEX } from "@/features/meta/domain/discovery";
-
-export const robotsHandler = documentRoute(() => Effect.sync(() => txtResponse(ROBOTS_TXT, ROBOTS_TXT_INDEX.url)));
+export const robotsHandler = documentRoute(() => Robots.use((robots) => robots.document));
 export const sitemapHandler = documentRoute(() => Sitemap.use((sitemap) => sitemap.document));

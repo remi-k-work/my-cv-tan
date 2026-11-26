@@ -11,11 +11,13 @@ import { LANG_PARAM, SITE_URL } from "./site";
 // narrower input type makes a non-string a compile error instead of a runtime None
 export const decodeUrlOption = Schema.decodeOption(Schema.URLFromString);
 
+const HttpUrl = Schema.URLFromString.check(Schema.makeFilter((url) => url.protocol === "http:" || url.protocol === "https:"));
+const decodeHttpUrlOption = Schema.decodeOption(HttpUrl);
+
 // Validates that a string is a valid HTTP(S) URL
 export const httpUrlOption = (value: string) =>
   pipe(
-    decodeUrlOption(value),
-    Option.filter((url) => url.protocol === "http:" || url.protocol === "https:"),
+    decodeHttpUrlOption(value),
     Option.map((url) => url.href)
   );
 

@@ -1,6 +1,8 @@
 import { assert, it } from "@effect/vitest";
+import { Effect } from "effect";
 import { isCrawlablePath, ROBOTS_DISALLOW_PATHS, ROBOTS_TXT } from "../robots";
 import { robotsHandler } from "../../services/handlers";
+import { Robots } from "../../services/robots";
 
 it("robots.txt allows content, disallows API endpoints, and advertises the sitemap", async () => {
   const robots = ROBOTS_TXT;
@@ -57,3 +59,15 @@ it("robots.txt allows content, disallows API endpoints, and advertises the sitem
   assert.notStrictEqual(first, second);
   assert.strictEqual(await first.text(), await second.text());
 });
+
+it.effect("Robots service builds fresh cacheable robots.txt responses", () =>
+  Effect.gen(function* () {
+    const first = yield* Robots.use((robots) => robots.document);
+    const second = yield* Robots.use((robots) => robots.document);
+
+    assert.notStrictEqual(first, second);
+    assert.strictEqual(first.status, 200);
+    assert.strictEqual(first.headers.get("Content-Location"), "https://www.remiforge.dev/robots.txt");
+    assert.strictEqual(yield* Effect.promise(() => first.text()), ROBOTS_TXT);
+  }).pipe(Effect.provide(Robots.layer))
+);

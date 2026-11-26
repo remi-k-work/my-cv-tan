@@ -96,17 +96,22 @@ export class Markdown extends Context.Service<
         (request) => Option.map(slugFromMdPathname(request.url), experienceMarkdownPath),
         Effect.fn("Markdown.experience")(function* (request: Request, context: TwinContext) {
           const slug = slugFromMdPathname(request.url);
-          if (Option.isNone(slug)) return notFoundTwin(slug, context);
 
-          const list = yield* datasets.experienceList(context.preferredLanguage);
-          const found = experienceFromList(list, slug.value);
-          if (Option.isNone(found)) {
-            yield* Effect.logDebug(`[SLUG.MD]: no experience for slug "${slug.value}", emitting markdown 404`);
-            return notFoundTwin(slug, context);
-          }
+          return yield* Option.match(slug, {
+            onNone: () => Effect.succeed(notFoundTwin(slug, context)),
+            onSome: Effect.fnUntraced(function* (resolvedSlug) {
+              const list = yield* datasets.experienceList(context.preferredLanguage);
 
-          const seo = experienceSeo({ experience: found.value, preferredLanguage: context.preferredLanguage });
-          return respond(context, buildExperienceMd({ seo, translate: context.translate }), seo.canonical, seo.markdownPath);
+              return yield* Option.match(experienceFromList(list, resolvedSlug), {
+                onNone: () =>
+                  Effect.logDebug(`[SLUG.MD]: no experience for slug "${resolvedSlug}", emitting markdown 404`).pipe(Effect.as(notFoundTwin(slug, context))),
+                onSome: (found) => {
+                  const seo = experienceSeo({ experience: found, preferredLanguage: context.preferredLanguage });
+                  return Effect.succeed(respond(context, buildExperienceMd({ seo, translate: context.translate }), seo.canonical, seo.markdownPath));
+                },
+              });
+            }),
+          });
         })
       );
 

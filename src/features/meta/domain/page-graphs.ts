@@ -1,9 +1,9 @@
 // services, features, and other libraries
 import { Array, Match, Option, pipe } from "effect";
-import { excerpt, isEmployment, partitionExperiences } from "@/features/experience/domain/helpers";
+import { isEmployment, partitionExperiences } from "@/features/experience/domain/helpers";
 import { matchPreferredLanguage } from "@/domain/helpers";
-import { experienceSection, experienceSeo } from "./seo";
-import { absoluteUrl, validatedHref } from "./urls";
+import { experienceKeywords, experienceLinks, experienceSection, experienceSeo, inlineText } from "./seo";
+import { absoluteUrl } from "./urls";
 import {
   articleNode,
   breadcrumb,
@@ -50,7 +50,7 @@ interface LocalizedCopy {
 
 // constants
 import { CONTACT_PATH, EDUCATION_PATH } from "@/domain/constants";
-import { EXPERIENCE_LIST_ID, GLOBAL_SOCIAL_IMAGE, HOME_URL, META_DESCRIPTION_LENGTH, PERSON_ID, PORTFOLIO_LIST_ID, PROFILE_ID } from "./site";
+import { EXPERIENCE_LIST_ID, GLOBAL_SOCIAL_IMAGE, HOME_URL, PERSON_ID, PORTFOLIO_LIST_ID, PROFILE_ID } from "./site";
 
 // Matches the og:image published on static pages so JSON-LD extractors see the same sized asset
 const STATIC_PRIMARY_IMAGE = imageObject(GLOBAL_SOCIAL_IMAGE.src, GLOBAL_SOCIAL_IMAGE.width, GLOBAL_SOCIAL_IMAGE.height);
@@ -128,7 +128,8 @@ export const schoolSubgraph = (url: string, educationList: EducationList): JsonL
         educationalOrganizationNode({
           id: `${url}#school-${index + 1}`,
           name,
-          description: excerpt(info, META_DESCRIPTION_LENGTH),
+          // Preserve full study fields (e.g. degree/major) instead of truncating at snippet length
+          description: inlineText(info),
           address: location,
         })
       );
@@ -180,7 +181,7 @@ export const contactJsonLd = ({ pageName, description, preferredLanguage }: Loca
 };
 
 export const experienceJsonLd = ({ experience, preferredLanguage, path, headline, description, screenshot }: ExperienceGraphInput): JsonLdNodes => {
-  const { role, company, txt, skillsUsed, gitHubLink, liveLink, videoLink } = experience;
+  const { role, company, txt } = experience;
 
   const employment = isEmployment(experience);
   const url = absoluteUrl(path);
@@ -193,16 +194,28 @@ export const experienceJsonLd = ({ experience, preferredLanguage, path, headline
     Option.map(({ src, width, height }) => imageObject(src, width, height)),
     Option.getOrUndefined
   );
-  const keywords = Array.dedupe(skillsUsed);
-  const repository = pipe(gitHubLink, validatedHref, Option.getOrUndefined);
-  // Schema.org scopes relatedLink to WebPage, not the CreativeWork described by that page
-  const relatedLinks = pipe([liveLink, videoLink], Array.map(validatedHref), Array.getSomes, Array.dedupe);
-  const item = experienceItemNode({ employment, id: itemId, url, role, description, preferredLanguage, keywords, image, repository });
+  const keywords = experienceKeywords(experience);
+  const links = experienceLinks(experience);
+  const repository = Option.getOrUndefined(links.repository);
+  // Projects publish gitHubLink on SoftwareSourceCode.codeRepository; employment roles carry no codeRepository so WebPage.relatedLink exposes it
+  const relatedSources = employment ? [links.repository, links.live, links.video] : [links.live, links.video];
+  const relatedLinks = pipe(relatedSources, Array.getSomes, Array.dedupe);
+  const item = experienceItemNode({
+    employment,
+    id: itemId,
+    url,
+    role: inlineText(role),
+    description,
+    preferredLanguage,
+    keywords,
+    image,
+    repository,
+  });
 
   const itemNodes: JsonLdNodes = Match.value(employment).pipe(
     Match.when(true, () => [
       // The employer-to-role-to-person path also represents historical employment honestly
-      employerOrganizationNode(`${url}#organization`, company, itemId),
+      employerOrganizationNode(`${url}#organization`, inlineText(company), itemId),
       item,
     ]),
     Match.when(false, () => [item]),

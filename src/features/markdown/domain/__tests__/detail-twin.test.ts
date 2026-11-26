@@ -171,11 +171,11 @@ it("authored prose beginning with an indent cannot revive the marker its indent 
   assert.strictEqual(escapeMd("para\n\n    # indented heading"), "para\n\n    # indented heading");
 });
 
-it("buildExperienceMd deduplicates repeated skills in frontmatter and body", () => {
+it("buildExperienceMd deduplicates repeated skills after normalizing whitespace in frontmatter and body", () => {
   const md = twinDocument(
     buildExperienceMd({
       seo: experienceSeo({
-        experience: { ...sampleExperience, skillsUsed: ["TypeScript", "React", "TypeScript"] },
+        experience: { ...sampleExperience, skillsUsed: ["TypeScript", "React", "  TypeScript\n "] },
         preferredLanguage: "en",
       }),
       translate: translateEn,

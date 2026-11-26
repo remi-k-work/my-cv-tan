@@ -411,3 +411,41 @@ it("experienceJsonLd deduplicates repeated skills in keywords", () => {
   assert.strictEqual(findByType(nodes, "SoftwareSourceCode")?.keywords, "TypeScript, React");
   assert.strictEqual(findByType(nodes, "Article")?.keywords, "TypeScript, React");
 });
+
+it("experienceJsonLd exposes validated gitHubLink on employment WebPage.relatedLink and normalizes entity names", () => {
+  const nodes = experienceJsonLd({
+    experience: {
+      ...sampleExperience,
+      type: "e",
+      slug: "sample-job",
+      role: "  Full-Stack\nDeveloper ",
+      company: "Sample\t Co ",
+      liveLink: "https://example.com/live",
+      videoLink: "https://example.com/live",
+      skillsUsed: ["TypeScript", " TypeScript\n ", "React"],
+    },
+    preferredLanguage: language,
+    path: "/sample-job",
+    headline: "Full-Stack Developer at Sample Co",
+    description: "Built things with care.",
+    screenshot: Option.none(),
+  });
+
+  const page = findByType(nodes, "WebPage");
+  const role = findByType(nodes, "EmployeeRole");
+  const organization = findByType(nodes, "Organization", "#organization");
+  const article = findByType(nodes, "Article");
+
+  assert.deepStrictEqual(page?.relatedLink, ["https://github.com/example/repo", "https://example.com/live"]);
+  assert.strictEqual(role?.roleName, "Full-Stack Developer");
+  assert.strictEqual(organization?.name, "Sample Co");
+  assert.strictEqual(article?.keywords, "TypeScript, React");
+});
+
+it("schoolSubgraph preserves full unabridged descriptions with normalized whitespace", () => {
+  const longInfo = `${"A".repeat(170)}\n  studied Computer Science.`;
+  const nodes = schoolSubgraph("https://www.remiforge.dev/education", [{ name: "Example University", year: "2020", location: "Poland", info: longInfo }]);
+
+  const school = findByType(nodes, "EducationalOrganization");
+  assert.strictEqual(school?.description, `${"A".repeat(170)} studied Computer Science.`);
+});

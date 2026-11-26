@@ -2,9 +2,9 @@
 // Markdown twin all derive from, so their canonical URL, headline and description can never drift.
 
 // services, features, and other libraries
-import { Option, String, pipe } from "effect";
+import { Array, Option, String, pipe } from "effect";
 import { excerpt, experienceHeadline, experienceImagePath, isEmployment } from "@/features/experience/domain/helpers";
-import { absoluteUrl, experiencePath } from "./urls";
+import { absoluteUrl, experiencePath, validatedHref } from "./urls";
 
 // types
 import type { Experience } from "@/features/experience/domain/models";
@@ -33,6 +33,17 @@ export const experienceSection = (experience: Pick<Experience, "type">): Experie
 
 // Search snippets and single-line frontmatter facts collapse layout whitespace to single spaces
 export const inlineText = (value: string) => pipe(value, String.replace(/\s+/g, " "), String.trim);
+
+// Normalizes whitespace before deduplicating so HTML JSON-LD keywords and Markdown skills stay identical
+export const experienceKeywords = ({ skillsUsed }: Pick<Experience, "skillsUsed">): ReadonlyArray<string> =>
+  pipe(skillsUsed, Array.map(inlineText), Array.filter(String.isNonEmpty), Array.dedupe);
+
+// Validates authored external URLs once so JSON-LD and Markdown twins enforce identical destination safety
+export const experienceLinks = ({ gitHubLink, liveLink, videoLink }: Pick<Experience, "gitHubLink" | "liveLink" | "videoLink">) => ({
+  repository: validatedHref(gitHubLink),
+  live: validatedHref(liveLink),
+  video: validatedHref(videoLink),
+});
 
 export const experienceSeo = ({ experience, preferredLanguage }: ExperienceHeadInput): ExperienceSeo => {
   const path = experiencePath(experience.slug);

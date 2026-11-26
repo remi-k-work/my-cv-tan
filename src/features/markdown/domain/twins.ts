@@ -3,8 +3,7 @@ import { Array, Option, pipe } from "effect";
 import { msg } from "gt-i18n";
 import { isEmployment, partitionExperiences } from "@/features/experience/domain/helpers";
 import { staticPageCopy } from "@/features/meta/domain/pages";
-import { inlineText } from "@/features/meta/domain/seo";
-import { validatedHref } from "@/features/meta/domain/urls";
+import { experienceKeywords, experienceLinks, inlineText } from "@/features/meta/domain/seo";
 import { experienceLines } from "./catalogue";
 import { escapeMd, escapeMdInline } from "./escape";
 import { mdBody, mdBulletList, mdDocumentLinks, mdEmptyMarker, mdFact, mdHeading, mdLink, mdProfileLinks, mdQuote, mdTitledSection } from "./format";
@@ -100,21 +99,20 @@ export const buildContactMd = (input: ContactMdInput): MarkdownTwin => {
   return staticTwinDocument(input, CONTACT_PATH, (copy) => [contactChannels(copy.canonical, translate)]);
 };
 
-const optionalLink = (label: string, href: string | undefined) => Option.map(validatedHref(href), (url) => mdLink(label, url));
-
 // Builds the Markdown twin for an experience detail page
 export const buildExperienceMd = ({ seo, translate, includeNavigation = true }: ExperienceMdInput): MarkdownTwin => {
   const { experience, preferredLanguage, canonical, headline, description } = seo;
-  const { role, company, txt, skillsUsed, year } = experience;
-  const skills = Array.dedupe(skillsUsed);
+  const { role, company, txt, year } = experience;
+  const skills = experienceKeywords(experience);
+  const { repository, live, video } = experienceLinks(experience);
 
   const links = pipe(
     [
-      [msg("GitHub Repo"), experience.gitHubLink],
-      [msg("Live Link"), experience.liveLink],
-      [msg("Watch Video"), experience.videoLink],
+      [msg("GitHub Repo"), repository],
+      [msg("Live Link"), live],
+      [msg("Watch Video"), video],
     ] as const,
-    Array.map(([label, href]) => optionalLink(translate(label), href)),
+    Array.map(([label, href]) => Option.map(href, (url) => mdLink(translate(label), url))),
     Array.getSomes
   );
 

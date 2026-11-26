@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Array, Option, Schema, pipe } from "effect";
+import { Array, Match, Option, Schema, pipe } from "effect";
 import { PreferredLanguage } from "@/domain/models";
 import { unavailableHead } from "./fallback";
 
@@ -37,17 +37,20 @@ const isPendingOrErrorMatch = (match: MatchChain[number]): boolean => match.stat
 const emptyHead = (): PageHead => ({ meta: [], links: [], scripts: [] });
 
 // Builds route head metadata, suppressing stale data on errors and delegating 404s to root
-export const routeHead = <TData>({ loaderData, matches, matchStatus, fallbackPath, build }: RouteHeadSpec<TData>): PageHead => {
+export const routeHead = <TData>({ loaderData, matches, matchStatus, fallbackPath, build }: RouteHeadSpec<TData>): PageHead =>
   // Root boundary owns 404 metadata so stale leaf data cannot overwrite a not-found state
-  if (matchStatus === "notFound" || Array.some(matches, isNotFoundMatch)) return emptyHead();
+  Match.value(matchStatus === "notFound" || Array.some(matches, isNotFoundMatch)).pipe(
+    Match.when(true, emptyHead),
+    Match.when(false, () => {
+      const preferredLanguage = headLanguage(matches);
 
-  const preferredLanguage = headLanguage(matches);
-
-  // Guard before Option.map so stale leaf loaderData never builds a head during pending/error states
-  return pipe(
-    Option.fromNullishOr(loaderData),
-    Option.filter(() => matchStatus === "success" && !Array.some(matches, isPendingOrErrorMatch)),
-    Option.map((data) => build(data, preferredLanguage)),
-    Option.getOrElse(() => unavailableHead(fallbackPath, preferredLanguage))
+      // Guard before Option.map so stale leaf loaderData never builds a head during pending/error states
+      return pipe(
+        Option.fromNullishOr(loaderData),
+        Option.filter(() => matchStatus === "success" && !Array.some(matches, isPendingOrErrorMatch)),
+        Option.map((data) => build(data, preferredLanguage)),
+        Option.getOrElse(() => unavailableHead(fallbackPath, preferredLanguage))
+      );
+    }),
+    Match.exhaustive
   );
-};
