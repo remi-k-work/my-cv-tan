@@ -2,8 +2,7 @@ import { assert, it } from "@effect/vitest";
 import { ROOT_HEAD } from "../root-head";
 import { rootHead } from "../root-head";
 import { homeHead, contactHead, educationHead, experienceHead } from "../page-head";
-import { AI_DISCOVERY_LINK_HEADER, AI_DISCOVERY_LINKS, AI_INDEX_LINKS } from "../discovery";
-import { joinLinkHeader } from "../link-tags";
+import { AI_DISCOVERY_LINKS } from "../discovery";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 import { stablePageTitles } from "./fixtures";
 
@@ -101,26 +100,9 @@ it("root head carries no JSON-LD, so a page's single block is not duplicated", (
   assert.include(JSON.stringify(ROOT_HEAD.links), "https://www.remiforge.dev/llms.txt");
 });
 
-it("the AI indexes project into both the <head> advertisements and the Link header from one record", () => {
-  // Same documents, both surfaces: a crawler that only parses response headers sees exactly what a
-  // crawler that only parses the <head> sees.
-  assert.deepStrictEqual(AI_INDEX_LINKS, [
-    { rel: "alternate", type: "text/plain", title: "llms.txt", href: "https://www.remiforge.dev/llms.txt" },
-    { rel: "alternate", type: "text/plain", title: "llms-full.txt", href: "https://www.remiforge.dev/llms-full.txt" },
-  ]);
-
-  assert.strictEqual(
-    AI_DISCOVERY_LINK_HEADER,
-    '<https://www.remiforge.dev/llms.txt>; rel="describedby", <https://www.remiforge.dev/llms.txt>; rel="alternate"; type="text/plain"; title="llms.txt", <https://www.remiforge.dev/llms-full.txt>; rel="alternate"; type="text/plain"; title="llms-full.txt"'
-  );
-  // The joined constant is the joined list, not a second spelling of it
-  assert.strictEqual(AI_DISCOVERY_LINK_HEADER, joinLinkHeader(AI_DISCOVERY_LINKS));
-
-  // The site-wide head carries the <link> projection, so the HTML document advertises the indexes too
-  assert.deepStrictEqual(
-    ROOT_HEAD.links.filter(({ rel }) => rel === "alternate"),
-    [...AI_INDEX_LINKS]
-  );
+it("the root publishes every AI discovery link without misclassifying it as a page alternate", () => {
+  for (const link of AI_DISCOVERY_LINKS) assert.include(ROOT_HEAD.links, link);
+  assert.isFalse(ROOT_HEAD.links.some(({ rel, type }) => rel === "alternate" && type === "text/plain"));
 });
 
 it("rootHead adds localized not-found metadata while retaining site-wide discovery links", () => {

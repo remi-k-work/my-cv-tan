@@ -156,6 +156,7 @@ it("a pinned Polish request localizes the document envelope and its frontmatter"
   assert.strictEqual(response.status, 200);
   assert.strictEqual(response.headers.get("Content-Language"), "pl");
   assert.strictEqual(response.headers.get("Content-Location"), "https://www.remiforge.dev/contact.md?lang=pl");
+  assert.isNull(response.headers.get("Vary"));
 
   const body = await response.text();
   assert.include(body, `lang: "pl"`);

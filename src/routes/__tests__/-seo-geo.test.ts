@@ -1,4 +1,5 @@
 import { assert, it } from "@effect/vitest";
+import { isRedirect } from "@tanstack/react-router";
 import { Route as RootRoute } from "@/routes/__root";
 import { Route as IndexRoute } from "@/routes/{-$slug}";
 import { Route as EducationRoute } from "@/routes/education";
@@ -11,6 +12,8 @@ import { Route as LlmsTxtRoute } from "@/routes/llms[.]txt";
 import { Route as LlmsFullTxtRoute } from "@/routes/llms-full[.]txt";
 import { Route as RobotsRoute } from "@/routes/robots[.]txt";
 import { Route as SitemapRoute } from "@/routes/sitemap[.]xml";
+import { Route as LegacyExperienceRoute } from "@/routes/exp.$";
+import { Route as LegacyExperienceIndexRoute } from "@/routes/exp.index";
 import { contactHandler, educationHandler, experienceHandler, homeHandler, llmsFullTxtHandler, llmsTxtHandler } from "@/features/markdown/services/handlers";
 import { robotsHandler, sitemapHandler } from "@/features/meta/services/handlers";
 import { absoluteUrl, experiencePath } from "@/features/meta/domain/urls";
@@ -20,7 +23,6 @@ import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 import { HOME_PATH } from "@/domain/constants";
 import { sampleEducation, sampleExperience, stablePageTitles } from "@/features/meta/domain/__tests__/fixtures";
 import type { MatchChain, PageHead, RouteStatus } from "@/features/meta/domain/models";
-import type { PreferredLanguage } from "@/domain/models";
 
 interface HeadRoute {
   readonly options: {
@@ -32,7 +34,7 @@ interface HeadInput {
   readonly loaderData: unknown;
   readonly params?: { readonly slug?: string };
   readonly matchStatus?: RouteStatus;
-  readonly preferredLanguage?: PreferredLanguage;
+  readonly preferredLanguage?: unknown;
 }
 
 const headOf = async (route: HeadRoute, { loaderData, params = {}, matchStatus = "success", preferredLanguage = "pl" }: HeadInput): Promise<PageHead> => {
@@ -127,6 +129,39 @@ it("the detail route derives its degraded canonical from current params, never s
   assert.strictEqual(metaContent(head, "name", "robots"), NOINDEX_FOLLOW);
   assert.deepStrictEqual(head.links, [{ rel: "canonical", href: absoluteUrl(experiencePath(slug)) }]);
   assert.notInclude(JSON.stringify(head), sampleExperience.role);
+});
+
+it("route heads fall back to English when the root locale is unsupported", async () => {
+  const head = await headOf(ContactRoute, {
+    loaderData: { randomPageTitles: stablePageTitles, stablePageTitles },
+    preferredLanguage: "de",
+  });
+
+  assert.strictEqual(metaContent(head, "property", "og:locale"), "en_US");
+  assert.strictEqual(metaContent(head, "property", "og:locale:alternate"), "pl_PL");
+  assert.strictEqual(metaContent(head, "name", "description"), STATIC_PAGES["/contact"].copy.en.description);
+});
+
+it("legacy experience routes permanently redirect to the canonical home URL", () => {
+  for (const route of [LegacyExperienceRoute, LegacyExperienceIndexRoute]) {
+    // The two route generics have different loader unions; both legacy loaders are synchronous and argument-free here.
+    const loader = route.options.loader as unknown as ((context: never) => unknown) | undefined;
+    if (loader === undefined) throw new Error("Legacy route must declare a loader");
+
+    let thrown: unknown;
+    try {
+      loader({} as never);
+    } catch (error) {
+      thrown = error;
+    }
+
+    assert.isTrue(isRedirect(thrown));
+    if (!isRedirect(thrown)) continue;
+    assert.strictEqual(thrown.status, 301);
+    const options = thrown.options as { readonly to?: unknown; readonly params?: unknown };
+    assert.strictEqual(options.to, "/{-$slug}");
+    assert.deepStrictEqual(options.params, { slug: undefined });
+  }
 });
 
 it("the root route publishes response headers for the language negotiated by its loader", async () => {

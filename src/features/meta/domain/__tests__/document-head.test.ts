@@ -94,10 +94,9 @@ it("a successful page's merged document declares its own title, description, rob
     assert.strictEqual(document.tagsOf("name", "description"), description !== undefined && "content" in description ? description.content : undefined);
     assert.strictEqual(document.tagsOf("name", "robots"), INDEXABLE_ROBOTS);
 
-    // One canonical, three language-qualified Markdown alternates beside the root's two AI indexes,
-    // and one JSON-LD block
+    // Only the page's Markdown twins are alternates; site-wide AI indexes use discovery relations.
     assert.strictEqual(relsOf(document.links, "canonical").length, 1);
-    assert.strictEqual(relsOf(document.links, "alternate").length, 5);
+    assert.strictEqual(relsOf(document.links, "alternate").length, 3);
     assert.strictEqual(document.scripts.length, 1);
     // The page's canonical and its og:url are one address in the merged document too
     assert.strictEqual(document.tagsOf("property", "og:url"), relsOf(document.links, "canonical")[0]?.href);

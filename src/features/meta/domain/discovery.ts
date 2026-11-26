@@ -47,17 +47,11 @@ export const AI_INDEXES = [LLMS_TXT_INDEX, LLMS_FULL_TXT_INDEX] as const;
 export const DISCOVERY_DOCUMENTS = [...AI_INDEXES, ROBOTS_TXT_INDEX, SITEMAP_INDEX] as const;
 
 export const SITEMAP_LINK = { rel: "sitemap", href: SITEMAP_INDEX.url } as const;
-// Standard llms.txt discovery relation from https://llmstxt.org.
+// llms.txt reserves `describedby` for its index and `alternate` for a page's own Markdown twin.
 export const LLMS_DISCOVERY_LINK: LinkTag = { rel: "describedby", href: LLMS_TXT_INDEX.url };
-
-export const AI_INDEX_LINKS: ReadonlyArray<LinkTag> = Array.map(AI_INDEXES, ({ name, url }) => ({
-  rel: "alternate",
-  type: "text/plain",
-  title: name,
-  href: url,
-}));
-export const AI_DISCOVERY_LINKS: ReadonlyArray<LinkTag> = [LLMS_DISCOVERY_LINK, ...AI_INDEX_LINKS];
-// Discovery documents name other crawl surfaces, never a redundant description or alternate of themselves
+export const LLMS_FULL_DISCOVERY_LINK: LinkTag = { rel: "related", type: "text/plain", title: LLMS_FULL_TXT_INDEX.name, href: LLMS_FULL_TXT_INDEX.url };
+export const AI_DISCOVERY_LINKS: ReadonlyArray<LinkTag> = [LLMS_DISCOVERY_LINK, LLMS_FULL_DISCOVERY_LINK];
+// Discovery documents name other crawl surfaces, never a redundant reference to themselves
 export const aiDiscoveryLinkHeader = (selfUrl?: string) => joinLinkHeader(Array.filter(AI_DISCOVERY_LINKS, ({ href }) => href !== selfUrl));
 export const AI_DISCOVERY_LINK_HEADER = aiDiscoveryLinkHeader();
 

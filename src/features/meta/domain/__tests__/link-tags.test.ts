@@ -2,7 +2,6 @@ import { assert, it } from "@effect/vitest";
 import {
   AI_DISCOVERY_LINK_HEADER,
   AI_DISCOVERY_LINKS,
-  AI_INDEX_LINKS,
   aiDiscoveryLinkHeader,
   LLMS_DISCOVERY_LINK,
   LLMS_FULL_TXT_INDEX,
@@ -21,7 +20,6 @@ const SERIALIZABLE_PARAMETERS = { type: "type", title: "title", hrefLang: "hrefl
 // the AI-index advertisements, the twin language variants, and the page-level builders.
 const publishedLinks: ReadonlyArray<LinkTag> = [
   ...ROOT_HEAD.links,
-  ...AI_INDEX_LINKS,
   ...languageVariantLinks("/index.md"),
   canonicalLink("https://www.remiforge.dev/education"),
   authorLink("https://www.remiforge.dev/"),
@@ -109,36 +107,22 @@ it("link builders name the canonical and author documents", () => {
   assert.deepStrictEqual(authorLink("https://www.remiforge.dev/"), { rel: "author", href: "https://www.remiforge.dev/" });
 });
 
-it("the AI indexes project into both the <head> advertisements and the Link header from one record", () => {
-  // Same documents, both surfaces: a crawler that only parses response headers sees exactly what a
-  // crawler that only parses the <head> sees.
-  assert.deepStrictEqual(AI_INDEX_LINKS, [
-    { rel: "alternate", type: "text/plain", title: "llms.txt", href: "https://www.remiforge.dev/llms.txt" },
-    { rel: "alternate", type: "text/plain", title: "llms-full.txt", href: "https://www.remiforge.dev/llms-full.txt" },
-  ]);
-
+it("the AI discovery links project into the head and Link header with spec-compliant relations", () => {
   assert.strictEqual(
     AI_DISCOVERY_LINK_HEADER,
-    '<https://www.remiforge.dev/llms.txt>; rel="describedby", <https://www.remiforge.dev/llms.txt>; rel="alternate"; type="text/plain"; title="llms.txt", <https://www.remiforge.dev/llms-full.txt>; rel="alternate"; type="text/plain"; title="llms-full.txt"'
+    '<https://www.remiforge.dev/llms.txt>; rel="describedby", <https://www.remiforge.dev/llms-full.txt>; rel="related"; type="text/plain"; title="llms-full.txt"'
   );
-  // The joined constant is the joined list, not a second spelling of it
   assert.strictEqual(AI_DISCOVERY_LINK_HEADER, joinLinkHeader(AI_DISCOVERY_LINKS));
-
-  // The site-wide head carries the <link> projection, so the HTML document advertises the indexes too
-  assert.deepStrictEqual(
-    ROOT_HEAD.links.filter(({ rel }) => rel === "alternate"),
-    [...AI_INDEX_LINKS]
-  );
 });
 
 it("discovery response headers omit the document currently being served", () => {
   assert.strictEqual(
     aiDiscoveryLinkHeader(LLMS_TXT_INDEX.url),
-    '<https://www.remiforge.dev/llms-full.txt>; rel="alternate"; type="text/plain"; title="llms-full.txt"'
+    '<https://www.remiforge.dev/llms-full.txt>; rel="related"; type="text/plain"; title="llms-full.txt"'
   );
   assert.strictEqual(
     aiDiscoveryLinkHeader(LLMS_FULL_TXT_INDEX.url),
-    '<https://www.remiforge.dev/llms.txt>; rel="describedby", <https://www.remiforge.dev/llms.txt>; rel="alternate"; type="text/plain"; title="llms.txt"'
+    '<https://www.remiforge.dev/llms.txt>; rel="describedby"'
   );
 });
 

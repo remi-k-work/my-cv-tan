@@ -36,8 +36,10 @@ it("pageHead builds a flat head with title, description, robots and social tags"
   assert.strictEqual(tagContent(tags, "name", "robots"), INDEXABLE_ROBOTS);
   assert.strictEqual(tagContent(tags, "property", "og:title"), "Headline");
   assert.strictEqual(tagContent(tags, "property", "og:description"), "Description.");
-  // title + description + robots + social tags (og + twitter + alternate locales)
-  assert.strictEqual(head.meta.length, 20);
+  for (const key of ["title", "description", "robots"] as const) {
+    const matches = head.meta.filter((tag) => ("title" in tag && key === "title") || ("name" in tag && tag.name === key));
+    assert.strictEqual(matches.length, 1, `${key} must be declared exactly once`);
+  }
 });
 
 it("pageHead publishes the page's canonical and every language-qualified Markdown alternate", () => {

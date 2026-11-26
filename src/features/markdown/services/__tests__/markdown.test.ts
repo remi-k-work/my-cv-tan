@@ -52,6 +52,24 @@ it.effect("Markdown.layer accepts an injected translation snapshot loader", () =
   }).pipe(Effect.provide(testLayer(availableDatasets, translation)));
 });
 
+it.effect("a pinned Polish outage keeps its body and representation metadata in Polish", () => {
+  const translation = Translation.layerFrom(() =>
+    Effect.succeed((source) => (source === "Content temporarily unavailable" ? "Treść chwilowo niedostępna" : source))
+  );
+
+  return Effect.gen(function* () {
+    const markdown = yield* Markdown;
+    const response = yield* markdown.page(HOME_PATH)(new Request("https://www.remiforge.dev/index.md?lang=pl"));
+    const body = yield* Effect.promise(() => response.text());
+
+    assert.strictEqual(response.status, 503);
+    assert.strictEqual(response.headers.get("Content-Language"), "pl");
+    assert.strictEqual(response.headers.get("Content-Location"), "https://www.remiforge.dev/index.md?lang=pl");
+    assert.strictEqual(response.headers.get("Cache-Control"), "no-store");
+    assert.include(body, "# Treść chwilowo niedostępna");
+  }).pipe(Effect.provide(testLayer(unavailableDatasets, translation)));
+});
+
 it.effect("Markdown documents recover required-data failures as fresh non-cacheable 503 responses", () =>
   Effect.gen(function* () {
     const markdown = yield* Markdown;
