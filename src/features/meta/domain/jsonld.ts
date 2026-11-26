@@ -20,9 +20,12 @@ const jsonLdScript = (data: JsonLdObject): JsonLdScript => ({
   children: pipe(JSON.stringify(data), String.replaceAll(/</g, "\\u003C")),
 });
 
+// Typing the empty accumulator separately is what an inline literal could only express with a cast
+const emptyMergeState: MergeState = { order: [], nodes: HashMap.empty<NodeKey, JsonLdNode>() };
+
 // Merges nodes by @id, preserving first-occurrence order and letting subsequent defined fields override
 const mergeNodes = (nodes: ReadonlyArray<JsonLdNode>): ReadonlyArray<JsonLdNode> => {
-  const { order, nodes: merged } = Array.reduce(nodes, { order: [], nodes: HashMap.empty<NodeKey, JsonLdNode>() } as MergeState, (state, node, index) => {
+  const { order, nodes: merged } = Array.reduce(nodes, emptyMergeState, (state, node, index) => {
     const defined = Record.filter(node, Predicate.isNotUndefined);
     const id = defined["@id"];
 
@@ -40,6 +43,7 @@ const mergeNodes = (nodes: ReadonlyArray<JsonLdNode>): ReadonlyArray<JsonLdNode>
     });
   });
 
+  // Every key was inserted before it was recorded, so this reads the merged nodes in first-seen order
   return Array.getSomes(Array.map(order, (key) => HashMap.get(merged, key)));
 };
 

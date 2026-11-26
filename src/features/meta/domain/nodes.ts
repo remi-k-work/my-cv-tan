@@ -66,6 +66,10 @@ const definedNode = <T extends JsonLdObject>(node: T): JsonLdNode => Record.filt
 const nonEmptyOrUndefined = <A>(items: ReadonlyArray<A> | undefined): ReadonlyArray<A> | undefined =>
   pipe(Option.fromUndefinedOr(items), Option.filter(Array.isReadonlyArrayNonEmpty), Option.getOrUndefined);
 
+// Schema.org keywords is a comma-separated text field; an empty list must vanish, not publish ""
+const keywordsText = (keywords: ReadonlyArray<string>): string | undefined =>
+  Array.isReadonlyArrayNonEmpty(keywords) ? Array.join(keywords, ", ") : undefined;
+
 export const articleNode = ({
   id,
   headline,
@@ -85,7 +89,7 @@ export const articleNode = ({
     description,
     articleBody,
     inLanguage: preferredLanguage,
-    keywords: Array.join(keywords, ", "),
+    keywords: keywordsText(keywords),
     articleSection,
     url: mainEntityOfPage,
     author: { "@id": PERSON_ID },
@@ -180,7 +184,7 @@ export const experienceItemNode = ({
         creator: { "@id": PERSON_ID },
         publisher: { "@id": PUBLISHER_ID },
         // The same join the Markdown twin's `skills` fact publishes, so the two spellings cannot drift
-        keywords: Array.join(keywords, ", "),
+        keywords: keywordsText(keywords),
         codeRepository: repository,
       })
     ),

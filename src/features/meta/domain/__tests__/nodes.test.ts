@@ -45,6 +45,20 @@ it("articleNode builds an Article with author, publisher, about and mainEntityOf
   assert.isUndefined(node.image);
 });
 
+it("articleNode omits an empty keyword list instead of publishing an empty string", () => {
+  const node = articleNode({
+    id: "https://www.remiforge.dev/#article",
+    headline: "Headline",
+    description: "Description.",
+    preferredLanguage: language,
+    keywords: [],
+    about: "https://www.remiforge.dev/#item",
+    mainEntityOfPage: "https://www.remiforge.dev/test",
+  });
+
+  assert.isUndefined(node.keywords);
+});
+
 it("articleNode publishes the page image, section and full articleBody when provided", () => {
   const image = imageObject("https://www.remiforge.dev/images/01-a.webp", 1600, 900);
   const node = articleNode({
@@ -201,6 +215,11 @@ it("experienceItemNode builds the project node with its verified repository and 
     keywords: "TypeScript, React",
     codeRepository: "https://github.com/example/repo",
   });
+});
+
+it("experienceItemNode omits an empty keyword list instead of publishing an empty string", () => {
+  const node = experienceItemNode({ ...itemInput, keywords: [] });
+  assert.isUndefined(node.keywords);
 });
 
 it("experienceItemNode drops the source-code claim and the image when neither is published", () => {

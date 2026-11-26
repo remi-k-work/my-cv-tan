@@ -63,13 +63,10 @@ export const temporaryFallbackResponse = (response: Response) =>
 export const applyRepresentationPolicy = (response: Response, fallback: boolean, langOverride: Option.Option<PreferredLanguage>) => {
   // A fallback is temporary negotiated content, so it must bypass both caching and language pinning
   if (fallback) return temporaryFallbackResponse(response);
-  // Non-cacheable errors have no representation variant to pin
-  if (!response.ok) return response;
+  // Non-cacheable errors, and unpinned responses, have no representation variant to pin
+  if (!response.ok || Option.isNone(langOverride)) return response;
 
-  return Option.match(langOverride, {
-    onNone: () => response,
-    onSome: () => pinCacheVariant(response),
-  });
+  return pinCacheVariant(response);
 };
 
 const markdownHeaders = (preferredLanguage: PreferredLanguage, links: string) => ({

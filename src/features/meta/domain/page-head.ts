@@ -10,7 +10,7 @@ import { representationLinks } from "./link-tags";
 
 // types
 import type { ExperienceHeadInput, JsonLdNodes, PageHead, SocialImage, SocialImageFacts, SocialMetaInput, StaticPageCopy } from "./models";
-import type { PageTitles, PreferredLanguage } from "@/domain/models";
+import type { PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
 
@@ -72,8 +72,12 @@ export const experienceHead = (input: ExperienceHeadInput): PageHead => {
   });
 };
 
-const staticPageHead = (copy: StaticPageCopy, graph: JsonLdNodes): PageHead =>
-  pageHead({
+// Resolves the page's copy once, then derives its graph from that same copy, so the head and the
+// graph can never name different descriptions, languages or canonical URLs
+const staticPageHead = (input: StaticPageHeadInput, path: PagePath, graph: (copy: StaticPageCopy) => JsonLdNodes): PageHead => {
+  const copy = staticPageCopy(input.pageTitles, path, input.preferredLanguage);
+
+  return pageHead({
     social: {
       title: copy.seoTitle,
       description: copy.description,
@@ -82,20 +86,14 @@ const staticPageHead = (copy: StaticPageCopy, graph: JsonLdNodes): PageHead =>
       preferredLanguage: copy.preferredLanguage,
     },
     markdownPath: copy.mdHref,
-    graph,
+    graph: graph(copy),
   });
-
-export const homeHead = (input: StaticPageHeadInput & { readonly experienceList: ExperienceList }): PageHead => {
-  const copy = staticPageCopy(input.pageTitles, HOME_PATH, input.preferredLanguage);
-  return staticPageHead(copy, homeJsonLd({ ...copy, experienceList: input.experienceList }));
 };
 
-export const educationHead = (input: StaticPageHeadInput & { readonly educationList: EducationList }): PageHead => {
-  const copy = staticPageCopy(input.pageTitles, EDUCATION_PATH, input.preferredLanguage);
-  return staticPageHead(copy, educationJsonLd({ ...copy, educationList: input.educationList }));
-};
+export const homeHead = (input: StaticPageHeadInput & { readonly experienceList: ExperienceList }): PageHead =>
+  staticPageHead(input, HOME_PATH, (copy) => homeJsonLd({ ...copy, experienceList: input.experienceList }));
 
-export const contactHead = (input: StaticPageHeadInput): PageHead => {
-  const copy = staticPageCopy(input.pageTitles, CONTACT_PATH, input.preferredLanguage);
-  return staticPageHead(copy, contactJsonLd(copy));
-};
+export const educationHead = (input: StaticPageHeadInput & { readonly educationList: EducationList }): PageHead =>
+  staticPageHead(input, EDUCATION_PATH, (copy) => educationJsonLd({ ...copy, educationList: input.educationList }));
+
+export const contactHead = (input: StaticPageHeadInput): PageHead => staticPageHead(input, CONTACT_PATH, contactJsonLd);
