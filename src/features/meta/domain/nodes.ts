@@ -61,7 +61,7 @@ import { SITE_LANGUAGES } from "@/domain/constants";
 import { HOME_URL, PERSON_ID, PUBLISHER_ID, WEBSITE_ID } from "./site";
 
 // Strip undefined properties so JSON-LD nodes never publish unset optional keys
-const definedNode = <T extends JsonLdObject>(node: T): JsonLdNode => Record.filter(node, Predicate.isNotUndefined);
+export const definedNode = <T extends JsonLdObject>(node: T): JsonLdNode => Record.filter(node, Predicate.isNotUndefined);
 
 // Converts undefined or empty arrays to undefined so JSON-LD nodes omit empty relation lists
 const nonEmptyOrUndefined = <A>(items: ReadonlyArray<A> | undefined): ReadonlyArray<A> | undefined =>
@@ -226,13 +226,15 @@ export const employerOrganizationNode = (id: string, name: string, memberId: str
   member: { "@id": memberId },
 });
 
-export const contactPointNode = (id: string, url: string): JsonLdNode => ({
-  "@type": "ContactPoint",
-  "@id": id,
-  contactType: "author",
-  url,
-  availableLanguage: [...SITE_LANGUAGES],
-});
+export const contactPointNode = (id: string, url: string, email?: string): JsonLdNode =>
+  definedNode({
+    "@type": "ContactPoint",
+    "@id": id,
+    contactType: "author",
+    url,
+    email,
+    availableLanguage: [...SITE_LANGUAGES],
+  });
 
 export const collectionPartNode = (canonical: string, name: string): JsonLdNode => ({
   "@type": "WebPage",

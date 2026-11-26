@@ -5,7 +5,7 @@
 import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
 import { educationJsonLd, contactJsonLd, experienceCollections, experienceJsonLd, homeJsonLd, schoolSubgraph } from "../page-graphs";
-import { EXPERIENCE_LIST_ID, GLOBAL_SOCIAL_IMAGE, HOME_URL, PERSON_ID, PORTFOLIO_LIST_ID, PROFILE_ID, WEBSITE_ID } from "../site";
+import { CONTACT_EMAIL, EXPERIENCE_LIST_ID, GLOBAL_SOCIAL_IMAGE, HOME_URL, PERSON_ID, PORTFOLIO_LIST_ID, PROFILE_ID, WEBSITE_ID } from "../site";
 import { jsonLdGraph } from "../jsonld";
 import { LANGUAGE, graphOf, nodeOf, sampleEducation, sampleExperience } from "./fixtures";
 import type { PreferredLanguage } from "@/domain/models";
@@ -75,6 +75,7 @@ it("contactJsonLd assembles a ContactPage with a ContactPoint and person edge", 
   assert.isDefined(contactPoint);
   assert.strictEqual(contactPoint?.contactType, "author");
   assert.strictEqual(contactPoint?.url, "https://www.remiforge.dev/contact");
+  assert.strictEqual(contactPoint?.email, CONTACT_EMAIL);
   assert.deepStrictEqual(contactPoint?.availableLanguage, ["en", "pl"]);
 
   const person = findByType(nodes, "Person");

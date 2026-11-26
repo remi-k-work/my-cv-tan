@@ -20,6 +20,7 @@ const SHARED_HEADERS = { ...BASE_HEADERS, Link: AI_DISCOVERY_LINK_HEADER } as co
 export const CACHEABLE_HEADERS = { "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400" } as const;
 
 const NOINDEX_HEADERS = { "X-Robots-Tag": NOINDEX_FOLLOW } as const;
+const CACHEABLE_NOINDEX_HEADERS = { ...CACHEABLE_HEADERS, ...NOINDEX_HEADERS } as const;
 export const UNAVAILABLE_HEADERS = { "Cache-Control": NO_STORE, ...NOINDEX_HEADERS } as const;
 export const SERVICE_UNAVAILABLE_HEADERS = { ...UNAVAILABLE_HEADERS, "Retry-After": RETRY_AFTER } as const;
 
@@ -52,19 +53,15 @@ export const documentHeaders = (preferredLanguage: PreferredLanguage) =>
 
 export const locationHeader = (contentLocation?: string): Readonly<Record<string, string>> => optionalHeader("Content-Location", contentLocation);
 
+const responseEnvelope = (status: 200 | 503, body: string, headers: Readonly<Record<string, string>>) => new Response(body, { status, headers });
+
 const txtEnvelope = (status: 200 | 503, body: string, policyHeaders: Readonly<Record<string, string>>, contentLocation?: string) =>
-  new Response(body, {
-    status,
-    headers: { ...txtHeaders(contentLocation), ...policyHeaders, ...locationHeader(contentLocation) },
-  });
+  responseEnvelope(status, body, { ...txtHeaders(contentLocation), ...policyHeaders, ...locationHeader(contentLocation) });
 
 const sitemapEnvelope = (status: 200 | 503, xml: string, policyHeaders: Readonly<Record<string, string>>) =>
-  new Response(xml, {
-    status,
-    headers: { ...SITEMAP_HEADERS, ...policyHeaders, ...locationHeader(SITEMAP_INDEX.url) },
-  });
+  responseEnvelope(status, xml, { ...SITEMAP_HEADERS, ...policyHeaders, ...locationHeader(SITEMAP_INDEX.url) });
 
-export const txtResponse = (body: string, contentLocation?: string) => txtEnvelope(200, body, { ...CACHEABLE_HEADERS, ...NOINDEX_HEADERS }, contentLocation);
+export const txtResponse = (body: string, contentLocation?: string) => txtEnvelope(200, body, CACHEABLE_NOINDEX_HEADERS, contentLocation);
 export const txtUnavailableResponse = (body: string, contentLocation?: string) => txtEnvelope(503, body, SERVICE_UNAVAILABLE_HEADERS, contentLocation);
-export const sitemapResponse = (xml: string) => sitemapEnvelope(200, xml, { ...CACHEABLE_HEADERS, ...NOINDEX_HEADERS });
+export const sitemapResponse = (xml: string) => sitemapEnvelope(200, xml, CACHEABLE_NOINDEX_HEADERS);
 export const sitemapUnavailableResponse = () => sitemapEnvelope(503, SITEMAP_UNAVAILABLE_XML, SERVICE_UNAVAILABLE_HEADERS);

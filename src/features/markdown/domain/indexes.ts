@@ -37,6 +37,7 @@ interface SourceDocument {
 // constants
 import { CONTENT_SIGNAL, DISCOVERY_DOCUMENTS, DOWNLOADABLE_DOCUMENTS, LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/discovery";
 import {
+  CONTACT_EMAIL,
   HOME_COUNTRY,
   HOME_LOCATION,
   HOME_TITLE,
@@ -74,6 +75,7 @@ const ABOUT_DETAILS = mdBody([
   mdBulletList([
     mdFact("Name", SITE_NAME),
     mdFact("Website", SITE_URL),
+    mdFact("Email", CONTACT_EMAIL),
     mdFact("Role", `${JOB_TITLE} (self-taught)`),
     mdFact("Based in", `${HOME_LOCATION} (${HOME_COUNTRY})`),
     mdFact("Site languages", pipe(SITE_LANGUAGE_NAMES, Record.values, Array.join(" and "))),

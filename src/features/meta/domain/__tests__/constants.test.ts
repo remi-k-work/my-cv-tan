@@ -10,6 +10,7 @@ import {
   AUTHOR_URL,
   AVATAR,
   BRANDED_TITLE,
+  CONTACT_EMAIL,
   GLOBAL_SOCIAL_IMAGE,
   HOME_COUNTRY,
   HOME_COUNTRY_NAME,
@@ -29,7 +30,7 @@ import {
 } from "../site";
 import { httpUrlOption } from "../urls";
 import { OPEN_GRAPH_LOCALES } from "../site";
-import { SITE_LANGUAGE_NAMES } from "@/domain/constants";
+import { EMAIL_REGEX, SITE_LANGUAGE_NAMES } from "@/domain/constants";
 
 it("the canonical origin and every profile it publishes are absolute https URLs", () => {
   // `rel="me"` and JSON-LD `sameAs` are read as destinations, so a relative or non-http value
@@ -106,6 +107,7 @@ it("the location and role claims stay consistent with the title the site publish
   // knowsAbout is published as JSON-LD, so it must be a non-empty set of distinct topics.
   assert.isTrue(KNOWS_ABOUT.length > 0);
   assert.strictEqual(new Set(KNOWS_ABOUT).size, KNOWS_ABOUT.length);
+  assert.match(CONTACT_EMAIL, EMAIL_REGEX);
 });
 
 it("the vocabulary locales name one locale per supported language", () => {

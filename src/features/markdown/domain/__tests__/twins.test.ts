@@ -1,5 +1,6 @@
 import { assert, it } from "@effect/vitest";
 import { STATIC_PAGES } from "@/features/meta/domain/pages";
+import { CONTACT_EMAIL } from "@/features/meta/domain/site";
 import { contactTwin, educationTwin, homeTwin, sampleExperience, stablePageTitles, translateEn, translatePl } from "@/features/markdown/__tests__/fixtures";
 import type { ExperienceList } from "@/features/experience/domain/models";
 
@@ -149,6 +150,7 @@ it("the contact twin advertises the same social profiles as the HTML page", () =
   // The Channels line names the contact page's canonical — the same URL the contact <head>
   // publishes — read from the copy the shared frame resolved rather than derived a second time
   assert.include(md, "[Contact Form](https://www.remiforge.dev/contact) (same page in HTML)");
+  assert.include(md, `- Email: ${CONTACT_EMAIL}`);
   assert.include(md, `[GitHub](https://github.com/remi-k-work)`);
   assert.include(md, `[LinkedIn](https://linkedin.com/in/remi-k-work)`);
   // The base location is one authored string routed through the dictionary, so the English twin and

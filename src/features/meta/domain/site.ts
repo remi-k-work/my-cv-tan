@@ -66,6 +66,7 @@ export const HOME_LOCALITY = "Rzeszów";
 export const HOME_COUNTRY = "PL";
 export const HOME_COUNTRY_NAME = "Poland";
 export const HOME_LOCATION = msg(`${HOME_LOCALITY}, ${HOME_COUNTRY_NAME}`);
+export const CONTACT_EMAIL = "remi.k.work@proton.me";
 
 // Query parameter used for explicit language override in markdown twins
 export const LANG_PARAM = "lang";

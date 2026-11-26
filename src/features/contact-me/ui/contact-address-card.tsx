@@ -6,6 +6,9 @@ import { useTilt } from "@/features/experience/hooks/use-tilt";
 // assets
 import avatar from "@/assets/avatar.jpg";
 
+// constants
+import { CONTACT_EMAIL } from "@/features/meta/domain/site";
+
 // The floating address card: portrait plus contact details, leaning with pointer tilt
 // It owns its own tilt behavior since the card — not the map — is the tilted element
 export function ContactAddressCard() {
@@ -22,8 +25,8 @@ export function ContactAddressCard() {
           <p className="text-text-2">Broniewskiego 24</p>
           <p className="text-text-2">35-206 Rzeszów</p>
           <p className="mb-4 text-text-2">{gt("Poland")}</p>
-          <a href="mailto:remi.k.work@proton.me" className="underline">
-            remi.k.work@proton.me
+          <a href={`mailto:${CONTACT_EMAIL}`} className="underline">
+            {CONTACT_EMAIL}
           </a>
         </address>
       </div>

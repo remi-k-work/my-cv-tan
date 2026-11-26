@@ -311,6 +311,15 @@ it("domain node builders emit canonical EducationalOrganization, Organization, C
     availableLanguage: ["en", "pl"],
   });
 
+  assert.deepStrictEqual(contactPointNode("https://www.remiforge.dev/contact#cp", "https://www.remiforge.dev/contact", "test@example.com"), {
+    "@type": "ContactPoint",
+    "@id": "https://www.remiforge.dev/contact#cp",
+    contactType: "author",
+    url: "https://www.remiforge.dev/contact",
+    email: "test@example.com",
+    availableLanguage: ["en", "pl"],
+  });
+
   assert.deepStrictEqual(collectionPartNode("https://www.remiforge.dev/job", "Dev at Acme"), {
     "@type": "WebPage",
     "@id": "https://www.remiforge.dev/job",

@@ -5,7 +5,7 @@ import { unavailableMarkdownBody } from "../fallback";
 import { buildExperienceMd, buildHomeMd } from "../twins";
 import { twinDocument } from "../format";
 import { SOURCE_CONTEXT } from "../models";
-import { LANG_PARAM, PERSON_DESCRIPTION } from "@/features/meta/domain/site";
+import { CONTACT_EMAIL, LANG_PARAM, PERSON_DESCRIPTION } from "@/features/meta/domain/site";
 import { DISCOVERY_DOCUMENTS } from "@/features/meta/domain/discovery";
 import { experienceSeo } from "@/features/meta/domain/seo";
 import { SITE_LANGUAGE_NAMES, SITE_LANGUAGES } from "@/domain/constants";
@@ -23,6 +23,7 @@ it("buildLlmsTxt indexes pages, about facts, grouped experience and negotiated l
   assert.notInclude(txt, `## About`);
   // The canonical site root gives AI systems a single citation target for the whole site
   assert.include(txt, `- Website: https://www.remiforge.dev`);
+  assert.include(txt, `- Email: ${CONTACT_EMAIL}`);
   assert.include(txt, `- Role: Web Developer (self-taught)`);
   assert.include(txt, `- Based in: Rzeszów, Poland (PL)`);
   assert.include(txt, `## Work Experience`);

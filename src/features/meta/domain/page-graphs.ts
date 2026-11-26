@@ -50,7 +50,7 @@ interface LocalizedCopy {
 
 // constants
 import { CONTACT_PATH, EDUCATION_PATH } from "@/domain/constants";
-import { EXPERIENCE_LIST_ID, GLOBAL_SOCIAL_IMAGE, HOME_URL, PERSON_ID, PORTFOLIO_LIST_ID, PROFILE_ID } from "./site";
+import { CONTACT_EMAIL, EXPERIENCE_LIST_ID, GLOBAL_SOCIAL_IMAGE, HOME_URL, PERSON_ID, PORTFOLIO_LIST_ID, PROFILE_ID } from "./site";
 
 // Matches the og:image published on static pages so JSON-LD extractors see the same sized asset
 const STATIC_PRIMARY_IMAGE = imageObject(GLOBAL_SOCIAL_IMAGE.src, GLOBAL_SOCIAL_IMAGE.width, GLOBAL_SOCIAL_IMAGE.height);
@@ -176,7 +176,7 @@ export const contactJsonLd = ({ pageName, description, preferredLanguage }: Loca
       primaryImageOfPage: STATIC_PRIMARY_IMAGE,
     }),
     personEdge({ contactPoint: { "@id": contactPointId } }),
-    contactPointNode(contactPointId, url),
+    contactPointNode(contactPointId, url, CONTACT_EMAIL),
   ];
 };
 

@@ -2,7 +2,8 @@
 // page graphs into the site entities by `@id`.
 
 // services, features, and other libraries
-import { Array, HashMap, Option, Predicate, Record, String, pipe } from "effect";
+import { Array, HashMap, Option, Predicate, String, pipe } from "effect";
+import { definedNode } from "./nodes";
 
 // types
 import type { JsonLdNode, JsonLdObject, JsonLdScript } from "./models";
@@ -26,7 +27,7 @@ const emptyMergeState: MergeState = { order: [], nodes: HashMap.empty<NodeKey, J
 // Merges nodes by @id, preserving first-occurrence order and letting subsequent defined fields override
 const mergeNodes = (nodes: ReadonlyArray<JsonLdNode>): ReadonlyArray<JsonLdNode> => {
   const { order, nodes: merged } = Array.reduce(nodes, emptyMergeState, (state, node, index) => {
-    const defined = Record.filter(node, Predicate.isNotUndefined);
+    const defined = definedNode(node);
     const id = defined["@id"];
 
     // Anonymous nodes key by position so they never fold into an earlier entity's slot

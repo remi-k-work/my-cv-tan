@@ -30,7 +30,7 @@ type PageDocumentBuilder<P extends PagePath> = (content: PageDocumentContent[P],
 // constants
 import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/domain/constants";
 import { DOWNLOADABLE_DOCUMENTS } from "@/features/meta/domain/discovery";
-import { HOME_LOCATION, SOCIAL_PROFILES } from "@/features/meta/domain/site";
+import { CONTACT_EMAIL, HOME_LOCATION, SOCIAL_PROFILES } from "@/features/meta/domain/site";
 
 // Standalone twins carry their canonical citation and sibling nav; embedded companion twins omit them
 const navBlock = (includeNavigation: boolean, render: () => string) => (includeNavigation ? render() : "");
@@ -56,7 +56,11 @@ const documentsSection = (translate: Translate) => mdTitledSection(translate(msg
 const contactChannels = (canonical: string, translate: Translate) =>
   mdTitledSection(
     translate(msg("Channels")),
-    mdBulletList([`${mdLink(translate(msg("Contact Form")), canonical)} (${escapeMdInline(translate(msg("same page in HTML")))})`, ...profileLinks(translate)])
+    mdBulletList([
+      `${mdLink(translate(msg("Contact Form")), canonical)} (${escapeMdInline(translate(msg("same page in HTML")))})`,
+      mdFact("Email", CONTACT_EMAIL),
+      ...profileLinks(translate),
+    ])
   );
 
 const staticTwinDocument = (
