@@ -191,6 +191,8 @@ it("headLanguage resolves the root loader locale and falls back safely", () => {
   // resolves) are two different causes with one answer: the site default
   assert.strictEqual(headLanguage([{ loaderData: { preferredLanguage: "de" } }]), "en");
   assert.strictEqual(headLanguage([]), "en");
-  // A malformed payload degrades to the default language instead of throwing inside head()
-  assert.strictEqual(headLanguage([{ loaderData: null }]), "en");
+  // Every malformed payload degrades to the default language instead of throwing inside head()
+  for (const loaderData of [null, {}, { preferredLanguage: null }, "pl"]) {
+    assert.strictEqual(headLanguage([{ loaderData }]), "en");
+  }
 });

@@ -29,6 +29,22 @@ it("derives canonical, path, markdownPath, headline and description from one exp
   assert.strictEqual(experienceSection({ type: "e" }), "employment");
 });
 
+it("normalizes authored layout whitespace before publishing snippet metadata", () => {
+  const seo = experienceSeo({
+    experience: {
+      ...sampleExperience,
+      role: "  Full-Stack\nDeveloper  ",
+      company: "Sample\tCo",
+      txt: "Built things\n\nwith\t care.  ",
+      type: "e",
+    },
+    preferredLanguage: "en",
+  });
+
+  assert.strictEqual(seo.headline, "Full-Stack Developer at Sample Co");
+  assert.strictEqual(seo.description, "Built things with care.");
+});
+
 it("localizes headline and description for Polish", () => {
   const en = experienceSeo({ experience: sampleExperience, preferredLanguage: "en" });
   const pl = experienceSeo({ experience: sampleExperience, preferredLanguage: "pl" });

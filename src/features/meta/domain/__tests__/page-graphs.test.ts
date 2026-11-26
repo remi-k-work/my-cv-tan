@@ -166,10 +166,12 @@ it("experienceJsonLd publishes only validated, distinct project resources", () =
     description: "Built things with care.",
     screenshot: Option.none(),
   });
+  const page = findByType(nodes, "WebPage");
   const project = findByType(nodes, "SoftwareSourceCode");
   const article = findByType(nodes, "Article");
 
-  assert.deepStrictEqual(project?.relatedLink, ["https://example.com/demo"]);
+  assert.deepStrictEqual(page?.relatedLink, ["https://example.com/demo"]);
+  assert.isUndefined(project?.relatedLink);
   assert.strictEqual(article?.keywords, "TypeScript, React");
   assert.notInclude(JSON.stringify(nodes), "javascript:");
 });

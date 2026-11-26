@@ -47,7 +47,7 @@ it("pageHead publishes the page's canonical and every language-qualified Markdow
     { rel: "canonical", href: "https://www.remiforge.dev/test" },
     { rel: "alternate", type: "text/markdown", hrefLang: "en", href: "https://www.remiforge.dev/test.md?lang=en" },
     { rel: "alternate", type: "text/markdown", hrefLang: "pl", href: "https://www.remiforge.dev/test.md?lang=pl" },
-    { rel: "alternate", type: "text/markdown", hrefLang: "x-default", href: "https://www.remiforge.dev/test.md?lang=en" },
+    { rel: "alternate", type: "text/markdown", hrefLang: "x-default", href: "https://www.remiforge.dev/test.md" },
   ]);
   // Site-wide discovery and identity links live on the root head; the leaf adds nothing site-wide
   assert.notInclude(JSON.stringify(head.links), '"rel":"describedby"');

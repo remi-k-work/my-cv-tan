@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Array, HashMap, Option, pipe } from "effect";
+import { Array, Option, Record, String, pipe } from "effect";
 import { absoluteUrl } from "./urls";
 import { experienceSeo } from "./seo";
 
@@ -13,15 +13,25 @@ import { DOWNLOADABLE_DOCUMENT_PATHS } from "./discovery";
 import { STATIC_PAGE_PATHS } from "./pages";
 
 const STATIC_URLS = Array.map([...STATIC_PAGE_PATHS, ...DOWNLOADABLE_DOCUMENT_PATHS], absoluteUrl);
-const XML_ENTITIES = HashMap.fromIterable<string, string>([
-  ["&", "&amp;"],
-  ["<", "&lt;"],
-  [">", "&gt;"],
-  ['"', "&quot;"],
-  ["'", "&apos;"],
-]);
+const XML_ENTITIES: Readonly<Record<string, string>> = {
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+  "'": "&apos;",
+};
+// oxlint-disable-next-line no-control-regex -- the ranges are the XML 1.0 character production, not accidental control characters
+const XML_INVALID_CHARACTERS = /[^\u0009\u000A\u000D\u0020-\uD7FF\uE000-\uFFFD\u{10000}-\u{10FFFF}]/gu;
+const XML_SPECIAL_CHARACTERS = /[&<>"']/g;
 
-const escapeXml = (value: string) => value.replace(/[&<>"']/g, (character) => Option.getOrElse(HashMap.get(XML_ENTITIES, character), () => character));
+// XML 1.0 cannot represent these controls or lone surrogates, even as entity references
+const escapeXml = (value: string) =>
+  pipe(value, String.replace(XML_INVALID_CHARACTERS, "")).replace(XML_SPECIAL_CHARACTERS, (character) =>
+    pipe(
+      Record.get(XML_ENTITIES, character),
+      Option.getOrElse(() => character)
+    )
+  );
 
 const experienceImages = (seo: ExperienceSeo) =>
   pipe(

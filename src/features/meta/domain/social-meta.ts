@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Array, Match, Option, Result, pipe } from "effect";
+import { Array, Match, Option, pipe } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
 
 // types
@@ -56,8 +56,10 @@ export const socialMeta = ({
   { property: "og:url", content: canonical },
   { property: "og:site_name", content: SITE_NAME },
   { property: "og:locale", content: OPEN_GRAPH_LOCALES[preferredLanguage] },
-  ...Array.filterMap(SITE_LANGUAGES, (language) =>
-    language === preferredLanguage ? Result.failVoid : Result.succeed({ property: "og:locale:alternate", content: OPEN_GRAPH_LOCALES[language] })
+  ...pipe(
+    SITE_LANGUAGES,
+    Array.filter((language) => language !== preferredLanguage),
+    Array.map((language) => ({ property: "og:locale:alternate", content: OPEN_GRAPH_LOCALES[language] }))
   ),
   ...articleTags(ogType, articleSection),
   { name: "twitter:card", content: "summary_large_image" },

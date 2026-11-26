@@ -1,5 +1,5 @@
 import { assert, it } from "@effect/vitest";
-import { ROBOTS_TXT } from "../robots";
+import { ROBOTS_DISALLOW_PATHS, ROBOTS_TXT } from "../robots";
 import { robotsHandler } from "../../services/handlers";
 
 it("robots.txt allows content, disallows API endpoints, and advertises the sitemap", async () => {
@@ -10,6 +10,10 @@ it("robots.txt allows content, disallows API endpoints, and advertises the sitem
   const directives = robots.split("\n");
   assert.include(directives, "Disallow: /api/");
   assert.notInclude(directives, "Disallow: /api");
+  assert.deepStrictEqual(
+    directives.filter((line) => line.startsWith("Disallow: ")),
+    ROBOTS_DISALLOW_PATHS.map((path) => `Disallow: ${path}`)
+  );
   const disallowedPrefixes = directives.filter((line) => line.startsWith("Disallow: ")).map((line) => line.slice("Disallow: ".length));
   const isDisallowed = (path: string) => disallowedPrefixes.some((prefix) => path.startsWith(prefix));
   for (const path of ["/api/captcha", "/api/rpc/captcha", "/api/rpc/contact-me", "/api/rpc/data"]) {

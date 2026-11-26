@@ -72,6 +72,7 @@ it("webPageNode builds a WebPage node with optional fields conditionally include
     breadcrumb: true,
     mainEntity: { "@id": "https://www.remiforge.dev/#item" },
     primaryImageOfPage: { "@type": "ImageObject", url: "https://www.remiforge.dev/img.jpg", width: 100, height: 100 },
+    relatedLinks: ["https://example.com/demo", "https://example.com/video"],
   });
 
   assert.deepStrictEqual(node, {
@@ -85,6 +86,7 @@ it("webPageNode builds a WebPage node with optional fields conditionally include
     breadcrumb: { "@id": "https://www.remiforge.dev/test#breadcrumb" },
     mainEntity: { "@id": "https://www.remiforge.dev/#item" },
     primaryImageOfPage: { "@type": "ImageObject", url: "https://www.remiforge.dev/img.jpg", width: 100, height: 100 },
+    relatedLink: ["https://example.com/demo", "https://example.com/video"],
   });
 });
 
@@ -93,11 +95,13 @@ it("webPageNode omits undefined and empty optional fields", () => {
     type: "ContactPage",
     ...baseWebPageInput,
     hasPart: [],
+    relatedLinks: [],
   });
   assert.isUndefined(node.breadcrumb);
   assert.isUndefined(node.mainEntity);
   assert.isUndefined(node.primaryImageOfPage);
   assert.isUndefined(node.hasPart);
+  assert.isUndefined(node.relatedLink);
 });
 
 it("collectionNode builds a Collection with parts and optional url", () => {
@@ -157,6 +161,14 @@ it("personEdge extends the site Person with additional fields", () => {
   });
 });
 
+it("personEdge cannot move the shared Person to a caller-supplied identity", () => {
+  const node = personEdge({ "@type": "Organization", "@id": "https://evil.test/#person", name: "Still Remi" });
+
+  assert.strictEqual(node["@type"], "Person");
+  assert.strictEqual(node["@id"], PERSON_ID);
+  assert.strictEqual(node.name, "Still Remi");
+});
+
 const itemInput = {
   employment: false,
   id: "https://www.remiforge.dev/sample-role#project",
@@ -173,7 +185,6 @@ it("experienceItemNode builds the project node with its verified repository and 
     ...itemInput,
     image,
     repository: "https://github.com/example/repo",
-    relatedLinks: ["https://example.com/demo", "https://example.com/video"],
   });
 
   assert.deepStrictEqual(node, {
@@ -189,7 +200,6 @@ it("experienceItemNode builds the project node with its verified repository and 
     publisher: { "@id": PUBLISHER_ID },
     keywords: "TypeScript, React",
     codeRepository: "https://github.com/example/repo",
-    relatedLink: ["https://example.com/demo", "https://example.com/video"],
   });
 });
 

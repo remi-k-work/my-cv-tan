@@ -12,6 +12,7 @@ import experiencePl from "@/assets/data/pl/experience.json";
 import { Datasets } from "@/features/data/services/datasets";
 import { RequiredDataError } from "@/features/data/domain/required";
 import { sampleExperience } from "./fixtures";
+import { ROBOTS_DISALLOW_PATHS } from "../robots";
 
 // Verifies end-to-end runtime wiring of the sitemap route using real portfolio assets.
 it("sitemap route resolves the real portfolio assets into one canonical URL per page", async () => {
@@ -81,6 +82,19 @@ it("sitemap lists canonical site URLs only — never the Markdown twins", () => 
   assert.notInclude(xml, ".md");
 });
 
+it("sitemap never advertises a crawl-disallowed URL", () => {
+  const xml = buildSitemapXml([sampleExperience]);
+  const paths = Array.from(xml.matchAll(/<loc>([^<]+)<\/loc>/g), (match) => new URL(match[1]!).pathname);
+
+  assert.isNotEmpty(paths);
+  // Both crawl surfaces read one policy: a future disallowed page cannot slip into the sitemap unnoticed
+  for (const path of paths) {
+    for (const prefix of ROBOTS_DISALLOW_PATHS) {
+      assert.isFalse(path.startsWith(prefix), `${path} is disallowed by robots.txt`);
+    }
+  }
+});
+
 it("sitemap publishes verified experience screenshots and omits pages without one", () => {
   const xml = buildSitemapXml([sampleExperience, { ...sampleExperience, slug: "without-image", imageName: "" }]);
 
@@ -94,6 +108,14 @@ it("sitemap escapes image titles with the same XML boundary as URLs", () => {
   const xml = buildSitemapXml([{ ...sampleExperience, role: `<Role> & "Studio"` }]);
 
   assert.include(xml, "<image:title>&lt;Role&gt; &amp; &quot;Studio&quot;</image:title>");
+});
+
+it("sitemap drops XML-invalid controls without damaging valid Unicode", () => {
+  const xml = buildSitemapXml([{ ...sampleExperience, role: "Bad\u0000\u000B Role 🚀" }]);
+
+  assert.include(xml, "<image:title>Bad Role 🚀</image:title>");
+  // oxlint-disable-next-line no-control-regex -- assert the same XML 1.0 character production as the serializer
+  assert.notMatch(xml, /[^\u0009\u000A\u000D\u0020-\uD7FF\uE000-\uFFFD\u{10000}-\u{10FFFF}]/u);
 });
 
 it("sitemap percent-encodes unsafe slug characters in generated URLs", () => {

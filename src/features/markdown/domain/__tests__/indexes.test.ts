@@ -36,7 +36,7 @@ it("buildLlmsTxt indexes pages, about facts, grouped experience and negotiated l
   // The single-fetch document is surfaced in Pages and in the introductory guidance.
   assert.include(txt, `- [Full site content](https://www.remiforge.dev/llms-full.txt): every page above in one document, for single-request ingestion.`);
   assert.include(txt, `- The complete content of every page is also available in a single request: https://www.remiforge.dev/llms-full.txt.`);
-  assert.include(txt, `Append \`?lang=pl\` to any \`.md\` URL to request Polish explicitly`);
+  assert.include(txt, `Use \`?lang=pl\` on a \`.md\` URL to request Polish explicitly; replace any existing \`lang\` value rather than appending a second parameter`);
   assert.include(txt, "Markdown page twins follow the request's language preferences.");
   assert.include(txt, "English is the fallback when no supported preference is present.");
   assert.include(txt, "The llms.txt indexes are English discovery documents.");
@@ -45,7 +45,7 @@ it("buildLlmsTxt indexes pages, about facts, grouped experience and negotiated l
   // reads as a list inside a list
   assert.include(
     txt,
-    "- Polish: every page above is also available at its twin URL with `?lang=pl` appended (e.g. https://www.remiforge.dev/index.md?lang=pl). English is the source language."
+    "- Polish: every listed page is also available at its twin URL with `?lang=pl` (e.g. https://www.remiforge.dev/index.md?lang=pl). Replace any existing `lang` value; English is the source language."
   );
   assert.include(txt, `Always cite the clean canonical HTML URL from each document's frontmatter`);
   // The XML sitemap is advertised exactly once, under Discovery: repeating it elsewhere would
@@ -115,6 +115,15 @@ it("llms.txt reserves every H2 section for a non-empty Markdown-link file list",
   const empty = buildLlmsTxt([]);
   assert.notInclude(empty, "## Work Experience");
   assert.notInclude(empty, "## Portfolio Projects");
+});
+
+it("buildLlmsTxt places project entries in the portfolio file list", () => {
+  const txt = buildLlmsTxt([{ ...sampleExperience, type: "p", slug: "sample-project" }]);
+
+  assert.notInclude(txt, "## Work Experience");
+  assert.include(txt, "## Portfolio Projects");
+  assert.include(txt, "- [Full-Stack Developer](https://www.remiforge.dev/sample-project.md?lang=en):");
+  assert.include(txt, "[HTML](https://www.remiforge.dev/sample-project)");
 });
 
 it("the index's language guidance covers every language the site publishes and no others", () => {

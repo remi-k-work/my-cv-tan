@@ -179,7 +179,7 @@ it("an unknown slug is a noindex 404 that still names the queried twin", async (
   assert.strictEqual(response.headers.get("X-Robots-Tag"), "noindex, follow");
   assert.strictEqual(response.headers.get("Cache-Control"), "no-store");
   assert.strictEqual(response.headers.get("Content-Location"), "https://www.remiforge.dev/no-such-page.md?lang=en");
-  assert.isNull(response.headers.get("Vary"));
+  assert.strictEqual(response.headers.get("Vary"), "Cookie, Accept-Language");
 
   const body = await response.text();
   assert.include(body, "# Not Found");
@@ -270,6 +270,7 @@ it("llms.txt serves the real portfolio assets as the AI index with the full disc
   assert.strictEqual(response.headers.get("Content-Signal"), CONTENT_SIGNAL);
   assert.strictEqual(response.headers.get("Content-Location"), LLMS_TXT_INDEX.url);
   assert.include(response.headers.get("Link") ?? "", LLMS_FULL_TXT_INDEX.url);
+  assert.notInclude(response.headers.get("Link") ?? "", `<${LLMS_TXT_INDEX.url}>;`);
   assert.strictEqual(response.headers.get("X-Robots-Tag"), "noindex, follow");
 
   const txt = await response.text();

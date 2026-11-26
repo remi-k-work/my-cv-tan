@@ -31,6 +31,7 @@ import type { MarkdownTwin, PageContent } from "./models";
 interface SourceDocument {
   readonly entry: IndexEntry;
   readonly twin: MarkdownTwin;
+  readonly markdownUrl: string;
 }
 
 // constants
@@ -53,7 +54,8 @@ import { STATIC_PAGES, STATIC_PAGE_PATHS } from "@/features/meta/domain/pages";
 const PINNABLE_LANGUAGES = Array.filter(SITE_LANGUAGES, (language) => language !== DEFAULT_LANGUAGE);
 const LANGUAGE_PINS = Array.map(
   PINNABLE_LANGUAGES,
-  (language) => `Append \`?${LANG_PARAM}=${language}\` to any \`.md\` URL to request ${SITE_LANGUAGE_NAMES[language]} explicitly`
+  (language) =>
+    `Use \`?${LANG_PARAM}=${language}\` on a \`.md\` URL to request ${SITE_LANGUAGE_NAMES[language]} explicitly; replace any existing \`${LANG_PARAM}\` value rather than appending a second parameter`
 );
 
 export const AI_NOTES = [
@@ -97,6 +99,7 @@ const discoverySection = (selfUrl: string) =>
   mdTitledSection("Discovery", mdBulletList(discoveryLines(Array.filter(DISCOVERY_DOCUMENTS, ({ url }) => url !== selfUrl))));
 export const SITE_OPENING: ReadonlyArray<string> = [mdHeading(1, SITE_NAME), mdQuote(HOME_TITLE), escapeMd(PERSON_DESCRIPTION)];
 const entryTwinUrl = (entry: IndexEntry) => markdownTwinUrl(entry.mdHref, SOURCE_CONTEXT.preferredLanguage);
+const sourceDocument = (entry: IndexEntry, twin: MarkdownTwin): SourceDocument => ({ entry, twin, markdownUrl: entryTwinUrl(entry) });
 
 const PAGES_SECTION = mdTitledSection(
   "Pages",
@@ -115,7 +118,7 @@ const LANGUAGE_VARIANTS = mdBulletList(
   Array.map(
     PINNABLE_LANGUAGES,
     (language) =>
-      `${SITE_LANGUAGE_NAMES[language]}: every page above is also available at its twin URL with \`?${LANG_PARAM}=${language}\` appended (e.g. ${markdownTwinUrl(STATIC_PAGES[HOME_PATH].mdHref, language)}). ${SITE_LANGUAGE_NAMES[DEFAULT_LANGUAGE]} is the source language.`
+      `${SITE_LANGUAGE_NAMES[language]}: every listed page is also available at its twin URL with \`?${LANG_PARAM}=${language}\` (e.g. ${markdownTwinUrl(STATIC_PAGES[HOME_PATH].mdHref, language)}). Replace any existing \`${LANG_PARAM}\` value; ${SITE_LANGUAGE_NAMES[DEFAULT_LANGUAGE]} is the source language.`
   )
 );
 
@@ -131,11 +134,14 @@ const COMPANION_CONTEXT = { ...SOURCE_CONTEXT, includeNavigation: false } as con
 
 const sourceDocuments = (content: PageContent): ReadonlyArray<SourceDocument> =>
   pipe(
-    Array.map(STATIC_PAGE_PATHS, (pagePath) => ({ entry: pageEntry(pagePath), twin: buildPageDocument(pagePath, content, COMPANION_CONTEXT) })),
+    Array.map(STATIC_PAGE_PATHS, (pagePath) => {
+      const entry = pageEntry(pagePath);
+      return sourceDocument(entry, buildPageDocument(pagePath, content, COMPANION_CONTEXT));
+    }),
     Array.appendAll(
       Array.map(content.experienceList, (experience) => {
         const seo = experienceSeo({ experience, preferredLanguage: DEFAULT_LANGUAGE });
-        return { entry: experienceEntry(seo), twin: buildExperienceMd({ seo, ...COMPANION_CONTEXT }) };
+        return sourceDocument(experienceEntry(seo), buildExperienceMd({ seo, ...COMPANION_CONTEXT }));
       })
     )
   );
@@ -166,16 +172,13 @@ export const buildLlmsFullTxt = (content: PageContent) => {
     ...SITE_OPENING,
     `Complete Markdown content of every page, concatenated for single-request ingestion. Each section begins with Source and Markdown links and its identity facts as YAML, then includes the twin content with headings demoted to preserve one document hierarchy and without its repeated navigation section. Cite the canonical HTML URL, not this file.`,
     ABOUT_SECTION,
-    mdTitledSection("Table of Contents", mdBulletList(Array.map(documents, ({ entry }) => mdIndexEntry(entry.name, entry.canonical, entryTwinUrl(entry))))),
+    mdTitledSection(
+      "Table of Contents",
+      mdBulletList(Array.map(documents, ({ entry, markdownUrl }) => mdIndexEntry(entry.name, entry.canonical, markdownUrl)))
+    ),
     discoverySection(LLMS_FULL_TXT_INDEX.url),
-    ...Array.map(documents, ({ entry, twin }) =>
-      mdBody([
-        mdHeading(2, entry.name),
-        mdLink("Source", entry.canonical),
-        mdLink("Markdown", entryTwinUrl(entry)),
-        fencedFacts(twin.facts),
-        demoteHeadings(twin.body),
-      ])
+    ...Array.map(documents, ({ entry, twin, markdownUrl }) =>
+      mdBody([mdHeading(2, entry.name), mdLink("Source", entry.canonical), mdLink("Markdown", markdownUrl), fencedFacts(twin.facts), demoteHeadings(twin.body)])
     ),
     COMPANION_NOTES_SECTION,
   ]);

@@ -38,6 +38,9 @@ export const experienceScreenshot = (imageName: string): Option.Option<SocialIma
 // Single source of truth for experience section classification shared across Open Graph and JSON-LD
 export const experienceSection = (experience: Pick<Experience, "type">): ExperienceSection => (isEmployment(experience) ? "employment" : "portfolio");
 
+// Search snippets and social cards are single-line surfaces even when authored prose contains layout whitespace
+const inlineText = (value: string) => pipe(value, String.replace(/\s+/g, " "), String.trim);
+
 export const experienceSeo = ({ experience, preferredLanguage }: ExperienceHeadInput): ExperienceSeo => {
   const path = experiencePath(experience.slug);
 
@@ -47,8 +50,8 @@ export const experienceSeo = ({ experience, preferredLanguage }: ExperienceHeadI
     path,
     canonical: absoluteUrl(path),
     markdownPath: experienceMarkdownPath(experience.slug),
-    headline: experienceHeadline(experience, preferredLanguage),
-    description: excerpt(experience.txt, META_DESCRIPTION_LENGTH),
+    headline: inlineText(experienceHeadline(experience, preferredLanguage)),
+    description: excerpt(inlineText(experience.txt), META_DESCRIPTION_LENGTH),
     screenshot: experienceScreenshot(experience.imageName),
   };
 };

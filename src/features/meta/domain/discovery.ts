@@ -57,6 +57,8 @@ export const AI_INDEX_LINKS: ReadonlyArray<LinkTag> = Array.map(AI_INDEXES, ({ n
   href: url,
 }));
 export const AI_DISCOVERY_LINKS: ReadonlyArray<LinkTag> = [LLMS_DISCOVERY_LINK, ...AI_INDEX_LINKS];
-export const AI_DISCOVERY_LINK_HEADER = joinLinkHeader(AI_DISCOVERY_LINKS);
+// Discovery documents name other crawl surfaces, never a redundant description or alternate of themselves
+export const aiDiscoveryLinkHeader = (selfUrl?: string) => joinLinkHeader(Array.filter(AI_DISCOVERY_LINKS, ({ href }) => href !== selfUrl));
+export const AI_DISCOVERY_LINK_HEADER = aiDiscoveryLinkHeader();
 
 export const ME_LINKS: ReadonlyArray<LinkTag> = Array.map(SOCIAL_LINKS, (href) => ({ rel: "me", href }));

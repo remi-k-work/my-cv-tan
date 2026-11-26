@@ -170,6 +170,7 @@ it("demoteHeadings appends two levels without exceeding Markdown's H6 limit", ()
   // Deep source headings cannot become invalid H7/H8 markers; clamp them to the deepest valid level.
   assert.strictEqual(demoteHeadings("#### Four\n##### Five\n###### Six"), "###### Four\n###### Five\n###### Six");
   assert.strictEqual(demoteHeadings("####### Seven\n######## Eight"), "###### Seven\n###### Eight");
+  assert.strictEqual(demoteHeadings("\\# Authored text\n## Authored heading"), "\\# Authored text\n#### Authored heading");
   assert.strictEqual(demoteHeadings("no headings here"), "no headings here");
 });
 

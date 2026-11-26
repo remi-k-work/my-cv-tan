@@ -6,7 +6,7 @@ import { absoluteUrl, withLanguageParam } from "./urls";
 import type { LinkTag } from "./models";
 
 // constants
-import { DEFAULT_LANGUAGE, SITE_LANGUAGES } from "@/domain/constants";
+import { SITE_LANGUAGES } from "@/domain/constants";
 
 const quoteParam = String.replaceAll(/["\\]/g, "\\$&");
 const linkParam = (key: string, value: string | undefined) =>
@@ -38,6 +38,14 @@ export const languageVariantLinks = (markdownPath: string): ReadonlyArray<LinkTa
 
   return [
     ...Array.map(SITE_LANGUAGES, (language) => markdownLink(withLanguageParam(markdownUrl, language), language)),
-    markdownLink(withLanguageParam(markdownUrl, DEFAULT_LANGUAGE), "x-default"),
+    // The unpinned twin negotiates unmatched languages and falls back to the source language
+    markdownLink(markdownUrl, "x-default"),
   ];
 };
+
+// One declaration feeds HTML link elements and Markdown Link headers, including any extra discovery links
+export const representationLinks = (canonical: string, markdownPath: string, discovery: ReadonlyArray<LinkTag> = []): ReadonlyArray<LinkTag> => [
+  canonicalLink(canonical),
+  ...discovery,
+  ...languageVariantLinks(markdownPath),
+];

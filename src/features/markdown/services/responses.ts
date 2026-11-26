@@ -2,13 +2,12 @@
 import { Array, HashSet, Match, Option, String, pipe } from "effect";
 import { documentHeaders, locationHeader } from "@/features/meta/services/responses";
 import { markdownTwinUrl } from "@/features/meta/domain/urls";
-import { canonicalLink, joinLinkHeader, languageVariantLinks } from "@/features/meta/domain/link-tags";
+import { joinLinkHeader, representationLinks } from "@/features/meta/domain/link-tags";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
 
 // constants
-import { NO_STORE } from "@/domain/http";
 import { AI_DISCOVERY_LINK_HEADER, AI_DISCOVERY_LINKS } from "@/features/meta/domain/discovery";
 import {
   CACHEABLE_HEADERS,
@@ -53,13 +52,19 @@ export const pinCacheVariant = (response: Response) =>
     });
   });
 
-// A translation fallback is a temporary English representation: never let a shared cache pin it
-export const withoutCaching = (response: Response) => withHeaders(response, (headers) => headers.set("Cache-Control", NO_STORE));
+// Temporary source-language fallbacks must neither enter shared caches nor compete with the requested page in search indexes
+export const temporaryFallbackResponse = (response: Response) =>
+  withHeaders(response, (headers) => {
+    headers.set("Cache-Control", UNAVAILABLE_HEADERS["Cache-Control"]);
+    headers.set("X-Robots-Tag", UNAVAILABLE_HEADERS["X-Robots-Tag"]);
+  });
 
 // Enforces cache and Vary policy based on whether the response is a fallback or language-pinned
 export const applyRepresentationPolicy = (response: Response, fallback: boolean, langOverride: Option.Option<PreferredLanguage>) => {
   // A fallback is temporary negotiated content, so it must bypass both caching and language pinning
-  if (fallback) return withoutCaching(response);
+  if (fallback) return temporaryFallbackResponse(response);
+  // Non-cacheable errors have no representation variant to pin
+  if (!response.ok) return response;
 
   return Option.match(langOverride, {
     onNone: () => response,
@@ -73,8 +78,7 @@ const markdownHeaders = (preferredLanguage: PreferredLanguage, links: string) =>
   Link: links,
 });
 
-const markdownLinks = (canonical: string, markdownPath: string) =>
-  joinLinkHeader([canonicalLink(canonical), ...AI_DISCOVERY_LINKS, ...languageVariantLinks(markdownPath)]);
+const markdownLinks = (canonical: string, markdownPath: string) => joinLinkHeader(representationLinks(canonical, markdownPath, AI_DISCOVERY_LINKS));
 
 export const mdResponse = (input: {
   readonly body: string;

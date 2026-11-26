@@ -34,11 +34,13 @@ const twinIndexLinks = (pagePath: PagePath, preferredLanguage: PreferredLanguage
 const detailIndexLinks = (preferredLanguage: PreferredLanguage, translate: Translate) =>
   mdBulletList([staticTwinLink(HOME_PATH, preferredLanguage, translate), ...AI_INDEX_MARKDOWN_LINKS]);
 
+const navigationSection = (links: string, translate: Translate) => mdTitledSection(translate(msg("Pages")), links);
+
 export const pagesSection = (pagePath: PagePath, preferredLanguage: PreferredLanguage, translate: Translate) =>
-  mdTitledSection(translate(msg("Pages")), twinIndexLinks(pagePath, preferredLanguage, translate));
+  navigationSection(twinIndexLinks(pagePath, preferredLanguage, translate), translate);
 
 export const detailPagesSection = (preferredLanguage: PreferredLanguage, translate: Translate) =>
-  mdTitledSection(translate(msg("Pages")), detailIndexLinks(preferredLanguage, translate));
+  navigationSection(detailIndexLinks(preferredLanguage, translate), translate);
 
 export const deadEndEscapeLine = (preferredLanguage: PreferredLanguage, translate: Translate) => {
   const indexLink = mdLink(LLMS_TXT_INDEX.name, LLMS_TXT_INDEX.url);

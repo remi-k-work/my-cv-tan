@@ -6,7 +6,15 @@ import { absoluteUrl } from "@/features/meta/domain/urls";
 import { documentHeaders, txtResponse, txtUnavailableResponse } from "@/features/meta/services/responses";
 import { requireData, recoverDataFailure } from "@/features/data/domain/required";
 import { experienceFromList } from "@/features/experience/domain/helpers";
-import { applyRepresentationPolicy, mdNotFoundResponse, mdResponse, mdUnavailableResponse, pinCacheVariant, withoutCaching, withoutNegotiationVary } from "../responses";
+import {
+  applyRepresentationPolicy,
+  mdNotFoundResponse,
+  mdResponse,
+  mdUnavailableResponse,
+  pinCacheVariant,
+  temporaryFallbackResponse,
+  withoutNegotiationVary,
+} from "../responses";
 import { sampleExperience } from "@/features/markdown/__tests__/fixtures";
 
 describe("withoutNegotiationVary", () => {
@@ -71,9 +79,8 @@ it("a response that carries no Vary header stays Vary-free", async () => {
   assert.strictEqual(await bare.text(), "# Gone");
 });
 
-it("a translation fallback refuses shared caching without weakening its negotiation", async () => {
-  // A fallback is English at a URL that asked for another language. It must not be pinned as a
-  // public variant of that URL, so the response is marked no-store and the negotiated Vary stays.
+it("a translation fallback refuses caching and indexing without weakening its negotiation", async () => {
+  // Source-language content at another language's URL is temporary, not an indexable variant.
   const response = mdResponse({
     body: "# English fallback",
     preferredLanguage: "en",
@@ -81,12 +88,13 @@ it("a translation fallback refuses shared caching without weakening its negotiat
     markdownPath: "/index.md",
   });
 
-  const uncached = withoutCaching(response);
+  const fallback = temporaryFallbackResponse(response);
 
-  assert.strictEqual(uncached.status, 200);
-  assert.strictEqual(uncached.headers.get("Cache-Control"), "no-store");
-  assert.strictEqual(uncached.headers.get("Vary"), "Cookie, Accept-Language");
-  assert.strictEqual(await uncached.text(), "# English fallback");
+  assert.strictEqual(fallback.status, 200);
+  assert.strictEqual(fallback.headers.get("Cache-Control"), "no-store");
+  assert.strictEqual(fallback.headers.get("X-Robots-Tag"), NOINDEX_FOLLOW);
+  assert.strictEqual(fallback.headers.get("Vary"), "Cookie, Accept-Language");
+  assert.strictEqual(await fallback.text(), "# English fallback");
 });
 
 it("response helpers set content types, indexing, cache, canonical, and language-variant headers", () => {
@@ -105,7 +113,7 @@ it("response helpers set content types, indexing, cache, canonical, and language
   // RFC 8288 parameter order: rel, type, title, hreflang.
   assert.strictEqual(
     ok.headers.get("Link"),
-    '<https://www.remiforge.dev/>; rel="canonical", <https://www.remiforge.dev/llms.txt>; rel="describedby", <https://www.remiforge.dev/llms.txt>; rel="alternate"; type="text/plain"; title="llms.txt", <https://www.remiforge.dev/llms-full.txt>; rel="alternate"; type="text/plain"; title="llms-full.txt", <https://www.remiforge.dev/index.md?lang=en>; rel="alternate"; type="text/markdown"; hreflang="en", <https://www.remiforge.dev/index.md?lang=pl>; rel="alternate"; type="text/markdown"; hreflang="pl", <https://www.remiforge.dev/index.md?lang=en>; rel="alternate"; type="text/markdown"; hreflang="x-default"'
+    '<https://www.remiforge.dev/>; rel="canonical", <https://www.remiforge.dev/llms.txt>; rel="describedby", <https://www.remiforge.dev/llms.txt>; rel="alternate"; type="text/plain"; title="llms.txt", <https://www.remiforge.dev/llms-full.txt>; rel="alternate"; type="text/plain"; title="llms-full.txt", <https://www.remiforge.dev/index.md?lang=en>; rel="alternate"; type="text/markdown"; hreflang="en", <https://www.remiforge.dev/index.md?lang=pl>; rel="alternate"; type="text/markdown"; hreflang="pl", <https://www.remiforge.dev/index.md>; rel="alternate"; type="text/markdown"; hreflang="x-default"'
   );
   assert.strictEqual(ok.headers.get("Content-Signal"), "search=yes, ai-input=yes, ai-train=yes");
   assert.strictEqual(ok.headers.get("X-Content-Type-Options"), "nosniff");
@@ -161,7 +169,8 @@ it("response helpers set content types, indexing, cache, canonical, and language
   assert.strictEqual(unavailableTxt.headers.get("Retry-After"), "300");
   assert.strictEqual(unavailableTxt.headers.get("Content-Signal"), CONTENT_SIGNAL);
   assert.strictEqual(unavailableTxt.headers.get("X-Content-Type-Options"), "nosniff");
-  assert.include(unavailableTxt.headers.get("Link") ?? "", "https://www.remiforge.dev/llms.txt");
+  assert.include(unavailableTxt.headers.get("Link") ?? "", "https://www.remiforge.dev/llms-full.txt");
+  assert.notInclude(unavailableTxt.headers.get("Link") ?? "", "<https://www.remiforge.dev/llms.txt>;");
 
   const discovery = txtResponse("# Index", absoluteUrl("/llms.txt"));
   assert.strictEqual(discovery.status, 200);
@@ -170,10 +179,7 @@ it("response helpers set content types, indexing, cache, canonical, and language
   assert.strictEqual(discovery.headers.get("X-Robots-Tag"), NOINDEX_FOLLOW);
   assert.strictEqual(discovery.headers.get("X-Content-Type-Options"), "nosniff");
   assert.strictEqual(discovery.headers.get("Content-Location"), "https://www.remiforge.dev/llms.txt");
-  assert.strictEqual(
-    discovery.headers.get("Link"),
-    '<https://www.remiforge.dev/llms.txt>; rel="describedby", <https://www.remiforge.dev/llms.txt>; rel="alternate"; type="text/plain"; title="llms.txt", <https://www.remiforge.dev/llms-full.txt>; rel="alternate"; type="text/plain"; title="llms-full.txt"'
-  );
+  assert.strictEqual(discovery.headers.get("Link"), '<https://www.remiforge.dev/llms-full.txt>; rel="alternate"; type="text/plain"; title="llms-full.txt"');
 });
 
 it.effect("a failed experience-list decode is an error, while a valid missing slug is a 404 candidate", () =>
@@ -232,4 +238,14 @@ it("applyRepresentationPolicy bypasses caching on fallback and strips negotiatio
   const negotiated = applyRepresentationPolicy(base(), false, Option.none());
   assert.strictEqual(negotiated.headers.get("Cache-Control"), "public, max-age=3600");
   assert.strictEqual(negotiated.headers.get("Vary"), "Cookie, Accept-Language");
+});
+
+it("applyRepresentationPolicy leaves non-cacheable errors outside pinned-variant handling", () => {
+  for (const response of [mdNotFoundResponse("# Gone", "pl", Option.none()), mdUnavailableResponse("# Unavailable", "pl", Option.none())]) {
+    const result = applyRepresentationPolicy(response, false, Option.some("pl"));
+
+    assert.strictEqual(result.headers.get("Cache-Control"), "no-store");
+    assert.strictEqual(result.headers.get("Vary"), "Cookie, Accept-Language");
+    assert.strictEqual(result.headers.get("X-Robots-Tag"), NOINDEX_FOLLOW);
+  }
 });

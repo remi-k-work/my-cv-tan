@@ -33,6 +33,7 @@ interface WebPageNodeInput {
   readonly mainEntity?: JsonLdNode;
   readonly primaryImageOfPage?: JsonLdNode;
   readonly hasPart?: JsonLdNodes;
+  readonly relatedLinks?: ReadonlyArray<string>;
 }
 
 interface CollectionNodeInput {
@@ -53,7 +54,6 @@ interface ExperienceItemNodeInput {
   readonly keywords: ReadonlyArray<string>;
   readonly image?: JsonLdNode;
   readonly repository?: string;
-  readonly relatedLinks?: ReadonlyArray<string>;
 }
 
 // constants
@@ -106,6 +106,7 @@ export const webPageNode = ({
   mainEntity,
   primaryImageOfPage,
   hasPart,
+  relatedLinks,
 }: WebPageNodeInput): JsonLdNode =>
   definedNode({
     "@type": type,
@@ -119,6 +120,7 @@ export const webPageNode = ({
     mainEntity,
     primaryImageOfPage,
     hasPart: nonEmptyOrUndefined(hasPart),
+    relatedLink: nonEmptyOrUndefined(relatedLinks),
   });
 
 export const collectionNode = ({ id, name, preferredLanguage, parts, url }: CollectionNodeInput): JsonLdNode =>
@@ -154,7 +156,6 @@ export const experienceItemNode = ({
   keywords,
   image,
   repository,
-  relatedLinks,
 }: ExperienceItemNodeInput): JsonLdNode =>
   Match.value(employment).pipe(
     Match.when(true, () => ({
@@ -181,15 +182,14 @@ export const experienceItemNode = ({
         // The same join the Markdown twin's `skills` fact publishes, so the two spellings cannot drift
         keywords: Array.join(keywords, ", "),
         codeRepository: repository,
-        relatedLink: nonEmptyOrUndefined(relatedLinks),
       })
     ),
     Match.exhaustive
   );
 
-// Extends the site Person entity with an additional edge during graph merging
+// Extends the site Person without allowing edge data to redirect the shared entity's identity
 export const personEdge = (fields: JsonLdObject): JsonLdNode => ({
+  ...fields,
   "@type": "Person",
   "@id": PERSON_ID,
-  ...fields,
 });

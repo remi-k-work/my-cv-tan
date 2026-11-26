@@ -82,14 +82,12 @@ export class Markdown extends Context.Service<
     Effect.gen(function* () {
       const datasets = yield* Datasets;
       const translation = yield* Translation;
-      const withDatasets = Effect.provideService(Datasets, datasets);
 
       const pages = Record.map(PAGE_TWINS, (twin) =>
         documentResponse(
           translation,
           () => Option.some(twin.entry.mdHref),
-          (_request, context) =>
-            withDatasets(twin.document(context)).pipe(Effect.map((document) => respond(context, document, twin.entry.canonical, twin.entry.mdHref)))
+          (_request, context) => Effect.map(twin.document(datasets, context), (document) => respond(context, document, twin.entry.canonical, twin.entry.mdHref))
         )
       );
 

@@ -11,6 +11,7 @@ it("parseLangParam honors ?lang= and rejects unknown values", () => {
   // Case-insensitive normalization.
   assert.deepStrictEqual(parseLangParam("https://x.test/index.md?lang=EN"), Option.some("en"));
   assert.deepStrictEqual(parseLangParam("https://x.test/index.md"), Option.none());
+  assert.deepStrictEqual(parseLangParam("https://x.test/index.md?lang="), Option.none());
   assert.deepStrictEqual(parseLangParam("https://x.test/index.md?lang=xx"), Option.none());
 });
 

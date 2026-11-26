@@ -28,12 +28,10 @@ export const absoluteUrl = (path: string) => `${SITE_URL}${path}`;
 export const withLanguageParam = (url: string, preferredLanguage: PreferredLanguage) =>
   pipe(
     decodeUrlOption(url),
-    // A fresh URL per option: mutating the decoded one would leave a shared instance carrying this
-    // call's parameter into anything that later reads it from the same Some
     Option.map((parsed) => {
-      const variant = new URL(parsed.href);
-      variant.searchParams.set(LANG_PARAM, preferredLanguage);
-      return variant.href;
+      // Each call decodes a fresh URL, so this mutation cannot leak into another variant
+      parsed.searchParams.set(LANG_PARAM, preferredLanguage);
+      return parsed.href;
     }),
     Option.getOrElse(() => url)
   );

@@ -1,7 +1,16 @@
 import { assert, it } from "@effect/vitest";
-import { AI_DISCOVERY_LINK_HEADER, AI_DISCOVERY_LINKS, AI_INDEX_LINKS, LLMS_DISCOVERY_LINK, SITEMAP_LINK } from "../discovery";
+import {
+  AI_DISCOVERY_LINK_HEADER,
+  AI_DISCOVERY_LINKS,
+  AI_INDEX_LINKS,
+  aiDiscoveryLinkHeader,
+  LLMS_DISCOVERY_LINK,
+  LLMS_FULL_TXT_INDEX,
+  LLMS_TXT_INDEX,
+  SITEMAP_LINK,
+} from "../discovery";
 import { ROOT_HEAD } from "../root-head";
-import { authorLink, canonicalLink, joinLinkHeader, languageVariantLinks } from "../link-tags";
+import { authorLink, canonicalLink, joinLinkHeader, languageVariantLinks, representationLinks } from "../link-tags";
 import type { LinkTag } from "../models";
 
 // The three parameters the serializer writes, and nothing else: a link declaring a fourth would
@@ -46,12 +55,22 @@ it("quoted Link parameters cannot escape their values", () => {
   );
 });
 
+it("representation links share canonical, discovery and language ordering across HTML and HTTP", () => {
+  const canonical = "https://www.remiforge.dev/";
+
+  assert.deepStrictEqual(representationLinks(canonical, "/index.md", AI_DISCOVERY_LINKS), [
+    canonicalLink(canonical),
+    ...AI_DISCOVERY_LINKS,
+    ...languageVariantLinks("/index.md"),
+  ]);
+});
+
 it("language variants list every supported language and close with the x-default", () => {
   assert.deepStrictEqual(joinLinkHeader(languageVariantLinks("/index.md")).split(", "), [
     '<https://www.remiforge.dev/index.md?lang=en>; rel="alternate"; type="text/markdown"; hreflang="en"',
     '<https://www.remiforge.dev/index.md?lang=pl>; rel="alternate"; type="text/markdown"; hreflang="pl"',
-    // The x-default is the English document, the site's source language
-    '<https://www.remiforge.dev/index.md?lang=en>; rel="alternate"; type="text/markdown"; hreflang="x-default"',
+    // The unpinned URL negotiates unsupported preferences and falls back to English
+    '<https://www.remiforge.dev/index.md>; rel="alternate"; type="text/markdown"; hreflang="x-default"',
   ]);
 });
 
@@ -109,6 +128,17 @@ it("the AI indexes project into both the <head> advertisements and the Link head
   assert.deepStrictEqual(
     ROOT_HEAD.links.filter(({ rel }) => rel === "alternate"),
     [...AI_INDEX_LINKS]
+  );
+});
+
+it("discovery response headers omit the document currently being served", () => {
+  assert.strictEqual(
+    aiDiscoveryLinkHeader(LLMS_TXT_INDEX.url),
+    '<https://www.remiforge.dev/llms-full.txt>; rel="alternate"; type="text/plain"; title="llms-full.txt"'
+  );
+  assert.strictEqual(
+    aiDiscoveryLinkHeader(LLMS_FULL_TXT_INDEX.url),
+    '<https://www.remiforge.dev/llms.txt>; rel="describedby", <https://www.remiforge.dev/llms.txt>; rel="alternate"; type="text/plain"; title="llms.txt"'
   );
 });
 

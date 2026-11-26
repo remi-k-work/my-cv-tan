@@ -12,7 +12,7 @@ import type { MarkdownTwin, PageDocumentContent, TwinContext } from "@/features/
 
 interface PageTwin {
   readonly entry: IndexEntry;
-  readonly document: (context: TwinContext) => Effect.Effect<MarkdownTwin, RequiredDataError, Datasets>;
+  readonly document: (datasets: Datasets["Service"], context: TwinContext) => Effect.Effect<MarkdownTwin, RequiredDataError>;
 }
 
 type LoadPageContent<P extends PagePath> = (
@@ -27,8 +27,7 @@ import { STATIC_PAGES } from "@/features/meta/domain/pages";
 // One pipeline owns catalogue lookup, dataset loading, tracing and pure rendering for every page
 const pageTwin = <P extends PagePath>(pagePath: P, load: LoadPageContent<P>): PageTwin => ({
   entry: pageEntry(pagePath),
-  document: Effect.fn(`Markdown.page.${STATIC_PAGES[pagePath].type}`)(function* (context: TwinContext) {
-    const datasets = yield* Datasets;
+  document: Effect.fn(`Markdown.page.${STATIC_PAGES[pagePath].type}`)(function* (datasets: Datasets["Service"], context: TwinContext) {
     const content = yield* load(datasets, context.preferredLanguage);
     return buildPageDocument(pagePath, content, context);
   }),

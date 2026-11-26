@@ -116,8 +116,8 @@ it("the site-wide discovery and identity links are declared once per document an
     for (const rel of ["author", "describedby", "sitemap"]) {
       assert.strictEqual(relsOf(document.links, rel).length, 1, `${rel} must be declared once per document`);
     }
-    // No byte-identical declaration is emitted twice. The English and x-default Markdown links share
-    // a destination deliberately, but their different hreflang values make them distinct declarations.
+    // No byte-identical declaration is emitted twice; each language pin and the negotiated
+    // x-default destination is a distinct declaration.
     assert.strictEqual(new Set(document.links.map((link) => JSON.stringify(link))).size, document.links.length);
     for (const rel of ["me", "author", "describedby", "sitemap"]) {
       assert.deepStrictEqual(relsOf(head.links, rel), [], `a leaf must not declare ${rel}`);

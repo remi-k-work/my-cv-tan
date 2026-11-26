@@ -15,6 +15,7 @@ it("a failed pinned translation serves an uncached English document without pinn
   assert.strictEqual(response.headers.get("Content-Language"), "en");
   assert.strictEqual(response.headers.get("Content-Location"), "https://www.remiforge.dev/index.md?lang=en");
   assert.strictEqual(response.headers.get("Cache-Control"), "no-store");
+  assert.strictEqual(response.headers.get("X-Robots-Tag"), "noindex, follow");
   assert.strictEqual(response.headers.get("Vary"), "Cookie, Accept-Language");
 
   const body = await response.text();

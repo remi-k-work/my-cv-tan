@@ -26,6 +26,7 @@ interface PageGraphSpec {
   readonly preferredLanguage: PreferredLanguage;
   readonly mainEntity?: JsonLdNode;
   readonly primaryImageOfPage?: JsonLdNode;
+  readonly relatedLinks?: ReadonlyArray<string>;
 }
 
 // The localized copy the static page graph assemblers read
@@ -43,7 +44,7 @@ import { EXPERIENCE_LIST_ID, GLOBAL_SOCIAL_IMAGE, HOME_URL, META_DESCRIPTION_LEN
 const STATIC_PRIMARY_IMAGE = imageObject(GLOBAL_SOCIAL_IMAGE.src, GLOBAL_SOCIAL_IMAGE.width, GLOBAL_SOCIAL_IMAGE.height);
 
 // Builds the page node and its breadcrumb trail using absolute URL as @id
-const pageGraph = ({ type, path, name, description, preferredLanguage, mainEntity, primaryImageOfPage }: PageGraphSpec): JsonLdNodes => {
+const pageGraph = ({ type, path, name, description, preferredLanguage, mainEntity, primaryImageOfPage, relatedLinks }: PageGraphSpec): JsonLdNodes => {
   const id = absoluteUrl(path);
 
   return [
@@ -57,6 +58,7 @@ const pageGraph = ({ type, path, name, description, preferredLanguage, mainEntit
       breadcrumb: true,
       mainEntity,
       primaryImageOfPage,
+      relatedLinks,
     }),
     breadcrumb(preferredLanguage, id, name),
   ];
@@ -187,8 +189,9 @@ export const experienceJsonLd = ({ experience, preferredLanguage, path, headline
   );
   const keywords = Array.dedupe(skillsUsed);
   const repository = pipe(gitHubLink, validatedHref, Option.getOrUndefined);
+  // Schema.org scopes relatedLink to WebPage, not the CreativeWork described by that page
   const relatedLinks = pipe([liveLink, videoLink], Array.map(validatedHref), Array.getSomes, Array.dedupe);
-  const item = experienceItemNode({ employment, id: itemId, url, role, description, preferredLanguage, keywords, image, repository, relatedLinks });
+  const item = experienceItemNode({ employment, id: itemId, url, role, description, preferredLanguage, keywords, image, repository });
 
   const itemNodes: JsonLdNodes = Match.value(employment).pipe(
     Match.when(true, () => [
@@ -215,7 +218,16 @@ export const experienceJsonLd = ({ experience, preferredLanguage, path, headline
   });
 
   return [
-    ...pageGraph({ type: "WebPage", path, name: headline, description, preferredLanguage, mainEntity: { "@id": articleId }, primaryImageOfPage: image }),
+    ...pageGraph({
+      type: "WebPage",
+      path,
+      name: headline,
+      description,
+      preferredLanguage,
+      mainEntity: { "@id": articleId },
+      primaryImageOfPage: image,
+      relatedLinks,
+    }),
     article,
     ...itemNodes,
   ];
