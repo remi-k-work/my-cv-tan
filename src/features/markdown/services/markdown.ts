@@ -99,14 +99,14 @@ export class Markdown extends Context.Service<
           if (Option.isNone(slug)) return notFoundTwin(slug, context);
 
           const list = yield* datasets.experienceList(context.preferredLanguage);
-          return yield* Option.match(experienceFromList(list, slug.value), {
-            onNone: () =>
-              Effect.logDebug(`[SLUG.MD]: no experience for slug "${slug.value}", emitting markdown 404`).pipe(Effect.as(notFoundTwin(slug, context))),
-            onSome: (found) => {
-              const seo = experienceSeo({ experience: found, preferredLanguage: context.preferredLanguage });
-              return Effect.succeed(respond(context, buildExperienceMd({ seo, translate: context.translate }), seo.canonical, seo.markdownPath));
-            },
-          });
+          const found = experienceFromList(list, slug.value);
+          if (Option.isNone(found)) {
+            yield* Effect.logDebug(`[SLUG.MD]: no experience for slug "${slug.value}", emitting markdown 404`);
+            return notFoundTwin(slug, context);
+          }
+
+          const seo = experienceSeo({ experience: found.value, preferredLanguage: context.preferredLanguage });
+          return respond(context, buildExperienceMd({ seo, translate: context.translate }), seo.canonical, seo.markdownPath);
         })
       );
 

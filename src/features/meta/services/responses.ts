@@ -1,7 +1,7 @@
 // Shared HTTP policy and response envelopes for HTML and machine-readable documents.
 
 // services, features, and other libraries
-import { Array, Option, Record } from "effect";
+import { Array, Option, Record, String, pipe } from "effect";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
@@ -27,8 +27,20 @@ export const INDEXABLE_HEADERS = { "X-Robots-Tag": INDEXABLE_ROBOTS } as const;
 
 const TXT_HEADERS = { ...BASE_HEADERS, "Content-Type": "text/plain; charset=utf-8", "Content-Language": DEFAULT_LANGUAGE } as const;
 const SITEMAP_HEADERS = { ...SHARED_HEADERS, "Content-Type": "application/xml; charset=utf-8" } as const;
-const txtHeaders = (contentLocation?: string) => ({ ...TXT_HEADERS, Link: aiDiscoveryLinkHeader(contentLocation) }) as const;
 const SITEMAP_UNAVAILABLE_XML = '<?xml version="1.0" encoding="UTF-8"?><error>Sitemap is temporarily unavailable.</error>';
+
+// Omits empty or absent optional headers rather than emitting blank header values on the wire
+const optionalHeader = (name: string, value: string | undefined): Readonly<Record<string, string>> =>
+  pipe(
+    Option.fromUndefinedOr(value),
+    Option.filter(String.isNonEmpty),
+    Option.match({
+      onNone: Record.empty<string, string>,
+      onSome: (headerValue) => ({ [name]: headerValue }),
+    })
+  );
+
+const txtHeaders = (contentLocation?: string) => ({ ...TXT_HEADERS, ...optionalHeader("Link", aiDiscoveryLinkHeader(contentLocation)) });
 
 // Base response headers for rendered HTML documents
 export const documentHeaders = (preferredLanguage: PreferredLanguage) =>
@@ -38,11 +50,7 @@ export const documentHeaders = (preferredLanguage: PreferredLanguage) =>
     Vary: Array.join(NEGOTIATION_VARY_TOKENS, ", "),
   }) as const;
 
-export const locationHeader = (contentLocation?: string): Readonly<Record<string, string>> =>
-  Option.match(Option.fromUndefinedOr(contentLocation), {
-    onNone: Record.empty<string, string>,
-    onSome: (location) => ({ "Content-Location": location }),
-  });
+export const locationHeader = (contentLocation?: string): Readonly<Record<string, string>> => optionalHeader("Content-Location", contentLocation);
 
 const instructionsHeaders = (contentLocation?: string) => ({
   ...txtHeaders(contentLocation),

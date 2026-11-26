@@ -57,6 +57,7 @@ interface ExperienceItemNodeInput {
 }
 
 // constants
+import { SITE_LANGUAGES } from "@/domain/constants";
 import { HOME_URL, PERSON_ID, PUBLISHER_ID, WEBSITE_ID } from "./site";
 
 // Strip undefined properties so JSON-LD nodes never publish unset optional keys
@@ -197,4 +198,45 @@ export const personEdge = (fields: JsonLdObject): JsonLdNode => ({
   ...fields,
   "@type": "Person",
   "@id": PERSON_ID,
+});
+
+export const educationalOrganizationNode = ({
+  id,
+  name,
+  description,
+  address,
+}: {
+  readonly id: string;
+  readonly name: string;
+  readonly description: string;
+  readonly address: string;
+}): JsonLdNode => ({
+  "@type": "EducationalOrganization",
+  "@id": id,
+  name,
+  description,
+  address,
+  alumni: { "@id": PERSON_ID },
+});
+
+export const employerOrganizationNode = (id: string, name: string, memberId: string): JsonLdNode => ({
+  "@type": "Organization",
+  "@id": id,
+  name,
+  member: { "@id": memberId },
+});
+
+export const contactPointNode = (id: string, url: string): JsonLdNode => ({
+  "@type": "ContactPoint",
+  "@id": id,
+  contactType: "author",
+  url,
+  availableLanguage: [...SITE_LANGUAGES],
+});
+
+export const collectionPartNode = (canonical: string, name: string): JsonLdNode => ({
+  "@type": "WebPage",
+  "@id": canonical,
+  url: canonical,
+  name,
 });

@@ -3,7 +3,19 @@
 // needing graph merge or serialization.
 
 import { assert, it } from "@effect/vitest";
-import { articleNode, breadcrumb, collectionNode, experienceItemNode, imageObject, personEdge, webPageNode } from "../nodes";
+import {
+  articleNode,
+  breadcrumb,
+  collectionNode,
+  collectionPartNode,
+  contactPointNode,
+  educationalOrganizationNode,
+  employerOrganizationNode,
+  experienceItemNode,
+  imageObject,
+  personEdge,
+  webPageNode,
+} from "../nodes";
 import { HOME_URL, PERSON_ID, PUBLISHER_ID, WEBSITE_ID } from "../site";
 import { LANGUAGE } from "./fixtures";
 import type { PreferredLanguage } from "@/domain/models";
@@ -263,5 +275,46 @@ it("experienceItemNode builds an EmployeeRole without a url, language or image",
     description: "Built things with care.",
     member: { "@id": PERSON_ID },
     mainEntityOfPage: { "@id": "https://www.remiforge.dev/sample-job" },
+  });
+});
+
+it("domain node builders emit canonical EducationalOrganization, Organization, ContactPoint, and WebPage stubs", () => {
+  assert.deepStrictEqual(
+    educationalOrganizationNode({
+      id: "https://www.remiforge.dev/education#school-1",
+      name: "Pratt Institute",
+      description: "Interactive Media.",
+      address: "New York, US",
+    }),
+    {
+      "@type": "EducationalOrganization",
+      "@id": "https://www.remiforge.dev/education#school-1",
+      name: "Pratt Institute",
+      description: "Interactive Media.",
+      address: "New York, US",
+      alumni: { "@id": PERSON_ID },
+    }
+  );
+
+  assert.deepStrictEqual(employerOrganizationNode("https://www.remiforge.dev/job#org", "Acme", "https://www.remiforge.dev/job#role"), {
+    "@type": "Organization",
+    "@id": "https://www.remiforge.dev/job#org",
+    name: "Acme",
+    member: { "@id": "https://www.remiforge.dev/job#role" },
+  });
+
+  assert.deepStrictEqual(contactPointNode("https://www.remiforge.dev/contact#cp", "https://www.remiforge.dev/contact"), {
+    "@type": "ContactPoint",
+    "@id": "https://www.remiforge.dev/contact#cp",
+    contactType: "author",
+    url: "https://www.remiforge.dev/contact",
+    availableLanguage: ["en", "pl"],
+  });
+
+  assert.deepStrictEqual(collectionPartNode("https://www.remiforge.dev/job", "Dev at Acme"), {
+    "@type": "WebPage",
+    "@id": "https://www.remiforge.dev/job",
+    url: "https://www.remiforge.dev/job",
+    name: "Dev at Acme",
   });
 });

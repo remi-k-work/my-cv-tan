@@ -4,7 +4,19 @@ import { excerpt, isEmployment, partitionExperiences } from "@/features/experien
 import { matchPreferredLanguage } from "@/domain/helpers";
 import { experienceSection, experienceSeo } from "./seo";
 import { absoluteUrl, validatedHref } from "./urls";
-import { articleNode, breadcrumb, collectionNode, experienceItemNode, imageObject, personEdge, webPageNode } from "./nodes";
+import {
+  articleNode,
+  breadcrumb,
+  collectionNode,
+  collectionPartNode,
+  contactPointNode,
+  educationalOrganizationNode,
+  employerOrganizationNode,
+  experienceItemNode,
+  imageObject,
+  personEdge,
+  webPageNode,
+} from "./nodes";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
@@ -37,7 +49,7 @@ interface LocalizedCopy {
 }
 
 // constants
-import { SITE_LANGUAGES, CONTACT_PATH, EDUCATION_PATH } from "@/domain/constants";
+import { CONTACT_PATH, EDUCATION_PATH } from "@/domain/constants";
 import { EXPERIENCE_LIST_ID, GLOBAL_SOCIAL_IMAGE, HOME_URL, META_DESCRIPTION_LENGTH, PERSON_ID, PORTFOLIO_LIST_ID, PROFILE_ID } from "./site";
 
 // Matches the og:image published on static pages so JSON-LD extractors see the same sized asset
@@ -86,7 +98,7 @@ const experienceCollection = ({
           parts: Array.map(entries, (experience) => {
             // Derive URL and headline through experienceSeo so collection items never drift from detail heads
             const { canonical, headline } = experienceSeo({ experience, preferredLanguage });
-            return { "@type": "WebPage", "@id": canonical, url: canonical, name: headline };
+            return collectionPartNode(canonical, headline);
           }),
         })
       ),
@@ -112,14 +124,14 @@ export const schoolSubgraph = (url: string, educationList: EducationList): JsonL
   Array.match(educationList, {
     onEmpty: () => [],
     onNonEmpty: (entries) => {
-      const schoolNodes = Array.map(entries, ({ name, info, location }, index) => ({
-        "@type": "EducationalOrganization",
-        "@id": `${url}#school-${index + 1}`,
-        name,
-        description: excerpt(info, META_DESCRIPTION_LENGTH),
-        address: location,
-        alumni: { "@id": PERSON_ID },
-      }));
+      const schoolNodes = Array.map(entries, ({ name, info, location }, index) =>
+        educationalOrganizationNode({
+          id: `${url}#school-${index + 1}`,
+          name,
+          description: excerpt(info, META_DESCRIPTION_LENGTH),
+          address: location,
+        })
+      );
 
       return [...schoolNodes, personEdge({ alumniOf: Array.map(schoolNodes, ({ "@id": id }) => ({ "@id": id })) })];
     },
@@ -163,13 +175,7 @@ export const contactJsonLd = ({ pageName, description, preferredLanguage }: Loca
       primaryImageOfPage: STATIC_PRIMARY_IMAGE,
     }),
     personEdge({ contactPoint: { "@id": contactPointId } }),
-    {
-      "@type": "ContactPoint",
-      "@id": contactPointId,
-      contactType: "author",
-      url,
-      availableLanguage: [...SITE_LANGUAGES],
-    },
+    contactPointNode(contactPointId, url),
   ];
 };
 
@@ -196,7 +202,7 @@ export const experienceJsonLd = ({ experience, preferredLanguage, path, headline
   const itemNodes: JsonLdNodes = Match.value(employment).pipe(
     Match.when(true, () => [
       // The employer-to-role-to-person path also represents historical employment honestly
-      { "@type": "Organization", "@id": `${url}#organization`, name: company, member: { "@id": itemId } },
+      employerOrganizationNode(`${url}#organization`, company, itemId),
       item,
     ]),
     Match.when(false, () => [item]),

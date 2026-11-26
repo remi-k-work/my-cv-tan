@@ -185,3 +185,12 @@ it("buildExperienceMd deduplicates repeated skills in frontmatter and body", () 
   assert.include(md, `skills: "TypeScript, React"`);
   assert.strictEqual((md.match(/^- TypeScript$/gm) ?? []).length, 1);
 });
+
+it("buildExperienceMd normalizes layout whitespace in single-line frontmatter facts", () => {
+  const experience = { ...sampleExperience, role: "  Full-Stack\nDeveloper ", company: "Sample\t Co ", year: " Mar\n2026 " };
+  const twin = buildExperienceMd({ seo: experienceSeo({ experience, preferredLanguage: "en" }), translate: translateEn });
+
+  assert.strictEqual(twin.facts.role, "Full-Stack Developer");
+  assert.strictEqual(twin.facts.company, "Sample Co");
+  assert.strictEqual(twin.facts.year, "Mar 2026");
+});

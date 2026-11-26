@@ -5,6 +5,7 @@ import { headLanguage, isNotFoundMatch } from "./route-head";
 import { authorLink } from "./link-tags";
 
 // types
+import type { PreferredLanguage } from "@/domain/models";
 import type { MatchChain, MetaTag, PageHead } from "./models";
 
 // constants
@@ -37,11 +38,8 @@ export const ROOT_HEAD: Pick<PageHead, "meta" | "links"> = {
   ],
 };
 
-// Builds the root head elements, handling root-level not-found fallbacks if matched
-export const rootHead = (matches: MatchChain): PageHead => {
-  if (!Array.some(matches, isNotFoundMatch)) return { meta: [...ROOT_HEAD.meta], links: [...ROOT_HEAD.links], scripts: [] };
-
-  const fallback = notFoundHead(headLanguage(matches));
+const notFoundRootHead = (preferredLanguage: PreferredLanguage): PageHead => {
+  const fallback = notFoundHead(preferredLanguage);
 
   return {
     // The root owns 404 copy for the whole match chain: replace the default page identity instead
@@ -51,3 +49,7 @@ export const rootHead = (matches: MatchChain): PageHead => {
     scripts: fallback.scripts,
   };
 };
+
+// Builds the root head elements, handling root-level not-found fallbacks if matched
+export const rootHead = (matches: MatchChain): PageHead =>
+  Array.some(matches, isNotFoundMatch) ? notFoundRootHead(headLanguage(matches)) : { meta: [...ROOT_HEAD.meta], links: [...ROOT_HEAD.links], scripts: [] };

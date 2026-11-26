@@ -1,11 +1,16 @@
 // services, features, and other libraries
-import { Array, HashSet, Match, Option, String, pipe } from "effect";
+import { Array, HashSet, Match, Option, Record, String, pipe } from "effect";
 import { documentHeaders, locationHeader } from "@/features/meta/services/responses";
 import { markdownTwinUrl } from "@/features/meta/domain/urls";
 import { joinLinkHeader, representationLinks } from "@/features/meta/domain/link-tags";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
+
+interface HeaderUpdates {
+  readonly set?: Readonly<Record<string, string>>;
+  readonly remove?: ReadonlyArray<string>;
+}
 
 // constants
 import { AI_DISCOVERY_LINK_HEADER, AI_DISCOVERY_LINKS } from "@/features/meta/domain/discovery";
@@ -36,38 +41,42 @@ export const withoutNegotiationVary = (vary: string | null) =>
     Option.filter(String.isNonEmpty)
   );
 
-const withHeaders = (response: Response, update: (headers: Headers) => void) => {
+const withHeaders = (response: Response, { set = {}, remove = [] }: HeaderUpdates) => {
   const headers = new Headers(response.headers);
-  update(headers);
+  Array.forEach(remove, (name) => headers.delete(name));
+  Array.forEach(Record.toEntries(set), ([name, value]) => headers.set(name, value));
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 };
 
 // Drops language negotiation Vary tokens when the URL contains an explicit ?lang= pin
 export const pinCacheVariant = (response: Response) =>
-  withHeaders(response, (headers) => {
-    Option.match(withoutNegotiationVary(headers.get("vary")), {
+  withHeaders(
+    response,
+    Option.match(withoutNegotiationVary(response.headers.get("vary")), {
       // Nothing worth negotiating on: the pinned URL already names its language, so drop Vary entirely
-      onNone: () => headers.delete("vary"),
-      onSome: (value) => headers.set("vary", value),
-    });
-  });
+      onNone: () => ({ remove: ["vary"] }),
+      onSome: (vary) => ({ set: { vary } }),
+    })
+  );
 
 // Temporary source-language fallbacks must neither enter shared caches nor compete with the requested page in search indexes
 export const temporaryFallbackResponse = (response: Response) =>
-  withHeaders(response, (headers) => {
-    headers.set("Cache-Control", UNAVAILABLE_HEADERS["Cache-Control"]);
-    headers.set("X-Robots-Tag", UNAVAILABLE_HEADERS["X-Robots-Tag"]);
+  withHeaders(response, {
+    set: {
+      "Cache-Control": UNAVAILABLE_HEADERS["Cache-Control"],
+      "X-Robots-Tag": UNAVAILABLE_HEADERS["X-Robots-Tag"],
+    },
   });
 
 // Enforces cache and Vary policy based on whether the response is a fallback or language-pinned
-export const applyRepresentationPolicy = (response: Response, fallback: boolean, langOverride: Option.Option<PreferredLanguage>) => {
-  // A fallback is temporary negotiated content, so it must bypass both caching and language pinning
-  if (fallback) return temporaryFallbackResponse(response);
-  // Non-cacheable errors, and unpinned responses, have no representation variant to pin
-  if (!response.ok || Option.isNone(langOverride)) return response;
-
-  return pinCacheVariant(response);
-};
+export const applyRepresentationPolicy = (response: Response, fallback: boolean, langOverride: Option.Option<PreferredLanguage>) =>
+  Match.value({ fallback, cacheable: response.ok, pinned: Option.isSome(langOverride) }).pipe(
+    // A fallback is temporary negotiated content, so it must bypass both caching and language pinning
+    Match.when({ fallback: true }, () => temporaryFallbackResponse(response)),
+    // Only cacheable, explicitly pinned responses strip language-negotiation Vary tokens
+    Match.when({ cacheable: true, pinned: true }, () => pinCacheVariant(response)),
+    Match.orElse(() => response)
+  );
 
 const markdownHeaders = (preferredLanguage: PreferredLanguage, links: string) => ({
   ...documentHeaders(preferredLanguage),

@@ -3,6 +3,7 @@ import { Array, Option, pipe } from "effect";
 import { msg } from "gt-i18n";
 import { isEmployment, partitionExperiences } from "@/features/experience/domain/helpers";
 import { staticPageCopy } from "@/features/meta/domain/pages";
+import { inlineText } from "@/features/meta/domain/seo";
 import { validatedHref } from "@/features/meta/domain/urls";
 import { experienceLines } from "./catalogue";
 import { escapeMd, escapeMdInline } from "./escape";
@@ -33,7 +34,7 @@ import { DOWNLOADABLE_DOCUMENTS } from "@/features/meta/domain/discovery";
 import { HOME_LOCATION, SOCIAL_PROFILES } from "@/features/meta/domain/site";
 
 // Standalone twins carry their canonical citation and sibling nav; embedded companion twins omit them
-const navBlock = (includeNavigation: boolean | undefined, render: () => string) => (includeNavigation === false ? "" : render());
+const navBlock = (includeNavigation: boolean, render: () => string) => (includeNavigation ? render() : "");
 
 const profileLinks = (translate: Translate) => [...mdProfileLinks(SOCIAL_PROFILES), mdFact(translate(msg("Base")), translate(HOME_LOCATION))];
 
@@ -60,21 +61,21 @@ const contactChannels = (canonical: string, translate: Translate) =>
   );
 
 const staticTwinDocument = (
-  input: TwinContext & { readonly pageTitles: PageTitles },
+  { pageTitles, preferredLanguage, translate, includeNavigation = true }: TwinContext & { readonly pageTitles: PageTitles },
   pagePath: PagePath,
   sections: (copy: StaticPageCopy) => ReadonlyArray<string>
 ): MarkdownTwin => {
-  const copy = staticPageCopy(input.pageTitles, pagePath, input.preferredLanguage);
+  const copy = staticPageCopy(pageTitles, pagePath, preferredLanguage);
 
   return {
     facts: pageFacts(copy),
     body: mdBody([
       mdHeading(1, copy.pageName),
       mdQuote(copy.description),
-      navBlock(input.includeNavigation, () => canonicalSourceLink(copy.canonical)),
+      navBlock(includeNavigation, () => canonicalSourceLink(copy.canonical)),
       escapeMd(copy.intro),
       ...sections(copy),
-      navBlock(input.includeNavigation, () => pagesSection(copy.path, copy.preferredLanguage, input.translate)),
+      navBlock(includeNavigation, () => pagesSection(copy.path, copy.preferredLanguage, translate)),
     ]),
   };
 };
@@ -121,9 +122,9 @@ export const buildExperienceMd = ({ seo, translate, includeNavigation = true }: 
     facts: {
       ...twinIdentity(headline, description, canonical, preferredLanguage),
       type: isEmployment(experience) ? "work-experience" : "project",
-      role,
-      company,
-      year,
+      role: inlineText(role),
+      company: inlineText(company),
+      year: inlineText(year),
       skills: Array.join(skills, ", "),
     },
     body: mdBody([

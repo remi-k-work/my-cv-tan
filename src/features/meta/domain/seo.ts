@@ -4,7 +4,7 @@
 // services, features, and other libraries
 import { Option, String, pipe } from "effect";
 import { excerpt, experienceHeadline, experienceImagePath, isEmployment } from "@/features/experience/domain/helpers";
-import { absoluteUrl, experienceMarkdownPath, experiencePath } from "./urls";
+import { absoluteUrl, experiencePath } from "./urls";
 
 // types
 import type { Experience } from "@/features/experience/domain/models";
@@ -31,8 +31,8 @@ export const experienceScreenshot = (imageName: string): Option.Option<SocialIma
 // Single source of truth for experience section classification shared across Open Graph and JSON-LD
 export const experienceSection = (experience: Pick<Experience, "type">): ExperienceSection => (isEmployment(experience) ? "employment" : "portfolio");
 
-// Search snippets and social cards are single-line surfaces even when authored prose contains layout whitespace
-const inlineText = (value: string) => pipe(value, String.replace(/\s+/g, " "), String.trim);
+// Search snippets and single-line frontmatter facts collapse layout whitespace to single spaces
+export const inlineText = (value: string) => pipe(value, String.replace(/\s+/g, " "), String.trim);
 
 export const experienceSeo = ({ experience, preferredLanguage }: ExperienceHeadInput): ExperienceSeo => {
   const path = experiencePath(experience.slug);
@@ -42,7 +42,7 @@ export const experienceSeo = ({ experience, preferredLanguage }: ExperienceHeadI
     preferredLanguage,
     path,
     canonical: absoluteUrl(path),
-    markdownPath: experienceMarkdownPath(experience.slug),
+    markdownPath: `${path}.md`,
     headline: inlineText(experienceHeadline(experience, preferredLanguage)),
     description: excerpt(inlineText(experience.txt), META_DESCRIPTION_LENGTH),
     screenshot: experienceScreenshot(experience.imageName),

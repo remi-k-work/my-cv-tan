@@ -1,5 +1,5 @@
 import { assert, it } from "@effect/vitest";
-import { ROBOTS_DISALLOW_PATHS, ROBOTS_TXT } from "../robots";
+import { isCrawlablePath, ROBOTS_DISALLOW_PATHS, ROBOTS_TXT } from "../robots";
 import { robotsHandler } from "../../services/handlers";
 
 it("robots.txt allows content, disallows API endpoints, and advertises the sitemap", async () => {
@@ -18,9 +18,11 @@ it("robots.txt allows content, disallows API endpoints, and advertises the sitem
   const isDisallowed = (path: string) => disallowedPrefixes.some((prefix) => path.startsWith(prefix));
   for (const path of ["/api/captcha", "/api/rpc/captcha", "/api/rpc/contact-me", "/api/rpc/data"]) {
     assert.isTrue(isDisallowed(path), `${path} must be excluded from crawling`);
+    assert.isFalse(isCrawlablePath(path), `${path} must fail shared crawlability policy`);
   }
   for (const path of ["/api", "/api-portfolio", "/api.md"]) {
     assert.isFalse(isDisallowed(path), `${path} is a public slug, not an API endpoint`);
+    assert.isTrue(isCrawlablePath(path), `${path} must pass shared crawlability policy`);
   }
   assert.include(robots, "Sitemap: https://www.remiforge.dev/sitemap.xml");
   // Permissive content reuse signal.

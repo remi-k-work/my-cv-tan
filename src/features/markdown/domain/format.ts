@@ -43,7 +43,7 @@ const fenceFor = (content: string) => {
   const longest = pipe(
     content,
     String.match(/`+/g),
-    Option.map(Array.reduce(0, (max: number, run: string) => Number.max(max, run.length))),
+    Option.map(flow(Array.map(String.length), Array.reduce(0, Number.max))),
     Option.getOrElse(() => 0)
   );
   return pipe("`", String.repeat(Number.max(3, longest + 1)));

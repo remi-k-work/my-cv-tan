@@ -1,7 +1,8 @@
 // services, features, and other libraries
 import { Array, Option, Record, String, pipe } from "effect";
-import { absoluteUrl } from "./urls";
+import { isCrawlablePath } from "./robots";
 import { experienceSeo } from "./seo";
+import { absoluteUrl } from "./urls";
 
 // types
 import type { ExperienceList } from "@/features/experience/domain/models";
@@ -12,7 +13,7 @@ import { DEFAULT_LANGUAGE } from "@/domain/constants";
 import { DOWNLOADABLE_DOCUMENT_PATHS } from "./discovery";
 import { STATIC_PAGE_PATHS } from "./pages";
 
-const STATIC_URLS = Array.map([...STATIC_PAGE_PATHS, ...DOWNLOADABLE_DOCUMENT_PATHS], absoluteUrl);
+const STATIC_PATHS: ReadonlyArray<string> = [...STATIC_PAGE_PATHS, ...DOWNLOADABLE_DOCUMENT_PATHS];
 const XML_ENTITIES: Readonly<Record<string, string>> = {
   "&": "&amp;",
   "<": "&lt;",
@@ -47,16 +48,17 @@ const experienceImages = (seo: ExperienceSeo) =>
 
 // Reuses each page's SEO identity so sitemap URLs and image metadata cannot drift from HTML or Markdown
 export const buildSitemapXml = (experiences: ExperienceList) => {
-  const staticEntries = Array.map(STATIC_URLS, (loc) => ({ loc, images: Array.empty<string>() }));
+  const staticEntries = Array.map(STATIC_PATHS, (path) => ({ path, loc: absoluteUrl(path), images: Array.empty<string>() }));
   const experienceEntries = Array.map(experiences, (experience) => {
     const seo = experienceSeo({ experience, preferredLanguage: DEFAULT_LANGUAGE });
-    return { loc: seo.canonical, images: experienceImages(seo) };
+    return { path: seo.path, loc: seo.canonical, images: experienceImages(seo) };
   });
 
-  // Static pages win collisions, so malformed input cannot attach an experience image to a static URL
+  // Static pages win collisions, and disallowed paths are excluded using the same policy as robots.txt
   const entries = pipe(
     staticEntries,
     Array.appendAll(experienceEntries),
+    Array.filter(({ path }) => isCrawlablePath(path)),
     Array.dedupeWith((left, right) => left.loc === right.loc)
   );
 
