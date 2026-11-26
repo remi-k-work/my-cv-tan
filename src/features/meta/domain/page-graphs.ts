@@ -2,7 +2,7 @@
 import { Array, Match, Option, pipe } from "effect";
 import { isEmployment, partitionExperiences } from "@/features/experience/domain/helpers";
 import { matchPreferredLanguage } from "@/domain/helpers";
-import { experienceKeywords, experienceLinks, experienceSection, experienceSeo, inlineText } from "./seo";
+import { experienceIdentity, experienceKeywords, experienceLinks, experienceSection, inlineText } from "./seo";
 import { absoluteUrl } from "./urls";
 import {
   articleNode,
@@ -96,8 +96,8 @@ const experienceCollection = ({
           name,
           preferredLanguage,
           parts: Array.map(entries, (experience) => {
-            // Derive URL and headline through experienceSeo so collection items never drift from detail heads
-            const { canonical, headline } = experienceSeo({ experience, preferredLanguage });
+            // Derive URL and headline through the shared identity projection without building unused detail metadata
+            const { canonical, headline } = experienceIdentity({ experience, preferredLanguage });
             return collectionPartNode(canonical, headline);
           }),
         })

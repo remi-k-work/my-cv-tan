@@ -5,7 +5,7 @@ import { requestPreferredLanguage } from "@/features/data/services/request-langu
 import { recoverDataFailure } from "@/features/data/domain/required";
 import { experienceFromList } from "@/features/experience/domain/helpers";
 import { experienceMarkdownPath } from "@/features/meta/domain/urls";
-import { experienceSeo } from "@/features/meta/domain/seo";
+import { experienceContent } from "@/features/meta/domain/seo";
 import { txtResponse, txtUnavailableResponse } from "@/features/meta/services/responses";
 import { buildNotFoundMd, unavailableMarkdownBody } from "@/features/markdown/domain/fallback";
 import { twinDocument } from "@/features/markdown/domain/format";
@@ -105,8 +105,15 @@ export class Markdown extends Context.Service<
                         Effect.as(notFoundTwin(Option.some(slug), context))
                       ),
                     onSome: (item) => {
-                      const seo = experienceSeo({ experience: item, preferredLanguage: context.preferredLanguage });
-                      return Effect.succeed(respond(context, buildExperienceMd({ seo, translate: context.translate }), seo.canonical, seo.markdownPath));
+                      const experienceDocument = experienceContent({ experience: item, preferredLanguage: context.preferredLanguage });
+                      return Effect.succeed(
+                        respond(
+                          context,
+                          buildExperienceMd({ seo: experienceDocument, translate: context.translate }),
+                          experienceDocument.canonical,
+                          experienceDocument.markdownPath
+                        )
+                      );
                     },
                   })
                 )

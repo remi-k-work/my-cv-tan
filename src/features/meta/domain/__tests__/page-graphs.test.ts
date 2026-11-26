@@ -196,7 +196,7 @@ it("experienceJsonLd uses EmployeeRole without claiming historical employment is
   assert.isDefined(organization);
   assert.isDefined(article);
   assert.deepStrictEqual(role?.member, { "@id": "https://www.remiforge.dev/#person" });
-  // Schema.org's role pattern connects all three entities: employer -> role -> person.
+  // Schema.org's OrganizationRole pattern connects the employer to the historical role, then the role to the person.
   assert.deepStrictEqual(organization?.member, { "@id": "https://www.remiforge.dev/sample-job#organization-role" });
   assert.isUndefined(role?.inLanguage);
   assert.deepStrictEqual(article?.about, { "@id": "https://www.remiforge.dev/sample-job#organization-role" });

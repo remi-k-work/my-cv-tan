@@ -1,5 +1,5 @@
-// The SEO identity of an experience: the one record the HTML head, the JSON-LD graph and the
-// Markdown twin all derive from, so their canonical URL, headline and description can never drift.
+// Shared experience projections keep stable identity, narrative content and head-only image facts
+// aligned without making each consumer compute metadata it does not publish.
 
 // services, features, and other libraries
 import { Array, Option, String, pipe } from "effect";
@@ -8,7 +8,7 @@ import { absoluteUrl, experiencePath, validatedHref } from "./urls";
 
 // types
 import type { Experience } from "@/features/experience/domain/models";
-import type { ExperienceSection, ExperienceHeadInput, ExperienceSeo, SocialImageFacts } from "./models";
+import type { ExperienceContent, ExperienceIdentity, ExperienceIdentityInput, ExperienceSection, ExperienceSeo, SocialImageFacts } from "./models";
 
 // constants
 import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain/constants";
@@ -45,17 +45,25 @@ export const experienceLinks = ({ gitHubLink, liveLink, videoLink }: Pick<Experi
   video: validatedHref(videoLink),
 });
 
-export const experienceSeo = ({ experience, preferredLanguage }: ExperienceHeadInput): ExperienceSeo => {
+export const experienceIdentity = ({ experience, preferredLanguage }: ExperienceIdentityInput): ExperienceIdentity => {
   const path = experiencePath(experience.slug);
 
   return {
-    experience,
     preferredLanguage,
     path,
     canonical: absoluteUrl(path),
     markdownPath: `${path}.md`,
     headline: inlineText(experienceHeadline(experience, preferredLanguage)),
-    description: excerpt(inlineText(experience.txt), META_DESCRIPTION_LENGTH),
-    screenshot: experienceScreenshot(experience.imageName),
   };
 };
+
+export const experienceContent = (input: ExperienceIdentityInput): ExperienceContent => ({
+  ...experienceIdentity(input),
+  experience: input.experience,
+  description: excerpt(inlineText(input.experience.txt), META_DESCRIPTION_LENGTH),
+});
+
+export const experienceSeo = (input: ExperienceIdentityInput): ExperienceSeo => ({
+  ...experienceContent(input),
+  screenshot: experienceScreenshot(input.experience.imageName),
+});

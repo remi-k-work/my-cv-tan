@@ -8,7 +8,7 @@ it("robots.txt allows content, disallows API endpoints, and advertises the sitem
   const robots = ROBOTS_TXT;
   assert.include(robots, "User-agent: *");
   assert.include(robots, "Allow: /");
-  // Excludes API routes without matching public slugs that merely start with "api".
+  // The slash-delimited API mount matches the actual TanStack routes without blocking /api-like slugs.
   const directives = robots.split("\n");
   assert.include(directives, "Disallow: /api/");
   assert.notInclude(directives, "Disallow: /api");
@@ -18,11 +18,11 @@ it("robots.txt allows content, disallows API endpoints, and advertises the sitem
   );
   const disallowedPrefixes = directives.filter((line) => line.startsWith("Disallow: ")).map((line) => line.slice("Disallow: ".length));
   const isDisallowed = (path: string) => disallowedPrefixes.some((prefix) => path.startsWith(prefix));
-  for (const path of ["/api/captcha", "/api/rpc/captcha", "/api/rpc/contact-me", "/api/rpc/data"]) {
+  for (const path of ["/api/", "/api/captcha", "/api/rpc/captcha", "/api/rpc/contact-me", "/api/rpc/data"]) {
     assert.isTrue(isDisallowed(path), `${path} must be excluded from crawling`);
     assert.isFalse(isCrawlablePath(path), `${path} must fail shared crawlability policy`);
   }
-  for (const path of ["/api", "/api-portfolio", "/api.md"]) {
+  for (const path of ["/api", "/api-portfolio", "/api.md", "/api.captcha", "/api.rpc.data-export"]) {
     assert.isFalse(isDisallowed(path), `${path} is a public slug, not an API endpoint`);
     assert.isTrue(isCrawlablePath(path), `${path} must pass shared crawlability policy`);
   }

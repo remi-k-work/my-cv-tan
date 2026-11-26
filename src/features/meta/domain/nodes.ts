@@ -172,6 +172,7 @@ export const experienceItemNode = ({
       "@id": id,
       roleName: role,
       description,
+      // The role's member edge records the person without claiming this historical job is current
       member: { "@id": PERSON_ID },
       mainEntityOfPage: { "@id": url },
     })),
@@ -221,11 +222,11 @@ export const educationalOrganizationNode = ({
   alumni: { "@id": PERSON_ID },
 });
 
-export const employerOrganizationNode = (id: string, name: string, memberId: string): JsonLdNode => ({
+export const employerOrganizationNode = (id: string, name: string, roleId: string): JsonLdNode => ({
   "@type": "Organization",
   "@id": id,
   name,
-  member: { "@id": memberId },
+  member: { "@id": roleId },
 });
 
 export const contactPointNode = (id: string, url: string, email?: string): JsonLdNode =>

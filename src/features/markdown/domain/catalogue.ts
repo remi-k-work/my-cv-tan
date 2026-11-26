@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { Array, Match } from "effect";
 import { excerpt } from "@/features/experience/domain/helpers";
-import { experienceSeo } from "@/features/meta/domain/seo";
+import { experienceIdentity, inlineText } from "@/features/meta/domain/seo";
 import { absoluteUrl, markdownTwinUrl } from "@/features/meta/domain/urls";
 import { escapeMdInline } from "./escape";
 import { mdBulletList, mdEmptyMarker, mdIndexEntry, mdLink } from "./format";
@@ -9,7 +9,7 @@ import { mdBulletList, mdEmptyMarker, mdIndexEntry, mdLink } from "./format";
 // types
 import type { PagePath } from "@/domain/models";
 import type { Experience, ExperienceList } from "@/features/experience/domain/models";
-import type { ExperienceSeo } from "@/features/meta/domain/models";
+import type { ExperienceIdentity } from "@/features/meta/domain/models";
 import type { TwinContext } from "./models";
 
 // The metadata every indexed document carries; URLs are computed with an explicit language at use
@@ -38,20 +38,20 @@ export const pageEntry = (pagePath: PagePath): IndexEntry => {
 
 export const PAGE_ENTRIES: ReadonlyArray<IndexEntry> = Array.map(STATIC_PAGE_PATHS, pageEntry);
 
-export const experienceEntry = (seo: ExperienceSeo): IndexEntry => ({
-  name: seo.headline,
-  canonical: seo.canonical,
-  mdHref: seo.markdownPath,
+export const experienceEntry = (identity: ExperienceIdentity): IndexEntry => ({
+  name: identity.headline,
+  canonical: identity.canonical,
+  mdHref: identity.markdownPath,
 });
 
 const experienceLine = (experience: Experience, preferredLanguage: TwinContext["preferredLanguage"], mode: ExperienceLinesInput["mode"]) => {
-  const seo = experienceSeo({ experience, preferredLanguage });
-  const summary = `${excerpt(experience.txt, LIST_EXCERPT_LENGTH)} (${experience.year})`;
-  const twin = markdownTwinUrl(seo.markdownPath, preferredLanguage);
+  const identity = experienceIdentity({ experience, preferredLanguage });
+  const summary = `${excerpt(inlineText(experience.txt), LIST_EXCERPT_LENGTH)} (${inlineText(experience.year)})`;
+  const twin = markdownTwinUrl(identity.markdownPath, preferredLanguage);
 
   return Match.value(mode).pipe(
-    Match.when("twin", () => `${mdLink(seo.headline, twin)}: ${escapeMdInline(summary)}`),
-    Match.when("index", () => mdIndexEntry(seo.headline, seo.canonical, twin, summary)),
+    Match.when("twin", () => `${mdLink(identity.headline, twin)}: ${escapeMdInline(summary)}`),
+    Match.when("index", () => mdIndexEntry(identity.headline, identity.canonical, twin, summary)),
     Match.exhaustive
   );
 };

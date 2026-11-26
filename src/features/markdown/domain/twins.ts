@@ -14,7 +14,7 @@ import { canonicalSourceLink, detailPagesSection, pagesSection } from "./twin-na
 import type { PagePath, PageTitles, Translate } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
-import type { ExperienceSeo, StaticPageCopy } from "@/features/meta/domain/models";
+import type { ExperienceContent, StaticPageCopy } from "@/features/meta/domain/models";
 import type { MarkdownTwin, PageDocumentContent, TwinContext } from "./models";
 
 export type HomeMdInput = TwinContext & { readonly pageTitles: PageTitles; readonly experienceList: ExperienceList };
@@ -22,7 +22,7 @@ export type EducationMdInput = TwinContext & { readonly pageTitles: PageTitles; 
 export type ContactMdInput = TwinContext & { readonly pageTitles: PageTitles };
 
 interface ExperienceMdInput extends Pick<TwinContext, "translate" | "includeNavigation"> {
-  readonly seo: ExperienceSeo;
+  readonly seo: ExperienceContent;
 }
 
 type PageDocumentBuilder<P extends PagePath> = (content: PageDocumentContent[P], context: TwinContext) => MarkdownTwin;

@@ -1,9 +1,10 @@
 import { assert, it } from "@effect/vitest";
-import { PAGE_ENTRIES, experienceEntry, pageEntry } from "../catalogue";
+import { PAGE_ENTRIES, experienceEntry, experienceLines, pageEntry } from "../catalogue";
 import { STATIC_PAGES, STATIC_PAGE_PATHS } from "@/features/meta/domain/pages";
 import { absoluteUrl, markdownTwinUrl } from "@/features/meta/domain/urls";
 import { experienceSeo } from "@/features/meta/domain/seo";
 import { sampleExperience } from "@/features/markdown/__tests__/fixtures";
+import { SOURCE_CONTEXT } from "../models";
 
 it("the catalogue declares every static page exactly once", () => {
   assert.deepStrictEqual(
@@ -41,4 +42,16 @@ it("experience entries carry only index metadata; the renderer chooses the langu
   assert.strictEqual(entry.mdHref, seo.markdownPath);
   assert.isUndefined(entry.summary);
   assert.strictEqual(markdownTwinUrl(entry.mdHref, "pl"), `${seo.canonical}.md?lang=pl`);
+});
+
+it("experience index summaries collapse authored whitespace before truncation", () => {
+  const line = experienceLines({
+    ...SOURCE_CONTEXT,
+    experiences: [{ ...sampleExperience, txt: "First line.\n\tSecond   line." }],
+    mode: "index",
+  });
+
+  assert.include(line, "First line. Second line.");
+  assert.notInclude(line, "\t");
+  assert.notInclude(line, "Second   line.");
 });

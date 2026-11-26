@@ -73,22 +73,30 @@ export interface SocialMetaInput {
   readonly articleSection?: ExperienceSection;
 }
 
-// What every caller must supply to derive an experience's SEO identity
-export interface ExperienceHeadInput {
+// Shared input for the identity, content and head projections below
+export interface ExperienceIdentityInput {
   readonly experience: Experience;
   readonly preferredLanguage: PreferredLanguage;
 }
 
-// The SEO identity of one experience: the single record the HTML head, the JSON-LD graph and the
-// Markdown twin all derive from, so their canonical URL, headline and description can never drift.
-export interface ExperienceSeo {
-  readonly experience: Experience;
+// Identity shared by every experience representation, including projections that do not need a
+// description or image and should not process the full narrative
+export interface ExperienceIdentity {
   readonly preferredLanguage: PreferredLanguage;
   readonly path: string;
   readonly canonical: string;
   readonly markdownPath: string;
   readonly headline: string;
+}
+
+// Experience content adds the full narrative summary to the shared identity without doing image work
+export interface ExperienceContent extends ExperienceIdentity {
+  readonly experience: Experience;
   readonly description: string;
+}
+
+// The HTML detail head additionally needs a social image; Markdown and catalogue builders do not
+export interface ExperienceSeo extends ExperienceContent {
   readonly screenshot: Option.Option<SocialImageFacts>;
 }
 

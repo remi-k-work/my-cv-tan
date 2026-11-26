@@ -12,7 +12,7 @@ import experiencePl from "@/assets/data/pl/experience.json";
 import { Datasets } from "@/features/data/services/datasets";
 import { RequiredDataError } from "@/features/data/domain/required";
 import { sampleExperience } from "./fixtures";
-import { ROBOTS_DISALLOW_PATHS } from "../robots";
+import { isCrawlablePath } from "../robots";
 
 // Verifies end-to-end runtime wiring of the sitemap route using real portfolio assets.
 it("sitemap route resolves the real portfolio assets into one canonical URL per page", async () => {
@@ -89,9 +89,7 @@ it("sitemap never advertises a crawl-disallowed URL", () => {
   assert.isNotEmpty(paths);
   // Both crawl surfaces read one policy: a future disallowed page cannot slip into the sitemap unnoticed
   for (const path of paths) {
-    for (const prefix of ROBOTS_DISALLOW_PATHS) {
-      assert.isFalse(path.startsWith(prefix), `${path} is disallowed by robots.txt`);
-    }
+    assert.isTrue(isCrawlablePath(path), `${path} is disallowed by robots.txt`);
   }
 });
 

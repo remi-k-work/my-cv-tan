@@ -9,7 +9,7 @@ import { staticPageCopy } from "./pages";
 import { representationLinks } from "./link-tags";
 
 // types
-import type { ExperienceHeadInput, JsonLdNodes, PageHead, SocialImage, SocialImageFacts, SocialMetaInput, StaticPageCopy } from "./models";
+import type { ExperienceIdentityInput, JsonLdNodes, PageHead, SocialImage, SocialImageFacts, SocialMetaInput, StaticPageCopy } from "./models";
 import type { PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
@@ -54,7 +54,7 @@ const experienceCardImage = (headline: string, image: Option.Option<SocialImageF
     }),
   });
 
-export const experienceHead = (input: ExperienceHeadInput): PageHead => {
+export const experienceHead = (input: ExperienceIdentityInput): PageHead => {
   const seo = experienceSeo(input);
 
   return pageHead({

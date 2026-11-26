@@ -369,7 +369,7 @@ it("employment details use EmployeeRole linked to the person and canonical WebPa
   assert.deepStrictEqual(role?.member, { "@id": "https://www.remiforge.dev/#person" });
   assert.deepStrictEqual(role?.mainEntityOfPage, { "@id": "https://www.remiforge.dev/sample-job" });
   assert.strictEqual(organization?.name, "Sample Co");
-  // The employer points at the role, whose own member edge above points back to the person.
+  // The employer points at the role, whose member edge above points back to the person.
   assert.deepStrictEqual(organization?.member, { "@id": "https://www.remiforge.dev/sample-job#organization-role" });
   // A dated role is historical data; worksFor would incorrectly claim that every job is current.
   assert.isUndefined(nodeOf(parsed, "Person")?.worksFor);

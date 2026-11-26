@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { Array, Record, pipe } from "effect";
 import { partitionExperiences } from "@/features/experience/domain/helpers";
-import { experienceSeo } from "@/features/meta/domain/seo";
+import { experienceContent } from "@/features/meta/domain/seo";
 import { markdownTwinUrl } from "@/features/meta/domain/urls";
 import {
   demoteHeadings,
@@ -70,17 +70,14 @@ export const AI_NOTES = [
 
 const SINGLE_REQUEST_NOTE = `The complete content of every page is also available in a single request: ${LLMS_FULL_TXT_INDEX.url}.`;
 
-const ABOUT_DETAILS = mdBody([
-  "Self-taught web developer portfolio. Every page has a machine-readable Markdown twin.",
-  mdBulletList([
-    mdFact("Name", SITE_NAME),
-    mdFact("Website", SITE_URL),
-    mdFact("Email", CONTACT_EMAIL),
-    mdFact("Role", `${JOB_TITLE} (self-taught)`),
-    mdFact("Based in", `${HOME_LOCATION} (${HOME_COUNTRY})`),
-    mdFact("Site languages", pipe(SITE_LANGUAGE_NAMES, Record.values, Array.join(" and "))),
-    mdFact("Focus", Array.join(KNOWS_ABOUT, ", ")),
-  ]),
+const ABOUT_DETAILS = mdBulletList([
+  mdFact("Name", SITE_NAME),
+  mdFact("Website", SITE_URL),
+  mdFact("Email", CONTACT_EMAIL),
+  mdFact("Role", `${JOB_TITLE} (self-taught)`),
+  mdFact("Based in", `${HOME_LOCATION} (${HOME_COUNTRY})`),
+  mdFact("Site languages", pipe(SITE_LANGUAGE_NAMES, Record.values, Array.join(" and "))),
+  mdFact("Focus", Array.join(KNOWS_ABOUT, ", ")),
 ]);
 
 const ABOUT_SECTION = mdTitledSection("About", ABOUT_DETAILS);
@@ -137,8 +134,8 @@ const COMPANION_CONTEXT = { ...SOURCE_CONTEXT, includeNavigation: false } as con
 const sourceDocuments = (content: PageContent): ReadonlyArray<SourceDocument> => [
   ...Array.map(STATIC_PAGE_PATHS, (pagePath) => sourceDocument(pageEntry(pagePath), buildPageDocument(pagePath, content, COMPANION_CONTEXT))),
   ...Array.map(content.experienceList, (experience) => {
-    const seo = experienceSeo({ experience, preferredLanguage: DEFAULT_LANGUAGE });
-    return sourceDocument(experienceEntry(seo), buildExperienceMd({ seo, ...COMPANION_CONTEXT }));
+    const experienceDocument = experienceContent({ experience, preferredLanguage: DEFAULT_LANGUAGE });
+    return sourceDocument(experienceEntry(experienceDocument), buildExperienceMd({ seo: experienceDocument, ...COMPANION_CONTEXT }));
   }),
 ];
 

@@ -1,12 +1,12 @@
 // services, features, and other libraries
 import { Array, HashMap, Option, String, flow, pipe } from "effect";
 import { isCrawlablePath } from "./robots";
-import { experienceSeo } from "./seo";
+import { experienceIdentity, experienceScreenshot } from "./seo";
 import { absoluteUrl } from "./urls";
 
 // types
 import type { ExperienceList } from "@/features/experience/domain/models";
-import type { ExperienceSeo } from "./models";
+import type { SocialImageFacts } from "./models";
 
 // constants
 import { DEFAULT_LANGUAGE } from "@/domain/constants";
@@ -31,13 +31,13 @@ const replaceXmlEntities = (value: string) =>
 // XML 1.0 cannot represent these controls or lone surrogates, even as entity references
 const escapeXml = flow(String.replace(XML_INVALID_CHARACTERS, ""), replaceXmlEntities);
 
-const experienceImages = (seo: ExperienceSeo) =>
+const experienceImages = (headline: string, screenshot: Option.Option<SocialImageFacts>) =>
   pipe(
-    seo.screenshot,
+    screenshot,
     Option.map(({ src }) => [
       "  <image:image>",
       `    <image:loc>${escapeXml(src)}</image:loc>`,
-      `    <image:title>${escapeXml(seo.headline)}</image:title>`,
+      `    <image:title>${escapeXml(headline)}</image:title>`,
       "  </image:image>",
     ]),
     Option.getOrElse(Array.empty<string>)
@@ -47,8 +47,12 @@ const experienceImages = (seo: ExperienceSeo) =>
 export const buildSitemapXml = (experiences: ExperienceList) => {
   const staticEntries = Array.map(STATIC_PATHS, (path) => ({ path, loc: absoluteUrl(path), images: Array.empty<string>() }));
   const experienceEntries = Array.map(experiences, (experience) => {
-    const seo = experienceSeo({ experience, preferredLanguage: DEFAULT_LANGUAGE });
-    return { path: seo.path, loc: seo.canonical, images: experienceImages(seo) };
+    const identity = experienceIdentity({ experience, preferredLanguage: DEFAULT_LANGUAGE });
+    return {
+      path: identity.path,
+      loc: identity.canonical,
+      images: experienceImages(identity.headline, experienceScreenshot(experience.imageName)),
+    };
   });
 
   // Static pages win collisions, and disallowed paths are excluded using the same policy as robots.txt
