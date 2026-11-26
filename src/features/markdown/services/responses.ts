@@ -1,6 +1,6 @@
 // services, features, and other libraries
-import { Array, HashSet, Match, Option, Record, String, pipe } from "effect";
-import { documentHeaders, locationHeader } from "@/features/meta/services/responses";
+import { Array, HashSet, Match, Option, Predicate, Record, String, pipe } from "effect";
+import { documentHeaders, locationHeader, responseEnvelope } from "@/features/meta/services/responses";
 import { markdownTwinUrl } from "@/features/meta/domain/urls";
 import { joinLinkHeader, representationLinks } from "@/features/meta/domain/link-tags";
 
@@ -25,18 +25,13 @@ import {
 const MD_CONTENT_TYPE = "text/markdown; charset=utf-8";
 const NEGOTIATION_VARY = pipe(NEGOTIATION_VARY_TOKENS, Array.map(String.toLowerCase), HashSet.fromIterable);
 
+const isNonNegotiationToken = Predicate.and(String.isNonEmpty, (token: string) => !HashSet.has(NEGOTIATION_VARY, String.toLowerCase(token)));
+
 // Strips language negotiation tokens from a Vary header, returning None when nothing remains
 export const withoutNegotiationVary = (vary: string | null) =>
   pipe(
     Option.fromNullishOr(vary),
-    Option.map((value) =>
-      pipe(
-        String.split(value, ","),
-        Array.map(String.trim),
-        Array.filter((token) => String.isNonEmpty(token) && !HashSet.has(NEGOTIATION_VARY, String.toLowerCase(token))),
-        Array.join(", ")
-      )
-    ),
+    Option.map((value) => pipe(String.split(value, ","), Array.map(String.trim), Array.filter(isNonNegotiationToken), Array.join(", "))),
     // A Vary left with only negotiation tokens is no Vary at all, so the caller drops the header
     Option.filter(String.isNonEmpty)
   );
@@ -94,14 +89,11 @@ export const mdResponse = (input: {
 }) => {
   const markdownUrl = markdownTwinUrl(input.markdownPath, input.preferredLanguage);
 
-  return new Response(input.body, {
-    status: 200,
-    headers: {
-      ...markdownHeaders(input.preferredLanguage, markdownLinks(input.canonical, input.markdownPath)),
-      ...CACHEABLE_HEADERS,
-      ...INDEXABLE_HEADERS,
-      "Content-Location": markdownUrl,
-    },
+  return responseEnvelope(200, input.body, {
+    ...markdownHeaders(input.preferredLanguage, markdownLinks(input.canonical, input.markdownPath)),
+    ...CACHEABLE_HEADERS,
+    ...INDEXABLE_HEADERS,
+    "Content-Location": markdownUrl,
   });
 };
 
@@ -113,13 +105,10 @@ const failureStatusHeaders = (status: 404 | 503) =>
   );
 
 const mdFailureResponse = (body: string, preferredLanguage: PreferredLanguage, status: 404 | 503, contentLocation?: string) =>
-  new Response(body, {
-    status,
-    headers: {
-      ...markdownHeaders(preferredLanguage, AI_DISCOVERY_LINK_HEADER),
-      ...failureStatusHeaders(status),
-      ...locationHeader(contentLocation),
-    },
+  responseEnvelope(status, body, {
+    ...markdownHeaders(preferredLanguage, AI_DISCOVERY_LINK_HEADER),
+    ...failureStatusHeaders(status),
+    ...locationHeader(contentLocation),
   });
 
 const markdownLocation = (markdownPath: Option.Option<string>, preferredLanguage: PreferredLanguage) =>

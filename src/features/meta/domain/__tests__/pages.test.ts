@@ -5,7 +5,8 @@
 import { assert, it } from "@effect/vitest";
 import { staticPageCopy } from "../pages";
 import { STATIC_PAGES, STATIC_PAGE_PATHS } from "../pages";
-import { HOME_PATH, EDUCATION_PATH, CONTACT_PATH } from "@/domain/constants";
+import { HOME_PATH, EDUCATION_PATH, CONTACT_PATH, SITE_LANGUAGES } from "@/domain/constants";
+import { BRANDED_TITLE, META_DESCRIPTION_LENGTH } from "../site";
 import { stablePageTitles } from "./fixtures";
 
 it("resolves localized copy for every static page path", () => {
@@ -41,4 +42,14 @@ it("falls back to catalogue heading when loader data is missing", () => {
 
 it("catalogue declares exactly the three static page paths", () => {
   assert.deepStrictEqual(STATIC_PAGE_PATHS, [HOME_PATH, EDUCATION_PATH, CONTACT_PATH]);
+});
+
+it("every static page description and branded title fits within SEO snippet limits across all languages", () => {
+  for (const pagePath of STATIC_PAGE_PATHS) {
+    for (const language of SITE_LANGUAGES) {
+      const { title, description } = STATIC_PAGES[pagePath].copy[language];
+      assert.isAtMost(description.length, META_DESCRIPTION_LENGTH, `${pagePath} (${language}) description exceeds ${META_DESCRIPTION_LENGTH}`);
+      assert.isBelow(BRANDED_TITLE(title).length, META_DESCRIPTION_LENGTH, `${pagePath} (${language}) branded title is too long`);
+    }
+  }
 });

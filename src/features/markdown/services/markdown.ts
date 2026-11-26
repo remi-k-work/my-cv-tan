@@ -28,22 +28,6 @@ import { DEFAULT_LANGUAGE } from "@/domain/constants";
 import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/discovery";
 import { PAGE_TWINS } from "./pages";
 
-const documentResponse = (translation: Translation["Service"], markdownPath: (request: Request) => Option.Option<string>, render: DocumentBody): Document =>
-  Effect.fn("Markdown.document")(function* (request: Request) {
-    const langOverride = parseLangParam(request.url);
-    const preferredLanguage = yield* Effect.sync(() => requestPreferredLanguage(langOverride));
-    const { context, fallback } = yield* translation.resolve(preferredLanguage);
-
-    const rendered = yield* render(request, context).pipe(
-      recoverDataFailure(
-        () => `[${documentName(request.url)}]`,
-        () => mdUnavailableResponse(unavailableMarkdownBody(context.translate), context.preferredLanguage, markdownPath(request))
-      )
-    );
-
-    return applyRepresentationPolicy(rendered, fallback, langOverride);
-  });
-
 const respond = (context: TwinContext, twin: MarkdownTwin, canonical: string, markdownPath: string) =>
   mdResponse({
     body: twinDocument(twin),
@@ -84,31 +68,51 @@ export class Markdown extends Context.Service<
       const datasets = yield* Datasets;
       const translation = yield* Translation;
 
+      const serveDocument = (markdownPath: (request: Request) => Option.Option<string>, render: DocumentBody): Document =>
+        Effect.fn("Markdown.document")(function* (request: Request) {
+          const langOverride = parseLangParam(request.url);
+          const preferredLanguage = yield* Effect.sync(() => requestPreferredLanguage(langOverride));
+          const { context, fallback } = yield* translation.resolve(preferredLanguage);
+
+          const rendered = yield* render(request, context).pipe(
+            recoverDataFailure(
+              () => `[${documentName(request.url)}]`,
+              () => mdUnavailableResponse(unavailableMarkdownBody(context.translate), context.preferredLanguage, markdownPath(request))
+            )
+          );
+
+          return applyRepresentationPolicy(rendered, fallback, langOverride);
+        });
+
       const pages = Record.map(PAGE_TWINS, (twin) =>
-        documentResponse(
-          translation,
+        serveDocument(
           () => Option.some(twin.entry.mdHref),
           (_request, context) => Effect.map(twin.document(datasets, context), (document) => respond(context, document, twin.entry.canonical, twin.entry.mdHref))
         )
       );
 
-      const experience = documentResponse(
-        translation,
+      const experience = serveDocument(
         (request) => Option.map(slugFromMdPathname(request.url), experienceMarkdownPath),
-        Effect.fn("Markdown.experience")(function* (request: Request, context: TwinContext) {
-          const slug = slugFromMdPathname(request.url);
-          if (Option.isNone(slug)) return notFoundTwin(slug, context);
-
-          const list = yield* datasets.experienceList(context.preferredLanguage);
-          const found = experienceFromList(list, slug.value);
-          if (Option.isNone(found)) {
-            yield* Effect.logDebug(`[SLUG.MD]: no experience for slug "${slug.value}", emitting markdown 404`);
-            return notFoundTwin(slug, context);
-          }
-
-          const seo = experienceSeo({ experience: found.value, preferredLanguage: context.preferredLanguage });
-          return respond(context, buildExperienceMd({ seo, translate: context.translate }), seo.canonical, seo.markdownPath);
-        })
+        Effect.fn("Markdown.experience")((request: Request, context: TwinContext) =>
+          Option.match(slugFromMdPathname(request.url), {
+            onNone: () => Effect.succeed(notFoundTwin(Option.none(), context)),
+            onSome: (slug) =>
+              datasets.experienceList(context.preferredLanguage).pipe(
+                Effect.flatMap((list) =>
+                  Option.match(experienceFromList(list, slug), {
+                    onNone: () =>
+                      Effect.logDebug(`[SLUG.MD]: no experience for slug "${slug}", emitting markdown 404`).pipe(
+                        Effect.as(notFoundTwin(Option.some(slug), context))
+                      ),
+                    onSome: (item) => {
+                      const seo = experienceSeo({ experience: item, preferredLanguage: context.preferredLanguage });
+                      return Effect.succeed(respond(context, buildExperienceMd({ seo, translate: context.translate }), seo.canonical, seo.markdownPath));
+                    },
+                  })
+                )
+              ),
+          })
+        )
       );
 
       const siteIndex = discoveryDocument(LLMS_TXT_INDEX, Effect.map(datasets.experienceList(DEFAULT_LANGUAGE), buildLlmsTxt));

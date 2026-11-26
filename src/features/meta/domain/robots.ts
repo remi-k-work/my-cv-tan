@@ -1,5 +1,5 @@
 // services, features, and other libraries
-import { Array, String, pipe } from "effect";
+import { Array, String } from "effect";
 
 // constants
 import { CONTENT_SIGNAL, LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX, SITEMAP_INDEX } from "./discovery";
@@ -8,7 +8,7 @@ import { CONTENT_SIGNAL, LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX, SITEMAP_INDEX } fr
 export const ROBOTS_DISALLOW_PATHS = ["/api/"] as const;
 
 // Shared crawl policy predicate so robots.txt and sitemap.xml can never disagree on disallowed paths
-export const isCrawlablePath = (path: string): boolean => !Array.some(ROBOTS_DISALLOW_PATHS, (prefix) => pipe(path, String.startsWith(prefix)));
+export const isCrawlablePath = (path: string): boolean => Array.every(ROBOTS_DISALLOW_PATHS, (prefix) => !String.startsWith(prefix)(path));
 
 export const ROBOTS_TXT = Array.join(
   [

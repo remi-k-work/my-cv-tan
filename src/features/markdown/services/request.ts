@@ -21,8 +21,7 @@ export const slugFromMdPathname = (url: string) =>
     decodeUrlOption(url),
     Option.map(({ pathname }) => pipe(pathname, String.slice(1))),
     // A markdown twin lives at a single top-level segment: a nested path is not a twin route
-    Option.filter(Predicate.not(String.includes("/"))),
-    Option.filter(String.endsWith(".md")),
+    Option.filter(Predicate.and(Predicate.not(String.includes("/")), String.endsWith(".md"))),
     Option.map(String.slice(0, -".md".length)),
     // The shared codec is the exact inverse of experiencePath, so encoded slugs round-trip
     Option.flatMap(decodeExperienceSlug)

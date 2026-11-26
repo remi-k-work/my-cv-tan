@@ -105,20 +105,14 @@ const experienceCollection = ({
   });
 
 export const experienceCollections = (employment: ExperienceList, projects: ExperienceList, preferredLanguage: PreferredLanguage): JsonLdNodes =>
-  Array.getSomes([
-    experienceCollection({
-      id: EXPERIENCE_LIST_ID,
-      name: matchPreferredLanguage(preferredLanguage, "Experience", "Doświadczenie"),
-      experiences: employment,
-      preferredLanguage,
-    }),
-    experienceCollection({
-      id: PORTFOLIO_LIST_ID,
-      name: matchPreferredLanguage(preferredLanguage, "Portfolio Projects", "Projekty do Portfolio"),
-      experiences: projects,
-      preferredLanguage,
-    }),
-  ]);
+  pipe(
+    [
+      [EXPERIENCE_LIST_ID, matchPreferredLanguage(preferredLanguage, "Experience", "Doświadczenie"), employment],
+      [PORTFOLIO_LIST_ID, matchPreferredLanguage(preferredLanguage, "Portfolio Projects", "Projekty do Portfolio"), projects],
+    ] as const,
+    Array.map(([id, name, experiences]) => experienceCollection({ id, name, experiences, preferredLanguage })),
+    Array.getSomes
+  );
 
 export const schoolSubgraph = (url: string, educationList: EducationList): JsonLdNodes =>
   Array.match(educationList, {

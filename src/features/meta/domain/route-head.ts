@@ -32,6 +32,8 @@ export const headLanguage = (matches: MatchChain): PreferredLanguage =>
 
 export const isNotFoundMatch = (match: MatchChain[number]): boolean => match.status === "notFound" || match._notFound === true;
 const isPendingOrErrorMatch = (match: MatchChain[number]): boolean => match.status === "pending" || match.status === "error";
+const hasNotFound = (matchStatus: RouteStatus, matches: MatchChain): boolean => matchStatus === "notFound" || Array.some(matches, isNotFoundMatch);
+const hasPendingOrError = (matchStatus: RouteStatus, matches: MatchChain): boolean => matchStatus !== "success" || Array.some(matches, isPendingOrErrorMatch);
 
 // A fresh empty head per call keeps callers from sharing (and mutating) one module-level object
 const emptyHead = (): PageHead => ({ meta: [], links: [], scripts: [] });
@@ -39,7 +41,7 @@ const emptyHead = (): PageHead => ({ meta: [], links: [], scripts: [] });
 // Builds route head metadata, suppressing stale data on errors and delegating 404s to root
 export const routeHead = <TData>({ loaderData, matches, matchStatus, fallbackPath, build }: RouteHeadSpec<TData>): PageHead =>
   // Root boundary owns 404 metadata so stale leaf data cannot overwrite a not-found state
-  Match.value(matchStatus === "notFound" || Array.some(matches, isNotFoundMatch)).pipe(
+  Match.value(hasNotFound(matchStatus, matches)).pipe(
     Match.when(true, emptyHead),
     Match.when(false, () => {
       const preferredLanguage = headLanguage(matches);
@@ -47,7 +49,7 @@ export const routeHead = <TData>({ loaderData, matches, matchStatus, fallbackPat
       // Guard before Option.map so stale leaf loaderData never builds a head during pending/error states
       return pipe(
         Option.fromNullishOr(loaderData),
-        Option.filter(() => matchStatus === "success" && !Array.some(matches, isPendingOrErrorMatch)),
+        Option.filter(() => !hasPendingOrError(matchStatus, matches)),
         Option.map((data) => build(data, preferredLanguage)),
         Option.getOrElse(() => unavailableHead(fallbackPath, preferredLanguage))
       );

@@ -53,7 +53,7 @@ export const documentHeaders = (preferredLanguage: PreferredLanguage) =>
 
 export const locationHeader = (contentLocation?: string): Readonly<Record<string, string>> => optionalHeader("Content-Location", contentLocation);
 
-const responseEnvelope = (status: 200 | 503, body: string, headers: Readonly<Record<string, string>>) => new Response(body, { status, headers });
+export const responseEnvelope = (status: 200 | 404 | 503, body: string, headers: Readonly<Record<string, string>>) => new Response(body, { status, headers });
 
 const txtEnvelope = (status: 200 | 503, body: string, policyHeaders: Readonly<Record<string, string>>, contentLocation?: string) =>
   responseEnvelope(status, body, { ...txtHeaders(contentLocation), ...policyHeaders, ...locationHeader(contentLocation) });

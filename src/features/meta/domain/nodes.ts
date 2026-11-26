@@ -63,13 +63,15 @@ import { HOME_URL, PERSON_ID, PUBLISHER_ID, WEBSITE_ID } from "./site";
 // Strip undefined properties so JSON-LD nodes never publish unset optional keys
 export const definedNode = <T extends JsonLdObject>(node: T): JsonLdNode => Record.filter(node, Predicate.isNotUndefined);
 
+const nonEmptyItems = <A>(items: ReadonlyArray<A> | undefined): Option.Option<Array.NonEmptyReadonlyArray<A>> =>
+  pipe(Option.fromUndefinedOr(items), Option.filter(Array.isReadonlyArrayNonEmpty));
+
 // Converts undefined or empty arrays to undefined so JSON-LD nodes omit empty relation lists
-const nonEmptyOrUndefined = <A>(items: ReadonlyArray<A> | undefined): ReadonlyArray<A> | undefined =>
-  pipe(Option.fromUndefinedOr(items), Option.filter(Array.isReadonlyArrayNonEmpty), Option.getOrUndefined);
+const nonEmptyOrUndefined = <A>(items: ReadonlyArray<A> | undefined): ReadonlyArray<A> | undefined => Option.getOrUndefined(nonEmptyItems(items));
 
 // Schema.org keywords is a comma-separated text field; an empty list must vanish, not publish ""
 const keywordsText = (keywords: ReadonlyArray<string>): string | undefined =>
-  Array.isReadonlyArrayNonEmpty(keywords) ? Array.join(keywords, ", ") : undefined;
+  pipe(nonEmptyItems(keywords), Option.map(Array.join(", ")), Option.getOrUndefined);
 
 export const articleNode = ({
   id,

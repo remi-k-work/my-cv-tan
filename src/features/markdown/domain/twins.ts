@@ -140,9 +140,9 @@ export const buildExperienceMd = ({ seo, translate, includeNavigation = true }: 
       ),
       mdTitledSection(translate(msg("Skills Used")), mdBulletList(Array.map(skills, escapeMdInline))),
       // An experience with no publishable link gets no Links section at all, rather than an empty one
-      ...Array.match(links, {
-        onEmpty: () => [],
-        onNonEmpty: (entries) => [mdTitledSection(translate(msg("Links")), mdBulletList(entries))],
+      Array.match(links, {
+        onEmpty: () => "",
+        onNonEmpty: (entries) => mdTitledSection(translate(msg("Links")), mdBulletList(entries)),
       }),
       navBlock(includeNavigation, () => detailPagesSection(preferredLanguage, translate)),
     ]),
