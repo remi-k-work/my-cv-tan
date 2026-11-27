@@ -1,5 +1,5 @@
 import { assert, it } from "@effect/vitest";
-import { STATIC_PAGE_PATHS } from "@/features/meta/domain/pages";
+import { STATIC_PAGE_PATHS } from "@/domain/pages";
 import { sampleExperience, stablePageTitles } from "@/features/markdown/__tests__/fixtures";
 import { SOURCE_CONTEXT } from "../models";
 import { buildContactMd, buildEducationMd, buildHomeMd, buildPageDocument } from "../twins";

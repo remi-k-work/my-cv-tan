@@ -4,11 +4,12 @@ import { experienceImageAlt, experienceSection, experienceSeo } from "./seo";
 import { jsonLdGraph } from "./jsonld";
 import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd } from "./page-graphs";
 import { globalSocialImage, socialMeta } from "./social-meta";
-import { staticPageCopy } from "./pages";
+import { staticPageCopy } from "@/domain/pages";
 import { representationLinks } from "./link-tags";
 
 // types
-import type { ExperienceIdentityInput, JsonLdNodes, PageHead, SocialImage, SocialImageFacts, SocialMetaInput, StaticPageCopy } from "./models";
+import type { ExperienceIdentityInput, JsonLdNodes, PageHead, SocialImage, SocialImageFacts, SocialMetaInput } from "./models";
+import type { StaticPageCopy } from "@/domain/pages";
 import type { PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";

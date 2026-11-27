@@ -1,7 +1,7 @@
 import { assert, it } from "@effect/vitest";
 import { Record } from "effect";
 import { AI_INDEX_MARKDOWN_LINKS, deadEndEscapeLine, detailPagesSection, pagesSection } from "../twin-nav";
-import { STATIC_PAGES } from "@/features/meta/domain/pages";
+import { STATIC_PAGES } from "@/domain/pages";
 import { translateEn, translatePl } from "@/features/markdown/__tests__/fixtures";
 
 it("pagesSection excludes the linking page itself", () => {

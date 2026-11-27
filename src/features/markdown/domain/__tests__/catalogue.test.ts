@@ -1,6 +1,6 @@
 import { assert, it } from "@effect/vitest";
 import { PAGE_ENTRIES, experienceEntry, experienceLines, pageEntry } from "../catalogue";
-import { STATIC_PAGES, STATIC_PAGE_PATHS } from "@/features/meta/domain/pages";
+import { STATIC_PAGES, STATIC_PAGE_PATHS } from "@/domain/pages";
 import { absoluteUrl, markdownTwinUrl } from "@/domain/urls";
 import { experienceSeo } from "@/features/meta/domain/seo";
 import { sampleExperience } from "@/features/markdown/__tests__/fixtures";

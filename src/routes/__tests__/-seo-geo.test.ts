@@ -18,7 +18,7 @@ import { contactHandler, educationHandler, experienceHandler, homeHandler, llmsF
 import { robotsHandler, sitemapHandler } from "@/features/meta/services/handlers";
 import { absoluteUrl, experiencePath } from "@/domain/urls";
 import { BRANDED_TITLE, HOME_URL } from "@/domain/site";
-import { STATIC_PAGES } from "@/features/meta/domain/pages";
+import { STATIC_PAGES } from "@/domain/pages";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 import { HOME_PATH } from "@/domain/constants";
 import { sampleEducation, sampleExperience, stablePageTitles } from "@/features/meta/domain/__tests__/fixtures";

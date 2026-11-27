@@ -3,8 +3,7 @@
 // shared by HTML heads, Markdown twins, and the sitemap.
 
 import { assert, it } from "@effect/vitest";
-import { staticPageCopy } from "../pages";
-import { STATIC_PAGES, STATIC_PAGE_PATHS } from "../pages";
+import { STATIC_PAGES, STATIC_PAGE_PATHS, staticPageCopy } from "@/domain/pages";
 import { HOME_PATH, EDUCATION_PATH, CONTACT_PATH, SITE_LANGUAGES } from "@/domain/constants";
 import { META_DESCRIPTION_LENGTH } from "@/domain/constants";
 import { BRANDED_TITLE } from "@/domain/site";

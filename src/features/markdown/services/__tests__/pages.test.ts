@@ -5,7 +5,7 @@ import { pageEntry } from "../../domain/catalogue";
 import { twinDocument } from "../../domain/format";
 import { Datasets } from "@/features/data/services/datasets";
 import { RequiredDataError } from "@/features/data/domain/required";
-import { STATIC_PAGES, STATIC_PAGE_PATHS } from "@/features/meta/domain/pages";
+import { STATIC_PAGES, STATIC_PAGE_PATHS } from "@/domain/pages";
 import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/domain/constants";
 import { sampleExperience, stablePageTitles, translateEn } from "@/features/markdown/__tests__/fixtures";
 

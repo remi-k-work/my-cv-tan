@@ -2,7 +2,7 @@ import { assert, it } from "@effect/vitest";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { contactHead, educationHead, experienceHead, homeHead } from "@/features/meta/domain/page-head";
-import { STATIC_PAGES, STATIC_PAGE_PATHS, staticPageCopy } from "@/features/meta/domain/pages";
+import { STATIC_PAGES, STATIC_PAGE_PATHS, staticPageCopy } from "@/domain/pages";
 import { ExperienceIdentity } from "@/features/experience/ui/experience-identity";
 import { BRANDED_TITLE } from "@/domain/site";
 import { DOWNLOADABLE_DOCUMENTS } from "@/features/meta/domain/discovery";

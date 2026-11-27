@@ -26,7 +26,7 @@ interface ExperienceLinesInput extends TwinContext {
 }
 
 // constants
-import { STATIC_PAGES, STATIC_PAGE_PATHS } from "@/features/meta/domain/pages";
+import { STATIC_PAGES, STATIC_PAGE_PATHS } from "@/domain/pages";
 
 const LIST_EXCERPT_LENGTH = 140;
 

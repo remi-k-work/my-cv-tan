@@ -22,7 +22,7 @@ type LoadPageContent<P extends PagePath> = (
 
 // constants
 import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/domain/constants";
-import { STATIC_PAGES } from "@/features/meta/domain/pages";
+import { STATIC_PAGES } from "@/domain/pages";
 
 // One pipeline owns catalogue lookup, dataset loading, tracing and pure rendering for every page
 const pageTwin = <P extends PagePath>(pagePath: P, load: LoadPageContent<P>): PageTwin => ({

@@ -11,7 +11,7 @@ import type { SocialImageFacts } from "./models";
 // constants
 import { DEFAULT_LANGUAGE } from "@/domain/constants";
 import { DOWNLOADABLE_DOCUMENT_PATHS } from "./discovery";
-import { STATIC_PAGE_PATHS } from "./pages";
+import { STATIC_PAGE_PATHS } from "@/domain/pages";
 
 const STATIC_PATHS: ReadonlyArray<string> = [...STATIC_PAGE_PATHS, ...DOWNLOADABLE_DOCUMENT_PATHS];
 const XML_ENTITIES: HashMap.HashMap<string, string> = HashMap.fromIterable([

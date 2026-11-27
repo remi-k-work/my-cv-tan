@@ -5,7 +5,7 @@ import { translateSource } from "@/domain/helpers";
 import type { PageTitles, PreferredLanguage, Translate } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
-import type { StaticPageCopy } from "@/features/meta/domain/models";
+import type { StaticPageCopy } from "@/domain/pages";
 
 // constants
 import { CONTACT_PATH, DEFAULT_LANGUAGE, EDUCATION_PATH, HOME_PATH } from "@/domain/constants";

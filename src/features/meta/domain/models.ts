@@ -7,7 +7,7 @@
 import { Option } from "effect";
 
 // types
-import type { PagePath, PreferredLanguage } from "@/domain/models";
+import type { PreferredLanguage } from "@/domain/models";
 import type { Experience } from "@/features/experience/domain/models";
 
 export type MetaTag =
@@ -94,22 +94,6 @@ export interface ExperienceSeo extends ExperienceIdentity {
   readonly experience: Experience;
   readonly description: string;
   readonly screenshot: Option.Option<SocialImageFacts>;
-}
-
-export type StaticPageType = "overview" | "education" | "contact";
-
-// A static page resolved for one reader: the localized copy the HTML head, Markdown twin and
-// sitemap all publish.
-export interface StaticPageCopy {
-  readonly path: PagePath;
-  readonly mdHref: string;
-  readonly type: StaticPageType;
-  readonly pageName: string;
-  readonly description: string;
-  readonly preferredLanguage: PreferredLanguage;
-  readonly seoTitle: string;
-  readonly intro: string;
-  readonly canonical: string;
 }
 
 export type RouteStatus = "pending" | "success" | "error" | "notFound";
