@@ -7,7 +7,7 @@
 // types
 import type { JsonLdScript } from "@/features/jsonld/domain/models";
 import type { LinkTag } from "@/domain/links";
-import type { ImageFacts, PreferredLanguage } from "@/domain/models";
+import type { ImageFacts, PageIdentity } from "@/domain/models";
 import type { ExperienceSection } from "@/features/experience/domain/models";
 
 export type MetaTag =
@@ -27,12 +27,9 @@ export interface SocialImage extends ImageFacts {
   readonly alt: string;
 }
 
-export interface SocialMetaInput {
-  readonly title: string;
-  readonly description: string;
-  readonly canonical: string;
+// The social facts the head publishes: the page identity plus the card image and article overrides
+export interface SocialMetaInput extends PageIdentity {
   readonly image: SocialImage;
-  readonly preferredLanguage: PreferredLanguage;
   readonly ogType?: "website" | "article";
   readonly articleSection?: ExperienceSection;
 }
