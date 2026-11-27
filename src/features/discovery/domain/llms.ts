@@ -17,15 +17,15 @@ import {
   mdProfileLinks,
   mdQuote,
   mdTitledSection,
-} from "./format";
-import { escapeMd } from "./escape";
-import { experienceEntry, experienceLines, pageEntry, PAGE_ENTRIES } from "./catalogue";
-import { buildExperienceMd, buildPageDocument } from "./twins";
+} from "@/features/markdown/domain/format";
+import { escapeMd } from "@/features/markdown/domain/escape";
+import { experienceEntry, experienceLines, pageEntry, PAGE_ENTRIES } from "@/features/markdown/domain/catalogue";
+import { buildExperienceMd, buildPageDocument } from "@/features/markdown/domain/twins";
 
 // types
 import type { ExperienceList } from "@/features/experience/domain/models";
-import type { IndexEntry } from "./catalogue";
-import type { MarkdownTwin, PageContent } from "./models";
+import type { IndexEntry } from "@/features/markdown/domain/catalogue";
+import type { MarkdownTwin, PageContent } from "@/features/markdown/domain/models";
 
 interface SourceDocument {
   readonly entry: IndexEntry;
@@ -49,7 +49,7 @@ import {
 } from "@/domain/site";
 import { DEFAULT_LANGUAGE, HOME_PATH, SITE_LANGUAGE_NAMES, SITE_LANGUAGES } from "@/domain/constants";
 import { STATIC_PAGES, STATIC_PAGE_PATHS } from "@/domain/pages";
-import { SOURCE_CONTEXT } from "./models";
+import { SOURCE_CONTEXT } from "@/features/markdown/domain/models";
 import { LANG_PARAM } from "@/domain/urls";
 
 const PINNABLE_LANGUAGES = Array.filter(SITE_LANGUAGES, (language) => language !== DEFAULT_LANGUAGE);
@@ -125,7 +125,7 @@ const LANGUAGE_VARIANTS = mdBulletList(
 const experienceSection = (title: string, experiences: ExperienceList) =>
   Array.match(experiences, {
     // An empty file list has no discovery value; omit its section rather than publishing a bullet
-    // without the link every llms.txt file-list item requires.
+    // without the link every llms.txt file-list item requires
     onEmpty: () => "",
     onNonEmpty: () => mdTitledSection(title, experienceLines({ experiences, ...SOURCE_CONTEXT, mode: "index" })),
   });

@@ -7,9 +7,9 @@ import { ExperienceIdentity } from "@/features/experience/ui/experience-identity
 import { BRANDED_TITLE } from "@/domain/site";
 import { DOWNLOADABLE_DOCUMENTS } from "@/domain/discovery";
 import { absoluteUrl } from "@/domain/urls";
-import { buildSitemapXml } from "@/features/meta/domain/sitemap";
+import { buildSitemapXml } from "@/features/discovery/domain/sitemap";
 import { mdResponse } from "../../services/responses";
-import { buildLlmsFullTxt, buildLlmsTxt } from "../indexes";
+import { buildLlmsFullTxt, buildLlmsTxt } from "@/features/discovery/domain/llms";
 import { buildContactMd, buildEducationMd, buildExperienceMd, buildHomeMd } from "../twins";
 import { twinDocument } from "../format";
 import { sampleExperience, stablePageTitles, translateEn } from "@/features/markdown/__tests__/fixtures";

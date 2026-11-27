@@ -1,15 +1,13 @@
 // services, features, and other libraries
-import { Context, Effect, Layer, Option, Record, String } from "effect";
+import { Context, Effect, Layer, Option, Record } from "effect";
 import { Datasets } from "@/features/data/services/datasets";
 import { requestPreferredLanguage } from "@/features/data/services/request-language";
 import { recoverDataFailure } from "@/features/data/domain/required";
 import { experienceFromList } from "@/features/experience/domain/helpers";
 import { experienceMarkdownPath } from "@/domain/urls";
 import { experienceSeo } from "@/features/experience/domain/seo";
-import { txtResponse, txtUnavailableResponse } from "@/lib/http-response";
 import { buildNotFoundMd, unavailableMarkdownBody } from "@/features/markdown/domain/fallback";
 import { twinDocument } from "@/features/markdown/domain/format";
-import { buildLlmsFullTxt, buildLlmsTxt, unavailableIndexBody } from "@/features/markdown/domain/indexes";
 import { buildExperienceMd } from "@/features/markdown/domain/twins";
 import { documentName, parseLangParam, slugFromMdPathname } from "./request";
 import { applyRepresentationPolicy, mdNotFoundResponse, mdResponse, mdUnavailableResponse } from "./responses";
@@ -24,8 +22,6 @@ type DocumentBody = (request: Request, context: TwinContext) => Effect.Effect<Re
 type Document = (request: Request) => Effect.Effect<Response>;
 
 // constants
-import { DEFAULT_LANGUAGE } from "@/domain/constants";
-import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/domain/discovery";
 import { PAGE_TWINS } from "./pages";
 
 const respond = (context: TwinContext, twin: MarkdownTwin, canonical: string, markdownPath: string) =>
@@ -39,26 +35,12 @@ const respond = (context: TwinContext, twin: MarkdownTwin, canonical: string, ma
 const notFoundTwin = (slug: Option.Option<string>, context: TwinContext) =>
   mdNotFoundResponse(twinDocument(buildNotFoundMd({ slug, ...context })), context.preferredLanguage, Option.map(slug, experienceMarkdownPath));
 
-const discoveryDocument =
-  (index: { readonly name: string; readonly url: string }, content: Effect.Effect<string, RequiredDataError>): Document =>
-  (_request: Request) =>
-    content.pipe(
-      Effect.map((body) => txtResponse(body, index.url)),
-      recoverDataFailure(
-        () => `[${String.toUpperCase(index.name)}]`,
-        () => txtUnavailableResponse(unavailableIndexBody(index.name), index.url)
-      ),
-      Effect.withSpan("Markdown.discovery", { attributes: { document: index.name } })
-    );
-
 // Resolve dependencies once; every document request still reads fresh data
 export class Markdown extends Context.Service<
   Markdown,
   {
     readonly page: (pagePath: PagePath) => Document;
     readonly experience: Document;
-    readonly siteIndex: Document;
-    readonly siteIndexFull: Document;
   }
 >()("my-cv-v4-tan/features/markdown/services/Markdown") {
   // Translation is supplied at composition so tests and alternate runtimes can replace its snapshot loader
@@ -110,28 +92,9 @@ export class Markdown extends Context.Service<
         })
       );
 
-      const siteIndex = discoveryDocument(LLMS_TXT_INDEX, Effect.map(datasets.experienceList(DEFAULT_LANGUAGE), buildLlmsTxt));
-
-      const siteIndexFull = discoveryDocument(
-        LLMS_FULL_TXT_INDEX,
-        Effect.map(
-          Effect.all(
-            {
-              pageTitles: datasets.pageTitles(DEFAULT_LANGUAGE),
-              experienceList: datasets.experienceList(DEFAULT_LANGUAGE),
-              educationList: datasets.educationList(DEFAULT_LANGUAGE),
-            },
-            { concurrency: "unbounded" }
-          ),
-          buildLlmsFullTxt
-        )
-      );
-
       return Markdown.of({
         page: (pagePath: PagePath) => pages[pagePath],
         experience,
-        siteIndex,
-        siteIndexFull,
       });
     })
   );

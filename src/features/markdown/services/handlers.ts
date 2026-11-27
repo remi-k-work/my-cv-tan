@@ -22,7 +22,3 @@ export const homeHandler = markdownRoute((markdown) => markdown.page(HOME_PATH),
 export const educationHandler = markdownRoute((markdown) => markdown.page(EDUCATION_PATH), keepsNegotiatedLocale);
 export const contactHandler = markdownRoute((markdown) => markdown.page(CONTACT_PATH), keepsNegotiatedLocale);
 export const experienceHandler = markdownRoute((markdown) => markdown.experience, keepsNegotiatedLocale);
-
-// Discovery indexes are language-independent and never carry visitor cookies
-export const llmsTxtHandler = markdownRoute((markdown) => markdown.siteIndex);
-export const llmsFullTxtHandler = markdownRoute((markdown) => markdown.siteIndexFull);

@@ -4,7 +4,7 @@ import { txtResponse } from "@/lib/http-response";
 
 // constants
 import { ROBOTS_TXT_INDEX } from "@/domain/discovery";
-import { ROBOTS_TXT } from "@/features/meta/domain/robots";
+import { ROBOTS_TXT } from "@/features/discovery/domain/robots";
 
 // Encapsulates robots.txt response construction as a service for runtime composition and testability
 export class Robots extends Context.Service<
@@ -12,7 +12,7 @@ export class Robots extends Context.Service<
   {
     readonly document: Effect.Effect<Response>;
   }
->()("my-cv-v4-tan/features/meta/services/Robots") {
+>()("my-cv-v4-tan/features/discovery/services/Robots") {
   static readonly layer = Layer.succeed(
     Robots,
     Robots.of({

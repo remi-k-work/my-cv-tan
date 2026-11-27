@@ -1,17 +1,17 @@
 import { assert, it } from "@effect/vitest";
-import { AI_NOTES, buildLlmsFullTxt, buildLlmsTxt, DISCOVERY_LINES, SITE_OPENING, unavailableIndexBody } from "../indexes";
-import { escapeMd } from "../escape";
-import { unavailableMarkdownBody } from "../fallback";
-import { buildExperienceMd, buildHomeMd } from "../twins";
-import { twinDocument } from "../format";
-import { SOURCE_CONTEXT } from "../models";
+import { AI_NOTES, buildLlmsFullTxt, buildLlmsTxt, DISCOVERY_LINES, SITE_OPENING, unavailableIndexBody } from "../llms";
+import { escapeMd } from "@/features/markdown/domain/escape";
+import { unavailableMarkdownBody } from "@/features/markdown/domain/fallback";
+import { buildExperienceMd, buildHomeMd } from "@/features/markdown/domain/twins";
+import { twinDocument } from "@/features/markdown/domain/format";
+import { SOURCE_CONTEXT } from "@/features/markdown/domain/models";
 import { CONTACT_EMAIL, PERSON_DESCRIPTION } from "@/domain/site";
 import { LANG_PARAM } from "@/domain/urls";
 import { DISCOVERY_DOCUMENTS } from "@/domain/discovery";
 import { experienceSeo } from "@/features/experience/domain/seo";
 import { SITE_LANGUAGE_NAMES, SITE_LANGUAGES } from "@/domain/constants";
 import { sampleExperience, stablePageTitles, translateEn } from "@/features/markdown/__tests__/fixtures";
-import type { MarkdownTwin } from "../models";
+import type { MarkdownTwin } from "@/features/markdown/domain/models";
 
 it("buildLlmsTxt indexes pages, about facts, grouped experience and negotiated language guidance", () => {
   const txt = buildLlmsTxt([{ ...sampleExperience, slug: "my project" }]);

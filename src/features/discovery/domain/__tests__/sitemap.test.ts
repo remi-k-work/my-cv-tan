@@ -11,8 +11,24 @@ import experienceEn from "@/assets/data/en/experience.json";
 import experiencePl from "@/assets/data/pl/experience.json";
 import { Datasets } from "@/features/data/services/datasets";
 import { RequiredDataError } from "@/features/data/domain/required";
-import { sampleExperience } from "./fixtures";
 import { isCrawlablePath } from "../robots";
+
+// types
+import type { Experience } from "@/features/experience/domain/models";
+
+// A portfolio-kind sample mirrors the shape the sitemap builder reads; kept local so the discovery
+// suite stays independent of the other features' fixture modules (Phase 6 consolidates them).
+const sampleExperience: Experience = {
+  type: "p",
+  slug: "sample-role",
+  year: "Mar 2026",
+  role: "Full-Stack Developer",
+  company: "Sample Co",
+  txt: "Built things with care.",
+  gitHubLink: "https://github.com/example/repo",
+  imageName: "01",
+  skillsUsed: ["TypeScript", "React"],
+};
 
 // Verifies end-to-end runtime wiring of the sitemap route using real portfolio assets.
 it("sitemap route resolves the real portfolio assets into one canonical URL per page", async () => {

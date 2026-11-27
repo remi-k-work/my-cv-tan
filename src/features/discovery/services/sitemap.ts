@@ -2,7 +2,7 @@
 import { Context, Effect, Layer } from "effect";
 import { recoverDataFailure } from "@/features/data/domain/required";
 import { Datasets } from "@/features/data/services/datasets";
-import { buildSitemapXml } from "@/features/meta/domain/sitemap";
+import { buildSitemapXml } from "@/features/discovery/domain/sitemap";
 import { sitemapResponse, sitemapUnavailableResponse } from "@/lib/http-response";
 
 // constants
@@ -14,7 +14,7 @@ export class Sitemap extends Context.Service<
   {
     readonly document: Effect.Effect<Response>;
   }
->()("my-cv-v4-tan/features/meta/services/Sitemap") {
+>()("my-cv-v4-tan/features/discovery/services/Sitemap") {
   static readonly layer = Layer.effect(
     Sitemap,
     Effect.gen(function* () {
