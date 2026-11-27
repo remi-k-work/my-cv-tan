@@ -17,10 +17,9 @@ import {
   webPageNode,
 } from "../nodes";
 import { HOME_URL, PERSON_ID, PUBLISHER_ID, WEBSITE_ID } from "@/domain/site";
-import { LANGUAGE } from "./fixtures";
 import type { PreferredLanguage } from "@/domain/models";
 
-const language: PreferredLanguage = LANGUAGE;
+const language: PreferredLanguage = "en";
 
 const baseWebPageInput = {
   id: "https://www.remiforge.dev/test",

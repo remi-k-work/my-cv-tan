@@ -3,7 +3,7 @@
 import { assert, it } from "@effect/vitest";
 import { notFoundHead, unavailableHead } from "../fallback";
 import { NOINDEX_FOLLOW } from "@/domain/http";
-import { graphOf, nodeOf } from "./fixtures";
+import { graphOf, nodeOf } from "@/features/jsonld/domain/__tests__/fixtures";
 
 it("unavailableHead publishes a canonical noindex head with site entities", () => {
   const fallback = unavailableHead("/contact");

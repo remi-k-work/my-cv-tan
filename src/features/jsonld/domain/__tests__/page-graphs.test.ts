@@ -6,13 +6,28 @@ import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
 import { educationJsonLd, contactJsonLd, experienceCollections, experienceJsonLd, homeJsonLd, schoolSubgraph } from "../page-graphs";
 import { CONTACT_EMAIL, EXPERIENCE_LIST_ID, GLOBAL_SOCIAL_IMAGE, HOME_URL, PERSON_ID, PORTFOLIO_LIST_ID, PROFILE_ID, WEBSITE_ID } from "@/domain/site";
-import { jsonLdGraph } from "../jsonld";
-import { LANGUAGE, graphOf, nodeOf, sampleEducation, sampleExperience } from "./fixtures";
+import { jsonLdGraph } from "../serialize";
+import { graphOf, nodeOf } from "./fixtures";
 import type { PreferredLanguage } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
-import type { ExperienceList } from "@/features/experience/domain/models";
+import type { Experience, ExperienceList } from "@/features/experience/domain/models";
 
-const language: PreferredLanguage = LANGUAGE;
+const language: PreferredLanguage = "en";
+
+// A representative experience; Phase 6 consolidates this fixture across the feature test suites.
+const sampleExperience: Experience = {
+  type: "p",
+  slug: "sample-role",
+  year: "Mar 2026",
+  role: "Full-Stack Developer",
+  company: "Sample Co",
+  txt: "Built things with care.",
+  gitHubLink: "https://github.com/example/repo",
+  imageName: "01",
+  skillsUsed: ["TypeScript", "React"],
+};
+
+const sampleEducation: EducationList = [{ name: "Pratt Institute", year: "• 2002 — 2004 •", location: "New York, US", info: "Interactive Media." }];
 
 const employment: ExperienceList = [
   { type: "e", slug: "job-1", year: "2024", role: "Dev", company: "Co", txt: "Work.", skillsUsed: ["TypeScript"], imageName: "" },
@@ -235,8 +250,6 @@ it("homeJsonLd builds a ProfilePage linking site entities plus grouped collectio
 // exercised directly here and again through the page that renders it, so the grouping cannot drift
 // between the two call sites.
 
-const schools: EducationList = [{ name: "Pratt Institute", year: "• 2002 — 2004 •", location: "New York, US", info: "Interactive Media." }];
-
 it("experienceCollections builds employment then portfolio collections", () => {
   const nodes = experienceCollections(employment, projects, language);
 
@@ -270,7 +283,7 @@ it("experienceCollections omits empty collections", () => {
 
 it("schoolSubgraph builds school nodes plus the Person alumniOf edge", () => {
   const url = "https://www.remiforge.dev/education";
-  const nodes = schoolSubgraph(url, schools);
+  const nodes = schoolSubgraph(url, sampleEducation);
 
   assert.deepStrictEqual(nodes[0], {
     "@type": "EducationalOrganization",

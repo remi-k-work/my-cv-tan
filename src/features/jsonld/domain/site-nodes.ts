@@ -1,5 +1,5 @@
 // The site-wide JSON-LD root entities included in every page graph; they are structured data, not
-// site identity, so they live beside the head builders until the jsonld feature owns them
+// site identity, so they live beside the graph builders that use them
 
 // types
 import type { JsonLdNode } from "./models";

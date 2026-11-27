@@ -1,14 +1,15 @@
 // services, features, and other libraries
 import { Option } from "effect";
 import { experienceImageAlt, experienceSection, experienceSeo } from "@/features/experience/domain/seo";
-import { jsonLdGraph } from "./jsonld";
-import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd } from "./page-graphs";
+import { jsonLdGraph } from "@/features/jsonld/domain/serialize";
+import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd } from "@/features/jsonld/domain/page-graphs";
 import { globalSocialImage, socialMeta } from "./social-meta";
 import { staticPageCopy } from "@/domain/pages";
 import { representationLinks } from "@/domain/links";
 
 // types
-import type { JsonLdNodes, PageHead, SocialImage, SocialMetaInput } from "./models";
+import type { JsonLdNodes } from "@/features/jsonld/domain/models";
+import type { PageHead, SocialImage, SocialMetaInput } from "./models";
 import type { StaticPageCopy } from "@/domain/pages";
 import type { ImageFacts, PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
@@ -31,7 +32,7 @@ interface StaticPageHeadInput {
 import { INDEXABLE_ROBOTS } from "@/domain/http";
 import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/domain/constants";
 import { BRANDED_TITLE } from "@/domain/site";
-import { SITE_NODES } from "./site-nodes";
+import { SITE_NODES } from "@/features/jsonld/domain/site-nodes";
 
 export const pageHead = ({ social, markdownPath, graph }: PageHeadSpec): PageHead => ({
   meta: [

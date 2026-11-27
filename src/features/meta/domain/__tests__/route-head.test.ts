@@ -3,7 +3,8 @@ import { headLanguage, routeHead } from "../route-head";
 import { rootHead } from "../root-head";
 import { homeHead } from "../page-head";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
-import { graphOf, stablePageTitles } from "./fixtures";
+import { graphOf } from "@/features/jsonld/domain/__tests__/fixtures";
+import { stablePageTitles } from "./fixtures";
 import type { PageHead } from "../models";
 
 // The loader payload shapes headLanguage sees: a valid locale, an unsupported

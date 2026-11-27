@@ -4,6 +4,7 @@
 // heads all build on it.
 
 import { assert, it } from "@effect/vitest";
+import { Option, pipe } from "effect";
 import { pageHead, experienceHead, contactHead, educationHead, homeHead } from "../page-head";
 import { globalSocialImage } from "../social-meta";
 import { BRANDED_TITLE, GLOBAL_SOCIAL_IMAGE, SITE_NAME, AUTHOR_URL, PROFILE_ID } from "@/domain/site";
@@ -11,8 +12,10 @@ import { INDEXABLE_ROBOTS } from "@/domain/http";
 import { STATIC_PAGES } from "@/domain/pages";
 import { withLanguageParam } from "@/domain/urls";
 import { canonicalLink } from "@/domain/links";
-import { LANGUAGE, contextOf, graphOf, metaOf, nodeOf, nodesOf, sampleEducation, sampleExperience, stablePageTitles, tagContent } from "./fixtures";
-import type { JsonLdNodes, PageHead, SocialMetaInput } from "../models";
+import { LANGUAGE, metaOf, sampleEducation, sampleExperience, stablePageTitles, tagContent } from "./fixtures";
+import { contextOf, graphOf, nodeOf, nodesOf, textOf } from "@/features/jsonld/domain/__tests__/fixtures";
+import type { JsonLdNodes } from "@/features/jsonld/domain/models";
+import type { PageHead, SocialMetaInput } from "../models";
 import type { PreferredLanguage } from "@/domain/models";
 
 const language: PreferredLanguage = LANGUAGE;
@@ -522,6 +525,23 @@ it("contact structured data describes the visible ContactPage inside a breadcrum
     name: hostileTitle,
     item: "https://www.remiforge.dev/contact",
   });
+});
+
+it("experience structured data escapes hostile narrative text so it cannot break out of the script tag", () => {
+  const hostile = experienceHead({
+    experience: { ...sampleExperience, txt: "evil </script><script>alert(1)</script>" },
+    preferredLanguage: "en",
+  });
+  const [graph] = hostile.scripts ?? [];
+  assert.notInclude(graph?.children, "</script>");
+  assert.include(graph?.children, "\\u003C");
+  // The escape is transparent: parsers still see the original text
+  const description = pipe(
+    Option.fromNullishOr(nodeOf(graphOf(graph?.children), "WebPage")),
+    Option.flatMap((node) => textOf(node.description)),
+    Option.getOrThrow
+  );
+  assert.include(description, "</script>");
 });
 
 // Helpers used by the JSON-LD graph tests above

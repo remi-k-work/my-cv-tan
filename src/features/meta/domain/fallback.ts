@@ -4,7 +4,7 @@
 // services, features, and other libraries
 import { absoluteUrl } from "@/domain/urls";
 import { canonicalLink } from "@/domain/links";
-import { jsonLdGraph } from "./jsonld";
+import { jsonLdGraph } from "@/features/jsonld/domain/serialize";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
@@ -15,7 +15,7 @@ import type { PageHead } from "./models";
 import { DEFAULT_LANGUAGE } from "@/domain/constants";
 import { NOINDEX_FOLLOW } from "@/domain/http";
 import { BRANDED_TITLE, NOT_FOUND_COPY, UNAVAILABLE_COPY } from "@/domain/site";
-import { SITE_NODES } from "./site-nodes";
+import { SITE_NODES } from "@/features/jsonld/domain/site-nodes";
 
 // The shared noindex envelope both degraded states publish; they differ only in their localized
 // copy and in whether they name a route. Each state is its own named constructor so the compiler

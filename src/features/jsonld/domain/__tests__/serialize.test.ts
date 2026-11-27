@@ -1,4 +1,4 @@
-// Direct unit tests for the graph serializer in ./jsonld.
+// Direct unit tests for the graph serializer in ./serialize.
 //
 // `jsonLdGraph` is the seam every head publishes through: SITE_NODES and a page's own graph are
 // handed to it as one flat list, and it decides which nodes describe the same schema.org entity.
@@ -7,7 +7,7 @@
 // the head builders.
 
 import { assert, describe, it } from "@effect/vitest";
-import { jsonLdGraph } from "../jsonld";
+import { jsonLdGraph } from "../serialize";
 import { graphOf } from "./fixtures";
 import type { JsonLdNode } from "../models";
 
