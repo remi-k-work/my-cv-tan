@@ -5,7 +5,7 @@ import { contactHead, educationHead, experienceHead, homeHead } from "@/features
 import { STATIC_PAGES, STATIC_PAGE_PATHS, staticPageCopy } from "@/domain/pages";
 import { ExperienceIdentity } from "@/features/experience/ui/experience-identity";
 import { BRANDED_TITLE } from "@/domain/site";
-import { DOWNLOADABLE_DOCUMENTS } from "@/features/meta/domain/discovery";
+import { DOWNLOADABLE_DOCUMENTS } from "@/domain/discovery";
 import { absoluteUrl } from "@/domain/urls";
 import { buildSitemapXml } from "@/features/meta/domain/sitemap";
 import { mdResponse } from "../../services/responses";

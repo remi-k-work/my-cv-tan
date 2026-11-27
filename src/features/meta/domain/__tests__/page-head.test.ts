@@ -10,7 +10,7 @@ import { BRANDED_TITLE, GLOBAL_SOCIAL_IMAGE, SITE_NAME, AUTHOR_URL, PROFILE_ID }
 import { INDEXABLE_ROBOTS } from "@/domain/http";
 import { STATIC_PAGES } from "@/domain/pages";
 import { withLanguageParam } from "@/domain/urls";
-import { canonicalLink } from "../link-tags";
+import { canonicalLink } from "@/domain/links";
 import { LANGUAGE, contextOf, graphOf, metaOf, nodeOf, nodesOf, sampleEducation, sampleExperience, stablePageTitles, tagContent } from "./fixtures";
 import type { JsonLdNodes, PageHead, SocialMetaInput } from "../models";
 import type { PreferredLanguage } from "@/domain/models";

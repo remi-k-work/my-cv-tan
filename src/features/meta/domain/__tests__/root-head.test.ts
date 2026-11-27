@@ -2,7 +2,7 @@ import { assert, it } from "@effect/vitest";
 import { ROOT_HEAD } from "../root-head";
 import { rootHead } from "../root-head";
 import { homeHead, contactHead, educationHead, experienceHead } from "../page-head";
-import { AI_DISCOVERY_LINKS } from "../discovery";
+import { AI_DISCOVERY_LINKS } from "@/domain/links";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 import { stablePageTitles } from "./fixtures";
 

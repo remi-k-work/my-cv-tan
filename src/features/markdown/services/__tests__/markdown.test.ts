@@ -3,7 +3,7 @@ import { Effect, Layer } from "effect";
 import { Datasets } from "@/features/data/services/datasets";
 import { RequiredDataError } from "@/features/data/domain/required";
 import { HOME_PATH } from "@/domain/constants";
-import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/discovery";
+import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/domain/discovery";
 import { CACHEABLE_HEADERS } from "@/features/meta/services/responses";
 import { buildLlmsFullTxt, buildLlmsTxt } from "@/features/markdown/domain/indexes";
 import { NOINDEX_FOLLOW } from "@/domain/http";

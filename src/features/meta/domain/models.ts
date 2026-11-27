@@ -7,6 +7,7 @@
 import { Option } from "effect";
 
 // types
+import type { LinkTag } from "@/domain/links";
 import type { PreferredLanguage } from "@/domain/models";
 import type { Experience } from "@/features/experience/domain/models";
 
@@ -15,15 +16,6 @@ export type MetaTag =
   | { readonly title: string }
   | { readonly name: string; readonly content: string }
   | { readonly property: string; readonly content: string };
-
-export interface LinkTag {
-  readonly rel: string;
-  readonly href: string;
-  readonly type?: string;
-  readonly title?: string;
-  // TanStack forwards link descriptors to React, which names this property hrefLang
-  readonly hrefLang?: string;
-}
 
 export interface JsonLdScript {
   readonly type: "application/ld+json";

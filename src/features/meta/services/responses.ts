@@ -2,6 +2,7 @@
 
 // services, features, and other libraries
 import { Array, Option, Record, String, pipe } from "effect";
+import { aiDiscoveryLinkHeader } from "@/domain/links";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
@@ -9,7 +10,8 @@ import type { PreferredLanguage } from "@/domain/models";
 // constants
 import { DEFAULT_LANGUAGE } from "@/domain/constants";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW, NO_STORE, RETRY_AFTER } from "@/domain/http";
-import { AI_DISCOVERY_LINK_HEADER, aiDiscoveryLinkHeader, CONTENT_SIGNAL, SITEMAP_INDEX } from "@/features/meta/domain/discovery";
+import { CONTENT_SIGNAL, SITEMAP_INDEX } from "@/domain/discovery";
+import { AI_DISCOVERY_LINK_HEADER } from "@/domain/links";
 
 // Pinned Markdown variants remove these tokens; every other negotiated document emits them.
 export const NEGOTIATION_VARY_TOKENS = ["Cookie", "Accept-Language"] as const;

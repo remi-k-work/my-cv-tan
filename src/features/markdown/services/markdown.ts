@@ -25,7 +25,7 @@ type Document = (request: Request) => Effect.Effect<Response>;
 
 // constants
 import { DEFAULT_LANGUAGE } from "@/domain/constants";
-import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/discovery";
+import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/domain/discovery";
 import { PAGE_TWINS } from "./pages";
 
 const respond = (context: TwinContext, twin: MarkdownTwin, canonical: string, markdownPath: string) =>

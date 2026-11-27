@@ -2,7 +2,7 @@
 import { Array, String } from "effect";
 
 // constants
-import { CONTENT_SIGNAL, LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX, SITEMAP_INDEX } from "./discovery";
+import { CONTENT_SIGNAL, LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX, SITEMAP_INDEX } from "@/domain/discovery";
 
 // TanStack routes are published under /api/; this prefix leaves public slugs such as /api-portfolio alone
 export const ROBOTS_DISALLOW_PATHS = ["/api/"] as const;

@@ -2,14 +2,14 @@
 import { Array } from "effect";
 import { notFoundHead } from "./fallback";
 import { headLanguage, isNotFoundMatch } from "./route-head";
-import { authorLink } from "./link-tags";
+import { authorLink } from "@/domain/links";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
 import type { MatchChain, MetaTag, PageHead } from "./models";
 
 // constants
-import { AI_DISCOVERY_LINKS, ME_LINKS, SITEMAP_LINK } from "./discovery";
+import { AI_DISCOVERY_LINKS, ME_LINKS, SITEMAP_LINK } from "@/domain/links";
 import { AUTHOR_URL, AVATAR, BRANDED_TITLE, HOME_TITLE, SITE_DESCRIPTION, SITE_NAME } from "@/domain/site";
 import { NOINDEX_FOLLOW } from "@/domain/http";
 

@@ -1,16 +1,21 @@
 import { assert, it } from "@effect/vitest";
+import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/domain/discovery";
 import {
   AI_DISCOVERY_LINK_HEADER,
   AI_DISCOVERY_LINKS,
   aiDiscoveryLinkHeader,
+  authorLink,
+  canonicalLink,
+  joinLinkHeader,
+  languageVariantLinks,
   LLMS_DISCOVERY_LINK,
-  LLMS_FULL_TXT_INDEX,
-  LLMS_TXT_INDEX,
+  representationLinks,
   SITEMAP_LINK,
-} from "../discovery";
+} from "@/domain/links";
 import { ROOT_HEAD } from "../root-head";
-import { authorLink, canonicalLink, joinLinkHeader, languageVariantLinks, representationLinks } from "../link-tags";
-import type { LinkTag } from "../models";
+
+// types
+import type { LinkTag } from "@/domain/links";
 
 // The three parameters the serializer writes, and nothing else: a link declaring a fourth would
 // have it silently dropped, so the declaration and the emitted header would disagree.

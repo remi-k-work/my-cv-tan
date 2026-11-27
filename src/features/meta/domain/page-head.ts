@@ -5,7 +5,7 @@ import { jsonLdGraph } from "./jsonld";
 import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd } from "./page-graphs";
 import { globalSocialImage, socialMeta } from "./social-meta";
 import { staticPageCopy } from "@/domain/pages";
-import { representationLinks } from "./link-tags";
+import { representationLinks } from "@/domain/links";
 
 // types
 import type { ExperienceIdentityInput, JsonLdNodes, PageHead, SocialImage, SocialImageFacts, SocialMetaInput } from "./models";

@@ -19,7 +19,8 @@ import { NotFoundPage } from "@/ui/not-found-page";
 import { BRANDED_TITLE, NOT_FOUND_COPY, SITE_DESCRIPTION, SOCIAL_LINKS, UNAVAILABLE_COPY } from "@/domain/site";
 import { notFoundHead } from "../fallback";
 import { sampleExperience, stablePageTitles } from "./fixtures";
-import type { LinkTag, MatchChain, MetaTag, PageHead } from "../models";
+import type { LinkTag } from "@/domain/links";
+import type { MatchChain, MetaTag, PageHead } from "../models";
 
 // The not-found page reads the request locale through GT, so the runtime has to be initialized
 // before it renders — exactly as the twin-localization tests do for the same reason.

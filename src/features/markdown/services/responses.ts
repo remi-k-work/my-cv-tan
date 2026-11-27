@@ -2,7 +2,7 @@
 import { Array, HashSet, Match, Option, Predicate, Record, String, pipe } from "effect";
 import { documentHeaders, locationHeader, responseEnvelope } from "@/features/meta/services/responses";
 import { markdownTwinUrl } from "@/domain/urls";
-import { joinLinkHeader, representationLinks } from "@/features/meta/domain/link-tags";
+import { joinLinkHeader, representationLinks } from "@/domain/links";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
@@ -13,7 +13,7 @@ interface HeaderUpdates {
 }
 
 // constants
-import { AI_DISCOVERY_LINK_HEADER, AI_DISCOVERY_LINKS } from "@/features/meta/domain/discovery";
+import { AI_DISCOVERY_LINK_HEADER, AI_DISCOVERY_LINKS } from "@/domain/links";
 import {
   CACHEABLE_HEADERS,
   INDEXABLE_HEADERS,

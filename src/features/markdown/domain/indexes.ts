@@ -34,7 +34,7 @@ interface SourceDocument {
 }
 
 // constants
-import { CONTENT_SIGNAL, DISCOVERY_DOCUMENTS, DOWNLOADABLE_DOCUMENTS, LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/discovery";
+import { CONTENT_SIGNAL, DISCOVERY_DOCUMENTS, DOWNLOADABLE_DOCUMENTS, LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/domain/discovery";
 import {
   CONTACT_EMAIL,
   HOME_COUNTRY,

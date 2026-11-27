@@ -1,7 +1,7 @@
 import { assert, it } from "@effect/vitest";
 import { Effect, Layer } from "effect";
 import { STATIC_PAGE_PATHS } from "@/domain/pages";
-import { CONTENT_SIGNAL, DOWNLOADABLE_DOCUMENTS } from "../discovery";
+import { CONTENT_SIGNAL, DOWNLOADABLE_DOCUMENTS } from "@/domain/discovery";
 import { experiencePath } from "@/domain/urls";
 import { Sitemap } from "../../services/sitemap";
 import { sitemapHandler } from "../../services/handlers";

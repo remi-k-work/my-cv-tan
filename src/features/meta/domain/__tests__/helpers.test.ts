@@ -13,7 +13,7 @@ import { jsonLdGraph } from "../jsonld";
 import { META_DESCRIPTION_LENGTH } from "@/domain/constants";
 import { PERSON_DESCRIPTION, SITE_DESCRIPTION } from "@/domain/site";
 import { SITE_NODES } from "../site-nodes";
-import { CONTENT_SIGNAL } from "../discovery";
+import { CONTENT_SIGNAL } from "@/domain/discovery";
 import { NOINDEX_FOLLOW } from "@/domain/http";
 import { graphOf, nodeOf, sampleExperience, textOf } from "./fixtures";
 

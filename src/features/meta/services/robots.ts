@@ -3,7 +3,7 @@ import { Context, Effect, Layer } from "effect";
 import { txtResponse } from "./responses";
 
 // constants
-import { ROBOTS_TXT_INDEX } from "@/features/meta/domain/discovery";
+import { ROBOTS_TXT_INDEX } from "@/domain/discovery";
 import { ROBOTS_TXT } from "@/features/meta/domain/robots";
 
 // Encapsulates robots.txt response construction as a service for runtime composition and testability

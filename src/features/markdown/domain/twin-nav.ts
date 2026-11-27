@@ -11,7 +11,7 @@ import type { PagePath, PreferredLanguage, Translate } from "@/domain/models";
 // constants
 import { HOME_PATH } from "@/domain/constants";
 import { STATIC_PAGES, STATIC_PAGE_PATHS } from "@/domain/pages";
-import { AI_INDEXES, LLMS_TXT_INDEX } from "@/features/meta/domain/discovery";
+import { AI_INDEXES, LLMS_TXT_INDEX } from "@/domain/discovery";
 
 export const AI_INDEX_MARKDOWN_LINKS: ReadonlyArray<string> = Array.map(AI_INDEXES, ({ name, url }) => mdLink(name, url));
 

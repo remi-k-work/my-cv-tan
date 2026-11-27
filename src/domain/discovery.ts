@@ -1,20 +1,16 @@
-// Everything the site advertises to crawlers and AI fetchers: the reuse signal, the discovery
-// document hrefs (robots, sitemap, llms indexes, downloadable documents), and the `<link>` and
-// `Link:` header projections built from them.
+// Everything the site advertises to crawlers and AI fetchers as data: the reuse signal, the
+// discovery document hrefs (robots, sitemap, llms indexes, downloadable documents) and the
+// catalogues every surface reads; the `<link>` and `Link:` header projections built from them
+// live in ./links
 
 // services, features, and other libraries
 import { Array } from "effect";
 import { msg } from "gt-i18n";
-import { matchPreferredLanguage } from "@/domain/helpers";
-import { joinLinkHeader } from "./link-tags";
-import { absoluteUrl } from "@/domain/urls";
+import { matchPreferredLanguage } from "./helpers";
+import { absoluteUrl } from "./urls";
 
 // types
-import type { PreferredLanguage } from "@/domain/models";
-import type { LinkTag } from "./models";
-
-// constants
-import { SOCIAL_LINKS } from "@/domain/site";
+import type { PreferredLanguage } from "./models";
 
 // Content signal defining crawler permissions across robots.txt and HTTP headers
 export const CONTENT_SIGNAL = "search=yes, ai-input=yes, ai-train=yes";
@@ -45,14 +41,3 @@ export const ROBOTS_TXT_INDEX = { name: "robots.txt", summary: "crawl directives
 export const SITEMAP_INDEX = { name: "sitemap.xml", summary: "sitemap", url: absoluteUrl(SITEMAP_HREF) } as const;
 export const AI_INDEXES = [LLMS_TXT_INDEX, LLMS_FULL_TXT_INDEX] as const;
 export const DISCOVERY_DOCUMENTS = [...AI_INDEXES, ROBOTS_TXT_INDEX, SITEMAP_INDEX] as const;
-
-export const SITEMAP_LINK = { rel: "sitemap", href: SITEMAP_INDEX.url } as const;
-// llms.txt reserves `describedby` for its index and `alternate` for a page's own Markdown twin.
-export const LLMS_DISCOVERY_LINK: LinkTag = { rel: "describedby", href: LLMS_TXT_INDEX.url };
-export const LLMS_FULL_DISCOVERY_LINK: LinkTag = { rel: "related", type: "text/plain", title: LLMS_FULL_TXT_INDEX.name, href: LLMS_FULL_TXT_INDEX.url };
-export const AI_DISCOVERY_LINKS: ReadonlyArray<LinkTag> = [LLMS_DISCOVERY_LINK, LLMS_FULL_DISCOVERY_LINK];
-// Discovery documents name other crawl surfaces, never a redundant reference to themselves
-export const aiDiscoveryLinkHeader = (selfUrl?: string) => joinLinkHeader(Array.filter(AI_DISCOVERY_LINKS, ({ href }) => href !== selfUrl));
-export const AI_DISCOVERY_LINK_HEADER = aiDiscoveryLinkHeader();
-
-export const ME_LINKS: ReadonlyArray<LinkTag> = Array.map(SOCIAL_LINKS, (href) => ({ rel: "me", href }));

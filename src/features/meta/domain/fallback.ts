@@ -3,12 +3,13 @@
 
 // services, features, and other libraries
 import { absoluteUrl } from "@/domain/urls";
-import { canonicalLink } from "./link-tags";
+import { canonicalLink } from "@/domain/links";
 import { jsonLdGraph } from "./jsonld";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
-import type { LinkTag, PageHead } from "./models";
+import type { LinkTag } from "@/domain/links";
+import type { PageHead } from "./models";
 
 // constants
 import { DEFAULT_LANGUAGE } from "@/domain/constants";
