@@ -1,19 +1,18 @@
 // Shared experience projections keep stable identity, narrative content and head-only image facts
-// aligned without making each consumer compute metadata it does not publish.
+// aligned without making each consumer compute metadata it does not publish
 
 // services, features, and other libraries
 import { Array, Option, String, pipe } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
-import { excerpt, experienceHeadline, experienceImagePath, isEmployment } from "@/features/experience/domain/helpers";
 import { absoluteUrl, experiencePath, validatedHref } from "@/domain/urls";
+import { excerpt, experienceHeadline, experienceImagePath, isEmployment } from "./helpers";
 
 // types
 import type { ImageFacts } from "@/domain/models";
-import type { Experience } from "@/features/experience/domain/models";
-import type { ExperienceIdentity, ExperienceIdentityInput, ExperienceSection, ExperienceSeo } from "./models";
+import type { Experience, ExperienceIdentity, ExperienceIdentityInput, ExperienceSection, ExperienceSeo } from "./models";
 
 // constants
-import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain/constants";
+import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "./constants";
 import { META_DESCRIPTION_LENGTH } from "@/domain/constants";
 
 // An empty image name means "no screenshot", so the whole check is one lift into Option: the

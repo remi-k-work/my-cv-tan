@@ -8,7 +8,7 @@ import { SOURCE_CONTEXT } from "../models";
 import { CONTACT_EMAIL, PERSON_DESCRIPTION } from "@/domain/site";
 import { LANG_PARAM } from "@/domain/urls";
 import { DISCOVERY_DOCUMENTS } from "@/domain/discovery";
-import { experienceSeo } from "@/features/meta/domain/seo";
+import { experienceSeo } from "@/features/experience/domain/seo";
 import { SITE_LANGUAGE_NAMES, SITE_LANGUAGES } from "@/domain/constants";
 import { sampleExperience, stablePageTitles, translateEn } from "@/features/markdown/__tests__/fixtures";
 import type { MarkdownTwin } from "../models";

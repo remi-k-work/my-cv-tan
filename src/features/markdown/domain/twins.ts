@@ -3,7 +3,7 @@ import { Array, Option, Record, String, pipe } from "effect";
 import { msg } from "gt-i18n";
 import { isEmployment, partitionExperiences } from "@/features/experience/domain/helpers";
 import { staticPageCopy } from "@/domain/pages";
-import { experienceImageAlt, experienceKeywords, experienceLinks, inlineText } from "@/features/meta/domain/seo";
+import { experienceImageAlt, experienceKeywords, experienceLinks, inlineText } from "@/features/experience/domain/seo";
 import { experienceLines } from "./catalogue";
 import { escapeMd, escapeMdInline } from "./escape";
 import { mdBody, mdBulletList, mdDocumentLinks, mdEmptyMarker, mdFact, mdHeading, mdLink, mdProfileLinks, mdQuote, mdTitledSection } from "./format";
@@ -15,7 +15,7 @@ import type { PagePath, PageTitles, Translate } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
 import type { StaticPageCopy } from "@/domain/pages";
-import type { ExperienceSeo } from "@/features/meta/domain/models";
+import type { ExperienceSeo } from "@/features/experience/domain/models";
 import type { MarkdownTwin, PageDocumentContent, TwinContext } from "./models";
 
 export type HomeMdInput = TwinContext & { readonly pageTitles: PageTitles; readonly experienceList: ExperienceList };

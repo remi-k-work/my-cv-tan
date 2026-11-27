@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { Array, Match } from "effect";
 import { excerpt } from "@/features/experience/domain/helpers";
-import { experienceIdentity, inlineText } from "@/features/meta/domain/seo";
+import { experienceIdentity, inlineText } from "@/features/experience/domain/seo";
 import { absoluteUrl, markdownTwinUrl } from "@/domain/urls";
 import { escapeMdInline } from "./escape";
 import { mdBulletList, mdEmptyMarker, mdIndexEntry, mdLink } from "./format";
@@ -9,7 +9,7 @@ import { mdBulletList, mdEmptyMarker, mdIndexEntry, mdLink } from "./format";
 // types
 import type { PagePath } from "@/domain/models";
 import type { Experience, ExperienceList } from "@/features/experience/domain/models";
-import type { ExperienceIdentity } from "@/features/meta/domain/models";
+import type { ExperienceIdentity } from "@/features/experience/domain/models";
 import type { TwinContext } from "./models";
 
 // The metadata every indexed document carries; URLs are computed with an explicit language at use

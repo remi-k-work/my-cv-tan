@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { Array, Record, pipe } from "effect";
 import { partitionExperiences } from "@/features/experience/domain/helpers";
-import { experienceSeo } from "@/features/meta/domain/seo";
+import { experienceSeo } from "@/features/experience/domain/seo";
 import { markdownTwinUrl } from "@/domain/urls";
 import {
   demoteHeadings,

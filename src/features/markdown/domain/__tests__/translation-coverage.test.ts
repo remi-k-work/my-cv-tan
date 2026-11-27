@@ -7,7 +7,7 @@
 import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
 import { loadTranslations } from "@/lib/gt-translations";
-import { experienceSeo } from "@/features/meta/domain/seo";
+import { experienceSeo } from "@/features/experience/domain/seo";
 import { buildNotFoundMd, unavailableMarkdownBody } from "../fallback";
 import { buildContactMd, buildEducationMd, buildExperienceMd, buildHomeMd } from "../twins";
 import { sampleExperience, stablePageTitles } from "@/features/markdown/__tests__/fixtures";

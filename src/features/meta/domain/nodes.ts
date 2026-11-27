@@ -4,7 +4,8 @@ import { matchPreferredLanguage } from "@/domain/helpers";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
-import type { ExperienceSection, JsonLdNode, JsonLdNodes, JsonLdObject } from "./models";
+import type { ExperienceSection } from "@/features/experience/domain/models";
+import type { JsonLdNode, JsonLdNodes, JsonLdObject } from "./models";
 
 // The page-node vocabulary this module's builders share with the graph assemblers
 export type PageNodeType = "WebPage" | "ContactPage" | "CollectionPage" | "ProfilePage";

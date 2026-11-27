@@ -2,7 +2,7 @@
 import { Array, Match, Option, pipe } from "effect";
 import { isEmployment, partitionExperiences } from "@/features/experience/domain/helpers";
 import { matchPreferredLanguage } from "@/domain/helpers";
-import { experienceIdentity, experienceKeywords, experienceLinks, experienceSection, inlineText } from "./seo";
+import { experienceIdentity, experienceKeywords, experienceLinks, experienceSection, inlineText } from "@/features/experience/domain/seo";
 import { absoluteUrl } from "@/domain/urls";
 import {
   articleNode,
@@ -21,8 +21,8 @@ import {
 // types
 import type { PreferredLanguage } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
-import type { ExperienceList } from "@/features/experience/domain/models";
-import type { ExperienceSeo, JsonLdNode, JsonLdNodes } from "./models";
+import type { ExperienceList, ExperienceSeo } from "@/features/experience/domain/models";
+import type { JsonLdNode, JsonLdNodes } from "./models";
 import type { PageNodeType } from "./nodes";
 
 // What the article/item graph reads from an experience's SEO identity; the full record is

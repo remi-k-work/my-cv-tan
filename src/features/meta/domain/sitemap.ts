@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { Array, HashMap, Option, String, flow, pipe } from "effect";
 import { isCrawlablePath } from "./robots";
-import { experienceIdentity, experienceScreenshot } from "./seo";
+import { experienceIdentity, experienceScreenshot } from "@/features/experience/domain/seo";
 import { absoluteUrl } from "@/domain/urls";
 
 // types

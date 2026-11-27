@@ -16,7 +16,7 @@ import { sampleExperience, stablePageTitles, translateEn } from "@/features/mark
 import { graphOf, metaOf } from "@/features/meta/domain/__tests__/fixtures";
 import type { PagePath, PreferredLanguage } from "@/domain/models";
 import type { PageHead } from "@/features/meta/domain/models";
-import { experienceSeo } from "@/features/meta/domain/seo";
+import { experienceSeo } from "@/features/experience/domain/seo";
 
 it("the head, JSON-LD, Markdown twin and visible detail heading share one experience identity", () => {
   const preferredLanguage = "pl";

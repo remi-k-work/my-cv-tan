@@ -1,9 +1,13 @@
 // services, features, and other libraries
-import { Schema } from "effect";
+import { Option, Schema } from "effect";
+
+// types
+import type { ImageFacts, PreferredLanguage } from "@/domain/models";
 
 // types
 export type Experience = typeof Experience.Type;
 export type ExperienceList = typeof ExperienceList.Type;
+export type ExperienceSection = "employment" | "portfolio";
 
 // Root-level route names cannot be experience slugs, and a `.md` suffix would make an HTML
 // canonical resolve to the Markdown twin of a shorter slug
@@ -32,3 +36,26 @@ export const Experience = Schema.Struct({
   skillsUsed: Schema.NonEmptyArray(Schema.Trim.check(Schema.isNonEmpty())),
 });
 export const ExperienceList = Schema.Array(Experience);
+
+// Shared input for the identity, content and head projections
+export interface ExperienceIdentityInput {
+  readonly experience: Experience;
+  readonly preferredLanguage: PreferredLanguage;
+}
+
+// Identity shared by every experience representation, including projections that do not need a
+// description or image and should not process the full narrative
+export interface ExperienceIdentity {
+  readonly preferredLanguage: PreferredLanguage;
+  readonly path: string;
+  readonly canonical: string;
+  readonly markdownPath: string;
+  readonly headline: string;
+}
+
+// Full detail projections add narrative and image facts to the lightweight identity
+export interface ExperienceSeo extends ExperienceIdentity {
+  readonly experience: Experience;
+  readonly description: string;
+  readonly screenshot: Option.Option<ImageFacts>;
+}

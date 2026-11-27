@@ -4,7 +4,7 @@ import { buildExperienceMd } from "../twins";
 import { buildNotFoundMd } from "../fallback";
 import { twinDocument } from "../format";
 import { escapeMd } from "../escape";
-import { experienceSeo } from "@/features/meta/domain/seo";
+import { experienceSeo } from "@/features/experience/domain/seo";
 import { BRANDED_TITLE, NOT_FOUND_COPY } from "@/domain/site";
 import { sampleExperience, translateEn, translatePl } from "@/features/markdown/__tests__/fixtures";
 

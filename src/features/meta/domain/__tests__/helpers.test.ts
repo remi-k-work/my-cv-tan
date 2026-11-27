@@ -1,150 +1,16 @@
-// Direct unit tests for the experience SEO identity builder.
-// The HTML head, JSON-LD graph and Markdown twin all derive from this one record,
-// so its fields must be correct and consistent on their own.
+// Temporary holding file for cross-cutting meta tests. The HTTP header policy moves in Phase 4 and
+// the JSON-LD serializer tests move to the `jsonld` feature in Phase 3; until then they stay here so
+// the suite keeps covering them. Do not add new tests to this file.
 
 import { assert, it } from "@effect/vitest";
 import { Option, pipe } from "effect";
-import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain/constants";
-import { experienceKeywords, experienceLinks, experienceScreenshot, experienceSection, experienceSeo } from "../seo";
 import { experienceHead } from "../page-head";
 import { documentHeaders } from "@/features/meta/services/responses";
-import { notFoundHead, unavailableHead } from "../fallback";
 import { jsonLdGraph } from "../jsonld";
-import { META_DESCRIPTION_LENGTH } from "@/domain/constants";
 import { PERSON_DESCRIPTION, SITE_DESCRIPTION } from "@/domain/site";
 import { SITE_NODES } from "../site-nodes";
 import { CONTENT_SIGNAL } from "@/domain/discovery";
-import { NOINDEX_FOLLOW } from "@/domain/http";
 import { graphOf, nodeOf, sampleExperience, textOf } from "./fixtures";
-
-it("derives canonical, path, markdownPath, headline and description from one experience", () => {
-  const seo = experienceSeo({ experience: sampleExperience, preferredLanguage: "en" });
-
-  assert.strictEqual(seo.path, "/sample-role");
-  assert.strictEqual(seo.canonical, "https://www.remiforge.dev/sample-role");
-  assert.strictEqual(seo.markdownPath, "/sample-role.md");
-  assert.strictEqual(seo.headline, "Full-Stack Developer");
-  assert.strictEqual(seo.description, "Built things with care.");
-  assert.strictEqual(seo.preferredLanguage, "en");
-  assert.deepStrictEqual(seo.experience, sampleExperience);
-  assert.strictEqual(experienceSection(sampleExperience), "portfolio");
-  assert.strictEqual(experienceSection({ type: "e" }), "employment");
-  assert.deepStrictEqual(experienceKeywords({ skillsUsed: ["TypeScript", " TypeScript\n ", "React"] }), ["TypeScript", "React"]);
-  assert.deepStrictEqual(experienceLinks({ gitHubLink: "https://github.com/example/repo", liveLink: "javascript:alert(1)", videoLink: undefined }), {
-    repository: Option.some("https://github.com/example/repo"),
-    live: Option.none(),
-    video: Option.none(),
-  });
-});
-
-it("normalizes authored layout whitespace before publishing snippet metadata", () => {
-  const seo = experienceSeo({
-    experience: {
-      ...sampleExperience,
-      role: "  Full-Stack\nDeveloper  ",
-      company: "Sample\tCo",
-      txt: "Built things\n\nwith\t care.  ",
-      type: "e",
-    },
-    preferredLanguage: "en",
-  });
-
-  assert.strictEqual(seo.headline, "Full-Stack Developer at Sample Co");
-  assert.strictEqual(seo.description, "Built things with care.");
-});
-
-it("localizes headline and description for Polish", () => {
-  const en = experienceSeo({ experience: sampleExperience, preferredLanguage: "en" });
-  const pl = experienceSeo({ experience: sampleExperience, preferredLanguage: "pl" });
-
-  // Same canonical/path regardless of language
-  assert.strictEqual(en.canonical, pl.canonical);
-  assert.strictEqual(en.path, pl.path);
-  assert.strictEqual(en.markdownPath, pl.markdownPath);
-  // Localized headline differs
-  assert.notStrictEqual(en.headline, pl.headline);
-  // Description is excerpted to the meta length cap
-  assert.strictEqual(pl.description.length <= META_DESCRIPTION_LENGTH, true);
-});
-
-it("resolves screenshot facts when an image is published", () => {
-  const withShot = experienceSeo({ experience: sampleExperience, preferredLanguage: "en" });
-  assert.deepStrictEqual(Option.getOrThrow(withShot.screenshot), {
-    src: "https://www.remiforge.dev/images/01-a.webp",
-    mime: "image/webp",
-    width: 1600,
-    height: 900,
-  });
-
-  const withoutShot = experienceSeo({
-    experience: { ...sampleExperience, imageName: "" },
-    preferredLanguage: "en",
-  });
-  assert.deepStrictEqual(withoutShot.screenshot, Option.none());
-});
-
-it("experienceScreenshot resolves verified WebP facts and ignores an unpublished image", () => {
-  const published = {
-    src: "https://www.remiforge.dev/images/01-a.webp",
-    mime: "image/webp",
-    width: SCREENSHOT_WIDTH,
-    height: SCREENSHOT_HEIGHT,
-  } as const;
-
-  assert.deepStrictEqual(experienceScreenshot("01"), Option.some(published));
-  // The name is trimmed, so stray formatting whitespace still resolves the file the UI renders
-  assert.deepStrictEqual(experienceScreenshot(" 01 "), Option.some(published));
-  // An empty or whitespace-only name means the page publishes no screenshot
-  assert.deepStrictEqual(experienceScreenshot(""), Option.none());
-  assert.deepStrictEqual(experienceScreenshot("   "), Option.none());
-  // The name is one path segment, so a hostile value cannot escape /images/
-  assert.strictEqual(Option.getOrThrow(experienceScreenshot("../secret")).src, "https://www.remiforge.dev/images/..%2Fsecret-a.webp");
-});
-
-it("encodes slugs consistently in path, canonical and markdownPath", () => {
-  const seo = experienceSeo({ experience: { ...sampleExperience, slug: "role (senior) & more" }, preferredLanguage: "en" });
-  const encoded = "/role%20%28senior%29%20%26%20more";
-
-  assert.strictEqual(seo.path, encoded);
-  assert.strictEqual(seo.canonical, `https://www.remiforge.dev${encoded}`);
-  assert.strictEqual(seo.markdownPath, `${encoded}.md`);
-});
-
-it("unavailableHead publishes a canonical noindex head with site entities", () => {
-  const fallback = unavailableHead("/contact");
-
-  assert.deepStrictEqual(
-    fallback.links?.map(({ rel, href }) => ({ rel, href })),
-    [{ rel: "canonical", href: "https://www.remiforge.dev/contact" }]
-  );
-  assert.include(JSON.stringify(fallback.meta), NOINDEX_FOLLOW);
-  assert.include(JSON.stringify(fallback.meta), '"title":"Remi Forge ● Page unavailable"');
-  assert.include(JSON.stringify(fallback.meta), "This page is temporarily unavailable.");
-  // The fallback publishes site entities (WebSite, Person, Organization) without a page graph
-  const graph = graphOf(fallback.scripts?.[0]?.children);
-  assert.isDefined(nodeOf(graph, "WebSite"));
-  assert.isDefined(nodeOf(graph, "Person"));
-  assert.isDefined(nodeOf(graph, "Organization"));
-  // Exactly one JSON-LD block
-  assert.strictEqual(fallback.scripts?.length, 1);
-});
-
-it("the degraded heads publish copy and canonicals that follow one fact: only the unavailable head names a route", () => {
-  // The unavailable and not-found fallbacks differ only in their localized copy, and the copy
-  // selection is derived from the same fact that decides the canonical — so a head that publishes
-  // an "unavailable" title must name the route it stands in for, and one that names none must
-  // carry the not-found copy and no canonical at all.
-  const unavailable = unavailableHead("/contact", "pl");
-  assert.include(JSON.stringify(unavailable.meta), '"title":"Remi Forge ● Strona niedostępna"');
-  assert.deepStrictEqual(unavailable.links, [{ rel: "canonical", href: "https://www.remiforge.dev/contact" }]);
-
-  const notFound = notFoundHead("pl");
-  assert.include(JSON.stringify(notFound.meta), '"title":"Remi Forge ● Nie znaleziono"');
-  assert.include(JSON.stringify(notFound.meta), "Nie znaleziono żądanej strony.");
-  assert.strictEqual(notFound.links.length, 0);
-  // The site entities are published either way: a fallback is still a document about the site
-  assert.isDefined(nodeOf(graphOf(notFound.scripts?.[0]?.children), "Person"));
-});
 
 it("robots.txt responses are English, noindex, and carry the shared reuse signal", () => {
   const polish = documentHeaders("pl");

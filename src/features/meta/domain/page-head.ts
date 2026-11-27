@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { Option } from "effect";
-import { experienceImageAlt, experienceSection, experienceSeo } from "./seo";
+import { experienceImageAlt, experienceSection, experienceSeo } from "@/features/experience/domain/seo";
 import { jsonLdGraph } from "./jsonld";
 import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd } from "./page-graphs";
 import { globalSocialImage, socialMeta } from "./social-meta";
@@ -8,11 +8,11 @@ import { staticPageCopy } from "@/domain/pages";
 import { representationLinks } from "@/domain/links";
 
 // types
-import type { ExperienceIdentityInput, JsonLdNodes, PageHead, SocialImage, SocialMetaInput } from "./models";
+import type { JsonLdNodes, PageHead, SocialImage, SocialMetaInput } from "./models";
 import type { StaticPageCopy } from "@/domain/pages";
 import type { ImageFacts, PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
-import type { ExperienceList } from "@/features/experience/domain/models";
+import type { ExperienceIdentityInput, ExperienceList } from "@/features/experience/domain/models";
 
 // The ingredients of one indexable page head: its social facts, its Markdown twin and its graph
 interface PageHeadSpec {
