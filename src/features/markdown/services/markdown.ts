@@ -4,7 +4,7 @@ import { Datasets } from "@/features/data/services/datasets";
 import { requestPreferredLanguage } from "@/features/data/services/request-language";
 import { recoverDataFailure } from "@/features/data/domain/required";
 import { experienceFromList } from "@/features/experience/domain/helpers";
-import { experienceMarkdownPath } from "@/features/meta/domain/urls";
+import { experienceMarkdownPath } from "@/domain/urls";
 import { experienceSeo } from "@/features/meta/domain/seo";
 import { txtResponse, txtUnavailableResponse } from "@/features/meta/services/responses";
 import { buildNotFoundMd, unavailableMarkdownBody } from "@/features/markdown/domain/fallback";

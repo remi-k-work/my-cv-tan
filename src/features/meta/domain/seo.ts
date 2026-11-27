@@ -5,7 +5,7 @@
 import { Array, Option, String, pipe } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
 import { excerpt, experienceHeadline, experienceImagePath, isEmployment } from "@/features/experience/domain/helpers";
-import { absoluteUrl, experiencePath, validatedHref } from "./urls";
+import { absoluteUrl, experiencePath, validatedHref } from "@/domain/urls";
 
 // types
 import type { Experience } from "@/features/experience/domain/models";

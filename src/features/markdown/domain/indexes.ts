@@ -2,7 +2,7 @@
 import { Array, Record, pipe } from "effect";
 import { partitionExperiences } from "@/features/experience/domain/helpers";
 import { experienceSeo } from "@/features/meta/domain/seo";
-import { markdownTwinUrl } from "@/features/meta/domain/urls";
+import { markdownTwinUrl } from "@/domain/urls";
 import {
   demoteHeadings,
   fencedFacts,
@@ -20,7 +20,6 @@ import {
 } from "./format";
 import { escapeMd } from "./escape";
 import { experienceEntry, experienceLines, pageEntry, PAGE_ENTRIES } from "./catalogue";
-import { SOURCE_CONTEXT } from "./models";
 import { buildExperienceMd, buildPageDocument } from "./twins";
 
 // types
@@ -43,7 +42,6 @@ import {
   HOME_TITLE,
   JOB_TITLE,
   KNOWS_ABOUT,
-  LANG_PARAM,
   PERSON_DESCRIPTION,
   SITE_NAME,
   SITE_URL,
@@ -51,6 +49,8 @@ import {
 } from "@/domain/site";
 import { DEFAULT_LANGUAGE, HOME_PATH, SITE_LANGUAGE_NAMES, SITE_LANGUAGES } from "@/domain/constants";
 import { STATIC_PAGES, STATIC_PAGE_PATHS } from "@/features/meta/domain/pages";
+import { SOURCE_CONTEXT } from "./models";
+import { LANG_PARAM } from "@/domain/urls";
 
 const PINNABLE_LANGUAGES = Array.filter(SITE_LANGUAGES, (language) => language !== DEFAULT_LANGUAGE);
 const LANGUAGE_PINS = Array.map(

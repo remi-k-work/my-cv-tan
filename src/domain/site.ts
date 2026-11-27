@@ -60,9 +60,6 @@ export const HOME_COUNTRY_NAME = "Poland";
 export const HOME_LOCATION = msg(`${HOME_LOCALITY}, ${HOME_COUNTRY_NAME}`);
 export const CONTACT_EMAIL = "remi.k.work@proton.me";
 
-// Query parameter used for explicit language override in markdown twins
-export const LANG_PARAM = "lang";
-
 export const GLOBAL_SOCIAL_IMAGE = { src: `${SITE_URL}/opengraph-image.jpg`, mime: "image/jpeg", width: 1200, height: 630 } as const;
 export const AVATAR = { src: `${SITE_URL}/avatar.jpg`, width: 288, height: 288 } as const;
 

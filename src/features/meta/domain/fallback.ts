@@ -2,7 +2,7 @@
 // page that still publishes the site entities so a crawler is never handed a bare failure.
 
 // services, features, and other libraries
-import { absoluteUrl } from "./urls";
+import { absoluteUrl } from "@/domain/urls";
 import { canonicalLink } from "./link-tags";
 import { jsonLdGraph } from "./jsonld";
 

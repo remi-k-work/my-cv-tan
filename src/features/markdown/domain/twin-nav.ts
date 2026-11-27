@@ -3,7 +3,7 @@ import { Array } from "effect";
 import { msg } from "gt-i18n";
 import { mdBulletList, mdLink, mdTitledSection, translatedLink } from "./format";
 import { escapeMdInline } from "./escape";
-import { markdownTwinUrl } from "@/features/meta/domain/urls";
+import { markdownTwinUrl } from "@/domain/urls";
 
 // types
 import type { PagePath, PreferredLanguage, Translate } from "@/domain/models";

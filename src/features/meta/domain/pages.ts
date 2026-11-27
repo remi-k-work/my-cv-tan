@@ -2,7 +2,7 @@
 import { Record } from "effect";
 import { msg } from "gt-i18n";
 import { pageField } from "@/domain/helpers";
-import { absoluteUrl } from "./urls";
+import { absoluteUrl } from "@/domain/urls";
 
 // types
 import type { PagePath, PageTitles, PreferredLanguage } from "@/domain/models";

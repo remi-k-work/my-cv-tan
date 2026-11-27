@@ -1,10 +1,10 @@
 // services, features, and other libraries
 import { Option, Predicate, String, flow, pipe } from "effect";
 import { decodePreferredLanguage } from "@/domain/models";
-import { decodeExperienceSlug, decodeUrlOption } from "@/features/meta/domain/urls";
+import { decodeExperienceSlug, decodeUrlOption } from "@/domain/urls";
 
 // constants
-import { LANG_PARAM } from "@/domain/site";
+import { LANG_PARAM } from "@/domain/urls";
 
 // Parses and validates the ?lang= query parameter from a request URL
 export const parseLangParam = (url: string) =>

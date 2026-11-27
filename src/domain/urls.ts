@@ -1,11 +1,17 @@
+// Canonical URL math shared by every surface: validating authored links, resolving site paths,
+// pinning the language parameter, and encoding experience routes
+
 // services, features, and other libraries
 import { Option, Schema, String, pipe } from "effect";
 
 // types
-import type { PreferredLanguage } from "@/domain/models";
+import type { PreferredLanguage } from "./models";
 
 // constants
-import { LANG_PARAM, SITE_URL } from "@/domain/site";
+import { SITE_URL } from "./site";
+
+// Query parameter used for explicit language override in markdown twins
+export const LANG_PARAM = "lang";
 
 // `decodeOption` rather than `decodeUnknownOption`: every caller hands this a URL string, so the
 // narrower input type makes a non-string a compile error instead of a runtime None

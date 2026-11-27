@@ -3,7 +3,7 @@ import { Array, Match, Option, pipe } from "effect";
 import { isEmployment, partitionExperiences } from "@/features/experience/domain/helpers";
 import { matchPreferredLanguage } from "@/domain/helpers";
 import { experienceIdentity, experienceKeywords, experienceLinks, experienceSection, inlineText } from "./seo";
-import { absoluteUrl } from "./urls";
+import { absoluteUrl } from "@/domain/urls";
 import {
   articleNode,
   breadcrumb,

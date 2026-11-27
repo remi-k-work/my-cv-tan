@@ -27,7 +27,7 @@ import {
   SOCIAL_LINKS,
   SOCIAL_PROFILES,
 } from "@/domain/site";
-import { httpUrlOption } from "../urls";
+import { httpUrlOption } from "@/domain/urls";
 import { OPEN_GRAPH_LOCALES } from "../social-meta";
 import { EMAIL_REGEX, META_DESCRIPTION_LENGTH, SITE_LANGUAGE_NAMES } from "@/domain/constants";
 

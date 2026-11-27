@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { Option } from "effect";
 import { msg } from "gt-i18n";
-import { experiencePath } from "@/features/meta/domain/urls";
+import { experiencePath } from "@/domain/urls";
 import { deadEndEscapeLine } from "./twin-nav";
 import { twinBaseFacts } from "./models";
 import { mdBody, mdDocument, mdHeading } from "./format";

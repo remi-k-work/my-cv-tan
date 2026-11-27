@@ -3,7 +3,7 @@ import { initializeGT } from "gt-tanstack-start";
 import gtConfig from "../../../../../gt.config.json";
 import { loadTranslations } from "@/lib/gt-translations";
 import { INDEXABLE_ROBOTS } from "@/domain/http";
-import { absoluteUrl, experienceMarkdownPath, experiencePath, markdownTwinUrl } from "@/features/meta/domain/urls";
+import { absoluteUrl, experienceMarkdownPath, experiencePath, markdownTwinUrl } from "@/domain/urls";
 import { CACHEABLE_HEADERS } from "@/features/meta/services/responses";
 import { CONTENT_SIGNAL, LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/features/meta/domain/discovery";
 import { contactHandler, educationHandler, experienceHandler, homeHandler, llmsFullTxtHandler, llmsTxtHandler } from "../handlers";

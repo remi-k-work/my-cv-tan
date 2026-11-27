@@ -1,6 +1,6 @@
 import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
-import { absoluteUrl, experienceMarkdownPath, markdownTwinUrl, withLanguageParam } from "@/features/meta/domain/urls";
+import { absoluteUrl, experienceMarkdownPath, markdownTwinUrl, withLanguageParam } from "@/domain/urls";
 import { SITE_LANGUAGES } from "@/domain/constants";
 import { documentName, parseLangParam, slugFromMdPathname } from "../request";
 

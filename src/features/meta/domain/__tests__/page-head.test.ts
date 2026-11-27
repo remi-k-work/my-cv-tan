@@ -9,7 +9,7 @@ import { globalSocialImage } from "../social-meta";
 import { BRANDED_TITLE, GLOBAL_SOCIAL_IMAGE, SITE_NAME, AUTHOR_URL, PROFILE_ID } from "@/domain/site";
 import { INDEXABLE_ROBOTS } from "@/domain/http";
 import { STATIC_PAGES } from "../pages";
-import { withLanguageParam } from "../urls";
+import { withLanguageParam } from "@/domain/urls";
 import { canonicalLink } from "../link-tags";
 import { LANGUAGE, contextOf, graphOf, metaOf, nodeOf, nodesOf, sampleEducation, sampleExperience, stablePageTitles, tagContent } from "./fixtures";
 import type { JsonLdNodes, PageHead, SocialMetaInput } from "../models";

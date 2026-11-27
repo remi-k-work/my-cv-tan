@@ -7,7 +7,7 @@ import { Array } from "effect";
 import { msg } from "gt-i18n";
 import { matchPreferredLanguage } from "@/domain/helpers";
 import { joinLinkHeader } from "./link-tags";
-import { absoluteUrl } from "./urls";
+import { absoluteUrl } from "@/domain/urls";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";

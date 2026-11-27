@@ -2,7 +2,7 @@
 import { Option } from "effect";
 import { cn } from "@/lib/utils";
 import { useGT } from "gt-tanstack-start";
-import { validatedHref } from "@/features/meta/domain/urls";
+import { validatedHref } from "@/domain/urls";
 import { experienceImagePath } from "@/features/experience/domain/helpers";
 
 // types

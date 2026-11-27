@@ -6,7 +6,7 @@ import { STATIC_PAGES, STATIC_PAGE_PATHS, staticPageCopy } from "@/features/meta
 import { ExperienceIdentity } from "@/features/experience/ui/experience-identity";
 import { BRANDED_TITLE } from "@/domain/site";
 import { DOWNLOADABLE_DOCUMENTS } from "@/features/meta/domain/discovery";
-import { absoluteUrl } from "@/features/meta/domain/urls";
+import { absoluteUrl } from "@/domain/urls";
 import { buildSitemapXml } from "@/features/meta/domain/sitemap";
 import { mdResponse } from "../../services/responses";
 import { buildLlmsFullTxt, buildLlmsTxt } from "../indexes";

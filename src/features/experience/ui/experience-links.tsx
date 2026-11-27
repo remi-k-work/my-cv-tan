@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { Array, Option } from "effect";
 import { useGT } from "gt-tanstack-start";
-import { validatedHref } from "@/features/meta/domain/urls";
+import { validatedHref } from "@/domain/urls";
 
 // components
 import { LinkChip } from "@/features/experience/ui/link-chip";

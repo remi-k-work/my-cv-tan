@@ -2,7 +2,7 @@
 import { Array, HashMap, Option, String, flow, pipe } from "effect";
 import { isCrawlablePath } from "./robots";
 import { experienceIdentity, experienceScreenshot } from "./seo";
-import { absoluteUrl } from "./urls";
+import { absoluteUrl } from "@/domain/urls";
 
 // types
 import type { ExperienceList } from "@/features/experience/domain/models";

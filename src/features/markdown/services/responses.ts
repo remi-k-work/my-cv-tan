@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { Array, HashSet, Match, Option, Predicate, Record, String, pipe } from "effect";
 import { documentHeaders, locationHeader, responseEnvelope } from "@/features/meta/services/responses";
-import { markdownTwinUrl } from "@/features/meta/domain/urls";
+import { markdownTwinUrl } from "@/domain/urls";
 import { joinLinkHeader, representationLinks } from "@/features/meta/domain/link-tags";
 
 // types

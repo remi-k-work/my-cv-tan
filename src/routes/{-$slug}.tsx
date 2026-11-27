@@ -8,7 +8,7 @@ import { loaderIndex } from "@/loaders/index";
 import { routeHead } from "@/features/meta/domain/route-head";
 import { experienceHead, homeHead } from "@/features/meta/domain/page-head";
 import { experienceHeadline, partitionExperiences } from "@/features/experience/domain/helpers";
-import { experiencePath } from "@/features/meta/domain/urls";
+import { experiencePath } from "@/domain/urls";
 import { preferredLanguageFromLocale } from "@/domain/helpers";
 
 // components

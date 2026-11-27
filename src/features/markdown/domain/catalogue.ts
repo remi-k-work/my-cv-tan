@@ -2,7 +2,7 @@
 import { Array, Match } from "effect";
 import { excerpt } from "@/features/experience/domain/helpers";
 import { experienceIdentity, inlineText } from "@/features/meta/domain/seo";
-import { absoluteUrl, markdownTwinUrl } from "@/features/meta/domain/urls";
+import { absoluteUrl, markdownTwinUrl } from "@/domain/urls";
 import { escapeMdInline } from "./escape";
 import { mdBulletList, mdEmptyMarker, mdIndexEntry, mdLink } from "./format";
 

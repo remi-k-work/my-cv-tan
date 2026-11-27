@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { Array, Number, Option, Predicate, Record, String, flow, pipe } from "effect";
 import { msg } from "gt-i18n";
-import { absoluteUrl, encodeDestination, httpUrlOption } from "@/features/meta/domain/urls";
+import { absoluteUrl, encodeDestination, httpUrlOption } from "@/domain/urls";
 import { escapeMdInline } from "./escape";
 
 // types

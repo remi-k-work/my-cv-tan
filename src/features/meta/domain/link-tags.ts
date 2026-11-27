@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { Array, Option, String, pipe } from "effect";
-import { absoluteUrl, withLanguageParam } from "./urls";
+import { absoluteUrl, withLanguageParam } from "@/domain/urls";
 
 // types
 import type { LinkTag } from "./models";
