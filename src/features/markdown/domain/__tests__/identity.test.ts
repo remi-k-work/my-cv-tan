@@ -53,10 +53,16 @@ it("the head, JSON-LD, Markdown twin and visible detail heading share one experi
   const identity = renderToStaticMarkup(createElement(ExperienceIdentity, { experience: sampleExperience, heading: seo.headline, headingLevel: 1 }));
   assert.include(identity, `<h1 class="text-xl">${seo.headline}</h1>`);
 
-  // One screenshot: the og:image src and the graph's ImageObject name the same verified file.
+  // One screenshot: the social card, JSON-LD and queryable twin facts name the same verified file.
   const primaryImage = webPage?.["primaryImageOfPage"] as { readonly url?: string } | undefined;
   assert.strictEqual(primaryImage?.url, metaContent("og:image"));
   assert.include(metaContent("og:image") ?? "", "/images/01-a.webp");
+  assert.include(twin, `image: ${JSON.stringify(metaContent("og:image"))}`);
+  assert.include(twin, `image_alt: ${JSON.stringify(metaContent("og:image:alt"))}`);
+
+  // The repository stays structured in both machine-readable representations, not just a body link.
+  assert.include(twin, `repository: "https://github.com/example/repo"`);
+  assert.include(JSON.stringify(webPage?.relatedLink), "https://github.com/example/repo");
 });
 
 it("each static page's head and twin publish the same canonical, title and description", () => {
@@ -107,6 +113,15 @@ it("the full-content companion keeps one source link per embedded twin", () => {
 
   assert.strictEqual((document.match(/\[Source\]\(/g) ?? []).length, STATIC_PAGE_PATHS.length + 1);
   assert.notInclude(document, "[Canonical HTML]");
+});
+
+it("the full-content companion preserves each experience's queryable resource facts", () => {
+  const document = buildLlmsFullTxt({ pageTitles: stablePageTitles, experienceList: [sampleExperience], educationList: [] });
+
+  assert.include(document, 'repository: "https://github.com/example/repo"');
+  assert.include(document, 'image: "https://www.remiforge.dev/images/01-a.webp"');
+  assert.include(document, 'image_alt: "Screenshot of Full-Stack Developer at Sample Co"');
+  assert.include(document, 'image_type: "image/webp"');
 });
 
 it("every advertised download is published by the sitemap, the AI index and the education twin alike", () => {

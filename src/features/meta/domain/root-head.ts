@@ -20,6 +20,7 @@ const SHELL_META: ReadonlyArray<MetaTag> = [
   { name: "author", content: SITE_NAME },
 ];
 
+// Fail closed: each indexable leaf must explicitly replace this directive
 const DEFAULT_ROOT_META: ReadonlyArray<MetaTag> = [
   { title: BRANDED_TITLE(HOME_TITLE) },
   { name: "description", content: SITE_DESCRIPTION },

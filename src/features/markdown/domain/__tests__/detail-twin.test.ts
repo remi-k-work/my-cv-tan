@@ -22,6 +22,12 @@ it("the experience twin renders frontmatter, H1, skills and links without repeat
   // Discrete frontmatter facts stay queryable without parsing the title or body
   assert.include(md, `role: "Full-Stack Developer"`);
   assert.include(md, `company: "Sample Co"`);
+  assert.include(md, `repository: "https://github.com/example/repo"`);
+  assert.include(md, `image: "https://www.remiforge.dev/images/01-a.webp"`);
+  assert.include(md, `image_alt: "Screenshot of Full-Stack Developer at Sample Co"`);
+  assert.include(md, `image_type: "image/webp"`);
+  assert.include(md, `image_width: "1600"`);
+  assert.include(md, `image_height: "900"`);
   assert.notInclude(md, "Cite the canonical HTML URL");
   // Twins stay UI-chrome free: no navs, footers, or scripts ever reach the Markdown surface
   assert.notInclude(md.toLowerCase(), "<html");
@@ -51,6 +57,24 @@ it("the experience twin omits the Links section when the experience has no links
   assert.notInclude(md, `## Links`);
 });
 
+it("an experience without optional content publishes neither empty facts nor empty sections", () => {
+  const bare = {
+    ...sampleExperience,
+    imageName: "",
+    skillsUsed: [" \n "] as const,
+    gitHubLink: undefined,
+    liveLink: undefined,
+    videoLink: undefined,
+  };
+  const { facts, body } = buildExperienceMd({ seo: experienceSeo({ experience: bare, preferredLanguage: "en" }), translate: translateEn });
+
+  for (const key of ["skills", "repository", "live", "video", "image", "image_alt", "image_type", "image_width", "image_height"]) {
+    assert.isFalse(key in facts, `${key} must be absent rather than empty`);
+  }
+  assert.notInclude(body, "## Skills Used");
+  assert.notInclude(body, "## Links");
+});
+
 it("experience link builders drop destinations that are not http(s) URLs", () => {
   // The Experience schema accepts any non-empty string, so the link builder is the one place a
   // hostile scheme can be stopped before it reaches a crawler-parseable document.
@@ -66,6 +90,8 @@ it("experience link builders drop destinations that are not http(s) URLs", () =>
 
   assert.notInclude(md, "javascript:");
   assert.notInclude(md, "ftp://");
+  assert.notInclude(md, "repository:");
+  assert.notInclude(md, "live:");
   // Every link dropped: the section itself disappears instead of rendering an empty shell
   assert.notInclude(md, "## Links");
 });
@@ -77,6 +103,7 @@ it("the experience twin localizes fixed Polish section and fact labels", () => {
   assert.include(md, "Rola: Full-Stack Developer");
   assert.include(md, "## Wykorzystane Umiejętności");
   assert.include(md, "## Linki");
+  assert.include(md, `image_alt: "Zrzut ekranu przedstawiający Full-Stack Developer w Sample Co"`);
 });
 
 it("experience link labels are the dictionary keys the HTML chips translate, so Polish gets Polish labels", () => {

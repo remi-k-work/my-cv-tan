@@ -90,6 +90,9 @@ it("escapeMd leaves an indented code block's markers literal rather than one bac
   assert.strictEqual(escapeMd("para\n\n   # heading"), "para\n\n   \\# heading");
   assert.strictEqual(escapeMd("| a | b |\n    | - | - |"), "| a | b |\n    | - | - |");
   assert.strictEqual(escapeMd("| a | b |\n   | - | - |"), "| a | b |\n   | \\- | - |");
+  // Inline escapes are literal inside code too, while lazy paragraph continuations still need them.
+  assert.strictEqual(escapeMd("para\n\n    *literal* and `code` \\path &copy; ~gone~"), "para\n\n    *literal* and `code` \\path &copy; ~gone~");
+  assert.strictEqual(escapeMd("para\n    *lazy continuation*"), "para\n    \\*lazy continuation\\*");
   assert.strictEqual(escapeMd("    # Injected heading"), "\\# Injected heading");
   assert.strictEqual(escapeMd("\t- Injected bullet"), "\\- Injected bullet");
   assert.strictEqual(escapeMd("\n\n    | - |"), "| \\- |");
@@ -126,6 +129,10 @@ it("mdLink neutralizes a hostile label without the caller pre-escaping it", () =
   assert.strictEqual(mdLink("Evil](label", "https://x.test/a"), "[Evil\\](label](https://x.test/a)");
   assert.strictEqual(mdLink("A *b* _c_", "https://x.test/a"), "[A \\*b\\* \\_c\\_](https://x.test/a)");
   assert.strictEqual(mdLink("## heading", "https://x.test/a"), "[\\## heading](https://x.test/a)");
+});
+
+it("mdLink escapes ampersands so Markdown cannot decode entities inside a destination", () => {
+  assert.strictEqual(mdLink("site", "https://example.test/?a=1&copy;=2&plain=1"), "[site](https://example.test/?a=1\\&copy;=2\\&plain=1)");
 });
 
 // escapeMd neutralizes heading characters and collapses blank lines
@@ -177,9 +184,10 @@ it("escapeMd only escapes what can actually build markup, leaving authored punct
   // "_" is literal inside a word (CommonMark's intraword rule), but emphasis still binds at a boundary
   assert.strictEqual(escapeMd("node_modules and snake_case names"), "node_modules and snake_case names");
   assert.strictEqual(escapeMd("an _emphasized_ word"), "an \\_emphasized\\_ word");
-  // Strikethrough needs a run of two; a lone "~" and a pipe cannot build markup at all
+  // Unpaired tildes and pipes are prose; paired single and double tildes can both strike text in GFM.
   assert.strictEqual(escapeMd("roughly ~30% of the time"), "roughly ~30% of the time");
   assert.strictEqual(escapeMd("the ratio A | B mattered"), "the ratio A | B mattered");
+  assert.strictEqual(escapeMd("~deprecated~"), "\\~deprecated\\~");
   assert.strictEqual(escapeMd("~~deprecated~~ in favour of the new one"), "\\~\\~deprecated\\~\\~ in favour of the new one");
   // Entity references change rendered text unless their ampersands are escaped.
   assert.strictEqual(escapeMd("&copy; &amp; &#169;"), "\\&copy; \\&amp; \\&#169;");

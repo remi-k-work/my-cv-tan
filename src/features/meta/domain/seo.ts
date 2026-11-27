@@ -3,12 +3,13 @@
 
 // services, features, and other libraries
 import { Array, Option, String, pipe } from "effect";
+import { matchPreferredLanguage } from "@/domain/helpers";
 import { excerpt, experienceHeadline, experienceImagePath, isEmployment } from "@/features/experience/domain/helpers";
 import { absoluteUrl, experiencePath, validatedHref } from "./urls";
 
 // types
 import type { Experience } from "@/features/experience/domain/models";
-import type { ExperienceContent, ExperienceIdentity, ExperienceIdentityInput, ExperienceSection, ExperienceSeo, SocialImageFacts } from "./models";
+import type { ExperienceIdentity, ExperienceIdentityInput, ExperienceSection, ExperienceSeo, SocialImageFacts } from "./models";
 
 // constants
 import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain/constants";
@@ -27,6 +28,10 @@ export const experienceScreenshot = (imageName: string): Option.Option<SocialIma
       height: SCREENSHOT_HEIGHT,
     }))
   );
+
+// Social cards and Markdown image facts share the same localized alternative text
+export const experienceImageAlt = (headline: string, preferredLanguage: ExperienceIdentity["preferredLanguage"]) =>
+  matchPreferredLanguage(preferredLanguage, `Screenshot of ${headline}`, `Zrzut ekranu przedstawiający ${headline}`);
 
 // Single source of truth for experience section classification shared across Open Graph and JSON-LD
 export const experienceSection = (experience: Pick<Experience, "type">): ExperienceSection => (isEmployment(experience) ? "employment" : "portfolio");
@@ -57,13 +62,9 @@ export const experienceIdentity = ({ experience, preferredLanguage }: Experience
   };
 };
 
-export const experienceContent = (input: ExperienceIdentityInput): ExperienceContent => ({
+export const experienceSeo = (input: ExperienceIdentityInput): ExperienceSeo => ({
   ...experienceIdentity(input),
   experience: input.experience,
   description: excerpt(inlineText(input.experience.txt), META_DESCRIPTION_LENGTH),
-});
-
-export const experienceSeo = (input: ExperienceIdentityInput): ExperienceSeo => ({
-  ...experienceContent(input),
   screenshot: experienceScreenshot(input.experience.imageName),
 });

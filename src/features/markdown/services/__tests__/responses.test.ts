@@ -227,9 +227,11 @@ it("applyRepresentationPolicy bypasses caching on fallback and strips negotiatio
       },
     });
 
-  const fallback = applyRepresentationPolicy(base(), true, Option.some("pl"));
-  assert.strictEqual(fallback.headers.get("Cache-Control"), "no-store");
-  assert.strictEqual(fallback.headers.get("Vary"), "Cookie, Accept-Language");
+  for (const pin of [Option.some<"pl">("pl"), Option.none<"pl">()] as const) {
+    const fallback = applyRepresentationPolicy(base(), true, pin);
+    assert.strictEqual(fallback.headers.get("Cache-Control"), "no-store");
+    assert.strictEqual(fallback.headers.get("Vary"), "Cookie, Accept-Language");
+  }
 
   const pinned = applyRepresentationPolicy(base(), false, Option.some("pl"));
   assert.strictEqual(pinned.headers.get("Cache-Control"), "public, max-age=3600");

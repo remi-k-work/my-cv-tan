@@ -5,7 +5,7 @@ import { requestPreferredLanguage } from "@/features/data/services/request-langu
 import { recoverDataFailure } from "@/features/data/domain/required";
 import { experienceFromList } from "@/features/experience/domain/helpers";
 import { experienceMarkdownPath } from "@/features/meta/domain/urls";
-import { experienceContent } from "@/features/meta/domain/seo";
+import { experienceSeo } from "@/features/meta/domain/seo";
 import { txtResponse, txtUnavailableResponse } from "@/features/meta/services/responses";
 import { buildNotFoundMd, unavailableMarkdownBody } from "@/features/markdown/domain/fallback";
 import { twinDocument } from "@/features/markdown/domain/format";
@@ -93,33 +93,21 @@ export class Markdown extends Context.Service<
 
       const experience = serveDocument(
         (request) => Option.map(slugFromMdPathname(request.url), experienceMarkdownPath),
-        Effect.fn("Markdown.experience")((request: Request, context: TwinContext) =>
-          Option.match(slugFromMdPathname(request.url), {
-            onNone: () => Effect.succeed(notFoundTwin(Option.none(), context)),
-            onSome: (slug) =>
-              datasets.experienceList(context.preferredLanguage).pipe(
-                Effect.flatMap((list) =>
-                  Option.match(experienceFromList(list, slug), {
-                    onNone: () =>
-                      Effect.logDebug(`[SLUG.MD]: no experience for slug "${slug}", emitting markdown 404`).pipe(
-                        Effect.as(notFoundTwin(Option.some(slug), context))
-                      ),
-                    onSome: (item) => {
-                      const experienceDocument = experienceContent({ experience: item, preferredLanguage: context.preferredLanguage });
-                      return Effect.succeed(
-                        respond(
-                          context,
-                          buildExperienceMd({ seo: experienceDocument, translate: context.translate }),
-                          experienceDocument.canonical,
-                          experienceDocument.markdownPath
-                        )
-                      );
-                    },
-                  })
-                )
-              ),
-          })
-        )
+        Effect.fn("Markdown.experience")(function* (request: Request, context: TwinContext) {
+          const slug = slugFromMdPathname(request.url);
+          // Reject malformed addresses before reading the portfolio dataset.
+          if (Option.isNone(slug)) return notFoundTwin(Option.none(), context);
+
+          const experiences = yield* datasets.experienceList(context.preferredLanguage);
+          const item = experienceFromList(experiences, slug.value);
+          if (Option.isNone(item)) {
+            yield* Effect.logDebug(`[SLUG.MD]: no experience for slug "${slug.value}", emitting markdown 404`);
+            return notFoundTwin(slug, context);
+          }
+
+          const document = experienceSeo({ experience: item.value, preferredLanguage: context.preferredLanguage });
+          return respond(context, buildExperienceMd({ seo: document, translate: context.translate }), document.canonical, document.markdownPath);
+        })
       );
 
       const siteIndex = discoveryDocument(LLMS_TXT_INDEX, Effect.map(datasets.experienceList(DEFAULT_LANGUAGE), buildLlmsTxt));

@@ -89,14 +89,10 @@ export interface ExperienceIdentity {
   readonly headline: string;
 }
 
-// Experience content adds the full narrative summary to the shared identity without doing image work
-export interface ExperienceContent extends ExperienceIdentity {
+// Full detail projections add narrative and image facts to the lightweight identity
+export interface ExperienceSeo extends ExperienceIdentity {
   readonly experience: Experience;
   readonly description: string;
-}
-
-// The HTML detail head additionally needs a social image; Markdown and catalogue builders do not
-export interface ExperienceSeo extends ExperienceContent {
   readonly screenshot: Option.Option<SocialImageFacts>;
 }
 

@@ -27,12 +27,12 @@ import type { PageNodeType } from "./nodes";
 
 // What the article/item graph reads from an experience's SEO identity; the full record is
 // assignable, but naming the subset keeps the coupling explicit and drift-free
-type ExperienceGraphInput = Pick<ExperienceSeo, "experience" | "preferredLanguage" | "path" | "headline" | "description" | "screenshot">;
+type ExperienceGraphInput = Pick<ExperienceSeo, "experience" | "preferredLanguage" | "canonical" | "headline" | "description" | "screenshot">;
 
 // The page node (and its trail) every content page leads with
 interface PageGraphSpec {
   readonly type: PageNodeType;
-  readonly path: string;
+  readonly url: string;
   readonly name: string;
   readonly description: string;
   readonly preferredLanguage: PreferredLanguage;
@@ -55,26 +55,22 @@ import { CONTACT_EMAIL, EXPERIENCE_LIST_ID, GLOBAL_SOCIAL_IMAGE, HOME_URL, PERSO
 // Matches the og:image published on static pages so JSON-LD extractors see the same sized asset
 const STATIC_PRIMARY_IMAGE = imageObject(GLOBAL_SOCIAL_IMAGE.src, GLOBAL_SOCIAL_IMAGE.width, GLOBAL_SOCIAL_IMAGE.height);
 
-// Builds the page node and its breadcrumb trail using absolute URL as @id
-const pageGraph = ({ type, path, name, description, preferredLanguage, mainEntity, primaryImageOfPage, relatedLinks }: PageGraphSpec): JsonLdNodes => {
-  const id = absoluteUrl(path);
-
-  return [
-    webPageNode({
-      type,
-      id,
-      url: id,
-      name,
-      description,
-      preferredLanguage,
-      breadcrumb: true,
-      mainEntity,
-      primaryImageOfPage,
-      relatedLinks,
-    }),
-    breadcrumb(preferredLanguage, id, name),
-  ];
-};
+// Builds the page node and its breadcrumb trail from the canonical identity every other surface cites
+const pageGraph = ({ type, url, name, description, preferredLanguage, mainEntity, primaryImageOfPage, relatedLinks }: PageGraphSpec): JsonLdNodes => [
+  webPageNode({
+    type,
+    id: url,
+    url,
+    name,
+    description,
+    preferredLanguage,
+    breadcrumb: true,
+    mainEntity,
+    primaryImageOfPage,
+    relatedLinks,
+  }),
+  breadcrumb(preferredLanguage, url, name),
+];
 
 const experienceCollection = ({
   id,
@@ -144,7 +140,7 @@ export const educationJsonLd = ({
   return [
     ...pageGraph({
       type: "CollectionPage",
-      path: EDUCATION_PATH,
+      url,
       name: pageName,
       description,
       preferredLanguage,
@@ -162,7 +158,7 @@ export const contactJsonLd = ({ pageName, description, preferredLanguage }: Loca
   return [
     ...pageGraph({
       type: "ContactPage",
-      path: CONTACT_PATH,
+      url,
       name: pageName,
       description,
       preferredLanguage,
@@ -174,11 +170,10 @@ export const contactJsonLd = ({ pageName, description, preferredLanguage }: Loca
   ];
 };
 
-export const experienceJsonLd = ({ experience, preferredLanguage, path, headline, description, screenshot }: ExperienceGraphInput): JsonLdNodes => {
+export const experienceJsonLd = ({ experience, preferredLanguage, canonical: url, headline, description, screenshot }: ExperienceGraphInput): JsonLdNodes => {
   const { role, company, txt } = experience;
 
   const employment = isEmployment(experience);
-  const url = absoluteUrl(path);
 
   const itemId = `${url}#${employment ? "organization-role" : "project"}`;
   const articleId = `${url}#article`;
@@ -233,7 +228,7 @@ export const experienceJsonLd = ({ experience, preferredLanguage, path, headline
   return [
     ...pageGraph({
       type: "WebPage",
-      path,
+      url,
       name: headline,
       description,
       preferredLanguage,

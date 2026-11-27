@@ -33,7 +33,8 @@ export const headLanguage = (matches: MatchChain): PreferredLanguage =>
 export const isNotFoundMatch = (match: MatchChain[number]): boolean => match.status === "notFound" || match._notFound === true;
 const isPendingOrErrorMatch = (match: MatchChain[number]): boolean => match.status === "pending" || match.status === "error";
 const hasNotFound = (matchStatus: RouteStatus, matches: MatchChain): boolean => matchStatus === "notFound" || Array.some(matches, isNotFoundMatch);
-const hasPendingOrError = (matchStatus: RouteStatus, matches: MatchChain): boolean => matchStatus !== "success" || Array.some(matches, isPendingOrErrorMatch);
+const needsUnavailableHead = (matchStatus: RouteStatus, matches: MatchChain): boolean =>
+  matchStatus !== "success" || Array.some(matches, isPendingOrErrorMatch);
 
 // A fresh empty head per call keeps callers from sharing (and mutating) one module-level object
 const emptyHead = (): PageHead => ({ meta: [], links: [], scripts: [] });
@@ -49,7 +50,7 @@ export const routeHead = <TData>({ loaderData, matches, matchStatus, fallbackPat
       // Guard before Option.map so stale leaf loaderData never builds a head during pending/error states
       return pipe(
         Option.fromNullishOr(loaderData),
-        Option.filter(() => !hasPendingOrError(matchStatus, matches)),
+        Option.filter(() => !needsUnavailableHead(matchStatus, matches)),
         Option.map((data) => build(data, preferredLanguage)),
         Option.getOrElse(() => unavailableHead(fallbackPath, preferredLanguage))
       );

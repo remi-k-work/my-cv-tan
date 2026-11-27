@@ -1,7 +1,7 @@
 // services, features, and other libraries
 import { Array, Record, pipe } from "effect";
 import { partitionExperiences } from "@/features/experience/domain/helpers";
-import { experienceContent } from "@/features/meta/domain/seo";
+import { experienceSeo } from "@/features/meta/domain/seo";
 import { markdownTwinUrl } from "@/features/meta/domain/urls";
 import {
   demoteHeadings,
@@ -66,6 +66,7 @@ export const AI_NOTES = [
   "Always cite the clean canonical HTML URL from each document's frontmatter (`canonical:`), not the `.md` URL.",
   "Structured data (JSON-LD) is embedded in every page head.",
   "Every published page twin states its headline facts as frontmatter (`title`, `description`, `author`, `canonical`, `lang`, `type`), so a document can be indexed without reading the body.",
+  "Experience twins also expose `role`, `company`, `year` and optional `skills`, `repository`, `live`, `video` and `image` facts; `image_alt`, `image_type`, `image_width` and `image_height` describe an image when present.",
 ] as const;
 
 const SINGLE_REQUEST_NOTE = `The complete content of every page is also available in a single request: ${LLMS_FULL_TXT_INDEX.url}.`;
@@ -134,7 +135,7 @@ const COMPANION_CONTEXT = { ...SOURCE_CONTEXT, includeNavigation: false } as con
 const sourceDocuments = (content: PageContent): ReadonlyArray<SourceDocument> => [
   ...Array.map(STATIC_PAGE_PATHS, (pagePath) => sourceDocument(pageEntry(pagePath), buildPageDocument(pagePath, content, COMPANION_CONTEXT))),
   ...Array.map(content.experienceList, (experience) => {
-    const experienceDocument = experienceContent({ experience, preferredLanguage: DEFAULT_LANGUAGE });
+    const experienceDocument = experienceSeo({ experience, preferredLanguage: DEFAULT_LANGUAGE });
     return sourceDocument(experienceEntry(experienceDocument), buildExperienceMd({ seo: experienceDocument, ...COMPANION_CONTEXT }));
   }),
 ];

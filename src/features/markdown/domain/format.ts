@@ -76,7 +76,11 @@ export const mdBulletList = (items: ReadonlyArray<string>) =>
 export const mdFact = (label: string, value: string) => `${escapeMdInline(label)}: ${escapeMdInline(value)}`;
 export const mdBody = (blocks: ReadonlyArray<string>) => pipe(blocks, Array.filter(nonBlank), Array.join("\n\n"));
 export const mdTitledSection = (title: string, body: string) => mdBody([mdHeading(2, title), body]);
-export const mdDocument = (blocks: ReadonlyArray<string>) => `${mdBody(blocks)}\n`;
+export const mdDocument = (blocks: ReadonlyArray<string>) => {
+  const body = mdBody(blocks);
+  // An empty block list is an empty representation, not a document containing one blank line
+  return String.isEmpty(body) ? "" : `${body}\n`;
+};
 export const mdEmptyMarker = (translate: Translate) => `_${escapeMdInline(translate(msg("No entries.")))}_`;
 
 export const mdLink = (label: string, href: string) =>
@@ -84,6 +88,8 @@ export const mdLink = (label: string, href: string) =>
     // Encode before parsing so whitespace cannot be silently removed or terminate the destination
     encodeDestination(href),
     httpUrlOption,
+    // Backslash-escape ampersands so Markdown cannot decode entity references inside the URL
+    Option.map(String.replaceAll("&", "\\&")),
     Option.match({
       // Unsafe or relative destinations remain readable text instead of becoming active links
       onNone: () => escapeMdInline(label),

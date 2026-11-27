@@ -1,6 +1,6 @@
 import { assert, it } from "@effect/vitest";
 import { Record } from "effect";
-import { AI_INDEX_MARKDOWN_LINKS, detailPagesSection, pagesSection } from "../twin-nav";
+import { AI_INDEX_MARKDOWN_LINKS, deadEndEscapeLine, detailPagesSection, pagesSection } from "../twin-nav";
 import { STATIC_PAGES } from "@/features/meta/domain/pages";
 import { translateEn, translatePl } from "@/features/markdown/__tests__/fixtures";
 
@@ -47,4 +47,11 @@ it("every twin closes with the one shared Pages section, translated with the rea
   // A polish twin's own chapter never labels the section in English
   assert.notInclude(home, "## Pages");
   assert.notInclude(detail, "## Pages");
+});
+
+it("a dead-end twin links back to the localized home twin and the AI index", () => {
+  assert.strictEqual(
+    deadEndEscapeLine("pl", translatePl),
+    "Zobacz [Strona główna](https://www.remiforge.dev/index.md?lang=pl) lub [llms.txt](https://www.remiforge.dev/llms.txt)."
+  );
 });

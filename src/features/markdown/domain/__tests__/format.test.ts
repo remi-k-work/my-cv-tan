@@ -66,7 +66,8 @@ it("mdTitledSection is an H2 heading followed by its body", () => {
 it("mdDocument joins blocks with blank lines and ends with a newline", () => {
   assert.strictEqual(mdDocument(["a", "b"]), "a\n\nb\n");
   assert.strictEqual(mdDocument(["only"]), "only\n");
-  assert.strictEqual(mdDocument([]), "\n");
+  assert.strictEqual(mdDocument([]), "");
+  assert.strictEqual(mdDocument(["", " \n\t "]), "");
 });
 
 it("mdEmptyMarker wraps the translated text in emphasis after escaping", () => {
@@ -267,6 +268,8 @@ it("escapeMd neutralizes only a real GFM delimiter row, never prose that starts 
   assert.strictEqual(escapeMd("| --- |"), "| \\--- |");
   assert.strictEqual(escapeMd(":--|--:"), ":\\--|--:");
   assert.strictEqual(escapeMd("|-|-|"), "|\\-|-|");
+  assert.strictEqual(escapeMd("| a | b |\n| \t--- | --- |"), "| a | b |\n| \t\\--- | --- |");
+  assert.strictEqual(escapeMd("| a | b |\n|\t--- | --- |"), "| a | b |\n|\t\\--- | --- |");
   assert.strictEqual(escapeMd("table\n\n| a | b |\n| - | - |"), "table\n\n| a | b |\n| \\- | - |");
 });
 

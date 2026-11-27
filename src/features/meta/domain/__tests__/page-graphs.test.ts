@@ -86,7 +86,7 @@ it("experienceJsonLd assembles WebPage, Article and the item node for a project"
   const nodes = experienceJsonLd({
     experience: sampleExperience,
     preferredLanguage: language,
-    path: "/sample-role",
+    canonical: "https://www.remiforge.dev/sample-role",
     headline: "Full-Stack Developer",
     description: "Built things with care.",
     screenshot: Option.some({ src: "https://www.remiforge.dev/images/01-a.webp", mime: "image/webp", width: 1600, height: 900 }),
@@ -124,7 +124,7 @@ it("experienceJsonLd drops a repository URL that is not http(s)", () => {
   const nodes = experienceJsonLd({
     experience: { ...sampleExperience, gitHubLink: "javascript:alert(1)" },
     preferredLanguage: language,
-    path: "/sample-role",
+    canonical: "https://www.remiforge.dev/sample-role",
     headline: "Full-Stack Developer",
     description: "Built things with care.",
     screenshot: Option.none(),
@@ -144,7 +144,7 @@ it("experienceJsonLd drops the source-code type when the experience publishes no
   const nodes = experienceJsonLd({
     experience: { ...sampleExperience, gitHubLink: undefined },
     preferredLanguage: language,
-    path: "/sample-role",
+    canonical: "https://www.remiforge.dev/sample-role",
     headline: "Full-Stack Developer",
     description: "Built things with care.",
     screenshot: Option.none(),
@@ -162,7 +162,7 @@ it("experienceJsonLd publishes only validated, distinct project resources", () =
       videoLink: "javascript:alert(1)",
     },
     preferredLanguage: language,
-    path: "/sample-role",
+    canonical: "https://www.remiforge.dev/sample-role",
     headline: "Full-Stack Developer",
     description: "Built things with care.",
     screenshot: Option.none(),
@@ -182,7 +182,7 @@ it("experienceJsonLd uses EmployeeRole without claiming historical employment is
   const nodes = experienceJsonLd({
     experience: employment,
     preferredLanguage: language,
-    path: "/sample-job",
+    canonical: "https://www.remiforge.dev/sample-job",
     headline: "Web Developer",
     description: "Work.",
     screenshot: Option.none(),
@@ -309,7 +309,7 @@ const subpagePairs: ReadonlyArray<ReadonlyArray<Record<string, unknown>>> = [
   experienceJsonLd({
     experience: sampleExperience,
     preferredLanguage: language,
-    path: "/sample-role",
+    canonical: "https://www.remiforge.dev/sample-role",
     headline: "Full-Stack Developer",
     description: "Built things with care.",
     screenshot: Option.none(),
@@ -352,7 +352,7 @@ it("a page node keeps the site membership, language and main entity every route 
   assert.strictEqual(page?.["url"], page?.["@id"]);
 });
 
-it("every subpage graph publishes a URL, because the page node derives it from the path", () => {
+it("every subpage graph publishes the same canonical URL as its page-node identity", () => {
   // A node whose only URL spelling is a host-rooted @id costs a parser a second lookup. Walk the
   // three shapes the real callers use — CollectionPage, ContactPage and WebPage — and require each
   // page node to carry the absolute URL of the page it describes.
@@ -403,7 +403,7 @@ it("experienceJsonLd deduplicates repeated skills in keywords", () => {
   const nodes = experienceJsonLd({
     experience: { ...sampleExperience, skillsUsed: ["TypeScript", "React", "TypeScript"] },
     preferredLanguage: language,
-    path: "/sample-role",
+    canonical: "https://www.remiforge.dev/sample-role",
     headline: "Full-Stack Developer",
     description: "Built things with care.",
     screenshot: Option.none(),
@@ -426,7 +426,7 @@ it("experienceJsonLd exposes validated gitHubLink on employment WebPage.relatedL
       skillsUsed: ["TypeScript", " TypeScript\n ", "React"],
     },
     preferredLanguage: language,
-    path: "/sample-job",
+    canonical: "https://www.remiforge.dev/sample-job",
     headline: "Full-Stack Developer at Sample Co",
     description: "Built things with care.",
     screenshot: Option.none(),

@@ -227,13 +227,18 @@ it("the detail twin the home page links to is the document the detail route answ
   assert.strictEqual(detail.headers.get("Content-Location"), advertised);
 });
 
-it("every document route publishes the visitor-state policy its response needs", async () => {
+it("every document route publishes the visitor-state policy its response needs", () => {
   const pinnedRequest = (path: string) => new Request(`https://www.remiforge.dev${path}?lang=pl`);
 
-  // Language-negotiated twins preserve visitor cookie unless explicitly pinned via ?lang=.
-  for (const handler of [homeHandler, educationHandler, contactHandler, experienceHandler]) {
-    assert.isTrue(handler.keepsVisitorState(new Request("https://www.remiforge.dev/index.md")));
-    assert.isFalse(handler.keepsVisitorState(pinnedRequest("/index.md")));
+  // Exercise each negotiated twin through its own public route, including the dynamic detail route.
+  for (const [handler, path] of [
+    [homeHandler, "/index.md"],
+    [educationHandler, "/education.md"],
+    [contactHandler, "/contact.md"],
+    [experienceHandler, experienceMarkdownPath(firstSlug)],
+  ] as const) {
+    assert.isTrue(handler.keepsVisitorState(new Request(absoluteUrl(path))));
+    assert.isFalse(handler.keepsVisitorState(pinnedRequest(path)));
   }
 
   // AI discovery indexes and crawl policies are language-independent and omit visitor cookies.
@@ -313,6 +318,8 @@ it("llms-full.txt concatenates every twin body beneath its canonical URL", async
   const txt = await response.text();
   assert.strictEqual((txt.match(/^\[Source\]\(/gm) ?? []).length, 3 + slugs.size);
   for (const slug of slugs) assert.include(txt, `[Source](https://www.remiforge.dev${experiencePath(slug)})`);
+  // Every retrieval link names the deterministic English representation served by the twin routes.
+  for (const [twinUrl] of advertisedTwins) assert.include(txt, `[Markdown](${twinUrl})`);
 });
 
 it("every public document endpoint answers HEAD with GET metadata, an ETag, and no body", async () => {

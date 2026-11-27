@@ -1,9 +1,9 @@
 // services, features, and other libraries
-import { Array, Option, pipe } from "effect";
+import { Array, Option, Record, String, pipe } from "effect";
 import { msg } from "gt-i18n";
 import { isEmployment, partitionExperiences } from "@/features/experience/domain/helpers";
 import { staticPageCopy } from "@/features/meta/domain/pages";
-import { experienceKeywords, experienceLinks, inlineText } from "@/features/meta/domain/seo";
+import { experienceImageAlt, experienceKeywords, experienceLinks, inlineText } from "@/features/meta/domain/seo";
 import { experienceLines } from "./catalogue";
 import { escapeMd, escapeMdInline } from "./escape";
 import { mdBody, mdBulletList, mdDocumentLinks, mdEmptyMarker, mdFact, mdHeading, mdLink, mdProfileLinks, mdQuote, mdTitledSection } from "./format";
@@ -14,7 +14,7 @@ import { canonicalSourceLink, detailPagesSection, pagesSection } from "./twin-na
 import type { PagePath, PageTitles, Translate } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
-import type { ExperienceContent, StaticPageCopy } from "@/features/meta/domain/models";
+import type { ExperienceSeo, StaticPageCopy } from "@/features/meta/domain/models";
 import type { MarkdownTwin, PageDocumentContent, TwinContext } from "./models";
 
 export type HomeMdInput = TwinContext & { readonly pageTitles: PageTitles; readonly experienceList: ExperienceList };
@@ -22,7 +22,7 @@ export type EducationMdInput = TwinContext & { readonly pageTitles: PageTitles; 
 export type ContactMdInput = TwinContext & { readonly pageTitles: PageTitles };
 
 interface ExperienceMdInput extends Pick<TwinContext, "translate" | "includeNavigation"> {
-  readonly seo: ExperienceContent;
+  readonly seo: ExperienceSeo;
 }
 
 type PageDocumentBuilder<P extends PagePath> = (content: PageDocumentContent[P], context: TwinContext) => MarkdownTwin;
@@ -34,6 +34,27 @@ import { CONTACT_EMAIL, HOME_LOCATION, SOCIAL_PROFILES } from "@/features/meta/d
 
 // Standalone twins carry their canonical citation and sibling nav; embedded companion twins omit them
 const navBlock = (includeNavigation: boolean, render: () => string) => (includeNavigation ? render() : "");
+
+// Optional frontmatter stays absent instead of publishing empty values or fabricated resources
+const optionalFacts = (fields: ReadonlyArray<readonly [string, Option.Option<string>]>) =>
+  pipe(
+    fields,
+    Array.map(([key, value]) => Option.map(value, (fact) => [key, fact] as const)),
+    Array.getSomes,
+    Record.fromEntries
+  );
+
+const screenshotFacts = (screenshot: ExperienceSeo["screenshot"], headline: string, preferredLanguage: ExperienceSeo["preferredLanguage"]) =>
+  Option.match(screenshot, {
+    onNone: Record.empty<string, string>,
+    onSome: ({ src, mime, width, height }) => ({
+      image: src,
+      image_alt: experienceImageAlt(headline, preferredLanguage),
+      image_type: mime,
+      image_width: `${width}`,
+      image_height: `${height}`,
+    }),
+  });
 
 const profileLinks = (translate: Translate) => [...mdProfileLinks(SOCIAL_PROFILES), mdFact(translate(msg("Base")), translate(HOME_LOCATION))];
 
@@ -110,15 +131,17 @@ export const buildExperienceMd = ({ seo, translate, includeNavigation = true }: 
   const skills = experienceKeywords(experience);
   const { repository, live, video } = experienceLinks(experience);
 
+  const resources = [
+    ["repository", msg("GitHub Repo"), repository],
+    ["live", msg("Live Link"), live],
+    ["video", msg("Watch Video"), video],
+  ] as const;
   const links = pipe(
-    [
-      [msg("GitHub Repo"), repository],
-      [msg("Live Link"), live],
-      [msg("Watch Video"), video],
-    ] as const,
-    Array.map(([label, href]) => Option.map(href, (url) => mdLink(translate(label), url))),
+    resources,
+    Array.map(([, label, href]) => Option.map(href, (url) => mdLink(translate(label), url))),
     Array.getSomes
   );
+  const skillsText = Array.join(skills, ", ");
 
   return {
     facts: {
@@ -127,7 +150,11 @@ export const buildExperienceMd = ({ seo, translate, includeNavigation = true }: 
       role: inlineText(role),
       company: inlineText(company),
       year: inlineText(year),
-      skills: Array.join(skills, ", "),
+      ...optionalFacts([
+        ["skills", pipe(skillsText, Option.liftPredicate(String.isNonEmpty))],
+        ...Array.map(resources, ([key, , href]) => [key, href] as const),
+      ]),
+      ...screenshotFacts(seo.screenshot, headline, preferredLanguage),
     },
     body: mdBody([
       mdHeading(1, headline),
@@ -138,7 +165,10 @@ export const buildExperienceMd = ({ seo, translate, includeNavigation = true }: 
         translate(msg("Details")),
         mdBulletList([mdFact(translate(msg("Role")), role), mdFact(translate(msg("Company")), company), mdFact(translate(msg("Year")), year)])
       ),
-      mdTitledSection(translate(msg("Skills Used")), mdBulletList(Array.map(skills, escapeMdInline))),
+      Array.match(skills, {
+        onEmpty: () => "",
+        onNonEmpty: (entries) => mdTitledSection(translate(msg("Skills Used")), mdBulletList(Array.map(entries, escapeMdInline))),
+      }),
       // An experience with no publishable link gets no Links section at all, rather than an empty one
       Array.match(links, {
         onEmpty: () => "",

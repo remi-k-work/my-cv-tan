@@ -1,7 +1,6 @@
 // services, features, and other libraries
 import { Option } from "effect";
-import { matchPreferredLanguage } from "@/domain/helpers";
-import { experienceSection, experienceSeo } from "./seo";
+import { experienceImageAlt, experienceSection, experienceSeo } from "./seo";
 import { jsonLdGraph } from "./jsonld";
 import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd } from "./page-graphs";
 import { globalSocialImage, socialMeta } from "./social-meta";
@@ -50,7 +49,7 @@ const experienceCardImage = (headline: string, image: Option.Option<SocialImageF
     onNone: () => globalSocialImage(preferredLanguage),
     onSome: (screenshot) => ({
       ...screenshot,
-      alt: matchPreferredLanguage(preferredLanguage, `Screenshot of ${headline}`, `Zrzut ekranu przedstawiający ${headline}`),
+      alt: experienceImageAlt(headline, preferredLanguage),
     }),
   });
 

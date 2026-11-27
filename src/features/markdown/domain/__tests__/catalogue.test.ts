@@ -55,3 +55,10 @@ it("experience index summaries collapse authored whitespace before truncation", 
   assert.notInclude(line, "\t");
   assert.notInclude(line, "Second   line.");
 });
+
+it("experience twin lines link the localized Markdown without a redundant HTML citation", () => {
+  const line = experienceLines({ ...SOURCE_CONTEXT, preferredLanguage: "pl", experiences: [sampleExperience], mode: "twin" });
+
+  assert.include(line, "](https://www.remiforge.dev/sample-role.md?lang=pl):");
+  assert.notInclude(line, "[HTML]");
+});

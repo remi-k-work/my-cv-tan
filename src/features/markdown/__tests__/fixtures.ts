@@ -56,6 +56,8 @@ const polishTranslations: Readonly<Record<string, string>> = {
   "GitHub Repo": "Repozytorium GitHub",
   "Live Link": "Link na Żywo",
   "Watch Video": "Zobacz Video",
+  See: "Zobacz",
+  or: "lub",
 };
 
 // A miss in the dictionary is the source string itself, expressed as the same typed absence the
