@@ -7,7 +7,7 @@ import { useTilt } from "@/features/experience/hooks/use-tilt";
 import avatar from "@/assets/avatar.jpg";
 
 // constants
-import { CONTACT_EMAIL } from "@/features/meta/domain/site";
+import { CONTACT_EMAIL } from "@/domain/site";
 
 // The floating address card: portrait plus contact details, leaning with pointer tilt
 // It owns its own tilt behavior since the card — not the map — is the tilted element

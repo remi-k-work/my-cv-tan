@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { contactHead, educationHead, experienceHead, homeHead } from "@/features/meta/domain/page-head";
 import { STATIC_PAGES, STATIC_PAGE_PATHS, staticPageCopy } from "@/features/meta/domain/pages";
 import { ExperienceIdentity } from "@/features/experience/ui/experience-identity";
-import { BRANDED_TITLE } from "@/features/meta/domain/site";
+import { BRANDED_TITLE } from "@/domain/site";
 import { DOWNLOADABLE_DOCUMENTS } from "@/features/meta/domain/discovery";
 import { absoluteUrl } from "@/features/meta/domain/urls";
 import { buildSitemapXml } from "@/features/meta/domain/sitemap";

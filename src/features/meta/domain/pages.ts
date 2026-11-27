@@ -27,7 +27,7 @@ interface StaticPageSettings {
 
 // constants
 import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/domain/constants";
-import { HOME_TITLE, PERSON_DESCRIPTION, SITE_DESCRIPTION } from "./site";
+import { HOME_TITLE, PERSON_DESCRIPTION, SITE_DESCRIPTION } from "@/domain/site";
 
 // Static page definitions shared between HTML heads and Markdown frontmatter
 export const STATIC_PAGES = {

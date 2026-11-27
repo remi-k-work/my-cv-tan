@@ -7,8 +7,11 @@ import type { PreferredLanguage } from "@/domain/models";
 import type { MetaTag, SocialImage, SocialMetaInput } from "./models";
 
 // constants
-import { AUTHOR_URL, GLOBAL_SOCIAL_IMAGE, OPEN_GRAPH_LOCALES, PUBLISHER_URL, SITE_NAME } from "./site";
+import { AUTHOR_URL, GLOBAL_SOCIAL_IMAGE, PUBLISHER_URL, SITE_NAME } from "@/domain/site";
 import { SITE_LANGUAGES } from "@/domain/constants";
+
+// Open Graph locale identifiers are not the site's language codes (en -> en_US)
+export const OPEN_GRAPH_LOCALES = { en: "en_US", pl: "pl_PL" } as const satisfies Record<PreferredLanguage, string>;
 
 export const globalSocialImage = (preferredLanguage: PreferredLanguage): SocialImage => ({
   ...GLOBAL_SOCIAL_IMAGE,

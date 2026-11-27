@@ -6,7 +6,7 @@ import { useLocale } from "gt-tanstack-start";
 import { matchPreferredLanguage, preferredLanguageFromLocale } from "@/domain/helpers";
 
 // constants
-import { NOT_FOUND_COPY } from "@/features/meta/domain/site";
+import { NOT_FOUND_COPY } from "@/domain/site";
 
 export function NotFoundPage() {
   const headingId = useId();

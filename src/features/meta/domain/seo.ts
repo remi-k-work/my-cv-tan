@@ -13,7 +13,7 @@ import type { ExperienceIdentity, ExperienceIdentityInput, ExperienceSection, Ex
 
 // constants
 import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain/constants";
-import { META_DESCRIPTION_LENGTH } from "./site";
+import { META_DESCRIPTION_LENGTH } from "@/domain/constants";
 
 // An empty image name means "no screenshot", so the whole check is one lift into Option: the
 // ternary it replaces had to spell both constructors and split the decision across two branches

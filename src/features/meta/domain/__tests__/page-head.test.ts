@@ -6,7 +6,7 @@
 import { assert, it } from "@effect/vitest";
 import { pageHead, experienceHead, contactHead, educationHead, homeHead } from "../page-head";
 import { globalSocialImage } from "../social-meta";
-import { BRANDED_TITLE, GLOBAL_SOCIAL_IMAGE, SITE_NAME, AUTHOR_URL, PROFILE_ID } from "../site";
+import { BRANDED_TITLE, GLOBAL_SOCIAL_IMAGE, SITE_NAME, AUTHOR_URL, PROFILE_ID } from "@/domain/site";
 import { INDEXABLE_ROBOTS } from "@/domain/http";
 import { STATIC_PAGES } from "../pages";
 import { withLanguageParam } from "../urls";

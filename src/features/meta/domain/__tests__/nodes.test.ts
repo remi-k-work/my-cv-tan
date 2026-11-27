@@ -16,7 +16,7 @@ import {
   personEdge,
   webPageNode,
 } from "../nodes";
-import { HOME_URL, PERSON_ID, PUBLISHER_ID, WEBSITE_ID } from "../site";
+import { HOME_URL, PERSON_ID, PUBLISHER_ID, WEBSITE_ID } from "@/domain/site";
 import { LANGUAGE } from "./fixtures";
 import type { PreferredLanguage } from "@/domain/models";
 

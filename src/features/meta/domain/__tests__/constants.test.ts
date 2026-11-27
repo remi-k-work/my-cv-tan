@@ -19,7 +19,6 @@ import {
   HOME_URL,
   JOB_TITLE,
   KNOWS_ABOUT,
-  META_DESCRIPTION_LENGTH,
   PERSON_DESCRIPTION,
   PUBLISHER_URL,
   SITE_DESCRIPTION,
@@ -27,10 +26,10 @@ import {
   SITE_URL,
   SOCIAL_LINKS,
   SOCIAL_PROFILES,
-} from "../site";
+} from "@/domain/site";
 import { httpUrlOption } from "../urls";
-import { OPEN_GRAPH_LOCALES } from "../site";
-import { EMAIL_REGEX, SITE_LANGUAGE_NAMES } from "@/domain/constants";
+import { OPEN_GRAPH_LOCALES } from "../social-meta";
+import { EMAIL_REGEX, META_DESCRIPTION_LENGTH, SITE_LANGUAGE_NAMES } from "@/domain/constants";
 
 it("the canonical origin and every profile it publishes are absolute https URLs", () => {
   // `rel="me"` and JSON-LD `sameAs` are read as destinations, so a relative or non-http value

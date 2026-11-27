@@ -1,19 +1,13 @@
-// The site-identity vocabulary published onto every machine-readable surface: the origin, the
-// entity ids the JSON-LD graph merges on, the authored copy, the social profiles and images, and
-// the degraded (not-found / unavailable) copy. This module is a leaf: it imports no serializer and
-// no discovery constant, so every other meta module — and the Markdown feature — can depend on it
-// without a cycle.
+// The site-identity vocabulary published onto every surface: the origin, the entity ids the
+// JSON-LD graph merges on, the authored copy, the social profiles and images, and the degraded
+// (not-found / unavailable) copy
 
 // services, features, and other libraries
 import { Array } from "effect";
 import { msg } from "gt-i18n";
 
 // types
-import type { PreferredLanguage } from "@/domain/models";
-import type { JsonLdNode } from "./models";
-
-// constants
-import { SITE_LANGUAGES } from "@/domain/constants";
+import type { PreferredLanguage } from "./models";
 
 export const SITE_URL = "https://www.remiforge.dev";
 export const HOME_URL = `${SITE_URL}/`;
@@ -36,8 +30,6 @@ export const PERSON_DESCRIPTION =
 
 export const SITE_DESCRIPTION =
   "Remi Forge is a web developer in Rzeszów, Poland, building modern web applications with React, TypeScript, and full-stack tools.";
-
-export const META_DESCRIPTION_LENGTH = 160;
 
 export const BRANDED_TITLE = (title: string) => `${SITE_NAME} ● ${title}`;
 
@@ -83,49 +75,3 @@ export const UNAVAILABLE_COPY = {
   en: { title: "Page unavailable", description: "This page is temporarily unavailable." },
   pl: { title: "Strona niedostępna", description: "Ta strona jest tymczasowo niedostępna." },
 } as const satisfies Readonly<Record<PreferredLanguage, { title: string; description: string }>>;
-
-const POSTAL_ADDRESS = { "@type": "PostalAddress", addressLocality: HOME_LOCALITY, addressCountry: HOME_COUNTRY } as const;
-const HOME_PLACE = { "@type": "Place", name: `${HOME_LOCALITY}, ${HOME_COUNTRY_NAME}`, address: POSTAL_ADDRESS } as const;
-const AVATAR_IMAGE_OBJECT = { "@type": "ImageObject", url: AVATAR.src, width: AVATAR.width, height: AVATAR.height } as const;
-
-// Site-wide root entities included in every page graph
-export const SITE_NODES: ReadonlyArray<JsonLdNode> = [
-  {
-    "@type": "WebSite",
-    "@id": WEBSITE_ID,
-    name: SITE_NAME,
-    description: SITE_DESCRIPTION,
-    url: HOME_URL,
-    inLanguage: [...SITE_LANGUAGES],
-    mainEntity: { "@id": PERSON_ID },
-    author: { "@id": PERSON_ID },
-    publisher: { "@id": PUBLISHER_ID },
-  },
-  {
-    "@type": "Person",
-    "@id": PERSON_ID,
-    name: SITE_NAME,
-    description: PERSON_DESCRIPTION,
-    url: HOME_URL,
-    image: AVATAR_IMAGE_OBJECT,
-    jobTitle: JOB_TITLE,
-    knowsAbout: [...KNOWS_ABOUT],
-    knowsLanguage: [...SITE_LANGUAGES],
-    address: POSTAL_ADDRESS,
-    homeLocation: HOME_PLACE,
-    sameAs: [...SOCIAL_LINKS],
-  },
-  {
-    "@type": "Organization",
-    "@id": PUBLISHER_ID,
-    name: SITE_NAME,
-    description: SITE_DESCRIPTION,
-    url: HOME_URL,
-    address: POSTAL_ADDRESS,
-    logo: AVATAR_IMAGE_OBJECT,
-    sameAs: [...SOCIAL_LINKS],
-    member: { "@id": PERSON_ID },
-  },
-] as const;
-
-export const OPEN_GRAPH_LOCALES = { en: "en_US", pl: "pl_PL" } as const satisfies Record<PreferredLanguage, string>;

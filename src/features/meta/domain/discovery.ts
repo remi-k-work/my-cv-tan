@@ -14,7 +14,7 @@ import type { PreferredLanguage } from "@/domain/models";
 import type { LinkTag } from "./models";
 
 // constants
-import { SOCIAL_LINKS } from "./site";
+import { SOCIAL_LINKS } from "@/domain/site";
 
 // Content signal defining crawler permissions across robots.txt and HTTP headers
 export const CONTENT_SIGNAL = "search=yes, ai-input=yes, ai-train=yes";

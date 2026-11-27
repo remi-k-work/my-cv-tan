@@ -1,6 +1,6 @@
 import { assert, it } from "@effect/vitest";
 import { STATIC_PAGES } from "@/features/meta/domain/pages";
-import { CONTACT_EMAIL } from "@/features/meta/domain/site";
+import { CONTACT_EMAIL } from "@/domain/site";
 import { contactTwin, educationTwin, homeTwin, sampleExperience, stablePageTitles, translateEn, translatePl } from "@/features/markdown/__tests__/fixtures";
 import type { ExperienceList } from "@/features/experience/domain/models";
 

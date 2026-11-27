@@ -58,7 +58,7 @@ interface ExperienceItemNodeInput {
 
 // constants
 import { SITE_LANGUAGES } from "@/domain/constants";
-import { HOME_URL, PERSON_ID, PUBLISHER_ID, WEBSITE_ID } from "./site";
+import { HOME_URL, PERSON_ID, PUBLISHER_ID, WEBSITE_ID } from "@/domain/site";
 
 // Strip undefined properties so JSON-LD nodes never publish unset optional keys
 export const definedNode = <T extends JsonLdObject>(node: T): JsonLdNode => Record.filter(node, Predicate.isNotUndefined);

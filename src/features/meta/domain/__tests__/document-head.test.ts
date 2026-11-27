@@ -16,7 +16,7 @@ import { rootHead } from "../root-head";
 import { routeHead } from "../route-head";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 import { NotFoundPage } from "@/ui/not-found-page";
-import { BRANDED_TITLE, NOT_FOUND_COPY, SITE_DESCRIPTION, SOCIAL_LINKS, UNAVAILABLE_COPY } from "../site";
+import { BRANDED_TITLE, NOT_FOUND_COPY, SITE_DESCRIPTION, SOCIAL_LINKS, UNAVAILABLE_COPY } from "@/domain/site";
 import { notFoundHead } from "../fallback";
 import { sampleExperience, stablePageTitles } from "./fixtures";
 import type { LinkTag, MatchChain, MetaTag, PageHead } from "../models";

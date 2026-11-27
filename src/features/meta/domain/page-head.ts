@@ -29,7 +29,8 @@ interface StaticPageHeadInput {
 // constants
 import { INDEXABLE_ROBOTS } from "@/domain/http";
 import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/domain/constants";
-import { BRANDED_TITLE, SITE_NODES } from "./site";
+import { BRANDED_TITLE } from "@/domain/site";
+import { SITE_NODES } from "./site-nodes";
 
 export const pageHead = ({ social, markdownPath, graph }: PageHeadSpec): PageHead => ({
   meta: [

@@ -9,7 +9,7 @@ import type { StaticPageCopy } from "@/features/meta/domain/models";
 
 // constants
 import { CONTACT_PATH, DEFAULT_LANGUAGE, EDUCATION_PATH, HOME_PATH } from "@/domain/constants";
-import { BRANDED_TITLE, SITE_NAME } from "@/features/meta/domain/site";
+import { BRANDED_TITLE, SITE_NAME } from "@/domain/site";
 
 // A Markdown twin consists of structured frontmatter facts and a markdown body
 export interface MarkdownTwin {

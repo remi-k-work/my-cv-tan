@@ -10,7 +10,7 @@ import type { MatchChain, MetaTag, PageHead } from "./models";
 
 // constants
 import { AI_DISCOVERY_LINKS, ME_LINKS, SITEMAP_LINK } from "./discovery";
-import { AUTHOR_URL, AVATAR, BRANDED_TITLE, HOME_TITLE, SITE_DESCRIPTION, SITE_NAME } from "./site";
+import { AUTHOR_URL, AVATAR, BRANDED_TITLE, HOME_TITLE, SITE_DESCRIPTION, SITE_NAME } from "@/domain/site";
 import { NOINDEX_FOLLOW } from "@/domain/http";
 
 const SHELL_META: ReadonlyArray<MetaTag> = [

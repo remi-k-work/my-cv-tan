@@ -4,7 +4,7 @@ import { decodePreferredLanguage } from "@/domain/models";
 import { decodeExperienceSlug, decodeUrlOption } from "@/features/meta/domain/urls";
 
 // constants
-import { LANG_PARAM } from "@/features/meta/domain/site";
+import { LANG_PARAM } from "@/domain/site";
 
 // Parses and validates the ?lang= query parameter from a request URL
 export const parseLangParam = (url: string) =>

@@ -5,7 +5,7 @@
 import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
 import { educationJsonLd, contactJsonLd, experienceCollections, experienceJsonLd, homeJsonLd, schoolSubgraph } from "../page-graphs";
-import { CONTACT_EMAIL, EXPERIENCE_LIST_ID, GLOBAL_SOCIAL_IMAGE, HOME_URL, PERSON_ID, PORTFOLIO_LIST_ID, PROFILE_ID, WEBSITE_ID } from "../site";
+import { CONTACT_EMAIL, EXPERIENCE_LIST_ID, GLOBAL_SOCIAL_IMAGE, HOME_URL, PERSON_ID, PORTFOLIO_LIST_ID, PROFILE_ID, WEBSITE_ID } from "@/domain/site";
 import { jsonLdGraph } from "../jsonld";
 import { LANGUAGE, graphOf, nodeOf, sampleEducation, sampleExperience } from "./fixtures";
 import type { PreferredLanguage } from "@/domain/models";

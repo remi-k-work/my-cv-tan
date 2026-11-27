@@ -48,7 +48,7 @@ import {
   SITE_NAME,
   SITE_URL,
   SOCIAL_PROFILES,
-} from "@/features/meta/domain/site";
+} from "@/domain/site";
 import { DEFAULT_LANGUAGE, HOME_PATH, SITE_LANGUAGE_NAMES, SITE_LANGUAGES } from "@/domain/constants";
 import { STATIC_PAGES, STATIC_PAGE_PATHS } from "@/features/meta/domain/pages";
 

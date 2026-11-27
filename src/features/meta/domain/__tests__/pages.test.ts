@@ -6,7 +6,8 @@ import { assert, it } from "@effect/vitest";
 import { staticPageCopy } from "../pages";
 import { STATIC_PAGES, STATIC_PAGE_PATHS } from "../pages";
 import { HOME_PATH, EDUCATION_PATH, CONTACT_PATH, SITE_LANGUAGES } from "@/domain/constants";
-import { BRANDED_TITLE, META_DESCRIPTION_LENGTH } from "../site";
+import { META_DESCRIPTION_LENGTH } from "@/domain/constants";
+import { BRANDED_TITLE } from "@/domain/site";
 import { stablePageTitles } from "./fixtures";
 
 it("resolves localized copy for every static page path", () => {

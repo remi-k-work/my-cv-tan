@@ -8,6 +8,9 @@ export const SITE_LANGUAGES = ["en", "pl"] as const;
 export const DEFAULT_LANGUAGE = "en" as const satisfies PreferredLanguage;
 export const SITE_LANGUAGE_NAMES = { en: "English", pl: "Polish" } as const satisfies Readonly<Record<PreferredLanguage, string>>;
 
+// The authored description length every SEO snippet builder budgets for
+export const META_DESCRIPTION_LENGTH = 160;
+
 // The site's three static page routes, declared beside the languages and the schema that resolves
 // them; every surface addresses the same page by one of these, so a route added here is a route the
 // page catalogue, the sitemap and the twins all pick up; the catalogue itself owns the ordered list

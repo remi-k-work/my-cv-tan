@@ -5,7 +5,7 @@ import { unavailableMarkdownBody } from "../fallback";
 import { buildExperienceMd, buildHomeMd } from "../twins";
 import { twinDocument } from "../format";
 import { SOURCE_CONTEXT } from "../models";
-import { CONTACT_EMAIL, LANG_PARAM, PERSON_DESCRIPTION } from "@/features/meta/domain/site";
+import { CONTACT_EMAIL, LANG_PARAM, PERSON_DESCRIPTION } from "@/domain/site";
 import { DISCOVERY_DOCUMENTS } from "@/features/meta/domain/discovery";
 import { experienceSeo } from "@/features/meta/domain/seo";
 import { SITE_LANGUAGE_NAMES, SITE_LANGUAGES } from "@/domain/constants";

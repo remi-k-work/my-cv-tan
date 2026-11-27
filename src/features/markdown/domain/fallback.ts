@@ -12,7 +12,7 @@ import type { PreferredLanguage, Translate } from "@/domain/models";
 import type { TwinContext } from "./models";
 
 // constants
-import { NOT_FOUND_COPY } from "@/features/meta/domain/site";
+import { NOT_FOUND_COPY } from "@/domain/site";
 
 interface NotFoundMdInput extends TwinContext {
   readonly slug: Option.Option<string>;

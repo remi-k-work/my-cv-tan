@@ -5,7 +5,7 @@ import { Option, Schema, String, pipe } from "effect";
 import type { PreferredLanguage } from "@/domain/models";
 
 // constants
-import { LANG_PARAM, SITE_URL } from "./site";
+import { LANG_PARAM, SITE_URL } from "@/domain/site";
 
 // `decodeOption` rather than `decodeUnknownOption`: every caller hands this a URL string, so the
 // narrower input type makes a non-string a compile error instead of a runtime None

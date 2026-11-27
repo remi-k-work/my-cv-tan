@@ -17,7 +17,7 @@ import { Route as LegacyExperienceIndexRoute } from "@/routes/exp.index";
 import { contactHandler, educationHandler, experienceHandler, homeHandler, llmsFullTxtHandler, llmsTxtHandler } from "@/features/markdown/services/handlers";
 import { robotsHandler, sitemapHandler } from "@/features/meta/services/handlers";
 import { absoluteUrl, experiencePath } from "@/features/meta/domain/urls";
-import { BRANDED_TITLE, HOME_URL } from "@/features/meta/domain/site";
+import { BRANDED_TITLE, HOME_URL } from "@/domain/site";
 import { STATIC_PAGES } from "@/features/meta/domain/pages";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 import { HOME_PATH } from "@/domain/constants";

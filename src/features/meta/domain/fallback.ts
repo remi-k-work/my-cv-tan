@@ -13,7 +13,8 @@ import type { LinkTag, PageHead } from "./models";
 // constants
 import { DEFAULT_LANGUAGE } from "@/domain/constants";
 import { NOINDEX_FOLLOW } from "@/domain/http";
-import { BRANDED_TITLE, NOT_FOUND_COPY, SITE_NODES, UNAVAILABLE_COPY } from "./site";
+import { BRANDED_TITLE, NOT_FOUND_COPY, UNAVAILABLE_COPY } from "@/domain/site";
+import { SITE_NODES } from "./site-nodes";
 
 // The shared noindex envelope both degraded states publish; they differ only in their localized
 // copy and in whether they name a route. Each state is its own named constructor so the compiler
