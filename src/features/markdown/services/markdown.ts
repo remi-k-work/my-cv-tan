@@ -6,7 +6,7 @@ import { recoverDataFailure } from "@/features/data/domain/required";
 import { experienceFromList } from "@/features/experience/domain/helpers";
 import { experienceMarkdownPath } from "@/domain/urls";
 import { experienceSeo } from "@/features/experience/domain/seo";
-import { txtResponse, txtUnavailableResponse } from "@/features/meta/services/responses";
+import { txtResponse, txtUnavailableResponse } from "@/lib/http-response";
 import { buildNotFoundMd, unavailableMarkdownBody } from "@/features/markdown/domain/fallback";
 import { twinDocument } from "@/features/markdown/domain/format";
 import { buildLlmsFullTxt, buildLlmsTxt, unavailableIndexBody } from "@/features/markdown/domain/indexes";

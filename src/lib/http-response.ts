@@ -1,4 +1,4 @@
-// Shared HTTP policy and response envelopes for HTML and machine-readable documents.
+// Shared HTTP policy and response envelopes for HTML and machine-readable documents
 
 // services, features, and other libraries
 import { Array, Option, Record, String, pipe } from "effect";
@@ -56,10 +56,8 @@ export const documentHeaders = (preferredLanguage: PreferredLanguage) =>
 export const locationHeader = (contentLocation?: string): Readonly<Record<string, string>> => optionalHeader("Content-Location", contentLocation);
 
 export const responseEnvelope = (status: 200 | 404 | 503, body: string, headers: Readonly<Record<string, string>>) => new Response(body, { status, headers });
-
 const txtEnvelope = (status: 200 | 503, body: string, policyHeaders: Readonly<Record<string, string>>, contentLocation?: string) =>
   responseEnvelope(status, body, { ...txtHeaders(contentLocation), ...policyHeaders, ...locationHeader(contentLocation) });
-
 const sitemapEnvelope = (status: 200 | 503, xml: string, policyHeaders: Readonly<Record<string, string>>) =>
   responseEnvelope(status, xml, { ...SITEMAP_HEADERS, ...policyHeaders, ...locationHeader(SITEMAP_INDEX.url) });
 

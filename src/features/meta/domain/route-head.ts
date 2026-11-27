@@ -4,7 +4,14 @@ import { PreferredLanguage } from "@/domain/models";
 import { unavailableHead } from "./fallback";
 
 // types
-import type { MatchChain, PageHead, RouteStatus } from "./models";
+import type { PageHead } from "./models";
+
+// The route statuses a TanStack match reports
+export type RouteStatus = "pending" | "success" | "error" | "notFound";
+
+// The slice of a TanStack match chain the head resolvers read. `_notFound` is router-private, but
+// it is the only signal available when a loader throws notFound()
+export type MatchChain = ReadonlyArray<{ readonly loaderData?: unknown; readonly status?: RouteStatus; readonly _notFound?: boolean }>;
 
 // Everything one route's head() hands the shared resolver, which decides between a real head, a
 // degraded head and an empty one before delegating to the route's own builder

@@ -1,11 +1,10 @@
-// Temporary holding file for the HTTP response-header policy test. The policy moves out of `meta`
-// in Phase 4; until then this test stays here so the suite keeps covering it.
+// Direct unit tests for the shared HTTP response policy.
 
 import { assert, it } from "@effect/vitest";
-import { documentHeaders } from "@/features/meta/services/responses";
+import { documentHeaders } from "../http-response";
 import { CONTENT_SIGNAL } from "@/domain/discovery";
 
-it("robots.txt responses are English, noindex, and carry the shared reuse signal", () => {
+it("document headers carry the reuse signal, AI-index advertisements and language negotiation", () => {
   const polish = documentHeaders("pl");
   const english = documentHeaders("en");
 
@@ -18,6 +17,7 @@ it("robots.txt responses are English, noindex, and carry the shared reuse signal
   assert.include(polish.Link, "https://www.remiforge.dev/llms.txt");
   assert.include(polish.Link, "https://www.remiforge.dev/llms-full.txt");
   assert.strictEqual(Object.keys(polish).length, 5);
+  // The two languages publish the same policy; only the negotiated Content-Language differs
   assert.deepStrictEqual(
     Object.keys(polish).filter((key) => key !== "Content-Language"),
     Object.keys(english).filter((key) => key !== "Content-Language")

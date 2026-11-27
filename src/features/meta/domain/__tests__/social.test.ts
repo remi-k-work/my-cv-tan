@@ -1,9 +1,9 @@
-// Direct unit tests for the Open Graph / Twitter Card builders in ./social-meta.
+// Direct unit tests for the Open Graph / Twitter Card builders in ./social.
 // All tags are pure functions of a SocialMetaInput. Tags are located by key
 // and deep-compared, since assert.include uses reference equality for objects.
 
 import { assert, it } from "@effect/vitest";
-import { globalSocialImage, OPEN_GRAPH_LOCALES, socialMeta } from "../social-meta";
+import { globalSocialImage, OPEN_GRAPH_LOCALES, socialMeta } from "../social";
 import { AUTHOR_URL, PUBLISHER_URL, SITE_NAME } from "@/domain/site";
 import { SocialImage, SocialMetaInput } from "../models";
 import { LANGUAGE, metaTagsOf, tagContent } from "./fixtures";

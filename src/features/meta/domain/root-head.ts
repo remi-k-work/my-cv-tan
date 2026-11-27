@@ -6,7 +6,8 @@ import { authorLink } from "@/domain/links";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
-import type { MatchChain, MetaTag, PageHead } from "./models";
+import type { MetaTag, PageHead } from "./models";
+import type { MatchChain } from "./route-head";
 
 // constants
 import { AI_DISCOVERY_LINKS, ME_LINKS, SITEMAP_LINK } from "@/domain/links";

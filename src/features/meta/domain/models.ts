@@ -1,8 +1,8 @@
-// The meta feature's cross-module contracts: the flat head elements every head projection returns,
-// the social-card shapes the head builders publish, and the small slice of the TanStack match chain
-// the head resolvers read. JSON-LD types belong to the `jsonld` feature; the head only carries the
-// script element it publishes. Module-local input structs live beside the builders that consume
-// them; only what crosses a module or feature boundary is here.
+// The meta feature's cross-module contracts: the flat head elements every head projection returns
+// and the social-card shapes the head builders publish. JSON-LD types belong to the `jsonld`
+// feature and the route-match contracts to `route-head`; the head only carries the script element it
+// publishes. Module-local input structs live beside the builders that consume them; only what
+// crosses a module or feature boundary is here.
 
 // types
 import type { JsonLdScript } from "@/features/jsonld/domain/models";
@@ -36,9 +36,3 @@ export interface SocialMetaInput {
   readonly ogType?: "website" | "article";
   readonly articleSection?: ExperienceSection;
 }
-
-export type RouteStatus = "pending" | "success" | "error" | "notFound";
-
-// The slice of a TanStack match chain the head resolvers read. `_notFound` is router-private, but
-// it is the only signal available when a loader throws notFound()
-export type MatchChain = ReadonlyArray<{ readonly loaderData?: unknown; readonly status?: RouteStatus; readonly _notFound?: boolean }>;

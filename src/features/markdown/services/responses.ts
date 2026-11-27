@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { Array, HashSet, Match, Option, Predicate, Record, String, pipe } from "effect";
-import { documentHeaders, locationHeader, responseEnvelope } from "@/features/meta/services/responses";
+import { documentHeaders, locationHeader, responseEnvelope } from "@/lib/http-response";
 import { markdownTwinUrl } from "@/domain/urls";
 import { joinLinkHeader, representationLinks } from "@/domain/links";
 
@@ -14,13 +14,7 @@ interface HeaderUpdates {
 
 // constants
 import { AI_DISCOVERY_LINK_HEADER, AI_DISCOVERY_LINKS } from "@/domain/links";
-import {
-  CACHEABLE_HEADERS,
-  INDEXABLE_HEADERS,
-  NEGOTIATION_VARY_TOKENS,
-  SERVICE_UNAVAILABLE_HEADERS,
-  UNAVAILABLE_HEADERS,
-} from "@/features/meta/services/responses";
+import { CACHEABLE_HEADERS, INDEXABLE_HEADERS, NEGOTIATION_VARY_TOKENS, SERVICE_UNAVAILABLE_HEADERS, UNAVAILABLE_HEADERS } from "@/lib/http-response";
 
 const MD_CONTENT_TYPE = "text/markdown; charset=utf-8";
 const NEGOTIATION_VARY = pipe(NEGOTIATION_VARY_TOKENS, Array.map(String.toLowerCase), HashSet.fromIterable);

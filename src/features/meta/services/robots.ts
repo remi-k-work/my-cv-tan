@@ -1,6 +1,6 @@
 // services, features, and other libraries
 import { Context, Effect, Layer } from "effect";
-import { txtResponse } from "./responses";
+import { txtResponse } from "@/lib/http-response";
 
 // constants
 import { ROBOTS_TXT_INDEX } from "@/domain/discovery";

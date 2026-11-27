@@ -6,7 +6,7 @@ import { experiencePath } from "@/domain/urls";
 import { Sitemap } from "../../services/sitemap";
 import { sitemapHandler } from "../../services/handlers";
 import { buildSitemapXml } from "../sitemap";
-import { sitemapResponse, sitemapUnavailableResponse } from "@/features/meta/services/responses";
+import { sitemapResponse, sitemapUnavailableResponse } from "@/lib/http-response";
 import experienceEn from "@/assets/data/en/experience.json";
 import experiencePl from "@/assets/data/pl/experience.json";
 import { Datasets } from "@/features/data/services/datasets";

@@ -3,7 +3,7 @@ import { Option } from "effect";
 import { experienceImageAlt, experienceSection, experienceSeo } from "@/features/experience/domain/seo";
 import { jsonLdGraph } from "@/features/jsonld/domain/serialize";
 import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd } from "@/features/jsonld/domain/page-graphs";
-import { globalSocialImage, socialMeta } from "./social-meta";
+import { globalSocialImage, socialMeta } from "./social";
 import { staticPageCopy } from "@/domain/pages";
 import { representationLinks } from "@/domain/links";
 

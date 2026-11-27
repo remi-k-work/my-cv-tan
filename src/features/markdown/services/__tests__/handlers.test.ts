@@ -4,7 +4,7 @@ import gtConfig from "../../../../../gt.config.json";
 import { loadTranslations } from "@/lib/gt-translations";
 import { INDEXABLE_ROBOTS } from "@/domain/http";
 import { absoluteUrl, experienceMarkdownPath, experiencePath, markdownTwinUrl } from "@/domain/urls";
-import { CACHEABLE_HEADERS } from "@/features/meta/services/responses";
+import { CACHEABLE_HEADERS } from "@/lib/http-response";
 import { CONTENT_SIGNAL, LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/domain/discovery";
 import { contactHandler, educationHandler, experienceHandler, homeHandler, llmsFullTxtHandler, llmsTxtHandler } from "../handlers";
 import { robotsHandler, sitemapHandler } from "@/features/meta/services/handlers";

@@ -3,7 +3,7 @@ import { Context, Effect, Layer } from "effect";
 import { recoverDataFailure } from "@/features/data/domain/required";
 import { Datasets } from "@/features/data/services/datasets";
 import { buildSitemapXml } from "@/features/meta/domain/sitemap";
-import { sitemapResponse, sitemapUnavailableResponse } from "./responses";
+import { sitemapResponse, sitemapUnavailableResponse } from "@/lib/http-response";
 
 // constants
 import { DEFAULT_LANGUAGE } from "@/domain/constants";

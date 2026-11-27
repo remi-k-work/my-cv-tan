@@ -3,7 +3,7 @@ import { Effect, Option } from "effect";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 import { CONTENT_SIGNAL } from "@/domain/discovery";
 import { absoluteUrl } from "@/domain/urls";
-import { documentHeaders, txtResponse, txtUnavailableResponse } from "@/features/meta/services/responses";
+import { documentHeaders, txtResponse, txtUnavailableResponse } from "@/lib/http-response";
 import { requireData, recoverDataFailure } from "@/features/data/domain/required";
 import { experienceFromList } from "@/features/experience/domain/helpers";
 import {
