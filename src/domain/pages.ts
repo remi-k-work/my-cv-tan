@@ -9,7 +9,7 @@ import { pageField } from "./helpers";
 import { absoluteUrl } from "./urls";
 
 // types
-import type { PagePath, PageTitles, PreferredLanguage } from "./models";
+import type { PageIdentity, PagePath, PageTitles, PreferredLanguage } from "./models";
 
 // constants
 import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "./constants";
@@ -18,16 +18,12 @@ import { HOME_TITLE, PERSON_DESCRIPTION, SITE_DESCRIPTION } from "./site";
 export type StaticPageType = "overview" | "education" | "contact";
 
 // A static page resolved for one reader: the localized copy the HTML head, Markdown twin and sitemap all publish
-export interface StaticPageCopy {
+export interface StaticPageCopy extends PageIdentity {
   readonly path: PagePath;
   readonly mdHref: string;
   readonly type: StaticPageType;
   readonly pageName: string;
-  readonly description: string;
-  readonly preferredLanguage: PreferredLanguage;
-  readonly seoTitle: string;
   readonly intro: string;
-  readonly canonical: string;
 }
 
 // The authored copy for one language, before loader overrides
@@ -119,7 +115,7 @@ export const staticPageCopy = (pageTitles: Partial<PageTitles>, pagePath: PagePa
     mdHref,
     type,
     pageName: pageField(pageTitles, pagePath, "heading", heading),
-    seoTitle: title,
+    title,
     intro: pageField(pageTitles, pagePath, "intro", intro),
     description,
     canonical: absoluteUrl(pagePath),

@@ -1,4 +1,4 @@
-// The meta feature's cross-module contracts: the flat head elements every head projection returns
+// The document-head feature's cross-module contracts: the flat head elements every head projection returns
 // and the social-card shapes the head builders publish. JSON-LD types belong to the `jsonld`
 // feature and the route-match contracts to `route-head`; the head only carries the script element it
 // publishes. Module-local input structs live beside the builders that consume them; only what

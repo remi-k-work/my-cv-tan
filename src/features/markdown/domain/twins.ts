@@ -45,12 +45,12 @@ const optionalFacts = (fields: ReadonlyArray<readonly [string, Option.Option<str
     Record.fromEntries
   );
 
-const screenshotFacts = (screenshot: ExperienceSeo["screenshot"], headline: string, preferredLanguage: ExperienceSeo["preferredLanguage"]) =>
+const screenshotFacts = (screenshot: ExperienceSeo["screenshot"], title: string, preferredLanguage: ExperienceSeo["preferredLanguage"]) =>
   Option.match(screenshot, {
     onNone: Record.empty<string, string>,
     onSome: ({ src, mime, width, height }) => ({
       image: src,
-      image_alt: experienceImageAlt(headline, preferredLanguage),
+      image_alt: experienceImageAlt(title, preferredLanguage),
       image_type: mime,
       image_width: `${width}`,
       image_height: `${height}`,
@@ -127,7 +127,7 @@ export const buildContactMd = (input: ContactMdInput): MarkdownTwin => {
 
 // Builds the Markdown twin for an experience detail page
 export const buildExperienceMd = ({ seo, translate, includeNavigation = true }: ExperienceMdInput): MarkdownTwin => {
-  const { experience, preferredLanguage, canonical, headline, description } = seo;
+  const { experience, preferredLanguage, canonical, title, description } = seo;
   const { role, company, txt, year } = experience;
   const skills = experienceKeywords(experience);
   const { repository, live, video } = experienceLinks(experience);
@@ -146,7 +146,7 @@ export const buildExperienceMd = ({ seo, translate, includeNavigation = true }: 
 
   return {
     facts: {
-      ...twinIdentity(headline, description, canonical, preferredLanguage),
+      ...twinIdentity(seo),
       type: isEmployment(experience) ? "work-experience" : "project",
       role: inlineText(role),
       company: inlineText(company),
@@ -155,10 +155,10 @@ export const buildExperienceMd = ({ seo, translate, includeNavigation = true }: 
         ["skills", pipe(skillsText, Option.liftPredicate(String.isNonEmpty))],
         ...Array.map(resources, ([key, , href]) => [key, href] as const),
       ]),
-      ...screenshotFacts(seo.screenshot, headline, preferredLanguage),
+      ...screenshotFacts(seo.screenshot, title, preferredLanguage),
     },
     body: mdBody([
-      mdHeading(1, headline),
+      mdHeading(1, title),
       mdQuote(description),
       navBlock(includeNavigation, () => canonicalSourceLink(canonical)),
       mdTitledSection(translate(msg("Overview")), escapeMd(txt)),

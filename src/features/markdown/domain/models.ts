@@ -2,7 +2,7 @@
 import { translateSource } from "@/domain/helpers";
 
 // types
-import type { PageTitles, PreferredLanguage, Translate } from "@/domain/models";
+import type { PageIdentity, PageTitles, PreferredLanguage, Translate } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
 import type { StaticPageCopy } from "@/domain/pages";
@@ -50,12 +50,12 @@ export const twinBaseFacts = (title: string, description: string, preferredLangu
   }) as const;
 
 // The identity facts every published twin shares with its HTML head
-export const twinIdentity = (title: string, description: string, canonical: string, preferredLanguage: PreferredLanguage) => ({
+export const twinIdentity = ({ title, description, canonical, preferredLanguage }: PageIdentity) => ({
   ...twinBaseFacts(title, description, preferredLanguage),
   canonical,
 });
 
-export const pageFacts = ({ seoTitle, description, canonical, preferredLanguage, type }: StaticPageCopy) => ({
-  ...twinIdentity(seoTitle, description, canonical, preferredLanguage),
-  type,
+export const pageFacts = (copy: StaticPageCopy) => ({
+  ...twinIdentity(copy),
+  type: copy.type,
 });

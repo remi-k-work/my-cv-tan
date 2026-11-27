@@ -22,8 +22,8 @@ import { STATIC_PAGES } from "@/domain/pages";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 import { HOME_PATH } from "@/domain/constants";
 import { sampleEducation, samplePortfolio, stablePageTitles } from "@/testing/fixtures";
-import type { PageHead } from "@/features/meta/domain/models";
-import type { MatchChain, RouteStatus } from "@/features/meta/domain/route-head";
+import type { PageHead } from "@/features/document-head/domain/models";
+import type { MatchChain, RouteStatus } from "@/features/document-head/domain/route-head";
 
 interface HeadRoute {
   readonly options: {

@@ -9,7 +9,7 @@
 //
 // Readers that parse a rendered document back live with the feature that owns the format:
 // JSON-LD graph readers in `@/features/jsonld/domain/__tests__/fixtures` and meta-tag readers in
-// `@/features/meta/domain/__tests__/readers`.
+// `@/features/document-head/domain/__tests__/readers`.
 
 // services, features, and other libraries
 import { Option, Record } from "effect";

@@ -6,7 +6,7 @@
 import { assert, it } from "@effect/vitest";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { contactHead, educationHead, experienceHead, homeHead } from "@/features/meta/domain/page-head";
+import { contactHead, educationHead, experienceHead, homeHead } from "@/features/document-head/domain/page-head";
 import { STATIC_PAGES, STATIC_PAGE_PATHS, staticPageCopy } from "@/domain/pages";
 import { ExperienceIdentity } from "@/features/experience/ui/experience-identity";
 import { BRANDED_TITLE } from "@/domain/site";
@@ -19,9 +19,9 @@ import { buildContactMd, buildEducationMd, buildExperienceMd, buildHomeMd } from
 import { twinDocument } from "@/features/markdown/domain/format";
 import { sampleEmployment, stablePageTitles, translateEn } from "@/testing/fixtures";
 import { graphOf } from "@/features/jsonld/domain/__tests__/fixtures";
-import { metaOf } from "@/features/meta/domain/__tests__/readers";
+import { metaOf } from "@/features/document-head/domain/__tests__/readers";
 import type { PagePath, PreferredLanguage } from "@/domain/models";
-import type { PageHead } from "@/features/meta/domain/models";
+import type { PageHead } from "@/features/document-head/domain/models";
 import { experienceSeo } from "@/features/experience/domain/seo";
 
 it("the head, JSON-LD, Markdown twin and visible detail heading share one experience identity", () => {
@@ -38,9 +38,9 @@ it("the head, JSON-LD, Markdown twin and visible detail heading share one experi
   };
 
   // One headline: the og:title, the WebPage node and the twin's H1.
-  assert.strictEqual(metaContent("og:title"), seo.headline);
-  assert.strictEqual(webPage?.["name"], seo.headline);
-  assert.include(twin, `# ${seo.headline}`);
+  assert.strictEqual(metaContent("og:title"), seo.title);
+  assert.strictEqual(webPage?.["name"], seo.title);
+  assert.include(twin, `# ${seo.title}`);
 
   // One description: the meta description, the WebPage node, and the twin frontmatter plus pull
   // quote. The twin reuses the excerpt verbatim rather than summarizing the body a second way.
@@ -56,8 +56,8 @@ it("the head, JSON-LD, Markdown twin and visible detail heading share one experi
   assert.include(twin, `[Canonical HTML](${seo.canonical})`);
 
   // The route's visible H1 uses this same localized headline rather than the homepage heading.
-  const identity = renderToStaticMarkup(createElement(ExperienceIdentity, { experience: sampleEmployment, heading: seo.headline, headingLevel: 1 }));
-  assert.include(identity, `<h1 class="text-xl">${seo.headline}</h1>`);
+  const identity = renderToStaticMarkup(createElement(ExperienceIdentity, { experience: sampleEmployment, heading: seo.title, headingLevel: 1 }));
+  assert.include(identity, `<h1 class="text-xl">${seo.title}</h1>`);
 
   // One screenshot: the social card, JSON-LD and queryable twin facts name the same verified file.
   const primaryImage = webPage?.["primaryImageOfPage"] as { readonly url?: string } | undefined;
@@ -104,8 +104,8 @@ it("each static page's head and twin publish the same canonical, title and descr
     // The branded document title is one template applied to the catalogue's own SEO title. Both
     // surfaces read it from BRANDED_TITLE, so a separator change cannot leave the twin's frontmatter
     // spelling the head's <title> a different way.
-    assert.include(JSON.stringify(head.meta), JSON.stringify({ title: BRANDED_TITLE(copy.seoTitle) }));
-    assert.include(twin, `title: ${JSON.stringify(BRANDED_TITLE(copy.seoTitle))}`);
+    assert.include(JSON.stringify(head.meta), JSON.stringify({ title: BRANDED_TITLE(copy.title) }));
+    assert.include(twin, `title: ${JSON.stringify(BRANDED_TITLE(copy.title))}`);
     // The current-language twin the head advertises is the route the catalogue declares.
     assert.strictEqual(
       head.links.find(({ rel, hrefLang }) => rel === "alternate" && hrefLang === preferredLanguage)?.href,

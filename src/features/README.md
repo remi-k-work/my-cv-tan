@@ -19,7 +19,7 @@ src/
     discovery.ts     llms/robots/sitemap/downloadable-document catalogue
     links.ts         LinkTag, Link header builders, representation links
     constants.ts     languages, page paths, snippet length
-    models.ts        PagePath, PageTitles, Translate, ImageFacts
+    models.ts        PagePath, PageTitles, PageIdentity, Translate, ImageFacts
     http.ts          robots/cache directives
 
   lib/               cross-cutting runtime helpers
@@ -28,7 +28,7 @@ src/
   features/
     experience/      experience data, UI, and its SEO projection (domain/seo.ts)
     jsonld/          schema.org graph types, serializer, node builders, page graphs
-    meta/            HTML document head only: social tags, page/root/route heads, fallback heads
+    document-head/   HTML document head only: social tags, page/root/route heads, fallback heads
     discovery/       crawl + AI discovery outputs: robots, sitemap, llms.txt, llms-full.txt
     markdown/        Markdown representation: twins, catalogue, formatting, .md responses
     ...              captcha, contact-me, data, education, modals, typewriter
@@ -45,7 +45,7 @@ experience/domain/seo
    ↑                    ↑
 jsonld/domain      markdown/domain
    ↑                    ↑
-meta/domain        discovery/domain/llms
+document-head/domain  discovery/domain/llms
                         ↑
                    discovery/services
 ```
@@ -54,7 +54,7 @@ Allowed:
 
 - `markdown` → `src/domain`, `experience/domain`, `src/lib/http-response`
 - `jsonld` → `src/domain`, `experience/domain`
-- `meta` → `src/domain`, `experience/domain`, `jsonld/domain`
+- `document-head` → `src/domain`, `experience/domain`, `jsonld/domain`
 - `discovery` → `src/domain`, `experience/domain`, `markdown/domain`, `src/lib/http-response`
 - `experience` → `src/domain`
 - routes / UI → feature public modules
@@ -62,10 +62,10 @@ Allowed:
 
 Forbidden:
 
-- `markdown` → `meta`, `jsonld`, `discovery`
-- `meta` → `markdown`, `discovery`
-- `jsonld` → `meta`, `markdown`, `discovery`
-- `discovery` → `meta`, `jsonld`
+- `markdown` → `document-head`, `jsonld`, `discovery`
+- `document-head` → `markdown`, `discovery`
+- `jsonld` → `document-head`, `markdown`, `discovery`
+- `discovery` → `document-head`, `jsonld`
 - `src/domain` → `src/features`
 
 `discovery → markdown` is intentional and one-way: `llms-full.txt` embeds the Markdown bodies, so
@@ -74,8 +74,8 @@ discovery vocabulary comes from `src/domain/discovery`.
 
 ## Litmus test
 
-- Delete `meta`: only HTML head routes break; `markdown`, `jsonld` and `discovery` still stand.
-- Delete `jsonld`: only `meta` breaks.
+- Delete `document-head`: only HTML head routes break; `markdown`, `jsonld` and `discovery` still stand.
+- Delete `jsonld`: only `document-head` breaks.
 - Delete `markdown`: only `discovery`'s llms surface breaks — an explicit downstream dependency, not
   a cycle.
 
@@ -87,7 +87,7 @@ discovery vocabulary comes from `src/domain/discovery`.
   tests live in `src/features/__tests__`, and their sample records/copy live in
   `src/testing/fixtures.ts` (test-only; no production module imports it).
 - A feature's own tests and test helpers live beside it, and readers stay with the format they read:
-  JSON-LD graph readers in `jsonld/domain/__tests__`, meta-tag readers in `meta/domain/__tests__`.
+  JSON-LD graph readers in `jsonld/domain/__tests__`, meta-tag readers in `document-head/domain/__tests__`.
 
 ## Adding a new surface
 

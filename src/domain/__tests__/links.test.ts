@@ -1,6 +1,6 @@
 // The `<link>` vocabulary in src/domain/links.ts: the RFC 8288 serializer every HTML `<head>` and
 // HTTP `Link:` header is written through, and the canonical/author/alternate and discovery builders
-// that feed it. The root head's own use of these declarations is asserted from the meta feature.
+// that feed it. The root head's own use of these declarations is asserted from the document-head feature.
 
 import { assert, it } from "@effect/vitest";
 import {

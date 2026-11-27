@@ -28,7 +28,7 @@ it("resolves localized copy for every static page path", () => {
       assert.strictEqual(copy.type, STATIC_PAGES[pagePath].type);
       assert.strictEqual(copy.preferredLanguage, language);
       assert.strictEqual(copy.canonical, `https://www.remiforge.dev${pagePath}`);
-      assert.strictEqual(copy.seoTitle, STATIC_PAGES[pagePath].copy[language].title);
+      assert.strictEqual(copy.title, STATIC_PAGES[pagePath].copy[language].title);
       // `intro` prefers loader data when present, otherwise falls back to catalogue
       const loaderIntro = stablePageTitles[pagePath]?.intro;
       assert.strictEqual(copy.intro, loaderIntro ?? STATIC_PAGES[pagePath].copy[language].intro);
@@ -40,7 +40,7 @@ it("resolves localized copy for every static page path", () => {
 it("uses authored page titles from loader data when available", () => {
   const copy = staticPageCopy(stablePageTitles, HOME_PATH, "en");
   assert.strictEqual(copy.pageName, "Stable home title");
-  assert.strictEqual(copy.seoTitle, STATIC_PAGES[HOME_PATH].copy.en.title);
+  assert.strictEqual(copy.title, STATIC_PAGES[HOME_PATH].copy.en.title);
 });
 
 it("falls back to catalogue heading when loader data is missing", () => {

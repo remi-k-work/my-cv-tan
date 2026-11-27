@@ -1,4 +1,4 @@
-// The meta-tag reader the meta feature's unit tests share.
+// The meta-tag reader the document-head feature's unit tests share.
 //
 // The reader parses back exactly what a browser would take out of a rendered <meta> element, so a
 // test compares the flat tag union against the plain records the document publishes. Shared sample

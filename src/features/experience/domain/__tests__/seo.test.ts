@@ -11,7 +11,7 @@ import { META_DESCRIPTION_LENGTH } from "@/domain/constants";
 // types
 import type { Experience } from "../models";
 
-// A representative experience; Phase 6 consolidates this fixture across the feature test suites.
+// A representative portfolio-kind experience for the SEO projection; kept local to this suite.
 const sampleExperience: Experience = {
   type: "p",
   slug: "sample-role",
@@ -24,13 +24,13 @@ const sampleExperience: Experience = {
   skillsUsed: ["TypeScript", "React"],
 };
 
-it("derives canonical, path, markdownPath, headline and description from one experience", () => {
+it("derives canonical, path, markdownPath, title and description from one experience", () => {
   const seo = experienceSeo({ experience: sampleExperience, preferredLanguage: "en" });
 
   assert.strictEqual(seo.path, "/sample-role");
   assert.strictEqual(seo.canonical, "https://www.remiforge.dev/sample-role");
   assert.strictEqual(seo.markdownPath, "/sample-role.md");
-  assert.strictEqual(seo.headline, "Full-Stack Developer");
+  assert.strictEqual(seo.title, "Full-Stack Developer");
   assert.strictEqual(seo.description, "Built things with care.");
   assert.strictEqual(seo.preferredLanguage, "en");
   assert.deepStrictEqual(seo.experience, sampleExperience);
@@ -56,11 +56,11 @@ it("normalizes authored layout whitespace before publishing snippet metadata", (
     preferredLanguage: "en",
   });
 
-  assert.strictEqual(seo.headline, "Full-Stack Developer at Sample Co");
+  assert.strictEqual(seo.title, "Full-Stack Developer at Sample Co");
   assert.strictEqual(seo.description, "Built things with care.");
 });
 
-it("localizes headline and description for Polish", () => {
+it("localizes title and description for Polish", () => {
   const en = experienceSeo({ experience: sampleExperience, preferredLanguage: "en" });
   const pl = experienceSeo({ experience: sampleExperience, preferredLanguage: "pl" });
 
@@ -68,8 +68,8 @@ it("localizes headline and description for Polish", () => {
   assert.strictEqual(en.canonical, pl.canonical);
   assert.strictEqual(en.path, pl.path);
   assert.strictEqual(en.markdownPath, pl.markdownPath);
-  // Localized headline differs
-  assert.notStrictEqual(en.headline, pl.headline);
+  // Localized title differs
+  assert.notStrictEqual(en.title, pl.title);
   // Description is excerpted to the meta length cap
   assert.strictEqual(pl.description.length <= META_DESCRIPTION_LENGTH, true);
 });

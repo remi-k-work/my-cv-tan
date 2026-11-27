@@ -20,6 +20,16 @@ export interface ImageFacts {
   readonly height: number;
 }
 
+// The identity every published page's surfaces must agree on: one unbranded title, one description,
+// one canonical URL and one language. HTML heads brand the title, Markdown frontmatter serializes
+// it, and JSON-LD cites the same canonical URL and description, so the surfaces cannot drift.
+export interface PageIdentity {
+  readonly title: string;
+  readonly description: string;
+  readonly canonical: string;
+  readonly preferredLanguage: PreferredLanguage;
+}
+
 // constants
 import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH, SITE_LANGUAGES } from "./constants";
 

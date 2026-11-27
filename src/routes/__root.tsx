@@ -6,8 +6,8 @@ import { Outlet, createRootRoute, HeadContent, Scripts } from "@tanstack/react-r
 // services, features, and other libraries
 import { cn } from "@/lib/utils";
 import { getLocale, getTranslationsSnapshot, useGT } from "gt-tanstack-start";
-import { rootHead } from "@/features/meta/domain/root-head";
-import { headLanguage } from "@/features/meta/domain/route-head";
+import { rootHead } from "@/features/document-head/domain/root-head";
+import { headLanguage } from "@/features/document-head/domain/route-head";
 import { documentHeaders } from "@/lib/http-response";
 import { preferredLanguageFromLocale } from "@/domain/helpers";
 

@@ -2,7 +2,7 @@
 import { Option, Schema } from "effect";
 
 // types
-import type { ImageFacts, PreferredLanguage } from "@/domain/models";
+import type { ImageFacts, PageIdentity, PreferredLanguage } from "@/domain/models";
 
 // types
 export type Experience = typeof Experience.Type;
@@ -50,12 +50,12 @@ export interface ExperienceIdentity {
   readonly path: string;
   readonly canonical: string;
   readonly markdownPath: string;
-  readonly headline: string;
+  readonly title: string;
 }
 
-// Full detail projections add narrative and image facts to the lightweight identity
-export interface ExperienceSeo extends ExperienceIdentity {
+// Full detail projections add narrative and image facts to the lightweight identity. The shared
+// title, description, canonical and language are the PageIdentity every surface reads.
+export interface ExperienceSeo extends ExperienceIdentity, PageIdentity {
   readonly experience: Experience;
-  readonly description: string;
   readonly screenshot: Option.Option<ImageFacts>;
 }

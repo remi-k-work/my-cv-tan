@@ -37,7 +37,7 @@ it("experience entries carry only index metadata; the renderer chooses the langu
   const seo = experienceSeo({ experience: sampleEmployment, preferredLanguage: "en" });
   const entry = experienceEntry(seo);
 
-  assert.strictEqual(entry.name, seo.headline);
+  assert.strictEqual(entry.name, seo.title);
   assert.strictEqual(entry.canonical, seo.canonical);
   assert.strictEqual(entry.mdHref, seo.markdownPath);
   assert.isUndefined(entry.summary);

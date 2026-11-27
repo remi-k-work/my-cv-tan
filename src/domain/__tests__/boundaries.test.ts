@@ -1,6 +1,6 @@
 // Feature boundaries, enforced against the source rather than trusted to review.
 //
-// The reorganisation split one `meta` grab-bag into `meta`, `jsonld`, `discovery` and `markdown`,
+// The reorganisation split one `meta` grab-bag into `document-head`, `jsonld`, `discovery` and `markdown`,
 // each owning one output. The value of that split is the direction of the dependencies: if any one
 // feature can reach back into another's domain, the responsibilities blur again. Nothing in the type
 // checker prevents it, so this test reads the imports out of every production module and fails on a
@@ -48,12 +48,12 @@ const featureOf = (modulePath: string): string | null => /^features\/([^/]+)\//.
 // The shared vocabulary must not reach back into the features that build on it.
 const isSharedDomain = (modulePath: string) => slashed(modulePath).startsWith("domain/");
 
-// One entry per forbidden edge, not per mirror pair: `meta -> jsonld` is fine, `jsonld -> meta` is not.
+// One entry per forbidden edge, not per mirror pair: `document-head -> jsonld` is fine, `jsonld -> document-head` is not.
 const FORBIDDEN: Readonly<Record<string, ReadonlyArray<string>>> = {
-  markdown: ["meta", "jsonld", "discovery"],
-  meta: ["markdown", "discovery"],
-  jsonld: ["meta", "markdown", "discovery"],
-  discovery: ["meta", "jsonld"],
+  markdown: ["document-head", "jsonld", "discovery"],
+  "document-head": ["markdown", "discovery"],
+  jsonld: ["document-head", "markdown", "discovery"],
+  discovery: ["document-head", "jsonld"],
 };
 
 const files = productionFiles(SOURCE_ROOT);

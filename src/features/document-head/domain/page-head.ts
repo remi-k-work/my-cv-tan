@@ -47,12 +47,12 @@ export const pageHead = ({ social, markdownPath, graph }: PageHeadSpec): PageHea
   scripts: [jsonLdGraph([...SITE_NODES, ...graph])],
 });
 
-const experienceCardImage = (headline: string, image: Option.Option<ImageFacts>, preferredLanguage: PreferredLanguage): SocialImage =>
+const experienceCardImage = (title: string, image: Option.Option<ImageFacts>, preferredLanguage: PreferredLanguage): SocialImage =>
   Option.match(image, {
     onNone: () => globalSocialImage(preferredLanguage),
     onSome: (screenshot) => ({
       ...screenshot,
-      alt: experienceImageAlt(headline, preferredLanguage),
+      alt: experienceImageAlt(title, preferredLanguage),
     }),
   });
 
@@ -61,10 +61,10 @@ export const experienceHead = (input: ExperienceIdentityInput): PageHead => {
 
   return pageHead({
     social: {
-      title: seo.headline,
+      title: seo.title,
       description: seo.description,
       canonical: seo.canonical,
-      image: experienceCardImage(seo.headline, seo.screenshot, seo.preferredLanguage),
+      image: experienceCardImage(seo.title, seo.screenshot, seo.preferredLanguage),
       preferredLanguage: seo.preferredLanguage,
       ogType: "article",
       articleSection: experienceSection(seo.experience),
@@ -81,7 +81,7 @@ const staticPageHead = (input: StaticPageHeadInput, path: PagePath, graph: (copy
 
   return pageHead({
     social: {
-      title: copy.seoTitle,
+      title: copy.title,
       description: copy.description,
       canonical: copy.canonical,
       image: globalSocialImage(copy.preferredLanguage),

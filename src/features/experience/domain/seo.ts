@@ -30,8 +30,8 @@ export const experienceScreenshot = (imageName: string): Option.Option<ImageFact
   );
 
 // Social cards and Markdown image facts share the same localized alternative text
-export const experienceImageAlt = (headline: string, preferredLanguage: ExperienceIdentity["preferredLanguage"]) =>
-  matchPreferredLanguage(preferredLanguage, `Screenshot of ${headline}`, `Zrzut ekranu przedstawiający ${headline}`);
+export const experienceImageAlt = (title: string, preferredLanguage: ExperienceIdentity["preferredLanguage"]) =>
+  matchPreferredLanguage(preferredLanguage, `Screenshot of ${title}`, `Zrzut ekranu przedstawiający ${title}`);
 
 // Single source of truth for experience section classification shared across Open Graph and JSON-LD
 export const experienceSection = (experience: Pick<Experience, "type">): ExperienceSection => (isEmployment(experience) ? "employment" : "portfolio");
@@ -58,7 +58,7 @@ export const experienceIdentity = ({ experience, preferredLanguage }: Experience
     path,
     canonical: absoluteUrl(path),
     markdownPath: `${path}.md`,
-    headline: inlineText(experienceHeadline(experience, preferredLanguage)),
+    title: inlineText(experienceHeadline(experience, preferredLanguage)),
   };
 };
 

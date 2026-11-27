@@ -17,7 +17,7 @@ import { isCrawlablePath } from "../robots";
 import type { Experience } from "@/features/experience/domain/models";
 
 // A portfolio-kind sample mirrors the shape the sitemap builder reads; kept local so the discovery
-// suite stays independent of the other features' fixture modules (Phase 6 consolidates them).
+// suite stays independent of the other features' fixture modules.
 const sampleExperience: Experience = {
   type: "p",
   slug: "sample-role",

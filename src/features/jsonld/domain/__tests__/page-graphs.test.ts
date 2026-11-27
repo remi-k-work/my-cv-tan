@@ -14,7 +14,8 @@ import type { Experience, ExperienceList } from "@/features/experience/domain/mo
 
 const language: PreferredLanguage = "en";
 
-// A representative experience; Phase 6 consolidates this fixture across the feature test suites.
+// A representative portfolio-kind experience; kept local so the jsonld suite has no dependency on
+// another feature's test fixtures.
 const sampleExperience: Experience = {
   type: "p",
   slug: "sample-role",
@@ -102,7 +103,7 @@ it("experienceJsonLd assembles WebPage, Article and the item node for a project"
     experience: sampleExperience,
     preferredLanguage: language,
     canonical: "https://www.remiforge.dev/sample-role",
-    headline: "Full-Stack Developer",
+    title: "Full-Stack Developer",
     description: "Built things with care.",
     screenshot: Option.some({ src: "https://www.remiforge.dev/images/01-a.webp", mime: "image/webp", width: 1600, height: 900 }),
   });
@@ -140,7 +141,7 @@ it("experienceJsonLd drops a repository URL that is not http(s)", () => {
     experience: { ...sampleExperience, gitHubLink: "javascript:alert(1)" },
     preferredLanguage: language,
     canonical: "https://www.remiforge.dev/sample-role",
-    headline: "Full-Stack Developer",
+    title: "Full-Stack Developer",
     description: "Built things with care.",
     screenshot: Option.none(),
   });
@@ -160,7 +161,7 @@ it("experienceJsonLd drops the source-code type when the experience publishes no
     experience: { ...sampleExperience, gitHubLink: undefined },
     preferredLanguage: language,
     canonical: "https://www.remiforge.dev/sample-role",
-    headline: "Full-Stack Developer",
+    title: "Full-Stack Developer",
     description: "Built things with care.",
     screenshot: Option.none(),
   });
@@ -178,7 +179,7 @@ it("experienceJsonLd publishes only validated, distinct project resources", () =
     },
     preferredLanguage: language,
     canonical: "https://www.remiforge.dev/sample-role",
-    headline: "Full-Stack Developer",
+    title: "Full-Stack Developer",
     description: "Built things with care.",
     screenshot: Option.none(),
   });
@@ -198,7 +199,7 @@ it("experienceJsonLd uses EmployeeRole without claiming historical employment is
     experience: employment,
     preferredLanguage: language,
     canonical: "https://www.remiforge.dev/sample-job",
-    headline: "Web Developer",
+    title: "Web Developer",
     description: "Work.",
     screenshot: Option.none(),
   });
@@ -323,7 +324,7 @@ const subpagePairs: ReadonlyArray<ReadonlyArray<Record<string, unknown>>> = [
     experience: sampleExperience,
     preferredLanguage: language,
     canonical: "https://www.remiforge.dev/sample-role",
-    headline: "Full-Stack Developer",
+    title: "Full-Stack Developer",
     description: "Built things with care.",
     screenshot: Option.none(),
   }),
@@ -417,7 +418,7 @@ it("experienceJsonLd deduplicates repeated skills in keywords", () => {
     experience: { ...sampleExperience, skillsUsed: ["TypeScript", "React", "TypeScript"] },
     preferredLanguage: language,
     canonical: "https://www.remiforge.dev/sample-role",
-    headline: "Full-Stack Developer",
+    title: "Full-Stack Developer",
     description: "Built things with care.",
     screenshot: Option.none(),
   });
@@ -440,7 +441,7 @@ it("experienceJsonLd exposes validated gitHubLink on employment WebPage.relatedL
     },
     preferredLanguage: language,
     canonical: "https://www.remiforge.dev/sample-job",
-    headline: "Full-Stack Developer at Sample Co",
+    title: "Full-Stack Developer at Sample Co",
     description: "Built things with care.",
     screenshot: Option.none(),
   });

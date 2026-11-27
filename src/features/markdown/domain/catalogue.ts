@@ -39,7 +39,7 @@ export const pageEntry = (pagePath: PagePath): IndexEntry => {
 export const PAGE_ENTRIES: ReadonlyArray<IndexEntry> = Array.map(STATIC_PAGE_PATHS, pageEntry);
 
 export const experienceEntry = (identity: ExperienceIdentity): IndexEntry => ({
-  name: identity.headline,
+  name: identity.title,
   canonical: identity.canonical,
   mdHref: identity.markdownPath,
 });
@@ -50,8 +50,8 @@ const experienceLine = (experience: Experience, preferredLanguage: TwinContext["
   const twin = markdownTwinUrl(identity.markdownPath, preferredLanguage);
 
   return Match.value(mode).pipe(
-    Match.when("twin", () => `${mdLink(identity.headline, twin)}: ${escapeMdInline(summary)}`),
-    Match.when("index", () => mdIndexEntry(identity.headline, identity.canonical, twin, summary)),
+    Match.when("twin", () => `${mdLink(identity.title, twin)}: ${escapeMdInline(summary)}`),
+    Match.when("index", () => mdIndexEntry(identity.title, identity.canonical, twin, summary)),
     Match.exhaustive
   );
 };

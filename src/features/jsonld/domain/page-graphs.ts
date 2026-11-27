@@ -27,7 +27,7 @@ import type { PageNodeType } from "./nodes";
 
 // What the article/item graph reads from an experience's SEO identity; the full record is
 // assignable, but naming the subset keeps the coupling explicit and drift-free
-type ExperienceGraphInput = Pick<ExperienceSeo, "experience" | "preferredLanguage" | "canonical" | "headline" | "description" | "screenshot">;
+type ExperienceGraphInput = Pick<ExperienceSeo, "experience" | "preferredLanguage" | "canonical" | "title" | "description" | "screenshot">;
 
 // The page node (and its trail) every content page leads with
 interface PageGraphSpec {
@@ -92,9 +92,9 @@ const experienceCollection = ({
           name,
           preferredLanguage,
           parts: Array.map(entries, (experience) => {
-            // Derive URL and headline through the shared identity projection without building unused detail metadata
-            const { canonical, headline } = experienceIdentity({ experience, preferredLanguage });
-            return collectionPartNode(canonical, headline);
+            // Derive URL and title through the shared identity projection without building unused detail metadata
+            const { canonical, title } = experienceIdentity({ experience, preferredLanguage });
+            return collectionPartNode(canonical, title);
           }),
         })
       ),
@@ -170,7 +170,7 @@ export const contactJsonLd = ({ pageName, description, preferredLanguage }: Loca
   ];
 };
 
-export const experienceJsonLd = ({ experience, preferredLanguage, canonical: url, headline, description, screenshot }: ExperienceGraphInput): JsonLdNodes => {
+export const experienceJsonLd = ({ experience, preferredLanguage, canonical: url, title, description, screenshot }: ExperienceGraphInput): JsonLdNodes => {
   const { role, company, txt } = experience;
 
   const employment = isEmployment(experience);
@@ -214,7 +214,7 @@ export const experienceJsonLd = ({ experience, preferredLanguage, canonical: url
   // Publish the full narrative on Article.articleBody so JSON-LD extractors receive complete context beyond the 160-char snippet
   const article = articleNode({
     id: articleId,
-    headline,
+    headline: title,
     description,
     articleBody: txt,
     preferredLanguage,
@@ -229,7 +229,7 @@ export const experienceJsonLd = ({ experience, preferredLanguage, canonical: url
     ...pageGraph({
       type: "WebPage",
       url,
-      name: headline,
+      name: title,
       description,
       preferredLanguage,
       mainEntity: { "@id": articleId },

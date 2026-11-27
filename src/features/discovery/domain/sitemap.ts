@@ -31,13 +31,13 @@ const replaceXmlEntities = (value: string) =>
 // XML 1.0 cannot represent these controls or lone surrogates, even as entity references
 const escapeXml = flow(String.replace(XML_INVALID_CHARACTERS, ""), replaceXmlEntities);
 
-const experienceImages = (headline: string, screenshot: Option.Option<ImageFacts>) =>
+const experienceImages = (title: string, screenshot: Option.Option<ImageFacts>) =>
   pipe(
     screenshot,
     Option.map(({ src }) => [
       "  <image:image>",
       `    <image:loc>${escapeXml(src)}</image:loc>`,
-      `    <image:title>${escapeXml(headline)}</image:title>`,
+      `    <image:title>${escapeXml(title)}</image:title>`,
       "  </image:image>",
     ]),
     Option.getOrElse(Array.empty<string>)
@@ -51,7 +51,7 @@ export const buildSitemapXml = (experiences: ExperienceList) => {
     return {
       path: identity.path,
       loc: identity.canonical,
-      images: experienceImages(identity.headline, experienceScreenshot(experience.imageName)),
+      images: experienceImages(identity.title, experienceScreenshot(experience.imageName)),
     };
   });
 

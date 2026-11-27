@@ -3,8 +3,8 @@ import { createFileRoute } from "@tanstack/react-router";
 
 // services, features, and other libraries
 import { loaderContact } from "@/loaders/contact";
-import { routeHead } from "@/features/meta/domain/route-head";
-import { contactHead } from "@/features/meta/domain/page-head";
+import { routeHead } from "@/features/document-head/domain/route-head";
+import { contactHead } from "@/features/document-head/domain/page-head";
 
 // components
 import { ContactForm } from "@/features/contact-me/ui/contact-form";
