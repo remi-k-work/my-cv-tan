@@ -1,3 +1,8 @@
+// Cross-surface integration: the HTML head, the JSON-LD graph, the Markdown twin, the sitemap and
+// the AI index are five projections of one page identity. Each feature tests its own projection;
+// nothing but this test can catch the projections disagreeing, so it lives at the feature root
+// rather than inside any one feature.
+
 import { assert, it } from "@effect/vitest";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -8,21 +13,21 @@ import { BRANDED_TITLE } from "@/domain/site";
 import { DOWNLOADABLE_DOCUMENTS } from "@/domain/discovery";
 import { absoluteUrl } from "@/domain/urls";
 import { buildSitemapXml } from "@/features/discovery/domain/sitemap";
-import { mdResponse } from "../../services/responses";
+import { mdResponse } from "@/features/markdown/services/responses";
 import { buildLlmsFullTxt, buildLlmsTxt } from "@/features/discovery/domain/llms";
-import { buildContactMd, buildEducationMd, buildExperienceMd, buildHomeMd } from "../twins";
-import { twinDocument } from "../format";
-import { sampleExperience, stablePageTitles, translateEn } from "@/features/markdown/__tests__/fixtures";
+import { buildContactMd, buildEducationMd, buildExperienceMd, buildHomeMd } from "@/features/markdown/domain/twins";
+import { twinDocument } from "@/features/markdown/domain/format";
+import { sampleEmployment, stablePageTitles, translateEn } from "@/testing/fixtures";
 import { graphOf } from "@/features/jsonld/domain/__tests__/fixtures";
-import { metaOf } from "@/features/meta/domain/__tests__/fixtures";
+import { metaOf } from "@/features/meta/domain/__tests__/readers";
 import type { PagePath, PreferredLanguage } from "@/domain/models";
 import type { PageHead } from "@/features/meta/domain/models";
 import { experienceSeo } from "@/features/experience/domain/seo";
 
 it("the head, JSON-LD, Markdown twin and visible detail heading share one experience identity", () => {
   const preferredLanguage = "pl";
-  const seo = experienceSeo({ experience: sampleExperience, preferredLanguage });
-  const head = experienceHead({ experience: sampleExperience, preferredLanguage });
+  const seo = experienceSeo({ experience: sampleEmployment, preferredLanguage });
+  const head = experienceHead({ experience: sampleEmployment, preferredLanguage });
   const graph = graphOf(head.scripts?.[0]?.children);
   const webPage = graph.find((node) => node["@type"] === "WebPage");
   const twin = twinDocument(buildExperienceMd({ seo, translate: translateEn }));
@@ -51,7 +56,7 @@ it("the head, JSON-LD, Markdown twin and visible detail heading share one experi
   assert.include(twin, `[Canonical HTML](${seo.canonical})`);
 
   // The route's visible H1 uses this same localized headline rather than the homepage heading.
-  const identity = renderToStaticMarkup(createElement(ExperienceIdentity, { experience: sampleExperience, heading: seo.headline, headingLevel: 1 }));
+  const identity = renderToStaticMarkup(createElement(ExperienceIdentity, { experience: sampleEmployment, heading: seo.headline, headingLevel: 1 }));
   assert.include(identity, `<h1 class="text-xl">${seo.headline}</h1>`);
 
   // One screenshot: the social card, JSON-LD and queryable twin facts name the same verified file.
@@ -110,14 +115,14 @@ it("each static page's head and twin publish the same canonical, title and descr
 });
 
 it("the full-content companion keeps one source link per embedded twin", () => {
-  const document = buildLlmsFullTxt({ pageTitles: stablePageTitles, experienceList: [sampleExperience], educationList: [] });
+  const document = buildLlmsFullTxt({ pageTitles: stablePageTitles, experienceList: [sampleEmployment], educationList: [] });
 
   assert.strictEqual((document.match(/\[Source\]\(/g) ?? []).length, STATIC_PAGE_PATHS.length + 1);
   assert.notInclude(document, "[Canonical HTML]");
 });
 
 it("the full-content companion preserves each experience's queryable resource facts", () => {
-  const document = buildLlmsFullTxt({ pageTitles: stablePageTitles, experienceList: [sampleExperience], educationList: [] });
+  const document = buildLlmsFullTxt({ pageTitles: stablePageTitles, experienceList: [sampleEmployment], educationList: [] });
 
   assert.include(document, 'repository: "https://github.com/example/repo"');
   assert.include(document, 'image: "https://www.remiforge.dev/images/01-a.webp"');
@@ -178,12 +183,12 @@ it("a page's advertised twin URL is the very URL the twin route answers on", asy
   }
 
   // The detail page does the same off its SEO record, so the two surfaces agree for every page kind.
-  const detail = experienceHead({ experience: sampleExperience, preferredLanguage: "en" });
+  const detail = experienceHead({ experience: sampleEmployment, preferredLanguage: "en" });
   const detailResponse = mdResponse({
     body: "",
     preferredLanguage: "en",
-    canonical: experienceSeo({ experience: sampleExperience, preferredLanguage: "en" }).canonical,
-    markdownPath: experienceSeo({ experience: sampleExperience, preferredLanguage: "en" }).markdownPath,
+    canonical: experienceSeo({ experience: sampleEmployment, preferredLanguage: "en" }).canonical,
+    markdownPath: experienceSeo({ experience: sampleEmployment, preferredLanguage: "en" }).markdownPath,
   });
 
   assert.strictEqual(twinLocationOf(detail, "en"), detailResponse.headers.get("Content-Location"), "detail page advertised twin URL");

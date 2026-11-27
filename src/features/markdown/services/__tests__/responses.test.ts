@@ -15,7 +15,7 @@ import {
   temporaryFallbackResponse,
   withoutNegotiationVary,
 } from "../responses";
-import { sampleExperience } from "@/features/markdown/__tests__/fixtures";
+import { sampleEmployment } from "@/testing/fixtures";
 
 describe("withoutNegotiationVary", () => {
   it("drops both negotiation tokens, leaving no Vary value", () => {
@@ -188,8 +188,8 @@ it.effect("a failed experience-list decode is an error, while a valid missing sl
     assert.strictEqual(decodeError._tag, "RequiredDataError");
 
     assert.deepStrictEqual(experienceFromList([], "missing"), Option.none());
-    assert.deepStrictEqual(experienceFromList([sampleExperience], "missing"), Option.none());
-    assert.deepStrictEqual(experienceFromList([sampleExperience], sampleExperience.slug), Option.some(sampleExperience));
+    assert.deepStrictEqual(experienceFromList([sampleEmployment], "missing"), Option.none());
+    assert.deepStrictEqual(experienceFromList([sampleEmployment], sampleEmployment.slug), Option.some(sampleEmployment));
   })
 );
 

@@ -4,7 +4,7 @@ import { rootHead } from "../root-head";
 import { homeHead, contactHead, educationHead, experienceHead } from "../page-head";
 import { AI_DISCOVERY_LINKS, authorLink, canonicalLink, joinLinkHeader, languageVariantLinks, LLMS_DISCOVERY_LINK, SITEMAP_LINK } from "@/domain/links";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
-import { stablePageTitles } from "./fixtures";
+import { stablePageTitles } from "@/testing/fixtures";
 
 // types
 import type { LinkTag } from "@/domain/links";

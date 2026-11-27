@@ -1,6 +1,15 @@
-// Shared fixtures for the Markdown feature's tests. Keeping them in one place means a change to
-// the sample portfolio data or the Polish dictionary cannot make one surface's expectations drift
-// from another's.
+// The sample records and copy the cross-feature tests share. One definition per value means a
+// change to the sample portfolio data, the page catalogue copy or the Polish dictionary cannot make
+// one surface's expectations drift from another's.
+//
+// Two experience samples are exported because the two kinds differ in more than a flag: the
+// employment kind localizes its headline as "<role> at <company>" and renders `work-experience`
+// twins, while the portfolio kind uses the bare role and renders project twins. Tests on either
+// side need their own kind.
+//
+// Readers that parse a rendered document back live with the feature that owns the format:
+// JSON-LD graph readers in `@/features/jsonld/domain/__tests__/fixtures` and meta-tag readers in
+// `@/features/meta/domain/__tests__/readers`.
 
 // services, features, and other libraries
 import { Option, Record } from "effect";
@@ -9,10 +18,13 @@ import { buildContactMd, buildEducationMd, buildHomeMd } from "@/features/markdo
 
 // types
 import type { PageTitles, Translate } from "@/domain/models";
+import type { EducationList } from "@/features/education/domain/models";
 import type { Experience } from "@/features/experience/domain/models";
 import type { ContactMdInput, EducationMdInput, HomeMdInput } from "@/features/markdown/domain/twins";
 
-export const sampleExperience: Experience = {
+// The employment sample exercises the richer narrative and employment headline every Markdown and
+// llms surface renders, so its `txt` carries the inline Markdown markers those tests assert.
+export const sampleEmployment: Experience = {
   type: "e",
   slug: "sample-role",
   year: "Mar 2026",
@@ -24,10 +36,20 @@ export const sampleExperience: Experience = {
   skillsUsed: ["TypeScript", "React"],
 };
 
+// The portfolio sample keeps the same identity so the two kinds cannot drift, but a plain narrative
+// and the project headline the HTML head and sitemap surfaces assert.
+export const samplePortfolio: Experience = {
+  ...sampleEmployment,
+  type: "p",
+  txt: "Built things with care.",
+};
+
+export const sampleEducation: EducationList = [{ name: "Pratt Institute", year: "• 2002 — 2004 •", location: "New York, US", info: "Interactive Media." }];
+
 export const stablePageTitles: PageTitles = {
-  "/": { eyebrow: "Home", heading: "Stable home title", intro: "Stable home summary." },
-  "/education": { eyebrow: "Education", heading: "Stable education title", intro: "Stable education summary." },
-  "/contact": { eyebrow: "Contact", heading: "Stable contact title", intro: "Stable contact summary." },
+  "/": { eyebrow: "Home", heading: "Stable home title", intro: "Stable home description." },
+  "/education": { eyebrow: "Education", heading: "Stable education title", intro: "Stable education description." },
+  "/contact": { eyebrow: "Contact", heading: "Stable contact title", intro: "Stable contact description." },
 };
 
 export const translateEn: Translate = (source) => source;

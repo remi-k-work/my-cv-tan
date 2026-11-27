@@ -21,7 +21,7 @@ import { BRANDED_TITLE, HOME_URL } from "@/domain/site";
 import { STATIC_PAGES } from "@/domain/pages";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 import { HOME_PATH } from "@/domain/constants";
-import { sampleEducation, sampleExperience, stablePageTitles } from "@/features/meta/domain/__tests__/fixtures";
+import { sampleEducation, samplePortfolio, stablePageTitles } from "@/testing/fixtures";
 import type { PageHead } from "@/features/meta/domain/models";
 import type { MatchChain, RouteStatus } from "@/features/meta/domain/route-head";
 
@@ -63,7 +63,7 @@ it("the index route builds home and detail heads from their respective loader pa
       type: "list",
       randomPageTitles: stablePageTitles,
       stablePageTitles,
-      experienceList: [sampleExperience],
+      experienceList: [samplePortfolio],
     },
   });
 
@@ -76,8 +76,8 @@ it("the index route builds home and detail heads from their respective loader pa
   assert.include(JSON.stringify(home.meta), JSON.stringify({ title: BRANDED_TITLE(STATIC_PAGES[HOME_PATH].copy.pl.title) }));
 
   const detail = await headOf(IndexRoute, {
-    loaderData: { type: "item", experience: sampleExperience },
-    params: { slug: sampleExperience.slug },
+    loaderData: { type: "item", experience: samplePortfolio },
+    params: { slug: samplePortfolio.slug },
   });
 
   assert.strictEqual(metaContent(detail, "property", "og:type"), "article");
@@ -86,7 +86,7 @@ it("the index route builds home and detail heads from their respective loader pa
     detail.links.find(({ rel }) => rel === "canonical"),
     {
       rel: "canonical",
-      href: absoluteUrl(experiencePath(sampleExperience.slug)),
+      href: absoluteUrl(experiencePath(samplePortfolio.slug)),
     }
   );
 });
@@ -121,7 +121,7 @@ it("the detail route derives its degraded canonical from current params, never s
       type: "list",
       randomPageTitles: stablePageTitles,
       stablePageTitles,
-      experienceList: [sampleExperience],
+      experienceList: [samplePortfolio],
     },
     params: { slug },
     matchStatus: "error",
@@ -129,7 +129,7 @@ it("the detail route derives its degraded canonical from current params, never s
 
   assert.strictEqual(metaContent(head, "name", "robots"), NOINDEX_FOLLOW);
   assert.deepStrictEqual(head.links, [{ rel: "canonical", href: absoluteUrl(experiencePath(slug)) }]);
-  assert.notInclude(JSON.stringify(head), sampleExperience.role);
+  assert.notInclude(JSON.stringify(head), samplePortfolio.role);
 });
 
 it("route heads fall back to English when the root locale is unsupported", async () => {

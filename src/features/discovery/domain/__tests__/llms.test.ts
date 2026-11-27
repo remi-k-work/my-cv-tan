@@ -10,11 +10,11 @@ import { LANG_PARAM } from "@/domain/urls";
 import { DISCOVERY_DOCUMENTS } from "@/domain/discovery";
 import { experienceSeo } from "@/features/experience/domain/seo";
 import { SITE_LANGUAGE_NAMES, SITE_LANGUAGES } from "@/domain/constants";
-import { sampleExperience, stablePageTitles, translateEn } from "@/features/markdown/__tests__/fixtures";
+import { sampleEmployment, stablePageTitles, translateEn } from "@/testing/fixtures";
 import type { MarkdownTwin } from "@/features/markdown/domain/models";
 
 it("buildLlmsTxt indexes pages, about facts, grouped experience and negotiated language guidance", () => {
-  const txt = buildLlmsTxt([{ ...sampleExperience, slug: "my project" }]);
+  const txt = buildLlmsTxt([{ ...sampleEmployment, slug: "my project" }]);
   // Rendered alongside the index below, so the two documents are compared rather than re-stated
   const fullDocument = buildLlmsFullTxt({ pageTitles: stablePageTitles, experienceList: [], educationList: [] });
   assert.include(txt, `# Remi Forge`);
@@ -100,7 +100,7 @@ it("buildLlmsTxt indexes pages, about facts, grouped experience and negotiated l
 });
 
 it("llms.txt reserves every H2 section for a non-empty Markdown-link file list", () => {
-  const txt = buildLlmsTxt([sampleExperience]);
+  const txt = buildLlmsTxt([sampleEmployment]);
   const sections = txt.split(/^## /m).slice(1);
 
   assert.isAbove(sections.length, 0);
@@ -120,7 +120,7 @@ it("llms.txt reserves every H2 section for a non-empty Markdown-link file list",
 });
 
 it("buildLlmsTxt places project entries in the portfolio file list", () => {
-  const txt = buildLlmsTxt([{ ...sampleExperience, type: "p", slug: "sample-project" }]);
+  const txt = buildLlmsTxt([{ ...sampleEmployment, type: "p", slug: "sample-project" }]);
 
   assert.notInclude(txt, "## Work Experience");
   assert.include(txt, "## Portfolio Projects");
@@ -132,7 +132,7 @@ it("the index's language guidance covers every language the site publishes and n
   // The guidance names the `?lang=` pin and the languages it selects, and the twin builder and its
   // parser both read the same vocabulary. Pinning the two against each other is what stops a
   // language from being published without being advertised, or advertised without being published.
-  const txt = buildLlmsTxt([sampleExperience]);
+  const txt = buildLlmsTxt([sampleEmployment]);
   const pinned = new Set([...txt.matchAll(/\?lang=([a-z]+)/g)].map(([, language]) => language));
 
   assert.deepStrictEqual([...pinned].sort(), [...SITE_LANGUAGES].sort());
@@ -165,8 +165,8 @@ it("the reuse note names the frontmatter facts every published page twin actuall
   // The set both kinds of twin share: a static twin's own kind and the detail twin's role, company,
   // year and skills are this document's own extras, not the headline facts the note describes.
   const twins: ReadonlyArray<MarkdownTwin> = [
-    buildHomeMd({ ...SOURCE_CONTEXT, pageTitles: stablePageTitles, experienceList: [sampleExperience] }),
-    buildExperienceMd({ seo: experienceSeo({ experience: sampleExperience, preferredLanguage: "en" }), translate: translateEn }),
+    buildHomeMd({ ...SOURCE_CONTEXT, pageTitles: stablePageTitles, experienceList: [sampleEmployment] }),
+    buildExperienceMd({ seo: experienceSeo({ experience: sampleEmployment, preferredLanguage: "en" }), translate: translateEn }),
   ];
 
   for (const key of claimedKeys) {
@@ -180,7 +180,7 @@ it("the reuse note names the frontmatter facts every published page twin actuall
 it("the index and home twin share one experience listing, with canonical citations only in the index", () => {
   // Both surfaces lead with the same Markdown twin and summary. The index alone adds the clean HTML
   // citation target, keeping its retrieval and citation roles explicit without duplicating list logic.
-  const experienceList = [{ ...sampleExperience, type: "e" as const, slug: "sample-job", role: "Backend Developer", company: "Sample Co" }];
+  const experienceList = [{ ...sampleEmployment, type: "e" as const, slug: "sample-job", role: "Backend Developer", company: "Sample Co" }];
   const index = buildLlmsTxt(experienceList);
   const twin = twinDocument(buildHomeMd({ ...SOURCE_CONTEXT, pageTitles: stablePageTitles, experienceList }));
   const entry = "Backend Developer at Sample Co";
@@ -211,10 +211,10 @@ it("the index and home twin share one experience listing, with canonical citatio
 });
 
 it("both AI indexes carry the same single-sourced reuse notes", () => {
-  const index = buildLlmsTxt([sampleExperience]);
+  const index = buildLlmsTxt([sampleEmployment]);
   const full = buildLlmsFullTxt({
     pageTitles: stablePageTitles,
-    experienceList: [sampleExperience],
+    experienceList: [sampleEmployment],
     educationList: [{ name: "Example School", year: "2020", location: "Poland", info: "Studied interaction design." }],
   });
 
@@ -226,10 +226,10 @@ it("both AI indexes carry the same single-sourced reuse notes", () => {
 });
 
 it("only the index points at the single-request companion; the companion never points at itself", () => {
-  const index = buildLlmsTxt([sampleExperience]);
+  const index = buildLlmsTxt([sampleEmployment]);
   const full = buildLlmsFullTxt({
     pageTitles: stablePageTitles,
-    experienceList: [sampleExperience],
+    experienceList: [sampleEmployment],
     educationList: [{ name: "Example School", year: "2020", location: "Poland", info: "Studied interaction design." }],
   });
 
@@ -272,7 +272,7 @@ it("the discovery list projects every crawl document from the shared catalogue",
 it("the full-content companion gives every concatenated document its own section heading", () => {
   const txt = buildLlmsFullTxt({
     pageTitles: stablePageTitles,
-    experienceList: [sampleExperience],
+    experienceList: [sampleEmployment],
     educationList: [{ name: "Example School", year: "2020", location: "Poland", info: "Studied interaction design." }],
   });
 
@@ -291,7 +291,7 @@ it("the full-content companion gives every concatenated document its own section
 it("buildLlmsFullTxt concatenates every twin behind its canonical URL", () => {
   const txt = buildLlmsFullTxt({
     pageTitles: stablePageTitles,
-    experienceList: [sampleExperience],
+    experienceList: [sampleEmployment],
     educationList: [{ name: "Example School", year: "2020", location: "Poland", info: "Studied interaction design." }],
   });
 
@@ -338,7 +338,7 @@ it("the full-content companion gives every concatenated document a distinct head
   // # the site, ## one document, ### its headline, #### its sections, ##### nested entries.
   const txt = buildLlmsFullTxt({
     pageTitles: stablePageTitles,
-    experienceList: [sampleExperience],
+    experienceList: [sampleEmployment],
     educationList: [{ name: "Example School", year: "2020", location: "Poland", info: "Studied interaction design." }],
   });
 
@@ -358,7 +358,7 @@ it("a content-derived index label cannot fabricate a Markdown link destination",
   // A twin name sits inside a Markdown link label. The brackets are escaped, so the label stays one
   // label and the real destination survives — an unescaped "]" would close the label early and hand
   // a crawler a destination the site never published.
-  const txt = buildLlmsTxt([{ ...sampleExperience, type: "p", slug: "evil", role: "Evil](https://evil.test)" }]);
+  const txt = buildLlmsTxt([{ ...sampleEmployment, type: "p", slug: "evil", role: "Evil](https://evil.test)" }]);
 
   assert.include(txt, "- [Evil\\](https://evil.test)](https://www.remiforge.dev/evil.md?lang=en):");
   // The escape is transparent, so the line still parses as one bullet with one destination
@@ -389,7 +389,7 @@ it("the companion's only H2s are its own document sections, never a concatenated
   // an H2 nobody declared, which is what the fenced facts prevent.
   const txt = buildLlmsFullTxt({
     pageTitles: stablePageTitles,
-    experienceList: [sampleExperience],
+    experienceList: [sampleEmployment],
     educationList: [{ name: "Example School", year: "2020", location: "Poland", info: "Studied interaction design." }],
   });
 
@@ -414,7 +414,7 @@ it("index entries encode a paren-bearing slug so the twin destination survives",
   // encodeURIComponent leaves "(" and ")" raw, but a Markdown destination ends at the first ")".
   // The twin URL is an embedded destination exactly like the canonical link beside it, so both take
   // the paren encoding and a slug that would truncate one entry renders as one whole entry.
-  const txt = buildLlmsTxt([{ ...sampleExperience, slug: "role (senior)" }]);
+  const txt = buildLlmsTxt([{ ...sampleEmployment, slug: "role (senior)" }]);
 
   assert.include(txt, "](https://www.remiforge.dev/role%20%28senior%29)");
   assert.include(txt, "](https://www.remiforge.dev/role%20%28senior%29.md?lang=en)");
@@ -425,7 +425,7 @@ it("index entries encode a paren-bearing slug so the twin destination survives",
 it("the companion encodes every slug-derived twin URL exactly as its table of contents does", () => {
   const txt = buildLlmsFullTxt({
     pageTitles: stablePageTitles,
-    experienceList: [{ ...sampleExperience, slug: "role (senior)" }],
+    experienceList: [{ ...sampleEmployment, slug: "role (senior)" }],
     educationList: [],
   });
 
@@ -440,8 +440,8 @@ it("the companion encodes every slug-derived twin URL exactly as its table of co
 });
 
 it("the companion's Source and Markdown links preserve slug characters as destinations", () => {
-  const underscore = { ...sampleExperience, slug: "_role_" };
-  const paren = { ...sampleExperience, slug: "role (senior)" };
+  const underscore = { ...sampleEmployment, slug: "_role_" };
+  const paren = { ...sampleEmployment, slug: "role (senior)" };
 
   const doc = buildLlmsFullTxt({ pageTitles: stablePageTitles, experienceList: [underscore], educationList: [] });
   assert.include(doc, `[Source](https://www.remiforge.dev/_role_)`);

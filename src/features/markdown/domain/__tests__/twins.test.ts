@@ -1,11 +1,11 @@
 import { assert, it } from "@effect/vitest";
 import { STATIC_PAGES } from "@/domain/pages";
 import { CONTACT_EMAIL } from "@/domain/site";
-import { contactTwin, educationTwin, homeTwin, sampleExperience, stablePageTitles, translateEn, translatePl } from "@/features/markdown/__tests__/fixtures";
+import { contactTwin, educationTwin, homeTwin, sampleEmployment, stablePageTitles, translateEn, translatePl } from "@/testing/fixtures";
 import type { ExperienceList } from "@/features/experience/domain/models";
 
 it("buildHomeMd groups work and projects and links to .md twins", () => {
-  const md = homeTwin({ pageTitles: stablePageTitles, experienceList: [sampleExperience], preferredLanguage: "en", translate: translateEn });
+  const md = homeTwin({ pageTitles: stablePageTitles, experienceList: [sampleEmployment], preferredLanguage: "en", translate: translateEn });
   assert.include(md, `canonical: "https://www.remiforge.dev/"`);
   assert.include(md, `title: "Remi Forge ● ${STATIC_PAGES["/"].copy.en.title}"`);
   assert.include(md, `description: "${STATIC_PAGES["/"].copy.en.description}"`);
@@ -59,7 +59,7 @@ it("the home twin's two experience listings are one split: every experience exac
 });
 
 it("home Markdown links encode experience slugs consistently", () => {
-  const experience = { ...sampleExperience, slug: "my project" };
+  const experience = { ...sampleEmployment, slug: "my project" };
   const md = homeTwin({ pageTitles: stablePageTitles, experienceList: [experience], preferredLanguage: "en", translate: translateEn });
   assert.include(md, "https://www.remiforge.dev/my%20project.md?lang=en");
 });
@@ -165,7 +165,7 @@ it("the contact twin advertises the same social profiles as the HTML page", () =
 
 it("every static twin links its siblings and both AI indexes (the GEO crawl graph)", () => {
   const twins = [
-    homeTwin({ pageTitles: stablePageTitles, experienceList: [sampleExperience], preferredLanguage: "en", translate: translateEn }),
+    homeTwin({ pageTitles: stablePageTitles, experienceList: [sampleEmployment], preferredLanguage: "en", translate: translateEn }),
     educationTwin({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "en", translate: translateEn }),
     contactTwin({ pageTitles: stablePageTitles, preferredLanguage: "en", translate: translateEn }),
   ];

@@ -7,14 +7,14 @@ import { Datasets } from "@/features/data/services/datasets";
 import { RequiredDataError } from "@/features/data/domain/required";
 import { STATIC_PAGES, STATIC_PAGE_PATHS } from "@/domain/pages";
 import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/domain/constants";
-import { sampleExperience, stablePageTitles, translateEn } from "@/features/markdown/__tests__/fixtures";
+import { sampleEmployment, stablePageTitles, translateEn } from "@/testing/fixtures";
 
 const failed = (dataset: string): Effect.Effect<never, RequiredDataError> =>
   Effect.fail(new RequiredDataError({ dataset, message: `test forbids reading ${dataset}` }));
 
 const datasets = (available: { readonly pageTitles?: boolean; readonly experienceList?: boolean; readonly educationList?: boolean }): Datasets["Service"] => ({
   pageTitles: available.pageTitles ? () => Effect.succeed(stablePageTitles) : () => failed("page titles"),
-  experienceList: available.experienceList ? () => Effect.succeed([sampleExperience]) : () => failed("experience list"),
+  experienceList: available.experienceList ? () => Effect.succeed([sampleEmployment]) : () => failed("experience list"),
   educationList: available.educationList ? () => Effect.succeed([]) : () => failed("education list"),
 });
 

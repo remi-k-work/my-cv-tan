@@ -6,7 +6,7 @@ import { assert, it } from "@effect/vitest";
 import { globalSocialImage, OPEN_GRAPH_LOCALES, socialMeta } from "../social";
 import { AUTHOR_URL, PUBLISHER_URL, SITE_NAME } from "@/domain/site";
 import { SocialImage, SocialMetaInput } from "../models";
-import { LANGUAGE, metaTagsOf, tagContent } from "./fixtures";
+import { LANGUAGE, metaTagsOf, tagContent } from "./readers";
 import type { PreferredLanguage } from "@/domain/models";
 import { SITE_LANGUAGE_NAMES } from "@/domain/constants";
 

@@ -1,6 +1,6 @@
 import { assert, it } from "@effect/vitest";
 import { STATIC_PAGE_PATHS } from "@/domain/pages";
-import { sampleExperience, stablePageTitles } from "@/features/markdown/__tests__/fixtures";
+import { sampleEmployment, stablePageTitles } from "@/testing/fixtures";
 import { SOURCE_CONTEXT } from "../models";
 import { buildContactMd, buildEducationMd, buildHomeMd, buildPageDocument } from "../twins";
 import type { PagePath } from "@/domain/models";
@@ -8,7 +8,7 @@ import type { MarkdownTwin } from "../models";
 
 const content = {
   pageTitles: stablePageTitles,
-  experienceList: [sampleExperience],
+  experienceList: [sampleEmployment],
   educationList: [{ name: "Example School", year: "2020", location: "Poland", info: "Studied interaction design." }],
 } as const;
 

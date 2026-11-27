@@ -17,7 +17,7 @@ import {
   mdTitledSection,
   translatedLink,
 } from "../format";
-import { educationTwin, homeTwin, sampleExperience, stablePageTitles, translateEn } from "@/features/markdown/__tests__/fixtures";
+import { educationTwin, homeTwin, sampleEmployment, stablePageTitles, translateEn } from "@/testing/fixtures";
 
 it("mdHeading renders one level with the text escaped inline", () => {
   assert.strictEqual(mdHeading(1, "Hello *world*"), "# Hello \\*world\\*");
@@ -297,7 +297,7 @@ it("a fact label or value cannot fabricate markup from inside a bullet", () => {
 it("experience twin links percent-encode parentheses that would otherwise close a Markdown destination", () => {
   // encodeURIComponent leaves "(" and ")" raw, but Markdown reads ")" as the end of a link
   // destination, so every slug-derived path is percent-encoded before it is embedded.
-  const experience = { ...sampleExperience, slug: "role (senior)" };
+  const experience = { ...sampleEmployment, slug: "role (senior)" };
   const home = homeTwin({ pageTitles: stablePageTitles, experienceList: [experience], preferredLanguage: "en", translate: translateEn });
   assert.include(home, "(https://www.remiforge.dev/role%20%28senior%29.md?lang=en)");
 });

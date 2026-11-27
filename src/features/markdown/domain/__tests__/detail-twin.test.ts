@@ -6,10 +6,10 @@ import { twinDocument } from "../format";
 import { escapeMd } from "../escape";
 import { experienceSeo } from "@/features/experience/domain/seo";
 import { BRANDED_TITLE, NOT_FOUND_COPY } from "@/domain/site";
-import { sampleExperience, translateEn, translatePl } from "@/features/markdown/__tests__/fixtures";
+import { sampleEmployment, translateEn, translatePl } from "@/testing/fixtures";
 
 it("the experience twin renders frontmatter, H1, skills and links without repeated crawler instructions", () => {
-  const md = twinDocument(buildExperienceMd({ seo: experienceSeo({ experience: sampleExperience, preferredLanguage: "en" }), translate: translateEn }));
+  const md = twinDocument(buildExperienceMd({ seo: experienceSeo({ experience: sampleEmployment, preferredLanguage: "en" }), translate: translateEn }));
   assert.include(md, `canonical: "https://www.remiforge.dev/sample-role"`);
   // author mirrors the HTML author meta on every twin
   assert.include(md, `author: "Remi Forge"`);
@@ -44,14 +44,14 @@ it("the experience twin renders frontmatter, H1, skills and links without repeat
 });
 
 it("experience Markdown canonical encodes a slug as one path segment", () => {
-  const experience = { ...sampleExperience, slug: "résumé & more" };
+  const experience = { ...sampleEmployment, slug: "résumé & more" };
   const md = twinDocument(buildExperienceMd({ seo: experienceSeo({ experience, preferredLanguage: "en" }), translate: translateEn }));
   assert.include(md, `canonical: "https://www.remiforge.dev/r%C3%A9sum%C3%A9%20%26%20more"`);
 });
 
 it("the experience twin omits the Links section when the experience has no links", () => {
   const md = twinDocument(
-    buildExperienceMd({ seo: experienceSeo({ experience: { ...sampleExperience, gitHubLink: undefined }, preferredLanguage: "en" }), translate: translateEn })
+    buildExperienceMd({ seo: experienceSeo({ experience: { ...sampleEmployment, gitHubLink: undefined }, preferredLanguage: "en" }), translate: translateEn })
   );
   assert.include(md, `## Skills Used`);
   assert.notInclude(md, `## Links`);
@@ -59,7 +59,7 @@ it("the experience twin omits the Links section when the experience has no links
 
 it("an experience without optional content publishes neither empty facts nor empty sections", () => {
   const bare = {
-    ...sampleExperience,
+    ...sampleEmployment,
     imageName: "",
     skillsUsed: [" \n "] as const,
     gitHubLink: undefined,
@@ -81,7 +81,7 @@ it("experience link builders drop destinations that are not http(s) URLs", () =>
   const md = twinDocument(
     buildExperienceMd({
       seo: experienceSeo({
-        experience: { ...sampleExperience, gitHubLink: "javascript:alert(1)", liveLink: "ftp://example.com/file" },
+        experience: { ...sampleEmployment, gitHubLink: "javascript:alert(1)", liveLink: "ftp://example.com/file" },
         preferredLanguage: "en",
       }),
       translate: translateEn,
@@ -97,7 +97,7 @@ it("experience link builders drop destinations that are not http(s) URLs", () =>
 });
 
 it("the experience twin localizes fixed Polish section and fact labels", () => {
-  const md = twinDocument(buildExperienceMd({ seo: experienceSeo({ experience: sampleExperience, preferredLanguage: "pl" }), translate: translatePl }));
+  const md = twinDocument(buildExperienceMd({ seo: experienceSeo({ experience: sampleEmployment, preferredLanguage: "pl" }), translate: translatePl }));
   assert.include(md, "## Opis");
   assert.include(md, "## Szczegóły");
   assert.include(md, "Rola: Full-Stack Developer");
@@ -107,7 +107,7 @@ it("the experience twin localizes fixed Polish section and fact labels", () => {
 });
 
 it("experience link labels are the dictionary keys the HTML chips translate, so Polish gets Polish labels", () => {
-  const everyLink = { ...sampleExperience, liveLink: "https://example.com/live", videoLink: "https://example.com/video" };
+  const everyLink = { ...sampleEmployment, liveLink: "https://example.com/live", videoLink: "https://example.com/video" };
 
   const en = twinDocument(buildExperienceMd({ seo: experienceSeo({ experience: everyLink, preferredLanguage: "en" }), translate: translateEn }));
   assert.include(en, "[GitHub Repo](https://github.com/example/repo)");
@@ -173,7 +173,7 @@ it("a fact label is escaped exactly once, so no stray backslash reaches the twin
   // pass had written — so an authored "Role _" rendered as "Role \\_" with a literal stray "\".
   const hostile = (source: string): string => (source === "Role" ? "Role _" : source);
 
-  const md = twinDocument(buildExperienceMd({ seo: experienceSeo({ experience: sampleExperience, preferredLanguage: "en" }), translate: hostile }));
+  const md = twinDocument(buildExperienceMd({ seo: experienceSeo({ experience: sampleEmployment, preferredLanguage: "en" }), translate: hostile }));
 
   // Exactly one backslash: the one mdFact added, rendering back as the authored underscore
   assert.include(md, "- Role \\_: Full-Stack Developer");
@@ -187,7 +187,7 @@ it("authored prose beginning with an indent cannot revive the marker its indent 
   // four-space or tab marker literal, so trimming it away published a live heading, bullet or
   // delimiter row: authored prose beginning with "    # x" forged a second H1 in the twin body.
   const twin = buildExperienceMd({
-    seo: experienceSeo({ experience: { ...sampleExperience, txt: "    # Injected heading\n\n    - forged bullet" }, preferredLanguage: "en" }),
+    seo: experienceSeo({ experience: { ...sampleEmployment, txt: "    # Injected heading\n\n    - forged bullet" }, preferredLanguage: "en" }),
     translate: (source) => source,
   });
 
@@ -202,7 +202,7 @@ it("buildExperienceMd deduplicates repeated skills after normalizing whitespace 
   const md = twinDocument(
     buildExperienceMd({
       seo: experienceSeo({
-        experience: { ...sampleExperience, skillsUsed: ["TypeScript", "React", "  TypeScript\n "] },
+        experience: { ...sampleEmployment, skillsUsed: ["TypeScript", "React", "  TypeScript\n "] },
         preferredLanguage: "en",
       }),
       translate: translateEn,
@@ -214,7 +214,7 @@ it("buildExperienceMd deduplicates repeated skills after normalizing whitespace 
 });
 
 it("buildExperienceMd normalizes layout whitespace in single-line frontmatter facts", () => {
-  const experience = { ...sampleExperience, role: "  Full-Stack\nDeveloper ", company: "Sample\t Co ", year: " Mar\n2026 " };
+  const experience = { ...sampleEmployment, role: "  Full-Stack\nDeveloper ", company: "Sample\t Co ", year: " Mar\n2026 " };
   const twin = buildExperienceMd({ seo: experienceSeo({ experience, preferredLanguage: "en" }), translate: translateEn });
 
   assert.strictEqual(twin.facts.role, "Full-Stack Developer");

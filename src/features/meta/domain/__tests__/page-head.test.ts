@@ -12,7 +12,8 @@ import { INDEXABLE_ROBOTS } from "@/domain/http";
 import { STATIC_PAGES } from "@/domain/pages";
 import { withLanguageParam } from "@/domain/urls";
 import { canonicalLink } from "@/domain/links";
-import { LANGUAGE, metaOf, sampleEducation, sampleExperience, stablePageTitles, tagContent } from "./fixtures";
+import { LANGUAGE, metaOf, tagContent } from "./readers";
+import { sampleEducation, samplePortfolio, stablePageTitles } from "@/testing/fixtures";
 import { contextOf, graphOf, nodeOf, nodesOf, textOf } from "@/features/jsonld/domain/__tests__/fixtures";
 import type { JsonLdNodes } from "@/features/jsonld/domain/models";
 import type { PageHead, SocialMetaInput } from "../models";
@@ -77,7 +78,7 @@ it("pageHead publishes exactly one JSON-LD block merging site entities with the 
 });
 
 it("experienceHead builds on pageHead with article social type and canonical link", () => {
-  const head = experienceHead({ experience: sampleExperience, preferredLanguage: language });
+  const head = experienceHead({ experience: samplePortfolio, preferredLanguage: language });
   const tags = metaOf(head);
 
   assert.strictEqual(tagContent(tags, "property", "og:type"), "article");
@@ -90,17 +91,17 @@ it("experienceHead names the experience kind as the article section", () => {
   // og:article:section is the one tag that tells a card reader which of the two kinds of page this
   // is, and it follows the experience type rather than a second table that has to agree with it.
   assert.strictEqual(
-    tagContent(metaOf(experienceHead({ experience: sampleExperience, preferredLanguage: language })), "property", "article:section"),
+    tagContent(metaOf(experienceHead({ experience: samplePortfolio, preferredLanguage: language })), "property", "article:section"),
     "portfolio"
   );
   assert.strictEqual(
-    tagContent(metaOf(experienceHead({ experience: { ...sampleExperience, type: "e" }, preferredLanguage: language })), "property", "article:section"),
+    tagContent(metaOf(experienceHead({ experience: { ...samplePortfolio, type: "e" }, preferredLanguage: language })), "property", "article:section"),
     "employment"
   );
 });
 
 it("experienceHead uses the global banner for Twitter when no screenshot exists", () => {
-  const head = experienceHead({ experience: { ...sampleExperience, imageName: "" }, preferredLanguage: language });
+  const head = experienceHead({ experience: { ...samplePortfolio, imageName: "" }, preferredLanguage: language });
   const tags = metaOf(head);
 
   assert.strictEqual(tagContent(tags, "name", "twitter:image"), GLOBAL_SOCIAL_IMAGE.src);
@@ -119,7 +120,7 @@ it("static page heads share the layout, each supplying its own canonical and Mar
 });
 
 it("experienceHead omits unsupported publication dates and keyword meta", () => {
-  const head = experienceHead({ experience: sampleExperience, preferredLanguage: "en" });
+  const head = experienceHead({ experience: samplePortfolio, preferredLanguage: "en" });
   const dated = JSON.stringify(head.meta);
   // og:article:published_time is a meta tag the head would emit; the source data carries a year
   // only, so no guessed date is fabricated in meta tags
@@ -134,7 +135,7 @@ it("experienceHead omits unsupported publication dates and keyword meta", () => 
   const graph = graphOf(head.scripts?.[0]?.children);
   assert.notInclude(JSON.stringify(graph), "datePublished");
 
-  const undated = JSON.stringify(experienceHead({ experience: { ...sampleExperience, year: "Too Long" }, preferredLanguage: "en" }).meta);
+  const undated = JSON.stringify(experienceHead({ experience: { ...samplePortfolio, year: "Too Long" }, preferredLanguage: "en" }).meta);
   assert.notInclude(undated, "article:published_time");
   assert.notInclude(undated, "datePublished");
 });
@@ -144,7 +145,7 @@ it("a detail page publishes the article card and its author, while the list page
   // — one authored subject with a headline and prose — so it publishes og:type "article" plus the
   // `article:author` a surface reading only og: tags can extract. The three list pages have no
   // claimed subject of their own and stay "website".
-  const detail = JSON.stringify(experienceHead({ experience: sampleExperience, preferredLanguage: "en" }));
+  const detail = JSON.stringify(experienceHead({ experience: samplePortfolio, preferredLanguage: "en" }));
   assert.include(detail, '"property":"og:type","content":"article"');
   // A followable profile URL, not a display name: og:article:author is read as a link
   assert.include(detail, `"property":"article:author","content":"${AUTHOR_URL}"`);
@@ -165,8 +166,8 @@ it("a detail page publishes the article card and its author, while the list page
 it("every card publishes one absolute HTTPS og:image without duplicate URL aliases", () => {
   for (const head of [
     homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" }),
-    experienceHead({ experience: sampleExperience, preferredLanguage: "en" }),
-    experienceHead({ experience: { ...sampleExperience, imageName: "" }, preferredLanguage: "pl" }),
+    experienceHead({ experience: samplePortfolio, preferredLanguage: "en" }),
+    experienceHead({ experience: { ...samplePortfolio, imageName: "" }, preferredLanguage: "pl" }),
   ]) {
     const tags = metaOf(head);
     const sources = tags.filter((tag) => tag["property"] === "og:image").map((tag) => tag["content"]);
@@ -190,20 +191,20 @@ it("each card's alt describes the picture that card actually shows", () => {
     return meta.find((entry) => entry[tag.startsWith("og:") ? "property" : "name"] === tag)?.content;
   };
 
-  const head = experienceHead({ experience: sampleExperience, preferredLanguage: "en" });
+  const head = experienceHead({ experience: samplePortfolio, preferredLanguage: "en" });
   assert.include(srcOf(head, "og:image") ?? "", "01-a.webp");
   assert.strictEqual(contentOf(head, "og:image:alt"), "Screenshot of Full-Stack Developer");
   assert.strictEqual(srcOf(head, "twitter:image"), srcOf(head, "og:image"));
   assert.strictEqual(contentOf(head, "twitter:image:alt"), contentOf(head, "og:image:alt"));
 
   // A screenshot-less experience falls back to the localized banner on both cards
-  const bare = experienceHead({ experience: { ...sampleExperience, imageName: "" }, preferredLanguage: "en" });
+  const bare = experienceHead({ experience: { ...samplePortfolio, imageName: "" }, preferredLanguage: "en" });
   assert.include(srcOf(bare, "og:image") ?? "", "opengraph-image.jpg");
   assert.strictEqual(srcOf(bare, "twitter:image"), srcOf(bare, "og:image"));
   assert.strictEqual(contentOf(bare, "og:image:alt"), "Portfolio collage showing web development skills and project screenshots");
   assert.strictEqual(contentOf(bare, "twitter:image:alt"), contentOf(bare, "og:image:alt"));
 
-  const polish = experienceHead({ experience: sampleExperience, preferredLanguage: "pl" });
+  const polish = experienceHead({ experience: samplePortfolio, preferredLanguage: "pl" });
   assert.strictEqual(contentOf(polish, "og:image:alt"), "Zrzut ekranu przedstawiający Projekt osobisty: Full-Stack Developer");
   assert.strictEqual(contentOf(polish, "twitter:image:alt"), contentOf(polish, "og:image:alt"));
 
@@ -213,7 +214,7 @@ it("each card's alt describes the picture that card actually shows", () => {
 });
 
 it("social tags share the verified share image and localized locale pair", () => {
-  const pl = experienceHead({ experience: sampleExperience, preferredLanguage: "pl" });
+  const pl = experienceHead({ experience: samplePortfolio, preferredLanguage: "pl" });
   const html = JSON.stringify(pl);
   assert.include(html, '"content":"pl_PL"');
   assert.include(html, '"content":"en_US"'); // alternate
@@ -237,7 +238,7 @@ it("og:locale:alternate lists every other supported locale as its own tag (ogp.m
   // page never lists the locale it is itself in. Read the rendered tags back rather than the raw
   // JSON so a regression to a single first-match (or a self-including alternate) fails here.
   const localesOf = (preferredLanguage: PreferredLanguage) => {
-    const meta = metaOf(experienceHead({ experience: sampleExperience, preferredLanguage }));
+    const meta = metaOf(experienceHead({ experience: samplePortfolio, preferredLanguage }));
     return {
       own: meta.filter((tag) => tag["property"] === "og:locale").map((tag) => tag["content"]),
       alternate: meta.filter((tag) => tag["property"] === "og:locale:alternate").map((tag) => tag["content"]),
@@ -287,7 +288,7 @@ it("og:url is byte-equal to the canonical link on every page kind", () => {
     homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" }),
     educationHead({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "pl" }),
     contactHead({ pageTitles: stablePageTitles, preferredLanguage: "en" }),
-    experienceHead({ experience: { ...sampleExperience, slug: "résumé & more" }, preferredLanguage: "pl" }),
+    experienceHead({ experience: { ...samplePortfolio, slug: "résumé & more" }, preferredLanguage: "pl" }),
   ]) {
     assert.strictEqual(ogUrlOf(head), canonicalOf(head));
     // Both are absolute, so a scraper never has to resolve an origin
@@ -306,7 +307,7 @@ it("language-pinned Markdown URLs attach ?lang= and survive values the URL parse
 });
 
 it("project details use SoftwareSourceCode linked to the canonical WebPage, person and breadcrumb", () => {
-  const pl = experienceHead({ experience: sampleExperience, preferredLanguage: "pl" });
+  const pl = experienceHead({ experience: samplePortfolio, preferredLanguage: "pl" });
   const [graph] = pl.scripts ?? [];
   const parsed = graphOf(graph?.children);
   const page = nodeOf(parsed, "WebPage");
@@ -334,7 +335,7 @@ it("project details use SoftwareSourceCode linked to the canonical WebPage, pers
   // Article.articleSection matches og:article:section so JSON-LD and Open Graph agree
   assert.strictEqual(article?.articleSection, "portfolio");
   // Article.articleBody carries the unabridged narrative even when meta description is truncated
-  assert.strictEqual(article?.articleBody, sampleExperience.txt);
+  assert.strictEqual(article?.articleBody, samplePortfolio.txt);
   // Schema.org's link to the source repository, single-sourced from the content's GitHub URL
   assert.strictEqual(project?.codeRepository, "https://github.com/example/repo");
   // The image is a sized ImageObject: scrapers learn the dimensions without fetching the file
@@ -351,7 +352,7 @@ it("project details use SoftwareSourceCode linked to the canonical WebPage, pers
 });
 
 it("employment details use EmployeeRole linked to the person and canonical WebPage without fabricated dates", () => {
-  const experience = { ...sampleExperience, type: "e" as const, slug: "sample-job" };
+  const experience = { ...samplePortfolio, type: "e" as const, slug: "sample-job" };
   const head = experienceHead({ experience, preferredLanguage: "en" });
   const parsed = graphOf(head.scripts?.[0]?.children);
   const page = nodeOf(parsed, "WebPage");
@@ -388,7 +389,7 @@ it("employment details use EmployeeRole linked to the person and canonical WebPa
 });
 
 it("experience pages claim the screenshot as their main image only when one exists", () => {
-  const withShot = graphOf(experienceHead({ experience: sampleExperience, preferredLanguage: "en" }).scripts?.[0]?.children);
+  const withShot = graphOf(experienceHead({ experience: samplePortfolio, preferredLanguage: "en" }).scripts?.[0]?.children);
   assert.deepStrictEqual(nodeOf(withShot, "WebPage")?.primaryImageOfPage, {
     "@type": "ImageObject",
     url: "https://www.remiforge.dev/images/01-a.webp",
@@ -397,7 +398,7 @@ it("experience pages claim the screenshot as their main image only when one exis
   });
 
   // No screenshot on the page: no main-image (or project image) claim, and og:image falls back to the share banner
-  const bareHead = experienceHead({ experience: { ...sampleExperience, imageName: "" }, preferredLanguage: "en" });
+  const bareHead = experienceHead({ experience: { ...samplePortfolio, imageName: "" }, preferredLanguage: "en" });
   const bareGraph = graphOf(bareHead.scripts?.[0]?.children);
   assert.isUndefined(nodeOf(bareGraph, "WebPage")?.primaryImageOfPage);
   assert.isUndefined(nodeOf(bareGraph, "SoftwareSourceCode")?.image);
@@ -406,7 +407,7 @@ it("experience pages claim the screenshot as their main image only when one exis
 });
 
 it("home structured data is a first-party ProfilePage linking site entities plus grouped content collections", () => {
-  const head = homeHead({ pageTitles: stablePageTitles, experienceList: [sampleExperience], preferredLanguage: "en" });
+  const head = homeHead({ pageTitles: stablePageTitles, experienceList: [samplePortfolio], preferredLanguage: "en" });
   const graph = graphOf(head.scripts?.[0]?.children);
   const profile = nodeOf(graph, "ProfilePage");
   assert.strictEqual(profile?.["@id"], PROFILE_ID);
@@ -433,17 +434,17 @@ it("home structured data is a first-party ProfilePage linking site entities plus
 
 it("no page head emits an ItemList: Google's Carousel beta only supports Course, Movie, Recipe and Restaurant", () => {
   const heads = [
-    homeHead({ pageTitles: stablePageTitles, experienceList: [sampleExperience], preferredLanguage: "en" }),
+    homeHead({ pageTitles: stablePageTitles, experienceList: [samplePortfolio], preferredLanguage: "en" }),
     educationHead({ pageTitles: stablePageTitles, educationList: sampleEducation, preferredLanguage: "en" }),
     contactHead({ pageTitles: stablePageTitles, preferredLanguage: "en" }),
-    experienceHead({ experience: sampleExperience, preferredLanguage: "en" }),
+    experienceHead({ experience: samplePortfolio, preferredLanguage: "en" }),
   ];
   // Any ItemList on this site could only ever surface as an invalid carousel candidate
   for (const head of heads) assert.notInclude(JSON.stringify(head.scripts), '"@type":"ItemList"');
 });
 
 it("home structured data splits employment from portfolio projects with localized collection names", () => {
-  const mixed = [sampleExperience, { ...sampleExperience, type: "e" as const, slug: "sample-job" }];
+  const mixed = [samplePortfolio, { ...samplePortfolio, type: "e" as const, slug: "sample-job" }];
   const graph = graphOf(homeHead({ pageTitles: stablePageTitles, experienceList: mixed, preferredLanguage: "pl" }).scripts?.[0]?.children);
   // Two labeled collections mirror the HTML page and .md twin grouping, in visible order
   const collections = graph.filter((node) => node["@type"] === "Collection");
@@ -529,7 +530,7 @@ it("contact structured data describes the visible ContactPage inside a breadcrum
 
 it("experience structured data escapes hostile narrative text so it cannot break out of the script tag", () => {
   const hostile = experienceHead({
-    experience: { ...sampleExperience, txt: "evil </script><script>alert(1)</script>" },
+    experience: { ...samplePortfolio, txt: "evil </script><script>alert(1)</script>" },
     preferredLanguage: "en",
   });
   const [graph] = hostile.scripts ?? [];

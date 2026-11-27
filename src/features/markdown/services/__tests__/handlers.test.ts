@@ -8,7 +8,7 @@ import { CACHEABLE_HEADERS } from "@/lib/http-response";
 import { contactHandler, educationHandler, experienceHandler, homeHandler } from "../handlers";
 import { contactHead, educationHead, homeHead } from "@/features/meta/domain/page-head";
 import { joinLinkHeader } from "@/domain/links";
-import { stablePageTitles } from "@/features/markdown/__tests__/fixtures";
+import { stablePageTitles } from "@/testing/fixtures";
 import experienceEn from "@/assets/data/en/experience.json";
 
 // types

@@ -1,7 +1,8 @@
 // Readers that parse a rendered JSON-LD <script> back into the graph a crawler would read.
 //
-// They live with the jsonld feature so its own tests need no meta helper; the meta tests that still
-// inspect a head's script import them from here until Phase 6 consolidates the shared fixtures.
+// They live with the jsonld feature, beside the serializer they read, so its own tests need no meta
+// helper; the meta tests that inspect a head's script import them from here. Shared sample records
+// and copy live in `@/testing/fixtures`; meta-tag readers live in the meta feature.
 
 // services, features, and other libraries
 import { Option, Schema, pipe } from "effect";

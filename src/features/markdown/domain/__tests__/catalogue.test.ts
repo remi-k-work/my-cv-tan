@@ -3,7 +3,7 @@ import { PAGE_ENTRIES, experienceEntry, experienceLines, pageEntry } from "../ca
 import { STATIC_PAGES, STATIC_PAGE_PATHS } from "@/domain/pages";
 import { absoluteUrl, markdownTwinUrl } from "@/domain/urls";
 import { experienceSeo } from "@/features/experience/domain/seo";
-import { sampleExperience } from "@/features/markdown/__tests__/fixtures";
+import { sampleEmployment } from "@/testing/fixtures";
 import { SOURCE_CONTEXT } from "../models";
 
 it("the catalogue declares every static page exactly once", () => {
@@ -34,7 +34,7 @@ it("page entries advertise the canonical HTML URL and compute their twin URL wit
 });
 
 it("experience entries carry only index metadata; the renderer chooses the language", () => {
-  const seo = experienceSeo({ experience: sampleExperience, preferredLanguage: "en" });
+  const seo = experienceSeo({ experience: sampleEmployment, preferredLanguage: "en" });
   const entry = experienceEntry(seo);
 
   assert.strictEqual(entry.name, seo.headline);
@@ -47,7 +47,7 @@ it("experience entries carry only index metadata; the renderer chooses the langu
 it("experience index summaries collapse authored whitespace before truncation", () => {
   const line = experienceLines({
     ...SOURCE_CONTEXT,
-    experiences: [{ ...sampleExperience, txt: "First line.\n\tSecond   line." }],
+    experiences: [{ ...sampleEmployment, txt: "First line.\n\tSecond   line." }],
     mode: "index",
   });
 
@@ -57,7 +57,7 @@ it("experience index summaries collapse authored whitespace before truncation", 
 });
 
 it("experience twin lines link the localized Markdown without a redundant HTML citation", () => {
-  const line = experienceLines({ ...SOURCE_CONTEXT, preferredLanguage: "pl", experiences: [sampleExperience], mode: "twin" });
+  const line = experienceLines({ ...SOURCE_CONTEXT, preferredLanguage: "pl", experiences: [sampleEmployment], mode: "twin" });
 
   assert.include(line, "](https://www.remiforge.dev/sample-role.md?lang=pl):");
   assert.notInclude(line, "[HTML]");

@@ -18,7 +18,7 @@ import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 import { NotFoundPage } from "@/ui/not-found-page";
 import { BRANDED_TITLE, NOT_FOUND_COPY, SITE_DESCRIPTION, SOCIAL_LINKS, UNAVAILABLE_COPY } from "@/domain/site";
 import { notFoundHead } from "../fallback";
-import { sampleExperience, stablePageTitles } from "./fixtures";
+import { samplePortfolio, stablePageTitles } from "@/testing/fixtures";
 import type { LinkTag } from "@/domain/links";
 import type { MetaTag, PageHead } from "../models";
 import type { MatchChain } from "../route-head";
@@ -78,10 +78,10 @@ const successMatches: MatchChain = [{ loaderData: { preferredLanguage: "pl" }, s
 
 // Every page kind's own head, built the way its route builds it.
 const pageHeads: ReadonlyArray<PageHead> = [
-  homeHead({ pageTitles: stablePageTitles, experienceList: [sampleExperience], preferredLanguage: "pl" }),
+  homeHead({ pageTitles: stablePageTitles, experienceList: [samplePortfolio], preferredLanguage: "pl" }),
   contactHead({ pageTitles: stablePageTitles, preferredLanguage: "en" }),
   educationHead({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "en" }),
-  experienceHead({ experience: sampleExperience, preferredLanguage: "en" }),
+  experienceHead({ experience: samplePortfolio, preferredLanguage: "en" }),
 ];
 
 it("a successful page's merged document declares its own title, description, robots and canonical exactly once", () => {

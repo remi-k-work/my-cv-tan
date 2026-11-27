@@ -10,7 +10,7 @@ import { loadTranslations } from "@/lib/gt-translations";
 import { experienceSeo } from "@/features/experience/domain/seo";
 import { buildNotFoundMd, unavailableMarkdownBody } from "../fallback";
 import { buildContactMd, buildEducationMd, buildExperienceMd, buildHomeMd } from "../twins";
-import { sampleExperience, stablePageTitles } from "@/features/markdown/__tests__/fixtures";
+import { sampleEmployment, stablePageTitles } from "@/testing/fixtures";
 
 // types
 import type { Translate } from "@/domain/models";
@@ -26,7 +26,7 @@ const record: Translate = (source) => {
 const context = { preferredLanguage: "pl", translate: record } as const;
 
 // Each builder runs for both arms of every emptiness match, so the fallback copy is requested too
-buildHomeMd({ ...context, pageTitles: stablePageTitles, experienceList: [sampleExperience] });
+buildHomeMd({ ...context, pageTitles: stablePageTitles, experienceList: [sampleEmployment] });
 buildHomeMd({ ...context, pageTitles: stablePageTitles, experienceList: [] });
 buildEducationMd({
   ...context,
@@ -35,8 +35,8 @@ buildEducationMd({
 });
 buildEducationMd({ ...context, pageTitles: stablePageTitles, educationList: [] });
 buildContactMd({ ...context, pageTitles: stablePageTitles });
-buildExperienceMd({ seo: experienceSeo({ experience: sampleExperience, preferredLanguage: "pl" }), translate: record });
-buildNotFoundMd({ ...context, slug: Option.some(sampleExperience.slug) });
+buildExperienceMd({ seo: experienceSeo({ experience: sampleEmployment, preferredLanguage: "pl" }), translate: record });
+buildNotFoundMd({ ...context, slug: Option.some(sampleEmployment.slug) });
 buildNotFoundMd({ ...context, slug: Option.none() });
 unavailableMarkdownBody(record);
 

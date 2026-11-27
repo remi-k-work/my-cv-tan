@@ -4,7 +4,7 @@ import { Datasets } from "@/features/data/services/datasets";
 import { RequiredDataError } from "@/features/data/domain/required";
 import { HOME_PATH } from "@/domain/constants";
 import { NOINDEX_FOLLOW } from "@/domain/http";
-import { sampleExperience, stablePageTitles } from "@/features/markdown/__tests__/fixtures";
+import { sampleEmployment, stablePageTitles } from "@/testing/fixtures";
 import { Markdown } from "../markdown";
 import { Translation } from "../translation";
 
@@ -18,7 +18,7 @@ const unavailableDatasets = {
 
 const availableDatasets = {
   pageTitles: () => Effect.succeed(stablePageTitles),
-  experienceList: () => Effect.succeed([sampleExperience]),
+  experienceList: () => Effect.succeed([sampleEmployment]),
   educationList: () => Effect.succeed([]),
 };
 
