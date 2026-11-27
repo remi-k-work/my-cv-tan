@@ -3,7 +3,8 @@ import { Array, Context, Effect, Layer, Option, Random, Schema, pipe } from "eff
 import { experienceFromList, haveSameExperienceSlugs } from "@/features/experience/domain/helpers";
 import { ExperienceList } from "@/features/experience/domain/models";
 import { EducationList } from "@/features/education/domain/models";
-import { PageTitlesList } from "@/domain/models";
+import { PageHighlightsList } from "@/domain/models";
+import { pageTitlesFromHighlights } from "@/domain/pages";
 import { requestPreferredLanguage } from "./request-language";
 
 // assets
@@ -51,7 +52,8 @@ export const localizedExperienceAsset = <A extends ReadonlyArray<Pick<Experience
 // `decodeOption` keeps compile-time checking where the imported JSON already matches the schema's
 // encoded type; the experience assets mix "e" and "p" entries, which widen to `string` on import,
 // so they need the decoder that accepts unknown input
-const decodePageTitlesList = Schema.decodeOption(PageTitlesList);
+
+const decodePageHighlightsList = Schema.decodeOption(PageHighlightsList);
 const decodeExperienceList = Schema.decodeUnknownOption(ExperienceList);
 const decodeEducationList = Schema.decodeOption(EducationList);
 
@@ -60,8 +62,8 @@ export class Data extends Context.Service<Data>()("my-cv-v4-tan/features/data/se
     // Decode once at service construction; decoding to Option turns a malformed asset into None
     // (missing data downstream) instead of failing the layer
     const pageTitlesAsset = {
-      en: decodePageTitlesList(pageTitlesEn),
-      pl: decodePageTitlesList(pageTitlesPl),
+      en: decodePageHighlightsList(pageTitlesEn),
+      pl: decodePageHighlightsList(pageTitlesPl),
     };
     const decodedExperienceAsset = {
       en: decodeExperienceList(experienceEn),
@@ -78,23 +80,31 @@ export class Data extends Context.Service<Data>()("my-cv-v4-tan/features/data/se
 
     // Keep request-locale lookup inside the Effect: constructing an accessor outside a request and
     // running it inside one must resolve the language from the execution context, not the constructor's
-    const randomPageTitles = (preferredLanguage: Option.Option<PreferredLanguage>) =>
+
+    // The visible page rotates only its eyebrow and intro; the heading is the page's stable identity
+    const randomPageHighlights = (preferredLanguage: Option.Option<PreferredLanguage>) =>
       Effect.suspend(() =>
         Option.match(localized(preferredLanguage, pageTitlesAsset), {
           onNone: () => Effect.succeedNone,
-          onSome: (pageTitles) => Effect.option(Random.choice(pageTitles)),
+          onSome: (highlights) => Effect.option(Random.choice(highlights)),
         })
       );
 
+    // The stable titles pair the first authored highlight with the page's catalogue-declared heading
     const stablePageTitles = (preferredLanguage: Option.Option<PreferredLanguage>) =>
-      Effect.sync(() => Option.flatMap(localized(preferredLanguage, pageTitlesAsset), Array.head));
+      Effect.sync(() => {
+        const language = requestPreferredLanguage(preferredLanguage);
+        return Option.flatMap(localized(Option.some(language), pageTitlesAsset), (highlights) =>
+          Option.map(Array.head(highlights), (first) => pageTitlesFromHighlights(first, language))
+        );
+      });
     const experienceList = (preferredLanguage: Option.Option<PreferredLanguage>) => Effect.sync(() => localized(preferredLanguage, experienceAsset));
     const educationList = (preferredLanguage: Option.Option<PreferredLanguage>) => Effect.sync(() => localized(preferredLanguage, educationAsset));
 
     const experience = (slug: Experience["slug"], preferredLanguage: Option.Option<PreferredLanguage>) =>
       Effect.sync(() => Option.flatMap(localized(preferredLanguage, experienceAsset), (experiences) => experienceFromList(experiences, slug)));
 
-    return { randomPageTitles, stablePageTitles, experienceList, educationList, experience } as const;
+    return { randomPageHighlights, stablePageTitles, experienceList, educationList, experience } as const;
   }),
 }) {
   static readonly layer = Layer.effect(this, this.make);

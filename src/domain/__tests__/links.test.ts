@@ -8,11 +8,11 @@ import {
   AI_DISCOVERY_LINKS,
   aiDiscoveryLinkHeader,
   authorLink,
+  canonicalAndDiscoveryLinks,
   canonicalLink,
   joinLinkHeader,
-  languageVariantLinks,
   LLMS_DISCOVERY_LINK,
-  representationLinks,
+  markdownRepresentationLink,
   SITEMAP_LINK,
 } from "@/domain/links";
 import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/domain/discovery";
@@ -24,11 +24,11 @@ import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/domain/discovery";
 
 it("a link serializes as a URI-reference with its parameters in a fixed order", () => {
   assert.strictEqual(joinLinkHeader([{ rel: "canonical", href: "https://www.remiforge.dev/" }]), '<https://www.remiforge.dev/>; rel="canonical"');
-  // The order is rel, type, title, hreflang whether or not the declaring literal listed them in it,
+  // The order is rel, type, title whether or not the declaring literal listed them in it,
   // so two responses advertising the same links are byte-equal regardless of how each was written
   assert.strictEqual(
-    joinLinkHeader([{ rel: "alternate", hrefLang: "en", type: "text/markdown", href: "https://www.remiforge.dev/index.md" }]),
-    '<https://www.remiforge.dev/index.md>; rel="alternate"; type="text/markdown"; hreflang="en"'
+    joinLinkHeader([{ rel: "alternate", type: "text/markdown", href: "https://www.remiforge.dev/index.md?lang=en" }]),
+    '<https://www.remiforge.dev/index.md?lang=en>; rel="alternate"; type="text/markdown"'
   );
   assert.strictEqual(
     joinLinkHeader([{ rel: "alternate", type: "text/plain", title: "llms.txt", href: "https://www.remiforge.dev/llms.txt" }]),
@@ -43,23 +43,21 @@ it("quoted Link parameters cannot escape their values", () => {
   );
 });
 
-it("representation links share canonical, discovery and language ordering across HTML and HTTP", () => {
+it("HTML representation links add the current-language Markdown twin after canonical and discovery links", () => {
   const canonical = "https://www.remiforge.dev/";
 
-  assert.deepStrictEqual(representationLinks(canonical, "/index.md", AI_DISCOVERY_LINKS), [
+  // A page head composes these two declarations: canonical (plus any discovery) first, then its twin
+  assert.deepStrictEqual(canonicalAndDiscoveryLinks(canonical, AI_DISCOVERY_LINKS), [canonicalLink(canonical), ...AI_DISCOVERY_LINKS]);
+  assert.deepStrictEqual([...canonicalAndDiscoveryLinks(canonical), markdownRepresentationLink("/index.md", "pl")], [
     canonicalLink(canonical),
-    ...AI_DISCOVERY_LINKS,
-    ...languageVariantLinks("/index.md"),
+    markdownRepresentationLink("/index.md", "pl"),
   ]);
 });
 
-it("language variants list every supported language and close with the x-default", () => {
-  assert.deepStrictEqual(joinLinkHeader(languageVariantLinks("/index.md")).split(", "), [
-    '<https://www.remiforge.dev/index.md?lang=en>; rel="alternate"; type="text/markdown"; hreflang="en"',
-    '<https://www.remiforge.dev/index.md?lang=pl>; rel="alternate"; type="text/markdown"; hreflang="pl"',
-    // The unpinned URL negotiates unsupported preferences and falls back to English
-    '<https://www.remiforge.dev/index.md>; rel="alternate"; type="text/markdown"; hreflang="x-default"',
-  ]);
+it("a Markdown alternate is pinned to the current page language without claiming hreflang", () => {
+  const link = markdownRepresentationLink("/index.md", "pl");
+  assert.deepStrictEqual(link, { rel: "alternate", type: "text/markdown", href: "https://www.remiforge.dev/index.md?lang=pl" });
+  assert.notInclude(joinLinkHeader([link]), "hreflang");
 });
 
 it("link builders name the canonical and author documents", () => {

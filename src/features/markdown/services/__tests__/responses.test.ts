@@ -97,7 +97,7 @@ it("a translation fallback refuses caching and indexing without weakening its ne
   assert.strictEqual(await fallback.text(), "# English fallback");
 });
 
-it("response helpers set content types, indexing, cache, canonical, and language-variant headers", () => {
+it("response helpers set content types, indexing, cache, canonical, and discovery headers", () => {
   const ok = mdResponse({
     body: "# Hi",
     preferredLanguage: "en",
@@ -110,10 +110,10 @@ it("response helpers set content types, indexing, cache, canonical, and language
   assert.strictEqual(ok.headers.get("Vary"), "Cookie, Accept-Language");
   assert.strictEqual(ok.headers.get("X-Robots-Tag"), INDEXABLE_ROBOTS);
   assert.strictEqual(ok.headers.get("Content-Location"), "https://www.remiforge.dev/index.md?lang=en");
-  // RFC 8288 parameter order: rel, type, title, hreflang.
+  // Markdown responses expose their HTML canonical and discovery files; language variants stay in the body and Content-Location.
   assert.strictEqual(
     ok.headers.get("Link"),
-    '<https://www.remiforge.dev/>; rel="canonical", <https://www.remiforge.dev/llms.txt>; rel="describedby", <https://www.remiforge.dev/llms-full.txt>; rel="related"; type="text/plain"; title="llms-full.txt", <https://www.remiforge.dev/index.md?lang=en>; rel="alternate"; type="text/markdown"; hreflang="en", <https://www.remiforge.dev/index.md?lang=pl>; rel="alternate"; type="text/markdown"; hreflang="pl", <https://www.remiforge.dev/index.md>; rel="alternate"; type="text/markdown"; hreflang="x-default"'
+    '<https://www.remiforge.dev/>; rel="canonical", <https://www.remiforge.dev/llms.txt>; rel="describedby", <https://www.remiforge.dev/llms-full.txt>; rel="related"; type="text/plain"; title="llms-full.txt"'
   );
   assert.strictEqual(ok.headers.get("Content-Signal"), "search=yes, ai-input=yes, ai-train=yes");
   assert.strictEqual(ok.headers.get("X-Content-Type-Options"), "nosniff");

@@ -30,11 +30,12 @@ export const Route = createFileRoute("/education")({
 });
 
 function EducationPage() {
-  const { randomPageTitles, educationList } = Route.useLoaderData();
+  const { randomPageHighlights, stablePageTitles, educationList } = Route.useLoaderData();
+  const { eyebrow, intro } = randomPageHighlights[EDUCATION_PATH];
 
   return (
     <>
-      <PageTitle pagePath="/education" pageTitles={randomPageTitles} />
+      <PageTitle heading={stablePageTitles[EDUCATION_PATH].heading} eyebrow={eyebrow} intro={intro} />
       <PageGrid>
         <PagePanel>
           <Certificates />

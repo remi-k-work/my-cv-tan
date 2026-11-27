@@ -9,7 +9,7 @@ import { pageField } from "./helpers";
 import { absoluteUrl } from "./urls";
 
 // types
-import type { PageIdentity, PagePath, PageTitles, PreferredLanguage } from "./models";
+import type { PageHighlights, PageIdentity, PagePath, PageTitles, PreferredLanguage } from "./models";
 
 // constants
 import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "./constants";
@@ -22,7 +22,7 @@ export interface StaticPageCopy extends PageIdentity {
   readonly path: PagePath;
   readonly mdHref: string;
   readonly type: StaticPageType;
-  readonly pageName: string;
+  readonly heading: string;
   readonly intro: string;
 }
 
@@ -51,9 +51,9 @@ export const STATIC_PAGES = {
     type: "overview",
     indexSummary: "portfolio overview with experience and project lists.",
     copy: {
-      en: { heading: HOME_TITLE, intro: PERSON_DESCRIPTION, title: HOME_TITLE, description: SITE_DESCRIPTION },
+      en: { heading: "My Resume", intro: PERSON_DESCRIPTION, title: HOME_TITLE, description: SITE_DESCRIPTION },
       pl: {
-        heading: "Programista stron internetowych w Rzeszowie",
+        heading: "Moje CV",
         intro: "Ambitny samouk i programista stron internetowych. Tworzę nowoczesne aplikacje internetowe i ciągle się rozwijam.",
         title: "Programista stron internetowych w Rzeszowie",
         description: "Remi Forge to programista stron internetowych z Rzeszowa, który tworzy aplikacje z użyciem React, TypeScript i nowoczesnych technologii.",
@@ -67,13 +67,13 @@ export const STATIC_PAGES = {
     indexSummary: "schools, courses and certificates.",
     copy: {
       en: {
-        heading: "Education",
+        heading: "My Education",
         intro: "Education & certificates.",
         title: "Education & Certificates",
         description: "Explore Remi Forge's Interactive Media degree, computer science studies, and web development certificates.",
       },
       pl: {
-        heading: "Wykształcenie",
+        heading: "Moja Edukacja",
         intro: "Wykształcenie i certyfikaty.",
         title: "Wykształcenie i certyfikaty",
         description: "Poznaj wykształcenie Remiego Forge: studia z informatyki, dyplom z mediów interaktywnych i certyfikaty.",
@@ -87,13 +87,13 @@ export const STATIC_PAGES = {
     indexSummary: "contact form, location and social profiles.",
     copy: {
       en: {
-        heading: "Contact",
+        heading: "Contact Me",
         intro: "Get in touch via the contact form.",
         title: "Contact",
         description: "Contact Remi Forge in Rzeszów, Poland about web development, collaboration, or project opportunities.",
       },
       pl: {
-        heading: "Kontakt",
+        heading: "Skontaktuj się ze mną",
         intro: "Skontaktuj się przez formularz kontaktowy.",
         title: "Kontakt",
         description: "Skontaktuj się z Remim Forge w sprawie tworzenia stron internetowych, współpracy lub projektów.",
@@ -114,7 +114,7 @@ export const staticPageCopy = (pageTitles: Partial<PageTitles>, pagePath: PagePa
     path: pagePath,
     mdHref,
     type,
-    pageName: pageField(pageTitles, pagePath, "heading", heading),
+    heading: pageField(pageTitles, pagePath, "heading", heading),
     title,
     intro: pageField(pageTitles, pagePath, "intro", intro),
     description,
@@ -122,3 +122,13 @@ export const staticPageCopy = (pageTitles: Partial<PageTitles>, pagePath: PagePa
     preferredLanguage,
   };
 };
+
+// Resolves the rotating eyebrow and intro against each page's catalogue-declared heading, producing
+// the full titles every surface reads; the heading is not part of the rotating asset, so it cannot
+// drift between loads
+export const pageTitlesFromHighlights = (highlights: PageHighlights, preferredLanguage: PreferredLanguage): PageTitles =>
+  Record.map(highlights, ({ eyebrow, intro }, pagePath) => ({
+    eyebrow,
+    heading: STATIC_PAGES[pagePath].copy[preferredLanguage].heading,
+    intro,
+  }));

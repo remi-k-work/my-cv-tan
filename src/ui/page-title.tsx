@@ -2,16 +2,15 @@
 import { RevealText } from "@/ui/reveal-text";
 
 // types
-import type { PagePath, PageTitles } from "@/domain/models";
-
 interface PageTitleProps {
-  pagePath: PagePath;
-  pageTitles: PageTitles;
+  // The stable page identity heading: it never rotates, so the visible H1 matches the head and twin
+  heading: string;
+  // The supporting copy may rotate between loads without changing the identity
+  eyebrow: string;
+  intro: string;
 }
 
-export function PageTitle({ pagePath, pageTitles }: PageTitleProps) {
-  const { eyebrow, heading, intro } = pageTitles[pagePath];
-
+export function PageTitle({ heading, eyebrow, intro }: PageTitleProps) {
   return (
     <header className="mx-4 my-3 animate-rise lg:mx-0">
       <p className="inline-grid overflow-clip text-lg tracking-widest text-text-2 uppercase">

@@ -19,7 +19,7 @@ src/
     discovery.ts     llms/robots/sitemap/downloadable-document catalogue
     links.ts         LinkTag, Link header builders, representation links
     constants.ts     languages, page paths, snippet length
-    models.ts        PagePath, PageTitles, PageIdentity, Translate, ImageFacts
+    models.ts        PagePath, PageTitles, PageHighlights, PageIdentity, Translate, ImageFacts
     http.ts          robots/cache directives
 
   lib/               cross-cutting runtime helpers

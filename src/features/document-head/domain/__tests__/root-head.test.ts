@@ -2,7 +2,15 @@ import { assert, it } from "@effect/vitest";
 import { ROOT_HEAD } from "../root-head";
 import { rootHead } from "../root-head";
 import { homeHead, contactHead, educationHead, experienceHead } from "../page-head";
-import { AI_DISCOVERY_LINKS, authorLink, canonicalLink, joinLinkHeader, languageVariantLinks, LLMS_DISCOVERY_LINK, SITEMAP_LINK } from "@/domain/links";
+import {
+  AI_DISCOVERY_LINKS,
+  authorLink,
+  canonicalLink,
+  joinLinkHeader,
+  LLMS_DISCOVERY_LINK,
+  markdownRepresentationLink,
+  SITEMAP_LINK,
+} from "@/domain/links";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 import { stablePageTitles } from "@/testing/fixtures";
 
@@ -183,23 +191,23 @@ it("rootHead hands every document its own head arrays rather than sharing the si
   assert.notStrictEqual(notFound.links, ROOT_HEAD.links);
 });
 
-// The three parameters the serializer writes, and nothing else: a link declaring a fourth would
+// The two parameters the serializer writes, and nothing else: a link declaring a third would
 // have it silently dropped, so the declaration and the emitted header would disagree.
-const SERIALIZABLE_PARAMETERS = { type: "type", title: "title", hrefLang: "hreflang" } as const;
+const SERIALIZABLE_PARAMETERS = { type: "type", title: "title" } as const;
 
 // Every link the site publishes, from every declaration that emits one: the site-wide root head,
-// the AI-index advertisements, the twin language variants, and the page-level builders.
+// the AI-index advertisements, one Markdown representation, and the page-level builders.
 const publishedLinks: ReadonlyArray<LinkTag> = [
   ...ROOT_HEAD.links,
-  ...languageVariantLinks("/index.md"),
+  markdownRepresentationLink("/index.md", "en"),
   canonicalLink("https://www.remiforge.dev/education"),
   authorLink("https://www.remiforge.dev/"),
   SITEMAP_LINK,
   LLMS_DISCOVERY_LINK,
 ];
 
-it("every link the site publishes carries only the three parameters the serializer knows", () => {
-  // The parameter set is closed (type, title, hreflang). Anything else is a compile error at the
+it("every link the site publishes carries only the two parameters the serializer knows", () => {
+  // The parameter set is closed (type, title). Anything else is a compile error at the
   // declaration, but this pins the runtime side of that contract across every emitting site: no
   // link the site publishes reaches a serializer that would drop the parameter silently.
   for (const link of publishedLinks) {

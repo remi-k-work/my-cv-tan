@@ -95,7 +95,7 @@ const staticTwinDocument = (
   return {
     facts: pageFacts(copy),
     body: mdBody([
-      mdHeading(1, copy.pageName),
+      mdHeading(1, copy.heading),
       mdQuote(copy.description),
       navBlock(includeNavigation, () => canonicalSourceLink(copy.canonical)),
       escapeMd(copy.intro),

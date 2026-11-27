@@ -4,10 +4,12 @@
 
 // services, features, and other libraries
 import { Array, Option, String, pipe } from "effect";
-import { absoluteUrl, withLanguageParam } from "./urls";
+import { markdownTwinUrl } from "./urls";
+
+// types
+import type { PreferredLanguage } from "./models";
 
 // constants
-import { SITE_LANGUAGES } from "./constants";
 import { SOCIAL_LINKS } from "./site";
 import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX, SITEMAP_INDEX } from "./discovery";
 
@@ -16,18 +18,16 @@ export interface LinkTag {
   readonly href: string;
   readonly type?: string;
   readonly title?: string;
-  // TanStack forwards link descriptors to React, which names this property hrefLang
-  readonly hrefLang?: string;
 }
 
 const quoteParam = String.replaceAll(/["\\]/g, "\\$&");
 const linkParam = (key: string, value: string | undefined) =>
   Option.fromUndefinedOr(value).pipe(Option.map((parameter) => `${key}="${quoteParam(parameter)}"`));
 
-// Serializes a link tag in RFC 8288 parameter order: rel, type, title, hreflang
-const linkHeader = ({ href, rel, type, title, hrefLang }: LinkTag) =>
+// Serializes a link tag in RFC 8288 parameter order: rel, type, title
+const linkHeader = ({ href, rel, type, title }: LinkTag) =>
   pipe(
-    [Option.some(`rel="${quoteParam(rel)}"`), linkParam("type", type), linkParam("title", title), linkParam("hreflang", hrefLang)],
+    [Option.some(`rel="${quoteParam(rel)}"`), linkParam("type", type), linkParam("title", title)],
     Array.getSomes,
     Array.prepend(`<${href}>`),
     Array.join("; ")
@@ -37,29 +37,21 @@ export const joinLinkHeader = (links: ReadonlyArray<LinkTag>) => Array.join(Arra
 export const canonicalLink = (href: string): LinkTag => ({ rel: "canonical", href });
 export const authorLink = (href: string): LinkTag => ({ rel: "author", href });
 
-const markdownLink = (href: string, hrefLang: string): LinkTag => ({
+const markdownLink = (href: string): LinkTag => ({
   rel: "alternate",
   type: "text/markdown",
-  hrefLang,
   href,
 });
 
-// Accepts the canonical, unpinned site path so callers cannot accidentally build variants of a variant
-export const languageVariantLinks = (markdownPath: string): ReadonlyArray<LinkTag> => {
-  const markdownUrl = absoluteUrl(markdownPath);
+// An HTML page advertises only the pinned Markdown representation for the language it currently serves
+// hreflang belongs on distinct localized HTML URLs, not on this alternate media type
+export const markdownRepresentationLink = (markdownPath: string, preferredLanguage: PreferredLanguage): LinkTag =>
+  markdownLink(markdownTwinUrl(markdownPath, preferredLanguage));
 
-  return [
-    ...Array.map(SITE_LANGUAGES, (language) => markdownLink(withLanguageParam(markdownUrl, language), language)),
-    // The unpinned twin negotiates unmatched languages and falls back to the source language
-    markdownLink(markdownUrl, "x-default"),
-  ];
-};
-
-// One declaration feeds HTML link elements and Markdown Link headers, including any extra discovery links
-export const representationLinks = (canonical: string, markdownPath: string, discovery: ReadonlyArray<LinkTag> = []): ReadonlyArray<LinkTag> => [
+// Link headers for a representation point to its canonical HTML page and shared discovery documents
+export const canonicalAndDiscoveryLinks = (canonical: string, discovery: ReadonlyArray<LinkTag> = []): ReadonlyArray<LinkTag> => [
   canonicalLink(canonical),
   ...discovery,
-  ...languageVariantLinks(markdownPath),
 ];
 
 export const SITEMAP_LINK = { rel: "sitemap", href: SITEMAP_INDEX.url } as const;

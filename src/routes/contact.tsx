@@ -30,11 +30,12 @@ export const Route = createFileRoute("/contact")({
 });
 
 function ContactPage() {
-  const { randomPageTitles } = Route.useLoaderData();
+  const { randomPageHighlights, stablePageTitles } = Route.useLoaderData();
+  const { eyebrow, intro } = randomPageHighlights[CONTACT_PATH];
 
   return (
     <>
-      <PageTitle pagePath="/contact" pageTitles={randomPageTitles} />
+      <PageTitle heading={stablePageTitles[CONTACT_PATH].heading} eyebrow={eyebrow} intro={intro} />
       <PageGrid className="auto-rows-fr">
         <PagePanel>
           <ContactForm />

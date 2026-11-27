@@ -27,9 +27,9 @@ const load = Effect.fnUntraced(function* <E>(source: PageData<E>, slug: Option.O
     });
   }
 
-  const { randomPageTitles, stablePageTitles, experienceList } = yield* Effect.all(
+  const { randomPageHighlights, stablePageTitles, experienceList } = yield* Effect.all(
     {
-      randomPageTitles: requireDataFrom(source.randomPageTitles, "random page titles"),
+      randomPageHighlights: requireDataFrom(source.randomPageHighlights, "random page highlights"),
       stablePageTitles: requireDataFrom(source.stablePageTitles, "stable page titles"),
       experienceList: requireDataFrom(source.experienceList, "experience list"),
     },
@@ -38,7 +38,7 @@ const load = Effect.fnUntraced(function* <E>(source: PageData<E>, slug: Option.O
 
   return {
     type: "list" as const,
-    randomPageTitles,
+    randomPageHighlights,
     stablePageTitles,
     experienceList,
   };

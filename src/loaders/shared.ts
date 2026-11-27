@@ -13,7 +13,7 @@ export const clientLoader = <A, E>(use: (source: PageData<RpcClientError.RpcClie
     Effect.flatMap(RpcDataClient, (client) =>
       // Effects are lazy, so the requests below are only described here, not fired
       use({
-        randomPageTitles: client.randomPageTitles(),
+        randomPageHighlights: client.randomPageHighlights(),
         stablePageTitles: client.stablePageTitles(),
         experienceList: client.experienceList(),
         educationList: client.educationList(),

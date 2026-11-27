@@ -12,7 +12,7 @@ import type { RequiredDataError } from "@/features/data/domain/required";
 const MissingData = Layer.succeed(
   Data,
   Data.of({
-    randomPageTitles: () => Effect.succeedNone,
+    randomPageHighlights: () => Effect.succeedNone,
     stablePageTitles: () => Effect.succeedNone,
     experienceList: () => Effect.succeedNone,
     educationList: () => Effect.succeedNone,

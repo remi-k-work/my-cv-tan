@@ -7,7 +7,6 @@ import { absoluteUrl, experienceMarkdownPath, experiencePath } from "@/domain/ur
 import { CACHEABLE_HEADERS } from "@/lib/http-response";
 import { contactHandler, educationHandler, experienceHandler, homeHandler } from "../handlers";
 import { contactHead, educationHead, homeHead } from "@/features/document-head/domain/page-head";
-import { joinLinkHeader } from "@/domain/links";
 import { stablePageTitles } from "@/testing/fixtures";
 import experienceEn from "@/assets/data/en/experience.json";
 
@@ -86,7 +85,7 @@ it("a served twin's response canonical names the very page its frontmatter cites
   assert.include(await detail.text(), `canonical: ${JSON.stringify(detailCanonical)}`);
 });
 
-it("HTML heads and Markdown responses publish the same reciprocal language cluster", async () => {
+it("HTML heads advertise the current Markdown twin and responses do not claim it is a localized HTML page", async () => {
   const pages = [
     [homeHandler, (preferredLanguage: PreferredLanguage) => homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage })],
     [educationHandler, (preferredLanguage: PreferredLanguage) => educationHead({ pageTitles: stablePageTitles, educationList: [], preferredLanguage })],
@@ -95,16 +94,20 @@ it("HTML heads and Markdown responses publish the same reciprocal language clust
 
   for (const [handler, headFor] of pages) {
     for (const preferredLanguage of ["en", "pl"] as const) {
-      const variants = headFor(preferredLanguage).links.filter(({ type }) => type === "text/markdown");
-      const requested = variants.find(({ hrefLang }) => hrefLang === preferredLanguage);
+      const head = headFor(preferredLanguage);
+      const requested = head.links.find(({ type }) => type === "text/markdown");
+      const canonical = head.links.find(({ rel }) => rel === "canonical")?.href;
       assert.isDefined(requested);
+      assert.isDefined(canonical);
 
       const response = await handler({ request: new Request(requested!.href) });
       const responseLinks = response.headers.get("Link") ?? "";
 
       assert.strictEqual(response.status, 200);
       assert.strictEqual(response.headers.get("Content-Location"), requested!.href);
-      for (const variant of variants) assert.include(responseLinks, joinLinkHeader([variant]));
+      assert.include(responseLinks, `<${canonical}>; rel="canonical"`);
+      assert.notInclude(responseLinks, "text/markdown");
+      assert.notInclude(responseLinks, "hreflang");
     }
   }
 });
@@ -125,7 +128,8 @@ it("the home twin serves the full indexable envelope behind the pinned language"
   assert.include(link, '<https://www.remiforge.dev/>; rel="canonical"');
   assert.include(link, "llms.txt");
   assert.include(link, "llms-full.txt");
-  assert.include(link, 'rel="alternate"; type="text/markdown"; hreflang="pl"');
+  assert.notInclude(link, 'type="text/markdown"');
+  assert.notInclude(link, "hreflang");
 
   const body = await response.text();
   assert.include(body, `canonical: "https://www.remiforge.dev/"`);

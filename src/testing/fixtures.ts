@@ -17,7 +17,7 @@ import { twinDocument } from "@/features/markdown/domain/format";
 import { buildContactMd, buildEducationMd, buildHomeMd } from "@/features/markdown/domain/twins";
 
 // types
-import type { PageTitles, Translate } from "@/domain/models";
+import type { PageHighlights, PageTitles, Translate } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { Experience } from "@/features/experience/domain/models";
 import type { ContactMdInput, EducationMdInput, HomeMdInput } from "@/features/markdown/domain/twins";
@@ -50,6 +50,13 @@ export const stablePageTitles: PageTitles = {
   "/": { eyebrow: "Home", heading: "Stable home title", intro: "Stable home description." },
   "/education": { eyebrow: "Education", heading: "Stable education title", intro: "Stable education description." },
   "/contact": { eyebrow: "Contact", heading: "Stable contact title", intro: "Stable contact description." },
+};
+
+// The rotating visible copy a page load may pick: the eyebrow and intro, never the stable heading
+export const pageHighlights: PageHighlights = {
+  "/": { eyebrow: "Home", intro: "Stable home description." },
+  "/education": { eyebrow: "Education", intro: "Stable education description." },
+  "/contact": { eyebrow: "Contact", intro: "Stable contact description." },
 };
 
 export const translateEn: Translate = (source) => source;

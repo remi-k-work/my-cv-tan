@@ -2,7 +2,7 @@
 import { Array, HashSet, Match, Option, Predicate, Record, String, pipe } from "effect";
 import { documentHeaders, locationHeader, responseEnvelope } from "@/lib/http-response";
 import { markdownTwinUrl } from "@/domain/urls";
-import { joinLinkHeader, representationLinks } from "@/domain/links";
+import { canonicalAndDiscoveryLinks, joinLinkHeader } from "@/domain/links";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
@@ -73,7 +73,7 @@ const markdownHeaders = (preferredLanguage: PreferredLanguage, links: string) =>
   Link: links,
 });
 
-const markdownLinks = (canonical: string, markdownPath: string) => joinLinkHeader(representationLinks(canonical, markdownPath, AI_DISCOVERY_LINKS));
+const markdownLinks = (canonical: string) => joinLinkHeader(canonicalAndDiscoveryLinks(canonical, AI_DISCOVERY_LINKS));
 
 export const mdResponse = (input: {
   readonly body: string;
@@ -84,7 +84,7 @@ export const mdResponse = (input: {
   const markdownUrl = markdownTwinUrl(input.markdownPath, input.preferredLanguage);
 
   return responseEnvelope(200, input.body, {
-    ...markdownHeaders(input.preferredLanguage, markdownLinks(input.canonical, input.markdownPath)),
+    ...markdownHeaders(input.preferredLanguage, markdownLinks(input.canonical)),
     ...CACHEABLE_HEADERS,
     ...INDEXABLE_HEADERS,
     "Content-Location": markdownUrl,

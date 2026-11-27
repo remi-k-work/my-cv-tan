@@ -15,7 +15,7 @@ import type { PageData } from "./page-data";
 const load = <E>(source: PageData<E>) =>
   Effect.all(
     {
-      randomPageTitles: requireDataFrom(source.randomPageTitles, "random page titles"),
+      randomPageHighlights: requireDataFrom(source.randomPageHighlights, "random page highlights"),
       stablePageTitles: requireDataFrom(source.stablePageTitles, "stable page titles"),
     },
     { concurrency: "unbounded" }

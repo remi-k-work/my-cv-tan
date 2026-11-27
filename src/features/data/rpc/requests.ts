@@ -3,12 +3,12 @@ import { Schema } from "effect";
 import { Rpc, RpcGroup } from "effect/rpc";
 import { Experience, ExperienceList } from "@/features/experience/domain/models";
 import { EducationList } from "@/features/education/domain/models";
-import { PageTitles } from "@/domain/models";
+import { PageHighlights, PageTitles } from "@/domain/models";
 import { RpcLogger } from "@/services/rpc-logger";
 
 export class RpcData extends RpcGroup.make(
-  Rpc.make("randomPageTitles", {
-    success: Schema.Option(PageTitles),
+  Rpc.make("randomPageHighlights", {
+    success: Schema.Option(PageHighlights),
   }),
 
   Rpc.make("stablePageTitles", {

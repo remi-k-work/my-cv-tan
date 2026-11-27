@@ -5,7 +5,7 @@ import { jsonLdGraph } from "@/features/jsonld/domain/serialize";
 import { contactJsonLd, educationJsonLd, experienceJsonLd, homeJsonLd } from "@/features/jsonld/domain/page-graphs";
 import { globalSocialImage, socialMeta } from "./social";
 import { staticPageCopy } from "@/domain/pages";
-import { representationLinks } from "@/domain/links";
+import { canonicalAndDiscoveryLinks, markdownRepresentationLink } from "@/domain/links";
 
 // types
 import type { JsonLdNodes } from "@/features/jsonld/domain/models";
@@ -41,9 +41,9 @@ export const pageHead = ({ social, markdownPath, graph }: PageHeadSpec): PageHea
     { name: "robots", content: INDEXABLE_ROBOTS },
     ...socialMeta(social),
   ],
-  // Markdown variants have distinct URLs, unlike the language-negotiated HTML page; build the set
-  // from the unpinned twin so it stays identical whichever language the HTML response negotiated
-  links: [...representationLinks(social.canonical, markdownPath)],
+  // The canonical leads, then the current-language Markdown twin: it is pinned so the twin answers
+  // the representation this HTML response advertises, while the negotiated HTML URL stays canonical
+  links: [...canonicalAndDiscoveryLinks(social.canonical), markdownRepresentationLink(markdownPath, social.preferredLanguage)],
   scripts: [jsonLdGraph([...SITE_NODES, ...graph])],
 });
 

@@ -40,8 +40,9 @@ const findByType = <T extends Record<string, unknown>>(nodes: ReadonlyArray<T>, 
 
 it("educationJsonLd assembles a CollectionPage with its school subgraph", () => {
   const nodes = educationJsonLd({
-    pageName: "Education",
+    title: "Education",
     description: "Schools and certificates.",
+    canonical: "https://www.remiforge.dev/education",
     educationList: sampleEducation,
     preferredLanguage: language,
   });
@@ -65,8 +66,9 @@ it("educationJsonLd assembles a CollectionPage with its school subgraph", () => 
 
 it("educationJsonLd omits the collection when the school list is empty", () => {
   const nodes = educationJsonLd({
-    pageName: "Education",
+    title: "Education",
     description: "Schools and certificates.",
+    canonical: "https://www.remiforge.dev/education",
     educationList: [],
     preferredLanguage: language,
   });
@@ -76,10 +78,32 @@ it("educationJsonLd omits the collection when the school list is empty", () => {
   assert.deepStrictEqual(findByType(nodes, "CollectionPage")?.mainEntity, { "@id": "https://www.remiforge.dev/#person" });
 });
 
+it("static page graphs use the catalogue identity for their name, URL and related IDs", () => {
+  const canonical = "https://www.remiforge.dev/learning";
+  const nodes = educationJsonLd({
+    title: "Education & Certificates",
+    description: "Localized education copy.",
+    canonical,
+    educationList: sampleEducation,
+    preferredLanguage: "pl",
+  });
+  const page = findByType(nodes, "CollectionPage");
+  const trail = findByType(nodes, "BreadcrumbList");
+  const school = findByType(nodes, "EducationalOrganization");
+
+  assert.strictEqual(page?.name, "Education & Certificates");
+  assert.strictEqual(page?.description, "Localized education copy.");
+  assert.strictEqual(page?.url, canonical);
+  assert.strictEqual(page?.inLanguage, "pl");
+  assert.strictEqual(trail?.["@id"], `${canonical}#breadcrumb`);
+  assert.strictEqual(school?.["@id"], `${canonical}#school-1`);
+});
+
 it("contactJsonLd assembles a ContactPage with a ContactPoint and person edge", () => {
   const nodes = contactJsonLd({
-    pageName: "Contact",
+    title: "Contact",
     description: "Get in touch.",
+    canonical: "https://www.remiforge.dev/contact",
     preferredLanguage: language,
   });
 
@@ -221,8 +245,9 @@ it("experienceJsonLd uses EmployeeRole without claiming historical employment is
 
 it("homeJsonLd builds a ProfilePage linking site entities plus grouped collections", () => {
   const nodes = homeJsonLd({
-    pageName: "Home",
+    title: "Home",
     description: "A home page.",
+    canonical: HOME_URL,
     experienceList: [...employment, ...projects],
     preferredLanguage: language,
   });
@@ -310,8 +335,9 @@ it("schoolSubgraph returns nothing for an empty list", () => {
 // the page node, its trail and the site entity they both reference stay one addressable graph.
 
 const graph = educationJsonLd({
-  pageName: "Education",
+  title: "Education",
   description: "Schools and certificates.",
+  canonical: "https://www.remiforge.dev/education",
   educationList: sampleEducation,
   preferredLanguage: "pl",
 });
@@ -319,7 +345,12 @@ const graph = educationJsonLd({
 // Every subpage assembler's first two nodes: the page node, then its trail.
 const subpagePairs: ReadonlyArray<ReadonlyArray<Record<string, unknown>>> = [
   graph,
-  contactJsonLd({ pageName: "Contact", description: "Get in touch.", preferredLanguage: language }),
+  contactJsonLd({
+    title: "Contact",
+    description: "Get in touch.",
+    canonical: "https://www.remiforge.dev/contact",
+    preferredLanguage: language,
+  }),
   experienceJsonLd({
     experience: sampleExperience,
     preferredLanguage: language,
@@ -332,7 +363,13 @@ const subpagePairs: ReadonlyArray<ReadonlyArray<Record<string, unknown>>> = [
 
 it("the page node comes first and its breadcrumb trail second, so a parser reads page-entity-first", () => {
   // With an empty school list the education assembler emits the pair and nothing else.
-  const bare = educationJsonLd({ pageName: "Education", description: "Schools and certificates.", educationList: [], preferredLanguage: "pl" });
+  const bare = educationJsonLd({
+    title: "Education",
+    description: "Schools and certificates.",
+    canonical: "https://www.remiforge.dev/education",
+    educationList: [],
+    preferredLanguage: "pl",
+  });
 
   assert.strictEqual(bare.length, 2);
   assert.strictEqual(bare[0]?.["@type"], "CollectionPage");
@@ -384,7 +421,12 @@ it("the page-node pair merges into the site entities as one document when a page
   const merged = graphOf(
     jsonLdGraph([
       { "@type": "WebSite", "@id": "https://www.remiforge.dev/#website" },
-      ...contactJsonLd({ pageName: "Contact", description: "Get in touch.", preferredLanguage: language }),
+      ...contactJsonLd({
+        title: "Contact",
+        description: "Get in touch.",
+        canonical: "https://www.remiforge.dev/contact",
+        preferredLanguage: language,
+      }),
     ]).children
   );
 
@@ -401,12 +443,29 @@ it("static page graphs publish primaryImageOfPage matching the global social ima
     height: GLOBAL_SOCIAL_IMAGE.height,
   };
 
-  const home = nodeOf(homeJsonLd({ pageName: "Home", description: "Home.", experienceList: [], preferredLanguage: language }), "ProfilePage");
+  const home = nodeOf(
+    homeJsonLd({ title: "Home", description: "Home.", canonical: HOME_URL, experienceList: [], preferredLanguage: language }),
+    "ProfilePage"
+  );
   const education = nodeOf(
-    educationJsonLd({ pageName: "Education", description: "Education.", educationList: [], preferredLanguage: language }),
+    educationJsonLd({
+      title: "Education",
+      description: "Education.",
+      canonical: "https://www.remiforge.dev/education",
+      educationList: [],
+      preferredLanguage: language,
+    }),
     "CollectionPage"
   );
-  const contact = nodeOf(contactJsonLd({ pageName: "Contact", description: "Contact.", preferredLanguage: language }), "ContactPage");
+  const contact = nodeOf(
+    contactJsonLd({
+      title: "Contact",
+      description: "Contact.",
+      canonical: "https://www.remiforge.dev/contact",
+      preferredLanguage: language,
+    }),
+    "ContactPage"
+  );
 
   assert.deepStrictEqual(home?.primaryImageOfPage, expectedImage);
   assert.deepStrictEqual(education?.primaryImageOfPage, expectedImage);

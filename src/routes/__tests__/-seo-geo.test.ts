@@ -21,7 +21,7 @@ import { BRANDED_TITLE, HOME_URL } from "@/domain/site";
 import { STATIC_PAGES } from "@/domain/pages";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 import { HOME_PATH } from "@/domain/constants";
-import { sampleEducation, samplePortfolio, stablePageTitles } from "@/testing/fixtures";
+import { pageHighlights, sampleEducation, samplePortfolio, stablePageTitles } from "@/testing/fixtures";
 import type { PageHead } from "@/features/document-head/domain/models";
 import type { MatchChain, RouteStatus } from "@/features/document-head/domain/route-head";
 
@@ -61,7 +61,7 @@ it("the index route builds home and detail heads from their respective loader pa
   const home = await headOf(IndexRoute, {
     loaderData: {
       type: "list",
-      randomPageTitles: stablePageTitles,
+      randomPageHighlights: pageHighlights,
       stablePageTitles,
       experienceList: [samplePortfolio],
     },
@@ -93,10 +93,10 @@ it("the index route builds home and detail heads from their respective loader pa
 
 it("static HTML routes connect their loader data to the correct localized page heads", async () => {
   const education = await headOf(EducationRoute, {
-    loaderData: { randomPageTitles: stablePageTitles, stablePageTitles, educationList: sampleEducation },
+    loaderData: { randomPageHighlights: pageHighlights, stablePageTitles, educationList: sampleEducation },
   });
   const contact = await headOf(ContactRoute, {
-    loaderData: { randomPageTitles: stablePageTitles, stablePageTitles },
+    loaderData: { randomPageHighlights: pageHighlights, stablePageTitles },
   });
 
   assert.strictEqual(metaContent(education, "property", "og:locale"), "pl_PL");
@@ -119,7 +119,7 @@ it("the detail route derives its degraded canonical from current params, never s
   const head = await headOf(IndexRoute, {
     loaderData: {
       type: "list",
-      randomPageTitles: stablePageTitles,
+      randomPageHighlights: pageHighlights,
       stablePageTitles,
       experienceList: [samplePortfolio],
     },
@@ -134,7 +134,7 @@ it("the detail route derives its degraded canonical from current params, never s
 
 it("route heads fall back to English when the root locale is unsupported", async () => {
   const head = await headOf(ContactRoute, {
-    loaderData: { randomPageTitles: stablePageTitles, stablePageTitles },
+    loaderData: { randomPageHighlights: pageHighlights, stablePageTitles },
     preferredLanguage: "de",
   });
 

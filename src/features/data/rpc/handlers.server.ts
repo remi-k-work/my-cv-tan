@@ -8,7 +8,7 @@ import { makeRpcHandler } from "@/domain/helpers";
 // service is acquired once and each handler only picks a method off it
 const RpcDataLayer = RpcData.toLayer(
   Effect.map(Data, (data) => ({
-    randomPageTitles: () => data.randomPageTitles(Option.none()),
+    randomPageHighlights: () => data.randomPageHighlights(Option.none()),
     stablePageTitles: () => data.stablePageTitles(Option.none()),
     experienceList: () => data.experienceList(Option.none()),
     educationList: () => data.educationList(Option.none()),

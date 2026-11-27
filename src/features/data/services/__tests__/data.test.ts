@@ -4,6 +4,7 @@ import { Effect, Option } from "effect";
 import { getLocale } from "gt-tanstack-start";
 import { vi } from "vite-plus/test";
 import { Data, localizedExperienceAsset } from "../data";
+import { pageTitlesFromHighlights } from "@/domain/pages";
 import { RequiredDataError } from "@/features/data/domain/required";
 import { applyHtmlDataUnavailableResponse, markHtmlDataUnavailable } from "@/features/data/http/html-response";
 import { haveSameExperienceSlugs } from "@/features/experience/domain/helpers";
@@ -22,8 +23,9 @@ it.effect("stablePageTitles always selects the first authored entry for each loc
     const english = yield* data.stablePageTitles(Option.some("en"));
     const polish = yield* data.stablePageTitles(Option.some("pl"));
 
-    assert.deepStrictEqual(english, Option.some(pageTitlesEn[0]));
-    assert.deepStrictEqual(polish, Option.some(pageTitlesPl[0]));
+    // The first authored variant supplies the eyebrow and intro; the heading comes from the catalogue
+    assert.deepStrictEqual(english, Option.some(pageTitlesFromHighlights(pageTitlesEn[0], "en")));
+    assert.deepStrictEqual(polish, Option.some(pageTitlesFromHighlights(pageTitlesPl[0], "pl")));
   }).pipe(Effect.provide(Data.layer))
 );
 
@@ -37,22 +39,22 @@ it.effect("localized experience assets keep the same unique canonical route iden
   }).pipe(Effect.provide(Data.layer))
 );
 
-it.effect("randomPageTitles selects from the requested locale", () =>
+it.effect("randomPageHighlights selects from the requested locale", () =>
   Effect.gen(function* () {
     const data = yield* Data;
-    const english = yield* data.randomPageTitles(Option.some("en"));
-    const polish = yield* data.randomPageTitles(Option.some("pl"));
+    const english = yield* data.randomPageHighlights(Option.some("en"));
+    const polish = yield* data.randomPageHighlights(Option.some("pl"));
 
     assert.isTrue(
       Option.match(english, {
         onNone: () => false,
-        onSome: (entry) => pageTitlesEn.some((page) => page["/"].eyebrow === entry["/"].eyebrow),
+        onSome: (entry) => pageTitlesEn.some((variant) => variant["/"].eyebrow === entry["/"].eyebrow),
       })
     );
     assert.isTrue(
       Option.match(polish, {
         onNone: () => false,
-        onSome: (entry) => pageTitlesPl.some((page) => page["/"].eyebrow === entry["/"].eyebrow),
+        onSome: (entry) => pageTitlesPl.some((variant) => variant["/"].eyebrow === entry["/"].eyebrow),
       })
     );
   }).pipe(Effect.provide(Data.layer))
@@ -65,15 +67,15 @@ it.effect("data accessors resolve an implicit request locale when they execute",
     locale.mockReturnValue("en");
 
     // Effects are values: create every accessor under English, then run the same values in Polish
-    const randomPageTitles = data.randomPageTitles(Option.none());
+    const randomPageHighlights = data.randomPageHighlights(Option.none());
     const stablePageTitles = data.stablePageTitles(Option.none());
     const experienceList = data.experienceList(Option.none());
     const educationList = data.educationList(Option.none());
     const experience = data.experience(experiencePl[0].slug, Option.none());
 
     locale.mockReturnValue("pl");
-    const [randomTitles, stableTitles, experiences, education, selectedExperience] = yield* Effect.all([
-      randomPageTitles,
+    const [randomHighlights, stableTitles, experiences, education, selectedExperience] = yield* Effect.all([
+      randomPageHighlights,
       stablePageTitles,
       experienceList,
       educationList,
@@ -81,12 +83,12 @@ it.effect("data accessors resolve an implicit request locale when they execute",
     ]);
 
     assert.isTrue(
-      Option.match(randomTitles, {
+      Option.match(randomHighlights, {
         onNone: () => false,
-        onSome: (entry) => pageTitlesPl.some((page) => page["/"].eyebrow === entry["/"].eyebrow),
+        onSome: (entry) => pageTitlesPl.some((variant) => variant["/"].eyebrow === entry["/"].eyebrow),
       })
     );
-    assert.deepStrictEqual(Option.getOrThrow(stableTitles), pageTitlesPl[0]);
+    assert.deepStrictEqual(Option.getOrThrow(stableTitles), pageTitlesFromHighlights(pageTitlesPl[0], "pl"));
     assert.deepStrictEqual(
       Option.getOrThrow(experiences).map(({ slug }) => slug),
       experiencePl.map(({ slug }) => slug)

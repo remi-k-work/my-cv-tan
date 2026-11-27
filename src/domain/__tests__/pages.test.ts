@@ -39,14 +39,14 @@ it("resolves localized copy for every static page path", () => {
 
 it("uses authored page titles from loader data when available", () => {
   const copy = staticPageCopy(stablePageTitles, HOME_PATH, "en");
-  assert.strictEqual(copy.pageName, "Stable home title");
+  assert.strictEqual(copy.heading, "Stable home title");
   assert.strictEqual(copy.title, STATIC_PAGES[HOME_PATH].copy.en.title);
 });
 
 it("falls back to catalogue heading when loader data is missing", () => {
   const emptyTitles: Partial<typeof stablePageTitles> = {};
   const copy = staticPageCopy(emptyTitles, HOME_PATH, "en");
-  assert.strictEqual(copy.pageName, STATIC_PAGES[HOME_PATH].copy.en.heading);
+  assert.strictEqual(copy.heading, STATIC_PAGES[HOME_PATH].copy.en.heading);
 });
 
 it("catalogue declares exactly the three static page paths", () => {

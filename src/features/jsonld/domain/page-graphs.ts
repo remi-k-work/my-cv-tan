@@ -3,7 +3,6 @@ import { Array, Match, Option, pipe } from "effect";
 import { isEmployment, partitionExperiences } from "@/features/experience/domain/helpers";
 import { matchPreferredLanguage } from "@/domain/helpers";
 import { experienceIdentity, experienceKeywords, experienceLinks, experienceSection, inlineText } from "@/features/experience/domain/seo";
-import { absoluteUrl } from "@/domain/urls";
 import {
   articleNode,
   breadcrumb,
@@ -19,7 +18,7 @@ import {
 } from "./nodes";
 
 // types
-import type { PreferredLanguage } from "@/domain/models";
+import type { PageIdentity, PreferredLanguage } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList, ExperienceSeo } from "@/features/experience/domain/models";
 import type { JsonLdNode, JsonLdNodes } from "./models";
@@ -41,16 +40,11 @@ interface PageGraphSpec {
   readonly relatedLinks?: ReadonlyArray<string>;
 }
 
-// The localized copy the static page graph assemblers read
-interface LocalizedCopy {
-  readonly pageName: string;
-  readonly description: string;
-  readonly preferredLanguage: PreferredLanguage;
-}
+// The static page graph uses the same title, description, canonical and language as every other surface
+type LocalizedCopy = Pick<PageIdentity, "title" | "description" | "canonical" | "preferredLanguage">;
 
 // constants
-import { CONTACT_PATH, EDUCATION_PATH } from "@/domain/constants";
-import { CONTACT_EMAIL, EXPERIENCE_LIST_ID, GLOBAL_SOCIAL_IMAGE, HOME_URL, PERSON_ID, PORTFOLIO_LIST_ID, PROFILE_ID } from "@/domain/site";
+import { CONTACT_EMAIL, EXPERIENCE_LIST_ID, GLOBAL_SOCIAL_IMAGE, PERSON_ID, PORTFOLIO_LIST_ID, PROFILE_ID } from "@/domain/site";
 
 // Matches the og:image published on static pages so JSON-LD extractors see the same sized asset
 const STATIC_PRIMARY_IMAGE = imageObject(GLOBAL_SOCIAL_IMAGE.src, GLOBAL_SOCIAL_IMAGE.width, GLOBAL_SOCIAL_IMAGE.height);
@@ -129,19 +123,19 @@ export const schoolSubgraph = (url: string, educationList: EducationList): JsonL
   });
 
 export const educationJsonLd = ({
-  pageName,
+  title,
   description,
+  canonical: url,
   educationList,
   preferredLanguage,
 }: LocalizedCopy & { readonly educationList: EducationList }): JsonLdNodes => {
-  const url = absoluteUrl(EDUCATION_PATH);
   const schools = schoolSubgraph(url, educationList);
 
   return [
     ...pageGraph({
       type: "CollectionPage",
       url,
-      name: pageName,
+      name: title,
       description,
       preferredLanguage,
       mainEntity: { "@id": PERSON_ID },
@@ -151,15 +145,14 @@ export const educationJsonLd = ({
   ];
 };
 
-export const contactJsonLd = ({ pageName, description, preferredLanguage }: LocalizedCopy): JsonLdNodes => {
-  const url = absoluteUrl(CONTACT_PATH);
+export const contactJsonLd = ({ title, description, canonical: url, preferredLanguage }: LocalizedCopy): JsonLdNodes => {
   const contactPointId = `${url}#contact-point`;
 
   return [
     ...pageGraph({
       type: "ContactPage",
       url,
-      name: pageName,
+      name: title,
       description,
       preferredLanguage,
       mainEntity: { "@id": PERSON_ID },
@@ -242,8 +235,9 @@ export const experienceJsonLd = ({ experience, preferredLanguage, canonical: url
 };
 
 export const homeJsonLd = ({
-  pageName,
+  title,
   description,
+  canonical,
   experienceList,
   preferredLanguage,
 }: LocalizedCopy & { readonly experienceList: ExperienceList }): JsonLdNodes => {
@@ -255,8 +249,8 @@ export const homeJsonLd = ({
     webPageNode({
       type: "ProfilePage",
       id: PROFILE_ID,
-      url: HOME_URL,
-      name: pageName,
+      url: canonical,
+      name: title,
       description,
       preferredLanguage,
       mainEntity: { "@id": PERSON_ID },

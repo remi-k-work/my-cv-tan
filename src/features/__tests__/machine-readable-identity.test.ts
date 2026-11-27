@@ -9,6 +9,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { contactHead, educationHead, experienceHead, homeHead } from "@/features/document-head/domain/page-head";
 import { STATIC_PAGES, STATIC_PAGE_PATHS, staticPageCopy } from "@/domain/pages";
 import { ExperienceIdentity } from "@/features/experience/ui/experience-identity";
+import { PageTitle } from "@/ui/page-title";
 import { BRANDED_TITLE } from "@/domain/site";
 import { DOWNLOADABLE_DOCUMENTS } from "@/domain/discovery";
 import { absoluteUrl } from "@/domain/urls";
@@ -71,10 +72,9 @@ it("the head, JSON-LD, Markdown twin and visible detail heading share one experi
   assert.include(JSON.stringify(webPage?.relatedLink), "https://github.com/example/repo");
 });
 
-it("each static page's head and twin publish the same canonical, title and description", () => {
-  // The static half of the same agreement: the HTML head and the Markdown twin both read the
-  // catalogue record for the page, so a crawler reading either one alone resolves one citation
-  // target and one description — compared against the catalogue rather than restated by hand.
+it("each static page's head, JSON-LD graph and twin publish one canonical, title, description and language", () => {
+  // The static half of the same agreement: every machine-readable surface reads the catalogue
+  // identity, so no page graph can rebuild a URL or substitute a visible heading for its SEO title.
   const preferredLanguage = "pl";
   const pages = [
     { path: "/", head: homeHead, twin: buildHomeMd },
@@ -86,6 +86,11 @@ it("each static page's head and twin publish the same canonical, title and descr
     const copy = staticPageCopy(stablePageTitles, path, preferredLanguage);
     const head = buildHead({ pageTitles: stablePageTitles, experienceList: [], educationList: [], preferredLanguage });
     const twin = twinDocument(buildTwin({ pageTitles: stablePageTitles, experienceList: [], educationList: [], preferredLanguage, translate: translateEn }));
+    const graph = graphOf(head.scripts[0]?.children);
+    const pageNode = graph.find(
+      (node) =>
+        node["url"] === copy.canonical && ["ProfilePage", "CollectionPage", "ContactPage"].some((type) => node["@type"] === type)
+    );
 
     const metaContent = (key: string) => {
       const meta = metaOf(head);
@@ -100,17 +105,38 @@ it("each static page's head and twin publish the same canonical, title and descr
 
     assert.strictEqual(metaContent("description"), copy.description, `${path} description`);
     assert.include(twin, `description: ${JSON.stringify(copy.description)}`, `${path} twin description`);
+    assert.strictEqual(metaContent("og:title"), copy.title, `${path} social title`);
+    assert.isDefined(pageNode, `${path} JSON-LD page node`);
+    assert.strictEqual(pageNode?.["name"], copy.title, `${path} JSON-LD title`);
+    assert.strictEqual(pageNode?.["description"], copy.description, `${path} JSON-LD description`);
+    assert.strictEqual(pageNode?.["inLanguage"], preferredLanguage, `${path} JSON-LD language`);
 
     // The branded document title is one template applied to the catalogue's own SEO title. Both
     // surfaces read it from BRANDED_TITLE, so a separator change cannot leave the twin's frontmatter
     // spelling the head's <title> a different way.
     assert.include(JSON.stringify(head.meta), JSON.stringify({ title: BRANDED_TITLE(copy.title) }));
     assert.include(twin, `title: ${JSON.stringify(BRANDED_TITLE(copy.title))}`);
-    // The current-language twin the head advertises is the route the catalogue declares.
+    // The head names only the twin for the language it just served.
+    const markdownLink = head.links.find(({ rel, type }) => rel === "alternate" && type === "text/markdown");
     assert.strictEqual(
-      head.links.find(({ rel, hrefLang }) => rel === "alternate" && hrefLang === preferredLanguage)?.href,
+      markdownLink?.href,
       `https://www.remiforge.dev${STATIC_PAGES[path].mdHref}?lang=${preferredLanguage}`
     );
+
+    // The visible H1 and the twin's H1 are one stable identity heading. The route reads it from the
+    // stable titles while the twin reads it from the resolved copy; nothing else pins the two
+    // together, so a drift between the rendered page and its machine-readable twin would slip past
+    // every feature-local test.
+    assert.strictEqual(copy.heading, stablePageTitles[path].heading, `${path} identity heading`);
+    assert.include(twin, `# ${copy.heading}`, `${path} twin H1`);
+    const visible = renderToStaticMarkup(
+      createElement(PageTitle, {
+        heading: stablePageTitles[path].heading,
+        eyebrow: stablePageTitles[path].eyebrow,
+        intro: stablePageTitles[path].intro,
+      })
+    );
+    assert.include(/<h1\b[^>]*>([\s\S]*?)<\/h1>/.exec(visible)?.[1] ?? "", copy.heading, `${path} visible H1`);
   }
 });
 
@@ -159,8 +185,7 @@ it("a page's advertised twin URL is the very URL the twin route answers on", asy
   // builds the URL from the page's twin path, the twin response builds it from its own route — so
   // only comparing them catches a crawler following the head's link onto a document that denies
   // being the one that page advertised.
-  const twinLocationOf = (head: PageHead, preferredLanguage: PreferredLanguage) =>
-    head.links.find(({ rel, hrefLang }) => rel === "alternate" && hrefLang === preferredLanguage)?.href;
+  const twinLocationOf = (head: PageHead) => head.links.find(({ rel, type }) => rel === "alternate" && type === "text/markdown")?.href;
 
   for (const preferredLanguage of ["en", "pl"] as const satisfies ReadonlyArray<PreferredLanguage>) {
     // Keyed by PagePath rather than listed by hand, so a page added to the catalogue is a compile
@@ -175,7 +200,7 @@ it("a page's advertised twin URL is the very URL the twin route answers on", asy
       const response = mdResponse({ body: "", preferredLanguage, canonical: absoluteUrl(path), markdownPath: STATIC_PAGES[path].mdHref });
 
       assert.strictEqual(
-        twinLocationOf(heads[path], preferredLanguage),
+        twinLocationOf(heads[path]),
         response.headers.get("Content-Location"),
         `${path} (${preferredLanguage}) advertised twin URL`
       );
@@ -191,5 +216,5 @@ it("a page's advertised twin URL is the very URL the twin route answers on", asy
     markdownPath: experienceSeo({ experience: sampleEmployment, preferredLanguage: "en" }).markdownPath,
   });
 
-  assert.strictEqual(twinLocationOf(detail, "en"), detailResponse.headers.get("Content-Location"), "detail page advertised twin URL");
+  assert.strictEqual(twinLocationOf(detail), detailResponse.headers.get("Content-Location"), "detail page advertised twin URL");
 });

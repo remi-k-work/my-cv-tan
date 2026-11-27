@@ -20,7 +20,7 @@ import { ExperienceDetailsModal } from "@/features/modals/ui/experience-details-
 import { NotFoundPage } from "@/ui/not-found-page";
 
 // types
-import type { PageTitles } from "@/domain/models";
+import type { PageHighlights, PageTitles } from "@/domain/models";
 import type { Experience, ExperienceList } from "@/features/experience/domain/models";
 
 // constants
@@ -54,20 +54,36 @@ export const Route = createFileRoute("/{-$slug}")({
 function IndexRoutePage() {
   const loaderData = Route.useLoaderData();
 
-  if (loaderData.type === "list") return <HomeListPage pageTitles={loaderData.randomPageTitles} experienceList={loaderData.experienceList} />;
+  if (loaderData.type === "list")
+    return (
+      <HomeListPage
+        pageHighlights={loaderData.randomPageHighlights}
+        stablePageTitles={loaderData.stablePageTitles}
+        experienceList={loaderData.experienceList}
+      />
+    );
   return <ExperienceItemPage experience={loaderData.experience} />;
 }
 
 // Homepage list: two experience sliders and the overlay that opens a project's details
-function HomeListPage({ pageTitles, experienceList }: { pageTitles: PageTitles; experienceList: ExperienceList }) {
+function HomeListPage({
+  pageHighlights,
+  stablePageTitles,
+  experienceList,
+}: {
+  pageHighlights: PageHighlights;
+  stablePageTitles: PageTitles;
+  experienceList: ExperienceList;
+}) {
   const gt = useGT();
+  const { eyebrow, intro } = pageHighlights[HOME_PATH];
 
   // Same one-pass split the home JSON-LD collections use, so UI and structured data group identically
   const [employmentHistory, portfolioProjects] = partitionExperiences(experienceList);
 
   return (
     <>
-      <PageTitle pagePath="/" pageTitles={pageTitles} />
+      <PageTitle heading={stablePageTitles[HOME_PATH].heading} eyebrow={eyebrow} intro={intro} />
       <PageGrid className="auto-rows-fr">
         <SliderPanel title={gt("Experience")} experienceList={employmentHistory} />
         <SliderPanel title={gt("Portfolio Projects")} experienceList={portfolioProjects} />

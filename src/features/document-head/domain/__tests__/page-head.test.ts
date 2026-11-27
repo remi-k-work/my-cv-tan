@@ -46,24 +46,29 @@ it("pageHead builds a flat head with title, description, robots and social tags"
   }
 });
 
-it("pageHead publishes the page's canonical and every language-qualified Markdown alternate", () => {
+it("pageHead publishes the page's canonical and its current-language Markdown representation", () => {
   const head = pageHead({ social, markdownPath: "/test.md", graph });
 
   assert.deepStrictEqual(head.links, [
     { rel: "canonical", href: "https://www.remiforge.dev/test" },
-    { rel: "alternate", type: "text/markdown", hrefLang: "en", href: "https://www.remiforge.dev/test.md?lang=en" },
-    { rel: "alternate", type: "text/markdown", hrefLang: "pl", href: "https://www.remiforge.dev/test.md?lang=pl" },
-    { rel: "alternate", type: "text/markdown", hrefLang: "x-default", href: "https://www.remiforge.dev/test.md" },
+    { rel: "alternate", type: "text/markdown", href: "https://www.remiforge.dev/test.md?lang=en" },
   ]);
   // Site-wide discovery and identity links live on the root head; the leaf adds nothing site-wide
   assert.notInclude(JSON.stringify(head.links), '"rel":"describedby"');
   assert.notInclude(JSON.stringify(head.links), '"rel":"author"');
 });
 
-it("pageHead advertises the same Markdown variants in every negotiated HTML language", () => {
+it("pageHead pins its Markdown representation to the language the HTML page serves", () => {
   const linksFor = (preferredLanguage: PreferredLanguage) => pageHead({ social: { ...social, preferredLanguage }, markdownPath: "/test.md", graph }).links;
 
-  assert.deepStrictEqual(linksFor("pl"), linksFor("en"));
+  assert.deepStrictEqual(linksFor("en"), [
+    { rel: "canonical", href: "https://www.remiforge.dev/test" },
+    { rel: "alternate", type: "text/markdown", href: "https://www.remiforge.dev/test.md?lang=en" },
+  ]);
+  assert.deepStrictEqual(linksFor("pl"), [
+    { rel: "canonical", href: "https://www.remiforge.dev/test" },
+    { rel: "alternate", type: "text/markdown", href: "https://www.remiforge.dev/test.md?lang=pl" },
+  ]);
 });
 
 it("pageHead publishes exactly one JSON-LD block merging site entities with the page graph", () => {
@@ -250,28 +255,24 @@ it("og:locale:alternate lists every other supported locale as its own tag (ogp.m
   assert.deepStrictEqual(localesOf("pl"), { own: ["pl_PL"], alternate: ["en_US"] });
 });
 
-it("localized metadata uses authored SEO copy and emits canonical plus Markdown links", () => {
+it("localized metadata uses authored SEO copy and emits the current-language Markdown representation", () => {
   assert.deepStrictEqual(canonicalLink("https://www.remiforge.dev/education"), { rel: "canonical", href: "https://www.remiforge.dev/education" });
 
   const head = homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "pl" });
   const html = JSON.stringify(head);
-  assert.include(html, "Stable home title");
+  assert.include(html, STATIC_PAGES["/"].copy.pl.title);
   assert.include(html, STATIC_PAGES["/"].copy.pl.description);
   assert.include(html, `Remi Forge ● ${STATIC_PAGES["/"].copy.pl.title}`);
   assert.include(html, '"content":"pl_PL"');
   assert.include(html, "https://www.remiforge.dev/index.md");
-  // The HTML page remains language-negotiated at one URL. hreflang belongs only to the Markdown
-  // alternates, whose pinned URLs identify real, distinct language variants.
+  // The HTML page remains language-negotiated at one URL; its alternate link names the matching
+  // Markdown representation and does not mislabel that media type as a localized HTML URL.
   assert.deepStrictEqual(
     head.links.map(({ rel }) => rel),
-    ["canonical", "alternate", "alternate", "alternate"]
-  );
-  assert.deepStrictEqual(
-    head.links.map(({ hrefLang }) => hrefLang),
-    [undefined, "en", "pl", "x-default"]
+    ["canonical", "alternate"]
   );
   assert.strictEqual(head.links[0]?.href, "https://www.remiforge.dev/");
-  assert.strictEqual(head.links.find(({ hrefLang }) => hrefLang === "pl")?.href, "https://www.remiforge.dev/index.md?lang=pl");
+  assert.strictEqual(head.links.find(({ type }) => type === "text/markdown")?.href, "https://www.remiforge.dev/index.md?lang=pl");
 });
 
 it("og:url is byte-equal to the canonical link on every page kind", () => {
@@ -480,7 +481,7 @@ it("education structured data links its page to the Person and the Person to att
   // The reciprocal edge on the person fragment makes "studied at" extractable from either direction
   assert.deepStrictEqual(nodeOf(graph, "Person")?.alumniOf, [{ "@id": "https://www.remiforge.dev/education#school-1" }]);
   assert.notInclude(JSON.stringify(graph), "EducationalOccupationalCredential");
-  assert.strictEqual(listItems(nodeOf(graph, "BreadcrumbList"))?.[1]?.name, "Stable education title");
+  assert.strictEqual(listItems(nodeOf(graph, "BreadcrumbList"))?.[1]?.name, STATIC_PAGES["/education"].copy.en.title);
 
   // An empty education list keeps the page and trail without referencing a missing collection
   const empty = graphOf(educationHead({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "en" }).scripts?.[0]?.children);
@@ -492,18 +493,17 @@ it("education structured data links its page to the Person and the Person to att
   assert.deepStrictEqual(nodeOf(empty, "CollectionPage")?.mainEntity, { "@id": "https://www.remiforge.dev/#person" });
 });
 
-it("contact structured data describes the visible ContactPage inside a breadcrumb graph", () => {
-  const hostileTitle = "Stable </script> contact title.";
+it("contact structured data uses the catalogue identity when its visible heading varies", () => {
+  const visibleHeading = "A dynamic contact heading.";
   const head = contactHead({
-    pageTitles: { ...stablePageTitles, "/contact": { ...stablePageTitles["/contact"], heading: hostileTitle } },
+    pageTitles: { ...stablePageTitles, "/contact": { ...stablePageTitles["/contact"], heading: visibleHeading } },
     preferredLanguage: "pl",
   });
   const script = head.scripts?.[0]?.children ?? "{}";
-  assert.notInclude(script, "</script>");
-  assert.include(script, "\\u003C");
   const graph = graphOf(script);
   const contact = nodeOf(graph, "ContactPage");
-  assert.strictEqual(contact?.name, hostileTitle);
+  assert.strictEqual(contact?.name, STATIC_PAGES["/contact"].copy.pl.title);
+  assert.notInclude(script, visibleHeading);
   assert.strictEqual(contact?.description, "Skontaktuj się z Remim Forge w sprawie tworzenia stron internetowych, współpracy lub projektów.");
   assert.deepStrictEqual(contact?.isPartOf, { "@id": "https://www.remiforge.dev/#website" });
   assert.deepStrictEqual(contact?.mainEntity, { "@id": "https://www.remiforge.dev/#person" });
@@ -523,7 +523,7 @@ it("contact structured data describes the visible ContactPage inside a breadcrum
   assert.deepStrictEqual(listItems(trail)?.[1], {
     "@type": "ListItem",
     position: 2,
-    name: hostileTitle,
+    name: STATIC_PAGES["/contact"].copy.pl.title,
     item: "https://www.remiforge.dev/contact",
   });
 });
