@@ -1,5 +1,8 @@
+// The `<link>` vocabulary in src/domain/links.ts: the RFC 8288 serializer every HTML `<head>` and
+// HTTP `Link:` header is written through, and the canonical/author/alternate and discovery builders
+// that feed it. The root head's own use of these declarations is asserted from the meta feature.
+
 import { assert, it } from "@effect/vitest";
-import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/domain/discovery";
 import {
   AI_DISCOVERY_LINK_HEADER,
   AI_DISCOVERY_LINKS,
@@ -12,25 +15,7 @@ import {
   representationLinks,
   SITEMAP_LINK,
 } from "@/domain/links";
-import { ROOT_HEAD } from "../root-head";
-
-// types
-import type { LinkTag } from "@/domain/links";
-
-// The three parameters the serializer writes, and nothing else: a link declaring a fourth would
-// have it silently dropped, so the declaration and the emitted header would disagree.
-const SERIALIZABLE_PARAMETERS = { type: "type", title: "title", hrefLang: "hreflang" } as const;
-
-// Every link the site publishes, from every declaration that emits one: the site-wide root head,
-// the AI-index advertisements, the twin language variants, and the page-level builders.
-const publishedLinks: ReadonlyArray<LinkTag> = [
-  ...ROOT_HEAD.links,
-  ...languageVariantLinks("/index.md"),
-  canonicalLink("https://www.remiforge.dev/education"),
-  authorLink("https://www.remiforge.dev/"),
-  SITEMAP_LINK,
-  LLMS_DISCOVERY_LINK,
-];
+import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/domain/discovery";
 
 // --- The Link header ---
 // The HTML <head> and the HTTP Link header are two projections of one declaration. These tests pin
@@ -75,33 +60,6 @@ it("language variants list every supported language and close with the x-default
     // The unpinned URL negotiates unsupported preferences and falls back to English
     '<https://www.remiforge.dev/index.md>; rel="alternate"; type="text/markdown"; hreflang="x-default"',
   ]);
-});
-
-it("every link the site publishes carries only the three parameters the serializer knows", () => {
-  // The parameter set is closed (type, title, hreflang). Anything else is a compile error at the
-  // declaration, but this pins the runtime side of that contract across every emitting site: no
-  // link the site publishes reaches a serializer that would drop the parameter silently.
-  for (const link of publishedLinks) {
-    for (const parameter of Object.keys(link)) {
-      if (parameter === "href" || parameter === "rel") continue;
-      assert.include(Object.keys(SERIALIZABLE_PARAMETERS), parameter, `${JSON.stringify(link)} declares an unknown parameter "${parameter}"`);
-    }
-  }
-
-  // And the other direction: a parameter a link does declare survives onto the wire. Walking only
-  // the closed set above cannot notice a builder that forgets to forward the value it was handed.
-  for (const link of publishedLinks) {
-    const header = joinLinkHeader([link]);
-
-    for (const [property, parameter] of Object.entries(SERIALIZABLE_PARAMETERS)) {
-      const value = link[property as keyof typeof SERIALIZABLE_PARAMETERS];
-      if (value === undefined) {
-        assert.notInclude(header, `${parameter}="`, `${JSON.stringify(link)} declares no ${property} but the header emits one`);
-        continue;
-      }
-      assert.include(header, `${parameter}="${value}"`, `${JSON.stringify(link)} loses its ${property} in the header`);
-    }
-  }
 });
 
 it("link builders name the canonical and author documents", () => {

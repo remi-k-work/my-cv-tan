@@ -4,10 +4,19 @@
 
 import { assert, it } from "@effect/vitest";
 import { STATIC_PAGES, STATIC_PAGE_PATHS, staticPageCopy } from "@/domain/pages";
-import { HOME_PATH, EDUCATION_PATH, CONTACT_PATH, SITE_LANGUAGES } from "@/domain/constants";
-import { META_DESCRIPTION_LENGTH } from "@/domain/constants";
+import { HOME_PATH, EDUCATION_PATH, CONTACT_PATH, META_DESCRIPTION_LENGTH, SITE_LANGUAGES } from "@/domain/constants";
 import { BRANDED_TITLE } from "@/domain/site";
-import { stablePageTitles } from "./fixtures";
+
+// types
+import type { PageTitles } from "@/domain/models";
+
+// Loader titles stand in for the real payload: the catalogue falls back to its own copy when a
+// title is missing, so the resolver is exercised with one stable, authored value per page.
+const stablePageTitles: PageTitles = {
+  "/": { eyebrow: "Home", heading: "Stable home title", intro: "Stable home description." },
+  "/education": { eyebrow: "Education", heading: "Stable education title", intro: "Stable education description." },
+  "/contact": { eyebrow: "Contact", heading: "Stable contact title", intro: "Stable contact description." },
+};
 
 it("resolves localized copy for every static page path", () => {
   for (const pagePath of STATIC_PAGE_PATHS) {

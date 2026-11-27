@@ -28,8 +28,7 @@ import {
   SOCIAL_PROFILES,
 } from "@/domain/site";
 import { httpUrlOption } from "@/domain/urls";
-import { OPEN_GRAPH_LOCALES } from "../social-meta";
-import { EMAIL_REGEX, META_DESCRIPTION_LENGTH, SITE_LANGUAGE_NAMES } from "@/domain/constants";
+import { EMAIL_REGEX, META_DESCRIPTION_LENGTH } from "@/domain/constants";
 
 it("the canonical origin and every profile it publishes are absolute https URLs", () => {
   // `rel="me"` and JSON-LD `sameAs` are read as destinations, so a relative or non-http value
@@ -107,14 +106,4 @@ it("the location and role claims stay consistent with the title the site publish
   assert.isTrue(KNOWS_ABOUT.length > 0);
   assert.strictEqual(new Set(KNOWS_ABOUT).size, KNOWS_ABOUT.length);
   assert.match(CONTACT_EMAIL, EMAIL_REGEX);
-});
-
-it("the vocabulary locales name one locale per supported language", () => {
-  // og:locale and og:locale:alternate are validated against a closed vocabulary, so a language
-  // declared without a locale would publish an invalid tag on every page in that language.
-  for (const language of ["en", "pl"] as const) {
-    assert.strictEqual(OPEN_GRAPH_LOCALES[language].length > 0, true);
-    assert.strictEqual(SITE_LANGUAGE_NAMES[language].length > 0, true);
-  }
-  assert.deepStrictEqual(Object.keys(OPEN_GRAPH_LOCALES), Object.keys(SITE_LANGUAGE_NAMES));
 });

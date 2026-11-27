@@ -13,7 +13,7 @@ import {
 } from "@/domain/urls";
 
 // These tests pin the URL math the HTML heads, Markdown twins, discovery documents and HTTP
-// responses share. The Link-header serialization itself is covered in link-tags.test.ts.
+// responses share. The Link-header serialization itself is covered in links.test.ts.
 
 it("absoluteUrl resolves a site path against the canonical origin", () => {
   assert.strictEqual(absoluteUrl("/"), "https://www.remiforge.dev/");

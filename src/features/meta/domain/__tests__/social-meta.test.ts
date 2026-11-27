@@ -3,11 +3,12 @@
 // and deep-compared, since assert.include uses reference equality for objects.
 
 import { assert, it } from "@effect/vitest";
-import { globalSocialImage, socialMeta } from "../social-meta";
+import { globalSocialImage, OPEN_GRAPH_LOCALES, socialMeta } from "../social-meta";
 import { AUTHOR_URL, PUBLISHER_URL, SITE_NAME } from "@/domain/site";
 import { SocialImage, SocialMetaInput } from "../models";
 import { LANGUAGE, metaTagsOf, tagContent } from "./fixtures";
 import type { PreferredLanguage } from "@/domain/models";
+import { SITE_LANGUAGE_NAMES } from "@/domain/constants";
 
 const language: PreferredLanguage = LANGUAGE;
 
@@ -99,4 +100,16 @@ it("socialMeta publishes Twitter Card tags with the same page-specific image as 
   assert.strictEqual(tagContent(tags, "name", "twitter:image"), image.src);
   assert.strictEqual(tagContent(tags, "name", "twitter:image:alt"), image.alt);
   assert.strictEqual(globalSocialImage("pl").alt, "Kolaż portfolio przedstawiający umiejętności tworzenia stron i zrzuty projektów");
+});
+
+it("the Open Graph locale vocabulary names one locale per supported language", () => {
+  // og:locale and og:locale:alternate are validated against a closed vocabulary, so a language
+  // declared without a locale would publish an invalid tag on every page in that language.
+  for (const language of ["en", "pl"] as const) {
+    assert.strictEqual(OPEN_GRAPH_LOCALES[language].length > 0, true);
+    assert.strictEqual(SITE_LANGUAGE_NAMES[language].length > 0, true);
+  }
+  // The two vocabularies must stay in step: a language the site publishes but the OG vocabulary
+  // omits would leave that page's card with no locale, and a stray OG-only key would never render.
+  assert.deepStrictEqual(Object.keys(OPEN_GRAPH_LOCALES), Object.keys(SITE_LANGUAGE_NAMES));
 });
