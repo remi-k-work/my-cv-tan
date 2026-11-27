@@ -8,7 +8,7 @@ import { Option } from "effect";
 
 // types
 import type { LinkTag } from "@/domain/links";
-import type { PreferredLanguage } from "@/domain/models";
+import type { ImageFacts, PreferredLanguage } from "@/domain/models";
 import type { Experience } from "@/features/experience/domain/models";
 
 export type MetaTag =
@@ -42,14 +42,7 @@ export interface PageHead {
   readonly scripts: Array<JsonLdScript>;
 }
 
-export interface SocialImageFacts {
-  readonly src: string;
-  readonly mime: "image/jpeg" | "image/webp";
-  readonly width: number;
-  readonly height: number;
-}
-
-export interface SocialImage extends SocialImageFacts {
+export interface SocialImage extends ImageFacts {
   readonly alt: string;
 }
 
@@ -85,7 +78,7 @@ export interface ExperienceIdentity {
 export interface ExperienceSeo extends ExperienceIdentity {
   readonly experience: Experience;
   readonly description: string;
-  readonly screenshot: Option.Option<SocialImageFacts>;
+  readonly screenshot: Option.Option<ImageFacts>;
 }
 
 export type RouteStatus = "pending" | "success" | "error" | "notFound";

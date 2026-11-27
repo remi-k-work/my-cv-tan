@@ -8,8 +8,9 @@ import { excerpt, experienceHeadline, experienceImagePath, isEmployment } from "
 import { absoluteUrl, experiencePath, validatedHref } from "@/domain/urls";
 
 // types
+import type { ImageFacts } from "@/domain/models";
 import type { Experience } from "@/features/experience/domain/models";
-import type { ExperienceIdentity, ExperienceIdentityInput, ExperienceSection, ExperienceSeo, SocialImageFacts } from "./models";
+import type { ExperienceIdentity, ExperienceIdentityInput, ExperienceSection, ExperienceSeo } from "./models";
 
 // constants
 import { SCREENSHOT_HEIGHT, SCREENSHOT_WIDTH } from "@/features/experience/domain/constants";
@@ -17,11 +18,11 @@ import { META_DESCRIPTION_LENGTH } from "@/domain/constants";
 
 // An empty image name means "no screenshot", so the whole check is one lift into Option: the
 // ternary it replaces had to spell both constructors and split the decision across two branches
-export const experienceScreenshot = (imageName: string): Option.Option<SocialImageFacts> =>
+export const experienceScreenshot = (imageName: string): Option.Option<ImageFacts> =>
   pipe(
     String.trim(imageName),
     Option.liftPredicate(String.isNonEmpty),
-    Option.map((name): SocialImageFacts => ({
+    Option.map((name): ImageFacts => ({
       src: absoluteUrl(experienceImagePath(name, "a")),
       mime: "image/webp",
       width: SCREENSHOT_WIDTH,

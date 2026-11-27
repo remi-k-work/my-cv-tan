@@ -8,9 +8,9 @@ import { staticPageCopy } from "@/domain/pages";
 import { representationLinks } from "@/domain/links";
 
 // types
-import type { ExperienceIdentityInput, JsonLdNodes, PageHead, SocialImage, SocialImageFacts, SocialMetaInput } from "./models";
+import type { ExperienceIdentityInput, JsonLdNodes, PageHead, SocialImage, SocialMetaInput } from "./models";
 import type { StaticPageCopy } from "@/domain/pages";
-import type { PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
+import type { ImageFacts, PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
 import type { EducationList } from "@/features/education/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
 
@@ -46,7 +46,7 @@ export const pageHead = ({ social, markdownPath, graph }: PageHeadSpec): PageHea
   scripts: [jsonLdGraph([...SITE_NODES, ...graph])],
 });
 
-const experienceCardImage = (headline: string, image: Option.Option<SocialImageFacts>, preferredLanguage: PreferredLanguage): SocialImage =>
+const experienceCardImage = (headline: string, image: Option.Option<ImageFacts>, preferredLanguage: PreferredLanguage): SocialImage =>
   Option.match(image, {
     onNone: () => globalSocialImage(preferredLanguage),
     onSome: (screenshot) => ({

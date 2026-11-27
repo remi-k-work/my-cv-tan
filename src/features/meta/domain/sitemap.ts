@@ -6,7 +6,7 @@ import { absoluteUrl } from "@/domain/urls";
 
 // types
 import type { ExperienceList } from "@/features/experience/domain/models";
-import type { SocialImageFacts } from "./models";
+import type { ImageFacts } from "@/domain/models";
 
 // constants
 import { DEFAULT_LANGUAGE } from "@/domain/constants";
@@ -31,7 +31,7 @@ const replaceXmlEntities = (value: string) =>
 // XML 1.0 cannot represent these controls or lone surrogates, even as entity references
 const escapeXml = flow(String.replace(XML_INVALID_CHARACTERS, ""), replaceXmlEntities);
 
-const experienceImages = (headline: string, screenshot: Option.Option<SocialImageFacts>) =>
+const experienceImages = (headline: string, screenshot: Option.Option<ImageFacts>) =>
   pipe(
     screenshot,
     Option.map(({ src }) => [

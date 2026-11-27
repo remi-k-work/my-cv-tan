@@ -11,6 +11,15 @@ export type PageTitlesList = typeof PageTitlesList.Type;
 // pure builders stay testable while the service decides where translations come from
 export type Translate = (source: string) => string;
 
+// Written facts about a published image. Shared by social cards, JSON-LD and the sitemap so every
+// surface describes the same file with the same dimensions and MIME type
+export interface ImageFacts {
+  readonly src: string;
+  readonly mime: "image/jpeg" | "image/webp";
+  readonly width: number;
+  readonly height: number;
+}
+
 // constants
 import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH, SITE_LANGUAGES } from "./constants";
 
