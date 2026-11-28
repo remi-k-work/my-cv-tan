@@ -18,7 +18,6 @@ export const PUBLISHER_URL = HOME_URL;
 export const WEBSITE_ID = `${HOME_URL}#website`;
 export const PERSON_ID = `${HOME_URL}#person`;
 export const PUBLISHER_ID = `${HOME_URL}#publisher`;
-export const PROFILE_ID = `${HOME_URL}#profile`;
 export const EXPERIENCE_LIST_ID = `${HOME_URL}#experience-list`;
 export const PORTFOLIO_LIST_ID = `${HOME_URL}#portfolio-list`;
 

@@ -5,7 +5,7 @@
 import { assert, it } from "@effect/vitest";
 import { Option } from "effect";
 import { educationJsonLd, contactJsonLd, experienceCollections, experienceJsonLd, homeJsonLd, schoolSubgraph } from "../page-graphs";
-import { CONTACT_EMAIL, EXPERIENCE_LIST_ID, GLOBAL_SOCIAL_IMAGE, HOME_URL, PERSON_ID, PORTFOLIO_LIST_ID, PROFILE_ID, WEBSITE_ID } from "@/domain/site";
+import { CONTACT_EMAIL, EXPERIENCE_LIST_ID, GLOBAL_SOCIAL_IMAGE, HOME_URL, PERSON_ID, PORTFOLIO_LIST_ID, WEBSITE_ID } from "@/domain/site";
 import { jsonLdGraph } from "../serialize";
 import { graphOf, nodeOf } from "./fixtures";
 import type { PreferredLanguage } from "@/domain/models";
@@ -255,7 +255,8 @@ it("homeJsonLd builds a ProfilePage linking site entities plus grouped collectio
   const profile = nodes.find((node) => node["@type"] === "ProfilePage");
   assert.deepStrictEqual(profile?.name, "Home");
   assert.deepStrictEqual(profile?.description, "A home page.");
-  assert.strictEqual(profile?.["@id"], PROFILE_ID);
+  // The home page is the profile document, so its node shares the canonical URL every surface cites
+  assert.strictEqual(profile?.["@id"], HOME_URL);
   assert.strictEqual(profile?.url, HOME_URL);
   assert.deepStrictEqual(profile?.mainEntity, { "@id": PERSON_ID });
   assert.deepStrictEqual(profile?.isPartOf, { "@id": WEBSITE_ID });

@@ -3,7 +3,7 @@
 import { assert, it } from "@effect/vitest";
 import { jsonLdGraph } from "../serialize";
 import { SITE_NODES } from "../site-nodes";
-import { PERSON_DESCRIPTION, SITE_DESCRIPTION } from "@/domain/site";
+import { CONTACT_EMAIL, PERSON_DESCRIPTION, SITE_DESCRIPTION } from "@/domain/site";
 import { graphOf, nodeOf } from "./fixtures";
 
 it("site graph declares the bilingual audience on WebSite and Person", () => {
@@ -15,6 +15,8 @@ it("site graph declares the bilingual audience on WebSite and Person", () => {
   // Every site entity carries an extractable description, single-sourced with the meta tags
   assert.strictEqual(nodeOf(siteGraph, "WebSite")?.description, SITE_DESCRIPTION);
   assert.strictEqual(nodeOf(siteGraph, "Person")?.description, PERSON_DESCRIPTION);
+  // The contact address is public on the contact page, so the Person entity carries it too
+  assert.strictEqual(nodeOf(siteGraph, "Person")?.email, CONTACT_EMAIL);
   // The logo and person image are the square avatar with real dimensions, not the wide OG banner
   assert.deepStrictEqual(nodeOf(siteGraph, "Organization")?.logo, {
     "@type": "ImageObject",

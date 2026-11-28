@@ -7,7 +7,7 @@ import { assert, it } from "@effect/vitest";
 import { Option, pipe } from "effect";
 import { pageHead, experienceHead, contactHead, educationHead, homeHead } from "../page-head";
 import { globalSocialImage } from "../social";
-import { BRANDED_TITLE, GLOBAL_SOCIAL_IMAGE, SITE_NAME, AUTHOR_URL, PROFILE_ID } from "@/domain/site";
+import { BRANDED_TITLE, GLOBAL_SOCIAL_IMAGE, HOME_URL, SITE_NAME, AUTHOR_URL } from "@/domain/site";
 import { INDEXABLE_ROBOTS } from "@/domain/http";
 import { STATIC_PAGES } from "@/domain/pages";
 import { withLanguageParam } from "@/domain/urls";
@@ -416,7 +416,8 @@ it("home structured data is a first-party ProfilePage linking site entities plus
   const head = homeHead({ pageTitles: stablePageTitles, experienceList: [samplePortfolio], preferredLanguage: "en" });
   const graph = graphOf(head.scripts?.[0]?.children);
   const profile = nodeOf(graph, "ProfilePage");
-  assert.strictEqual(profile?.["@id"], PROFILE_ID);
+  // The home document is the profile, so its node id is the canonical URL every other surface cites
+  assert.strictEqual(profile?.["@id"], HOME_URL);
   assert.deepStrictEqual(profile?.mainEntity, { "@id": "https://www.remiforge.dev/#person" });
   assert.deepStrictEqual(profile?.isPartOf, { "@id": "https://www.remiforge.dev/#website" });
   assert.deepStrictEqual(profile?.hasPart, [{ "@id": "https://www.remiforge.dev/#portfolio-list" }]);

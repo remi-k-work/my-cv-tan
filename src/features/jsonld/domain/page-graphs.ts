@@ -43,7 +43,7 @@ interface PageGraphSpec {
 type LocalizedCopy = Pick<PageIdentity, "title" | "description" | "canonical" | "preferredLanguage">;
 
 // constants
-import { CONTACT_EMAIL, EXPERIENCE_LIST_ID, GLOBAL_SOCIAL_IMAGE, PERSON_ID, PORTFOLIO_LIST_ID, PROFILE_ID } from "@/domain/site";
+import { CONTACT_EMAIL, EXPERIENCE_LIST_ID, GLOBAL_SOCIAL_IMAGE, PERSON_ID, PORTFOLIO_LIST_ID } from "@/domain/site";
 
 // Matches the og:image published on static pages so JSON-LD extractors see the same sized asset
 const STATIC_PRIMARY_IMAGE = imageObject(GLOBAL_SOCIAL_IMAGE.src, GLOBAL_SOCIAL_IMAGE.width, GLOBAL_SOCIAL_IMAGE.height);
@@ -248,7 +248,9 @@ export const homeJsonLd = ({
   return [
     webPageNode({
       type: "ProfilePage",
-      id: PROFILE_ID,
+      // The profile is the home document itself, so it is addressable by the canonical URL every
+      // other surface cites, not by a fragment only this graph would know
+      id: canonical,
       url: canonical,
       name: title,
       description,

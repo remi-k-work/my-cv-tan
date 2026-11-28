@@ -7,6 +7,7 @@ import type { JsonLdNode } from "./models";
 // constants
 import {
   AVATAR,
+  CONTACT_EMAIL,
   HOME_COUNTRY,
   HOME_COUNTRY_NAME,
   HOME_LOCALITY,
@@ -47,6 +48,9 @@ export const SITE_NODES: ReadonlyArray<JsonLdNode> = [
     description: PERSON_DESCRIPTION,
     url: HOME_URL,
     image: AVATAR_IMAGE_OBJECT,
+    // The public address is already published by llms.txt and the contact page; keeping it on the
+    // site-wide Person makes the entity self-contained for parsers that never fetch a second page
+    email: CONTACT_EMAIL,
     jobTitle: JOB_TITLE,
     knowsAbout: [...KNOWS_ABOUT],
     knowsLanguage: [...SITE_LANGUAGES],
