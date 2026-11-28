@@ -4,7 +4,7 @@
 // services, features, and other libraries
 import { Array, Option, String, pipe } from "effect";
 import { matchPreferredLanguage } from "@/domain/helpers";
-import { absoluteUrl, experiencePath, validatedHref } from "@/domain/urls";
+import { absoluteUrl, experienceMarkdownPath, experiencePath, validatedHref } from "@/domain/urls";
 import { excerpt, experienceHeadline, experienceImagePath, isEmployment } from "./helpers";
 
 // types
@@ -57,7 +57,7 @@ export const experienceIdentity = ({ experience, preferredLanguage }: Experience
     preferredLanguage,
     path,
     canonical: absoluteUrl(path),
-    markdownPath: `${path}.md`,
+    markdownPath: experienceMarkdownPath(experience.slug),
     title: inlineText(experienceHeadline(experience, preferredLanguage)),
   };
 };

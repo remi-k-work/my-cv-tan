@@ -12,7 +12,9 @@ import { ExperienceIdentity } from "@/features/experience/ui/experience-identity
 import { PageTitle } from "@/ui/page-title";
 import { BRANDED_TITLE } from "@/domain/site";
 import { DOWNLOADABLE_DOCUMENTS } from "@/domain/discovery";
-import { absoluteUrl } from "@/domain/urls";
+import { absoluteUrl, markdownTwinUrl } from "@/domain/urls";
+import { documentHeaders } from "@/lib/http-response";
+import { DEFAULT_LANGUAGE } from "@/domain/constants";
 import { buildSitemapXml } from "@/features/discovery/domain/sitemap";
 import { mdResponse } from "@/features/markdown/services/responses";
 import { buildLlmsFullTxt, buildLlmsTxt } from "@/features/discovery/domain/llms";
@@ -49,6 +51,11 @@ it("the head, JSON-LD, Markdown twin and visible detail heading share one experi
   assert.strictEqual(webPage?.["description"], seo.description);
   assert.include(twin, `description: ${JSON.stringify(seo.description)}`);
 
+  // One language: the HTTP envelope, WebPage node and twin frontmatter.
+  assert.strictEqual(documentHeaders(seo.preferredLanguage)["Content-Language"], seo.preferredLanguage);
+  assert.strictEqual(webPage?.["inLanguage"], seo.preferredLanguage);
+  assert.include(twin, `lang: ${JSON.stringify(seo.preferredLanguage)}`);
+
   // One canonical: the <link>, og:url, the WebPage url and the twin frontmatter.
   assert.strictEqual(head.links?.find(({ rel }) => rel === "canonical")?.href, seo.canonical);
   assert.strictEqual(metaContent("og:url"), seo.canonical);
@@ -70,6 +77,14 @@ it("the head, JSON-LD, Markdown twin and visible detail heading share one experi
   // The repository stays structured in both machine-readable representations, not just a body link.
   assert.include(twin, `repository: "https://github.com/example/repo"`);
   assert.include(JSON.stringify(webPage?.relatedLink), "https://github.com/example/repo");
+
+  // Crawl discovery names the same canonical and verified image, never a separately rebuilt URL.
+  const sitemapEntry = buildSitemapXml([sampleEmployment]).split(`<loc>${seo.canonical}</loc>`)[1]?.split("</url>")[0] ?? "";
+  assert.notStrictEqual(sitemapEntry, "");
+  assert.include(sitemapEntry, `<image:loc>${metaContent("og:image")}</image:loc>`);
+  const index = buildLlmsTxt([sampleEmployment]);
+  assert.include(index, `](${markdownTwinUrl(seo.markdownPath, DEFAULT_LANGUAGE)})`);
+  assert.include(index, `[HTML](${seo.canonical})`);
 });
 
 it("each static page's head, JSON-LD graph and twin publish one canonical, title, description and language", () => {
@@ -81,6 +96,8 @@ it("each static page's head, JSON-LD graph and twin publish one canonical, title
     { path: "/education", head: educationHead, twin: buildEducationMd },
     { path: "/contact", head: contactHead, twin: buildContactMd },
   ] as const;
+  const sitemap = buildSitemapXml([]);
+  const index = buildLlmsTxt([]);
 
   for (const { path, head: buildHead, twin: buildTwin } of pages) {
     const copy = staticPageCopy(stablePageTitles, path, preferredLanguage);
@@ -88,8 +105,7 @@ it("each static page's head, JSON-LD graph and twin publish one canonical, title
     const twin = twinDocument(buildTwin({ pageTitles: stablePageTitles, experienceList: [], educationList: [], preferredLanguage, translate: translateEn }));
     const graph = graphOf(head.scripts[0]?.children);
     const pageNode = graph.find(
-      (node) =>
-        node["url"] === copy.canonical && ["ProfilePage", "CollectionPage", "ContactPage"].some((type) => node["@type"] === type)
+      (node) => node["url"] === copy.canonical && ["ProfilePage", "CollectionPage", "ContactPage"].some((type) => node["@type"] === type)
     );
 
     const metaContent = (key: string) => {
@@ -110,6 +126,19 @@ it("each static page's head, JSON-LD graph and twin publish one canonical, title
     assert.strictEqual(pageNode?.["name"], copy.title, `${path} JSON-LD title`);
     assert.strictEqual(pageNode?.["description"], copy.description, `${path} JSON-LD description`);
     assert.strictEqual(pageNode?.["inLanguage"], preferredLanguage, `${path} JSON-LD language`);
+    assert.strictEqual(documentHeaders(preferredLanguage)["Content-Language"], preferredLanguage, `${path} HTTP language`);
+    assert.include(twin, `lang: ${JSON.stringify(preferredLanguage)}`, `${path} twin language`);
+
+    // The sitemap and concise AI index cite this same canonical; the sitemap also discovers the
+    // exact social image while the English-only index retrieves the source-language twin.
+    const sitemapEntry = sitemap.split(`<loc>${copy.canonical}</loc>`)[1]?.split("</url>")[0] ?? "";
+    assert.notStrictEqual(sitemapEntry, "", `${path} sitemap entry`);
+    assert.include(sitemapEntry, `<image:loc>${metaContent("og:image")}</image:loc>`, `${path} sitemap image`);
+    const sourceTwin = markdownTwinUrl(STATIC_PAGES[path].mdHref, DEFAULT_LANGUAGE);
+    const indexEntry = index.split("\n").find((line) => line.includes(`](${sourceTwin})`));
+    assert.isDefined(indexEntry, `${path} AI index entry`);
+    assert.include(indexEntry ?? "", `[HTML](${copy.canonical})`, `${path} AI index canonical`);
+    assert.include(indexEntry ?? "", STATIC_PAGES[path].indexSummary, `${path} AI index summary`);
 
     // The branded document title is one template applied to the catalogue's own SEO title. Both
     // surfaces read it from BRANDED_TITLE, so a separator change cannot leave the twin's frontmatter
@@ -118,10 +147,7 @@ it("each static page's head, JSON-LD graph and twin publish one canonical, title
     assert.include(twin, `title: ${JSON.stringify(BRANDED_TITLE(copy.title))}`);
     // The head names only the twin for the language it just served.
     const markdownLink = head.links.find(({ rel, type }) => rel === "alternate" && type === "text/markdown");
-    assert.strictEqual(
-      markdownLink?.href,
-      `https://www.remiforge.dev${STATIC_PAGES[path].mdHref}?lang=${preferredLanguage}`
-    );
+    assert.strictEqual(markdownLink?.href, `https://www.remiforge.dev${STATIC_PAGES[path].mdHref}?lang=${preferredLanguage}`);
 
     // The visible H1 and the twin's H1 are one stable identity heading. The route reads it from the
     // stable titles while the twin reads it from the resolved copy; nothing else pins the two
@@ -199,11 +225,7 @@ it("a page's advertised twin URL is the very URL the twin route answers on", asy
     for (const path of STATIC_PAGE_PATHS) {
       const response = mdResponse({ body: "", preferredLanguage, canonical: absoluteUrl(path), markdownPath: STATIC_PAGES[path].mdHref });
 
-      assert.strictEqual(
-        twinLocationOf(heads[path]),
-        response.headers.get("Content-Location"),
-        `${path} (${preferredLanguage}) advertised twin URL`
-      );
+      assert.strictEqual(twinLocationOf(heads[path]), response.headers.get("Content-Location"), `${path} (${preferredLanguage}) advertised twin URL`);
     }
   }
 

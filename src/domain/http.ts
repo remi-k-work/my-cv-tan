@@ -1,5 +1,8 @@
 // Shared HTTP directive values used by HTML, Markdown, and discovery responses
 export const NO_STORE = "no-store";
+
+// Locale- and cookie-negotiated HTML must revalidate privately instead of relying on heuristic shared caching
+export const NEGOTIATED_DOCUMENT_CACHE = "private, no-cache";
 export const NOINDEX_FOLLOW = "noindex, follow";
 
 // How long a crawler should wait before retrying a temporarily unavailable resource; a failure is

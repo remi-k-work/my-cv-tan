@@ -35,9 +35,10 @@ it("buildLlmsTxt indexes pages, about facts, grouped experience and negotiated l
     `- [Full-Stack Developer at Sample Co](https://www.remiforge.dev/my%20project.md?lang=en): Built things with \\*\\*care\\*\\* and #hashtags. (Mar 2026) [HTML](https://www.remiforge.dev/my%20project)`
   );
   assert.notInclude(txt, `## Notes for AI systems`);
-  // The single-fetch document is surfaced in Pages and in the introductory guidance.
+  // The single-fetch document has one labelled retrieval link in Pages; repeating its bare URL in
+  // the introductory guidance would spend context tokens without giving an agent another destination.
   assert.include(txt, `- [Full site content](https://www.remiforge.dev/llms-full.txt): every page above in one document, for single-request ingestion.`);
-  assert.include(txt, `- The complete content of every page is also available in a single request: https://www.remiforge.dev/llms-full.txt.`);
+  assert.notInclude(txt, `single request: https://www.remiforge.dev/llms-full.txt`);
   assert.include(txt, `Use \`?lang=pl\` on a \`.md\` URL to request Polish explicitly; replace any existing \`lang\` value rather than appending a second parameter`);
   assert.include(txt, "Markdown page twins follow the request's language preferences.");
   assert.include(txt, "English is the fallback when no supported preference is present.");
@@ -225,7 +226,7 @@ it("both AI indexes carry the same single-sourced reuse notes", () => {
   assert.isTrue(full.lastIndexOf("Notes for AI systems") > full.lastIndexOf("[Source]("));
 });
 
-it("only the index points at the single-request companion; the companion never points at itself", () => {
+it("the index links the single-request companion without a duplicate bare pointer; the companion never points at itself", () => {
   const index = buildLlmsTxt([sampleEmployment]);
   const full = buildLlmsFullTxt({
     pageTitles: stablePageTitles,
@@ -234,8 +235,9 @@ it("only the index points at the single-request companion; the companion never p
   });
 
   // llms.txt is where the pointer earns its place: a fetcher that has not yet discovered the
-  // companion learns of it from the canonical index
-  assert.include(index, "- The complete content of every page is also available in a single request: https://www.remiforge.dev/llms-full.txt.");
+  // companion learns of it from the canonical index's labelled Pages link, without a second bare URL.
+  assert.include(index, "- [Full site content](https://www.remiforge.dev/llms-full.txt): every page above in one document, for single-request ingestion.");
+  assert.notInclude(index, "single request: https://www.remiforge.dev/llms-full.txt");
   // llms-full.txt IS that companion: telling its reader to fetch the document they are already
   // reading is noise an AI parser has to discard before it can cite anything
   assert.notInclude(full, "single request: https://www.remiforge.dev/llms-full.txt");

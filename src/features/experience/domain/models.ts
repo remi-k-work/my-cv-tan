@@ -18,8 +18,10 @@ const ExperienceSlug = Schema.Trim.check(
   Schema.isPattern(/^(?![\s\S]*\.md$)[\s\S]+$/iu),
   // Static pages and the legacy redirect outrank the dynamic detail route
   Schema.isPattern(/^(?!(?:index|education|contact|exp)$)[\s\S]+$/iu),
-  // Discovery documents occupy root-level paths
-  Schema.isPattern(/^(?!(?:llms(?:-full)?\.txt|robots\.txt|sitemap\.xml)$)[\s\S]+$/iu)
+  // Discovery documents and public root assets outrank the dynamic detail route
+  Schema.isPattern(
+    /^(?!(?:llms(?:-full)?\.txt|robots\.txt|sitemap\.xml|opengraph-image\.jpg|avatar\.jpg|my-cv(?:-pl)?\.pdf|my-certificates\.pdf|icon\.svg|layers(?:-2x)?\.png|marker-icon(?:-2x)?\.png|marker-shadow\.png)$)[\s\S]+$/iu
+  )
 );
 
 export const Experience = Schema.Struct({

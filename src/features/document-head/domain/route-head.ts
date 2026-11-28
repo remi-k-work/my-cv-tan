@@ -25,6 +25,7 @@ interface RouteHeadSpec<TData> {
 
 // constants
 import { DEFAULT_LANGUAGE } from "@/domain/constants";
+import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 
 const decodeRootLoaderData = Schema.decodeUnknownOption(Schema.Struct({ preferredLanguage: PreferredLanguage }));
 
@@ -38,10 +39,17 @@ export const headLanguage = (matches: MatchChain): PreferredLanguage =>
   );
 
 export const isNotFoundMatch = (match: MatchChain[number]): boolean => match.status === "notFound" || match._notFound === true;
-const isPendingOrErrorMatch = (match: MatchChain[number]): boolean => match.status === "pending" || match.status === "error";
+
+// One completeness check drives both HTTP and HTML robots directives, so they cannot drift apart
+const isIndexableMatchChain = (matches: MatchChain): boolean =>
+  matches.length > 1 &&
+  Array.every(matches, (match) => match.status === "success" && !isNotFoundMatch(match)) &&
+  // Root loader data may still be resolving while headLanguage uses its safe English fallback
+  Array.every(Array.drop(matches, 1), ({ loaderData }) => loaderData !== null && loaderData !== undefined);
+
+export const headRobots = (matches: MatchChain) => (isIndexableMatchChain(matches) ? INDEXABLE_ROBOTS : NOINDEX_FOLLOW);
+
 const hasNotFound = (matchStatus: RouteStatus, matches: MatchChain): boolean => matchStatus === "notFound" || Array.some(matches, isNotFoundMatch);
-const needsUnavailableHead = (matchStatus: RouteStatus, matches: MatchChain): boolean =>
-  matchStatus !== "success" || Array.some(matches, isPendingOrErrorMatch);
 
 // A fresh empty head per call keeps callers from sharing (and mutating) one module-level object
 const emptyHead = (): PageHead => ({ meta: [], links: [], scripts: [] });
@@ -54,10 +62,10 @@ export const routeHead = <TData>({ loaderData, matches, matchStatus, fallbackPat
     Match.when(false, () => {
       const preferredLanguage = headLanguage(matches);
 
-      // Guard before Option.map so stale leaf loaderData never builds a head during pending/error states
+      // Guard before Option.map so stale leaf loaderData never builds an indexable head from an incomplete chain
       return pipe(
         Option.fromNullishOr(loaderData),
-        Option.filter(() => !needsUnavailableHead(matchStatus, matches)),
+        Option.filter(() => matchStatus === "success" && isIndexableMatchChain(matches)),
         Option.map((data) => build(data, preferredLanguage)),
         Option.getOrElse(() => unavailableHead(fallbackPath, preferredLanguage))
       );

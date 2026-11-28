@@ -14,7 +14,7 @@ interface HeaderUpdates {
 
 // constants
 import { AI_DISCOVERY_LINK_HEADER, AI_DISCOVERY_LINKS } from "@/domain/links";
-import { CACHEABLE_HEADERS, INDEXABLE_HEADERS, NEGOTIATION_VARY_TOKENS, SERVICE_UNAVAILABLE_HEADERS, UNAVAILABLE_HEADERS } from "@/lib/http-response";
+import { CACHEABLE_HEADERS, NEGOTIATION_VARY_TOKENS, SERVICE_UNAVAILABLE_HEADERS, UNAVAILABLE_HEADERS } from "@/lib/http-response";
 
 const MD_CONTENT_TYPE = "text/markdown; charset=utf-8";
 const NEGOTIATION_VARY = pipe(NEGOTIATION_VARY_TOKENS, Array.map(String.toLowerCase), HashSet.fromIterable);
@@ -86,7 +86,6 @@ export const mdResponse = (input: {
   return responseEnvelope(200, input.body, {
     ...markdownHeaders(input.preferredLanguage, markdownLinks(input.canonical)),
     ...CACHEABLE_HEADERS,
-    ...INDEXABLE_HEADERS,
     "Content-Location": markdownUrl,
   });
 };

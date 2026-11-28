@@ -11,9 +11,9 @@ import type { ImageFacts } from "@/domain/models";
 // constants
 import { DEFAULT_LANGUAGE } from "@/domain/constants";
 import { DOWNLOADABLE_DOCUMENT_PATHS } from "@/domain/discovery";
-import { STATIC_PAGE_PATHS } from "@/domain/pages";
+import { STATIC_PAGE_PATHS, staticPageCopy } from "@/domain/pages";
+import { GLOBAL_SOCIAL_IMAGE } from "@/domain/site";
 
-const STATIC_PATHS: ReadonlyArray<string> = [...STATIC_PAGE_PATHS, ...DOWNLOADABLE_DOCUMENT_PATHS];
 const XML_ENTITIES: HashMap.HashMap<string, string> = HashMap.fromIterable([
   ["&", "&amp;"],
   ["<", "&lt;"],
@@ -31,21 +31,32 @@ const replaceXmlEntities = (value: string) =>
 // XML 1.0 cannot represent these controls or lone surrogates, even as entity references
 const escapeXml = flow(String.replace(XML_INVALID_CHARACTERS, ""), replaceXmlEntities);
 
+const imageElements = (title: string, src: string) => [
+  "  <image:image>",
+  `    <image:loc>${escapeXml(src)}</image:loc>`,
+  `    <image:title>${escapeXml(title)}</image:title>`,
+  "  </image:image>",
+];
+
 const experienceImages = (title: string, screenshot: Option.Option<ImageFacts>) =>
   pipe(
     screenshot,
-    Option.map(({ src }) => [
-      "  <image:image>",
-      `    <image:loc>${escapeXml(src)}</image:loc>`,
-      `    <image:title>${escapeXml(title)}</image:title>`,
-      "  </image:image>",
-    ]),
+    Option.map(({ src }) => imageElements(title, src)),
     Option.getOrElse(Array.empty<string>)
   );
 
 // Reuses each page's SEO identity so sitemap URLs and image metadata cannot drift from HTML or Markdown
 export const buildSitemapXml = (experiences: ExperienceList) => {
-  const staticEntries = Array.map(STATIC_PATHS, (path) => ({ path, loc: absoluteUrl(path), images: Array.empty<string>() }));
+  const staticPageEntries = Array.map(STATIC_PAGE_PATHS, (path) => {
+    const { canonical: loc, title } = staticPageCopy({}, path, DEFAULT_LANGUAGE);
+    return {
+      path,
+      loc,
+      // Resolve the same page identity as HTML and Markdown before projecting its verified image
+      images: imageElements(title, GLOBAL_SOCIAL_IMAGE.src),
+    };
+  });
+  const downloadEntries = Array.map(DOWNLOADABLE_DOCUMENT_PATHS, (path) => ({ path, loc: absoluteUrl(path), images: Array.empty<string>() }));
   const experienceEntries = Array.map(experiences, (experience) => {
     const identity = experienceIdentity({ experience, preferredLanguage: DEFAULT_LANGUAGE });
     return {
@@ -55,9 +66,9 @@ export const buildSitemapXml = (experiences: ExperienceList) => {
     };
   });
 
-  // Static pages win collisions, and disallowed paths are excluded using the same policy as robots.txt
+  // Catalogue entries win collisions, and disallowed paths are excluded using the same policy as robots.txt
   const entries = pipe(
-    staticEntries,
+    [...staticPageEntries, ...downloadEntries],
     Array.appendAll(experienceEntries),
     Array.filter(({ path }) => isCrawlablePath(path)),
     Array.dedupeWith((left, right) => left.loc === right.loc)

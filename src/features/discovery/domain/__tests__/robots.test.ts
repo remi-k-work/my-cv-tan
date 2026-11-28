@@ -3,6 +3,7 @@ import { Effect } from "effect";
 import { isCrawlablePath, ROBOTS_DISALLOW_PATHS, ROBOTS_TXT } from "../robots";
 import { robotsHandler } from "../../services/handlers";
 import { Robots } from "../../services/robots";
+import { CONTENT_SIGNAL } from "@/domain/discovery";
 
 it("robots.txt allows content, disallows API endpoints, and advertises the sitemap", async () => {
   const robots = ROBOTS_TXT;
@@ -49,6 +50,7 @@ it("robots.txt allows content, disallows API endpoints, and advertises the sitem
   assert.strictEqual(response.headers.get("Content-Language"), "en");
   assert.strictEqual(response.headers.get("Content-Location"), "https://www.remiforge.dev/robots.txt");
   assert.strictEqual(response.headers.get("Cache-Control"), "public, max-age=3600, stale-while-revalidate=86400");
+  assert.strictEqual(response.headers.get("Content-Signal"), CONTENT_SIGNAL);
   // Advertises machine-readable AI indexes in Link header.
   assert.include(response.headers.get("Link") ?? "", "https://www.remiforge.dev/llms.txt");
   assert.include(response.headers.get("Link") ?? "", "https://www.remiforge.dev/llms-full.txt");

@@ -113,7 +113,7 @@ it("response helpers set content types, indexing, cache, canonical, and discover
   // Markdown responses expose their HTML canonical and discovery files; language variants stay in the body and Content-Location.
   assert.strictEqual(
     ok.headers.get("Link"),
-    '<https://www.remiforge.dev/>; rel="canonical", <https://www.remiforge.dev/llms.txt>; rel="describedby", <https://www.remiforge.dev/llms-full.txt>; rel="related"; type="text/plain"; title="llms-full.txt"'
+    '<https://www.remiforge.dev/>; rel="canonical", <https://www.remiforge.dev/llms.txt>; rel="describedby"; type="text/plain"; title="llms.txt", <https://www.remiforge.dev/llms-full.txt>; rel="related"; type="text/plain"; title="llms-full.txt"'
   );
   assert.strictEqual(ok.headers.get("Content-Signal"), "search=yes, ai-input=yes, ai-train=yes");
   assert.strictEqual(ok.headers.get("X-Content-Type-Options"), "nosniff");
@@ -128,7 +128,7 @@ it("response helpers set content types, indexing, cache, canonical, and discover
   assert.isNull(missing.headers.get("Retry-After"));
   assert.strictEqual(
     missing.headers.get("Link"),
-    '<https://www.remiforge.dev/llms.txt>; rel="describedby", <https://www.remiforge.dev/llms-full.txt>; rel="related"; type="text/plain"; title="llms-full.txt"'
+    '<https://www.remiforge.dev/llms.txt>; rel="describedby"; type="text/plain"; title="llms.txt", <https://www.remiforge.dev/llms-full.txt>; rel="related"; type="text/plain"; title="llms-full.txt"'
   );
 
   // Missing representation omits Content-Location.
@@ -149,7 +149,7 @@ it("response helpers set content types, indexing, cache, canonical, and discover
   assert.strictEqual(unavailable.headers.get("Retry-After"), "300");
   assert.strictEqual(
     unavailable.headers.get("Link"),
-    '<https://www.remiforge.dev/llms.txt>; rel="describedby", <https://www.remiforge.dev/llms-full.txt>; rel="related"; type="text/plain"; title="llms-full.txt"'
+    '<https://www.remiforge.dev/llms.txt>; rel="describedby"; type="text/plain"; title="llms.txt", <https://www.remiforge.dev/llms-full.txt>; rel="related"; type="text/plain"; title="llms-full.txt"'
   );
 
   const txt = txtResponse("# Plain");

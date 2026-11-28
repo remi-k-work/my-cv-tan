@@ -1,5 +1,5 @@
 import { assert, it } from "@effect/vitest";
-import { headLanguage, routeHead } from "../route-head";
+import { headLanguage, headRobots, routeHead } from "../route-head";
 import { rootHead } from "../root-head";
 import { homeHead } from "../page-head";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
@@ -165,7 +165,10 @@ it("routeHead suppresses a stale successful leaf while another match is pending"
 
 it("routeHead delegates to the builder when loader data is present, resolving language from matches", () => {
   const build = (loaderData: { readonly title: string }, preferredLanguage: "en" | "pl") => pageHeadFromInput(loaderData.title, preferredLanguage);
-  const matches = [{ loaderData: { preferredLanguage: "pl" } }];
+  const matches = [
+    { loaderData: { preferredLanguage: "pl" }, status: "success" },
+    { loaderData: { title: "Custom" }, status: "success" },
+  ] as const;
 
   const head = routeHead({ loaderData: { title: "Custom" }, matches, matchStatus: "success", fallbackPath: "/contact", build });
 
@@ -184,6 +187,67 @@ const pageHeadFromInput = (title: string, preferredLanguage: "en" | "pl"): PageH
   ],
   links: [{ rel: "canonical", href: "https://www.remiforge.dev/" }],
   scripts: [],
+});
+
+it("routeHead and headRobots publish the same directive for every match-chain state", () => {
+  const scenarios = [
+    {
+      matchStatus: "success",
+      matches: [
+        { loaderData: { preferredLanguage: "pl" }, status: "success" },
+        { loaderData: { title: "Current" }, status: "success" },
+      ],
+    },
+    {
+      matchStatus: "pending",
+      matches: [
+        { loaderData: { preferredLanguage: "pl" }, status: "success" },
+        { loaderData: { title: "Stale" }, status: "pending" },
+      ],
+    },
+    {
+      matchStatus: "error",
+      matches: [
+        { loaderData: { preferredLanguage: "pl" }, status: "success" },
+        { loaderData: { title: "Stale" }, status: "error" },
+      ],
+    },
+    {
+      matchStatus: "success",
+      matches: [{ loaderData: { preferredLanguage: "pl" }, status: "success" }, { status: "success" }],
+    },
+  ] as const;
+
+  for (const { matches, matchStatus } of scenarios) {
+    const head = routeHead({
+      loaderData: { title: "Current" },
+      matches,
+      matchStatus,
+      fallbackPath: "/contact",
+      build: (data) => pageHeadFromInput(data.title, "pl"),
+    });
+    const robots = head.meta.find((tag) => "name" in tag && tag.name === "robots");
+
+    assert.strictEqual(robots !== undefined && "content" in robots ? robots.content : undefined, headRobots(matches));
+  }
+});
+
+it("headRobots is indexable only for a complete successful match chain", () => {
+  assert.strictEqual(headRobots([{ status: "success" }, { status: "success", loaderData: {} }]), INDEXABLE_ROBOTS);
+
+  // Empty, unresolved, failed and not-found chains keep the root head's fail-closed directive
+  for (const matches of [
+    [],
+    [{ status: "success" }, { status: "pending" }],
+    [{ status: "success" }, { status: "error" }],
+    [{ status: "success" }, { status: "notFound" }],
+    [{ status: "success" }, { status: "success", _notFound: true }],
+    [{ status: "success" }, { status: "success" }],
+    [{ loaderData: { preferredLanguage: "pl" } }],
+    [{ loaderData: { preferredLanguage: "pl" }, status: "success" }],
+  ] as const) {
+    assert.strictEqual(headRobots(matches), NOINDEX_FOLLOW);
+  }
 });
 
 it("headLanguage resolves the root loader locale and falls back safely", () => {

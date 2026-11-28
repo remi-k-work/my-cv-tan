@@ -19,7 +19,7 @@ import { llmsFullTxtHandler, llmsTxtHandler, robotsHandler, sitemapHandler } fro
 import { absoluteUrl, experiencePath } from "@/domain/urls";
 import { BRANDED_TITLE, HOME_URL } from "@/domain/site";
 import { STATIC_PAGES } from "@/domain/pages";
-import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
+import { INDEXABLE_ROBOTS, NEGOTIATED_DOCUMENT_CACHE, NOINDEX_FOLLOW } from "@/domain/http";
 import { HOME_PATH } from "@/domain/constants";
 import { pageHighlights, sampleEducation, samplePortfolio, stablePageTitles } from "@/testing/fixtures";
 import type { PageHead } from "@/features/document-head/domain/models";
@@ -42,7 +42,7 @@ const headOf = async (route: HeadRoute, { loaderData, params = {}, matchStatus =
   const head = route.options.head;
   if (head === undefined) throw new Error("Route must declare head()");
 
-  const matches: MatchChain = [{ loaderData: { preferredLanguage }, status: "success" }, { status: matchStatus }];
+  const matches: MatchChain = [{ loaderData: { preferredLanguage }, status: "success" }, { loaderData, status: matchStatus }];
 
   // Route callbacks receive a large TanStack context; these tests exercise only the fields the
   // application declared it reads, without mocking the head builders themselves.
@@ -170,13 +170,32 @@ it("the root route publishes response headers for the language negotiated by its
   if (headers === undefined) throw new Error("Root route must declare headers()");
 
   const result = await headers({
-    matches: [{ loaderData: { preferredLanguage: "pl" }, status: "success" }],
+    matches: [{ loaderData: { preferredLanguage: "pl" }, status: "success" }, { loaderData: {}, status: "success" }],
   } as never);
 
   assert.strictEqual(result?.["Content-Language"], "pl");
+  assert.strictEqual(result?.["Cache-Control"], NEGOTIATED_DOCUMENT_CACHE);
   assert.strictEqual(result?.Vary, "Cookie, Accept-Language");
   assert.strictEqual(result?.["X-Content-Type-Options"], "nosniff");
+  assert.strictEqual(result?.["X-Robots-Tag"], INDEXABLE_ROBOTS);
   assert.include(result?.Link ?? "", "https://www.remiforge.dev/llms.txt");
+});
+
+it("the root HTTP robots directive stays noindex for degraded documents", async () => {
+  const headers = RootRoute.options.headers;
+  if (headers === undefined) throw new Error("Root route must declare headers()");
+
+  for (const matches of [
+    [],
+    [{ loaderData: { preferredLanguage: "pl" }, status: "success" }],
+    [{ loaderData: { preferredLanguage: "pl" }, status: "success" }, { status: "success" }],
+    [{ loaderData: { preferredLanguage: "pl" }, status: "success" }, { status: "notFound" }],
+    [{ loaderData: { preferredLanguage: "pl" }, status: "success" }, { status: "error" }],
+    [{ loaderData: { preferredLanguage: "pl" }, status: "success" }, { status: "pending" }],
+  ]) {
+    const result = await headers({ matches } as never);
+    assert.strictEqual(result?.["X-Robots-Tag"], NOINDEX_FOLLOW);
+  }
 });
 
 it("every public machine-readable route supports GET and HEAD through the same handler", () => {

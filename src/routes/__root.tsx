@@ -7,7 +7,7 @@ import { Outlet, createRootRoute, HeadContent, Scripts } from "@tanstack/react-r
 import { cn } from "@/lib/utils";
 import { getLocale, getTranslationsSnapshot, useGT } from "gt-tanstack-start";
 import { rootHead } from "@/features/document-head/domain/root-head";
-import { headLanguage } from "@/features/document-head/domain/route-head";
+import { headLanguage, headRobots } from "@/features/document-head/domain/route-head";
 import { documentHeaders } from "@/lib/http-response";
 import { preferredLanguageFromLocale } from "@/domain/helpers";
 
@@ -33,10 +33,10 @@ export const Route = createRootRoute({
   notFoundComponent: NotFoundPage,
   // The HTML document carries the same reuse signal and AI-index advertisements as the
   // Markdown twins, the indexes and robots.txt, so a crawler reading only the response headers
-  // — never the <head> or the discovery documents — still learns the site's ingestion policy.
+  // — never the <head> or the discovery documents — still learns the site's ingestion policy
   // Content-Language names the locale the root loader just negotiated, so the HTTP signal, the
-  // <html lang> attribute below and the JSON-LD inLanguage fields all resolve to one value.
-  headers: ({ matches }) => documentHeaders(headLanguage(matches)),
+  // <html lang> attribute below and the JSON-LD inLanguage fields all resolve to one value
+  headers: ({ matches }) => documentHeaders(headLanguage(matches), headRobots(matches)),
   loader: async () => {
     const locale = getLocale();
     return { locale, preferredLanguage: preferredLanguageFromLocale(locale), translations: await getTranslationsSnapshot(locale) } as const;

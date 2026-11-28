@@ -1,6 +1,7 @@
 import { assert, it } from "@effect/vitest";
 import { Effect, Layer } from "effect";
-import { STATIC_PAGE_PATHS } from "@/domain/pages";
+import { STATIC_PAGES, STATIC_PAGE_PATHS } from "@/domain/pages";
+import { GLOBAL_SOCIAL_IMAGE } from "@/domain/site";
 import { CONTENT_SIGNAL, DOWNLOADABLE_DOCUMENTS } from "@/domain/discovery";
 import { experiencePath } from "@/domain/urls";
 import { Sitemap } from "../../services/sitemap";
@@ -76,12 +77,28 @@ it("sitemap home URL equals the homepage canonical exactly", () => {
   assert.notInclude(xml, "<loc>https://www.remiforge.dev</loc>");
 });
 
-it("sitemap includes every static page from the shared page catalogue", () => {
+it("sitemap includes one negotiated canonical per static page and no language-specific duplicates", () => {
   const xml = buildSitemapXml([]);
 
   for (const path of STATIC_PAGE_PATHS) {
-    assert.include(xml, `<loc>https://www.remiforge.dev${path}</loc>`);
+    const location = `<loc>https://www.remiforge.dev${path}</loc>`;
+    assert.strictEqual(xml.split(location).length - 1, 1, `${path} must appear exactly once`);
   }
+  // HTML locales share a canonical and vary by request; only Markdown twins use ?lang= pins.
+  assert.notInclude(xml, "?lang=");
+});
+
+it("sitemap publishes the verified global social image for every static page", () => {
+  const xml = buildSitemapXml([]);
+
+  for (const path of STATIC_PAGE_PATHS) {
+    const entry = xml.split(`<loc>https://www.remiforge.dev${path}</loc>`)[1]?.split("</url>")[0] ?? "";
+    assert.include(entry, `<image:loc>${GLOBAL_SOCIAL_IMAGE.src}</image:loc>`, `${path} image`);
+    const escapedTitle = STATIC_PAGES[path].copy.en.title.replaceAll("&", "&amp;");
+    assert.include(entry, `<image:title>${escapedTitle}</image:title>`, `${path} image title`);
+  }
+
+  assert.strictEqual((xml.match(/<image:image>/g) ?? []).length, STATIC_PAGE_PATHS.length);
 });
 
 it("sitemap lists every advertised downloadable document", () => {
@@ -115,7 +132,8 @@ it("sitemap publishes verified experience screenshots and omits pages without on
   assert.include(xml, 'xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"');
   assert.include(xml, "<image:loc>https://www.remiforge.dev/images/01-a.webp</image:loc>");
   assert.include(xml, "<image:title>Full-Stack Developer</image:title>");
-  assert.strictEqual((xml.match(/<image:image>/g) ?? []).length, 1);
+  // One page-specific screenshot in addition to each static page's global share image
+  assert.strictEqual((xml.match(/<image:image>/g) ?? []).length, STATIC_PAGE_PATHS.length + 1);
 });
 
 it("sitemap escapes image titles with the same XML boundary as URLs", () => {
@@ -166,6 +184,7 @@ it("sitemap success responses carry the XML content type, noindex, and hour-long
   const ok = sitemapResponse(buildSitemapXml([sampleExperience]));
   assert.strictEqual(ok.status, 200);
   assert.strictEqual(ok.headers.get("Content-Type"), "application/xml; charset=utf-8");
+  assert.strictEqual(ok.headers.get("Content-Language"), "en");
   assert.strictEqual(ok.headers.get("Content-Location"), "https://www.remiforge.dev/sitemap.xml");
   assert.strictEqual(ok.headers.get("Cache-Control"), "public, max-age=3600, stale-while-revalidate=86400");
   // Crawlable but excluded from search indexes.

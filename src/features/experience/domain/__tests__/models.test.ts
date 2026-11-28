@@ -26,7 +26,7 @@ it("rejects route slugs that URL parsing would normalize to another page", () =>
   assert.isTrue(Option.isSome(decodeExperience(experience("..."))));
 });
 
-it("rejects slugs reserved by static routes or the Markdown twin suffix", () => {
+it("rejects slugs reserved by routes, public assets or the Markdown twin suffix", () => {
   for (const slug of [
     "index",
     "INDEX",
@@ -37,6 +37,17 @@ it("rejects slugs reserved by static routes or the Markdown twin suffix", () => 
     "llms-full.txt",
     "robots.txt",
     "sitemap.xml",
+    "opengraph-image.jpg",
+    "avatar.jpg",
+    "my-cv.pdf",
+    "my-cv-pl.pdf",
+    "my-certificates.pdf",
+    "icon.svg",
+    "layers.png",
+    "layers-2x.png",
+    "marker-icon.png",
+    "marker-icon-2x.png",
+    "marker-shadow.png",
     "report.md",
     "REPORT.MD",
   ]) {

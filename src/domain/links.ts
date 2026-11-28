@@ -57,7 +57,7 @@ export const canonicalAndDiscoveryLinks = (canonical: string, discovery: Readonl
 export const SITEMAP_LINK = { rel: "sitemap", href: SITEMAP_INDEX.url } as const;
 
 // llms.txt reserves `describedby` for its index and `alternate` for a page's own Markdown twin
-export const LLMS_DISCOVERY_LINK: LinkTag = { rel: "describedby", href: LLMS_TXT_INDEX.url };
+export const LLMS_DISCOVERY_LINK: LinkTag = { rel: "describedby", type: "text/plain", title: LLMS_TXT_INDEX.name, href: LLMS_TXT_INDEX.url };
 export const LLMS_FULL_DISCOVERY_LINK: LinkTag = { rel: "related", type: "text/plain", title: LLMS_FULL_TXT_INDEX.name, href: LLMS_FULL_TXT_INDEX.url };
 export const AI_DISCOVERY_LINKS: ReadonlyArray<LinkTag> = [LLMS_DISCOVERY_LINK, LLMS_FULL_DISCOVERY_LINK];
 

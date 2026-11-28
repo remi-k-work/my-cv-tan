@@ -2,16 +2,15 @@
 
 // services, features, and other libraries
 import { Array, Option, Record, String, pipe } from "effect";
-import { aiDiscoveryLinkHeader } from "@/domain/links";
+import { AI_DISCOVERY_LINK_HEADER, aiDiscoveryLinkHeader } from "@/domain/links";
 
 // types
 import type { PreferredLanguage } from "@/domain/models";
 
 // constants
 import { DEFAULT_LANGUAGE } from "@/domain/constants";
-import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW, NO_STORE, RETRY_AFTER } from "@/domain/http";
+import { INDEXABLE_ROBOTS, NEGOTIATED_DOCUMENT_CACHE, NOINDEX_FOLLOW, NO_STORE, RETRY_AFTER } from "@/domain/http";
 import { CONTENT_SIGNAL, SITEMAP_INDEX } from "@/domain/discovery";
-import { AI_DISCOVERY_LINK_HEADER } from "@/domain/links";
 
 // Pinned Markdown variants remove these tokens; every other negotiated document emits them.
 export const NEGOTIATION_VARY_TOKENS = ["Cookie", "Accept-Language"] as const;
@@ -26,10 +25,8 @@ const CACHEABLE_NOINDEX_HEADERS = { ...CACHEABLE_HEADERS, ...NOINDEX_HEADERS } a
 export const UNAVAILABLE_HEADERS = { "Cache-Control": NO_STORE, ...NOINDEX_HEADERS } as const;
 export const SERVICE_UNAVAILABLE_HEADERS = { ...UNAVAILABLE_HEADERS, "Retry-After": RETRY_AFTER } as const;
 
-export const INDEXABLE_HEADERS = { "X-Robots-Tag": INDEXABLE_ROBOTS } as const;
-
 const TXT_HEADERS = { ...BASE_HEADERS, "Content-Type": "text/plain; charset=utf-8", "Content-Language": DEFAULT_LANGUAGE } as const;
-const SITEMAP_HEADERS = { ...SHARED_HEADERS, "Content-Type": "application/xml; charset=utf-8" } as const;
+const SITEMAP_HEADERS = { ...SHARED_HEADERS, "Content-Type": "application/xml; charset=utf-8", "Content-Language": DEFAULT_LANGUAGE } as const;
 const SITEMAP_UNAVAILABLE_XML = '<?xml version="1.0" encoding="UTF-8"?><error>Sitemap is temporarily unavailable.</error>';
 
 // Omits empty or absent optional headers rather than emitting blank header values on the wire
@@ -45,10 +42,12 @@ const optionalHeader = (name: string, value: string | undefined): Readonly<Recor
 
 const txtHeaders = (contentLocation?: string) => ({ ...TXT_HEADERS, ...optionalHeader("Link", aiDiscoveryLinkHeader(contentLocation)) });
 
-// Base response headers for rendered HTML documents
-export const documentHeaders = (preferredLanguage: PreferredLanguage) =>
+// Base response headers for rendered HTML documents; degraded routes override the indexing policy
+export const documentHeaders = (preferredLanguage: PreferredLanguage, robots: string = INDEXABLE_ROBOTS) =>
   ({
     ...SHARED_HEADERS,
+    "Cache-Control": NEGOTIATED_DOCUMENT_CACHE,
+    "X-Robots-Tag": robots,
     "Content-Language": preferredLanguage,
     Vary: Array.join(NEGOTIATION_VARY_TOKENS, ", "),
   }) as const;

@@ -69,8 +69,6 @@ export const AI_NOTES = [
   "Experience twins also expose `role`, `company`, `year` and optional `skills`, `repository`, `live`, `video` and `image` facts; `image_alt`, `image_type`, `image_width` and `image_height` describe an image when present.",
 ] as const;
 
-const SINGLE_REQUEST_NOTE = `The complete content of every page is also available in a single request: ${LLMS_FULL_TXT_INDEX.url}.`;
-
 const ABOUT_DETAILS = mdBulletList([
   mdFact("Name", SITE_NAME),
   mdFact("Website", SITE_URL),
@@ -83,12 +81,10 @@ const ABOUT_DETAILS = mdBulletList([
 
 const ABOUT_SECTION = mdTitledSection("About", ABOUT_DETAILS);
 
-const notes = (additional: ReadonlyArray<string>) => mdBulletList([...AI_NOTES, ...additional]);
-
 // Background and guidance belong before the first H2 in llms.txt: every H2 in that discovery
 // document is reserved for a file list; the full-content companion is free to use headed sections
-const INDEX_NOTES = notes([SINGLE_REQUEST_NOTE]);
-const COMPANION_NOTES_SECTION = mdTitledSection("Notes for AI systems", notes([]));
+const INDEX_NOTES = mdBulletList(AI_NOTES);
+const COMPANION_NOTES_SECTION = mdTitledSection("Notes for AI systems", INDEX_NOTES);
 
 const discoveryLines = (documents: ReadonlyArray<(typeof DISCOVERY_DOCUMENTS)[number]>) =>
   Array.map(documents, ({ name, summary, url }) => `${mdLink(name, url)}: ${summary}.`);

@@ -71,7 +71,7 @@ it("link builders name the canonical and author documents", () => {
 it("the AI discovery links project into the head and Link header with spec-compliant relations", () => {
   assert.strictEqual(
     AI_DISCOVERY_LINK_HEADER,
-    '<https://www.remiforge.dev/llms.txt>; rel="describedby", <https://www.remiforge.dev/llms-full.txt>; rel="related"; type="text/plain"; title="llms-full.txt"'
+    '<https://www.remiforge.dev/llms.txt>; rel="describedby"; type="text/plain"; title="llms.txt", <https://www.remiforge.dev/llms-full.txt>; rel="related"; type="text/plain"; title="llms-full.txt"'
   );
   assert.strictEqual(AI_DISCOVERY_LINK_HEADER, joinLinkHeader(AI_DISCOVERY_LINKS));
 });
@@ -83,11 +83,16 @@ it("discovery response headers omit the document currently being served", () => 
   );
   assert.strictEqual(
     aiDiscoveryLinkHeader(LLMS_FULL_TXT_INDEX.url),
-    '<https://www.remiforge.dev/llms.txt>; rel="describedby"'
+    '<https://www.remiforge.dev/llms.txt>; rel="describedby"; type="text/plain"; title="llms.txt"'
   );
 });
 
 it("discovery links declare the sitemap and the canonical llms index", () => {
   assert.deepStrictEqual(SITEMAP_LINK, { rel: "sitemap", href: "https://www.remiforge.dev/sitemap.xml" });
-  assert.deepStrictEqual(LLMS_DISCOVERY_LINK, { rel: "describedby", href: "https://www.remiforge.dev/llms.txt" });
+  assert.deepStrictEqual(LLMS_DISCOVERY_LINK, {
+    rel: "describedby",
+    type: "text/plain",
+    title: "llms.txt",
+    href: "https://www.remiforge.dev/llms.txt",
+  });
 });
