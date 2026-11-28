@@ -112,6 +112,9 @@ it("the education twin stays localized and a missing document has no canonical",
   assert.include(edu, `title: "Remi Forge ● ${STATIC_PAGES["/education"].copy.pl.title}"`);
   assert.include(edu, `description: "${STATIC_PAGES["/education"].copy.pl.description}"`);
   assert.include(edu, "## Dokumenty");
+  assert.include(edu, "[CV (Angielski)](https://www.remiforge.dev/my-cv.pdf)");
+  assert.include(edu, "[CV (Polski)](https://www.remiforge.dev/my-cv-pl.pdf)");
+  assert.include(edu, "[Certyfikaty](https://www.remiforge.dev/my-certificates.pdf)");
   assert.include(edu, "_Brak wpisów._");
 
   const populated = educationTwin({

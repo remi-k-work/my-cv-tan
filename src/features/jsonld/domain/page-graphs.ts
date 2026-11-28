@@ -226,7 +226,8 @@ export const experienceJsonLd = ({ experience, preferredLanguage, canonical: url
       description,
       preferredLanguage,
       mainEntity: { "@id": articleId },
-      primaryImageOfPage: image,
+      // The social cards fall back to the global banner; the page node must name that same image
+      primaryImageOfPage: image ?? STATIC_PRIMARY_IMAGE,
       relatedLinks,
     }),
     article,

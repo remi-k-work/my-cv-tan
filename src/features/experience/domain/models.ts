@@ -47,16 +47,13 @@ export interface ExperienceIdentityInput {
 
 // Identity shared by every experience representation, including projections that do not need a
 // description or image and should not process the full narrative
-export interface ExperienceIdentity {
-  readonly preferredLanguage: PreferredLanguage;
+export interface ExperienceIdentity extends Pick<PageIdentity, "preferredLanguage" | "canonical" | "title"> {
   readonly path: string;
-  readonly canonical: string;
   readonly markdownPath: string;
-  readonly title: string;
 }
 
-// Full detail projections add narrative and image facts to the lightweight identity. The shared
-// title, description, canonical and language are the PageIdentity every surface reads.
+// Full detail projections add narrative and image facts to the lightweight identity; the shared
+// title, description, canonical and language are the PageIdentity every surface reads
 export interface ExperienceSeo extends ExperienceIdentity, PageIdentity {
   readonly experience: Experience;
   readonly screenshot: Option.Option<ImageFacts>;

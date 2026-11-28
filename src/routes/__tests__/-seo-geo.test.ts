@@ -132,6 +132,22 @@ it("the detail route derives its degraded canonical from current params, never s
   assert.notInclude(JSON.stringify(head), samplePortfolio.role);
 });
 
+it("the home route keeps its canonical and noindex directive when data is unavailable", async () => {
+  const head = await headOf(IndexRoute, {
+    loaderData: {
+      type: "list",
+      randomPageHighlights: pageHighlights,
+      stablePageTitles,
+      experienceList: [samplePortfolio],
+    },
+    matchStatus: "error",
+  });
+
+  assert.strictEqual(metaContent(head, "name", "robots"), NOINDEX_FOLLOW);
+  assert.deepStrictEqual(head.links, [{ rel: "canonical", href: HOME_URL }]);
+  assert.notInclude(JSON.stringify(head), samplePortfolio.role);
+});
+
 it("route heads fall back to English when the root locale is unsupported", async () => {
   const head = await headOf(ContactRoute, {
     loaderData: { randomPageHighlights: pageHighlights, stablePageTitles },

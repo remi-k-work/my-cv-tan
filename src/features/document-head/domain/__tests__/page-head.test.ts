@@ -389,7 +389,7 @@ it("employment details use EmployeeRole linked to the person and canonical WebPa
   });
 });
 
-it("experience pages claim the screenshot as their main image only when one exists", () => {
+it("experience page images stay aligned with social cards, with or without a screenshot", () => {
   const withShot = graphOf(experienceHead({ experience: samplePortfolio, preferredLanguage: "en" }).scripts?.[0]?.children);
   assert.deepStrictEqual(nodeOf(withShot, "WebPage")?.primaryImageOfPage, {
     "@type": "ImageObject",
@@ -398,13 +398,18 @@ it("experience pages claim the screenshot as their main image only when one exis
     height: 900,
   });
 
-  // No screenshot on the page: no main-image (or project image) claim, and og:image falls back to the share banner
+  // The page and its cards share the banner fallback, but the generic banner is not a project or article screenshot.
   const bareHead = experienceHead({ experience: { ...samplePortfolio, imageName: "" }, preferredLanguage: "en" });
   const bareGraph = graphOf(bareHead.scripts?.[0]?.children);
-  assert.isUndefined(nodeOf(bareGraph, "WebPage")?.primaryImageOfPage);
+  assert.deepStrictEqual(nodeOf(bareGraph, "WebPage")?.primaryImageOfPage, {
+    "@type": "ImageObject",
+    url: GLOBAL_SOCIAL_IMAGE.src,
+    width: GLOBAL_SOCIAL_IMAGE.width,
+    height: GLOBAL_SOCIAL_IMAGE.height,
+  });
   assert.isUndefined(nodeOf(bareGraph, "SoftwareSourceCode")?.image);
   assert.isUndefined(nodeOf(bareGraph, "Article")?.image);
-  assert.include(JSON.stringify(bareHead.meta), "https://www.remiforge.dev/opengraph-image.jpg");
+  assert.strictEqual(tagContent(metaOf(bareHead), "property", "og:image"), GLOBAL_SOCIAL_IMAGE.src);
 });
 
 it("home structured data is a first-party ProfilePage linking site entities plus grouped content collections", () => {
