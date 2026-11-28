@@ -57,7 +57,7 @@ const PageHighlight = Schema.Struct({
 export const PageHighlights = Schema.Record(PagePath, PageHighlight);
 export const PageHighlightsList = Schema.Array(PageHighlights);
 
-// Education facts are read by the data decoder, page UI, Markdown twin and JSON-LD graph.
+// Education facts are read by the data decoder, page UI, Markdown twin and JSON-LD graph
 const Education = Schema.Struct({
   name: Schema.Trim.check(Schema.isNonEmpty()),
   year: Schema.Trim.check(Schema.isNonEmpty()),
