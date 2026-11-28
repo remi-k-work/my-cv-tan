@@ -13,7 +13,7 @@ import { STATIC_PAGES } from "@/domain/pages";
 import { withLanguageParam } from "@/domain/urls";
 import { canonicalLink } from "@/domain/links";
 import { LANGUAGE, metaOf, tagContent } from "./readers";
-import { sampleEducation, samplePortfolio, stablePageTitles } from "@/testing/fixtures";
+import { sampleEducation, samplePortfolio } from "@/testing/fixtures";
 import { contextOf, graphOf, nodeOf, nodesOf, textOf } from "@/features/jsonld/domain/__tests__/fixtures";
 import type { JsonLdNodes } from "@/features/jsonld/domain/models";
 import type { PageHead, SocialMetaInput } from "../models";
@@ -114,7 +114,7 @@ it("experienceHead uses the global banner for Twitter when no screenshot exists"
 });
 
 it("static page heads share the layout, each supplying its own canonical and Markdown twin", () => {
-  const head = contactHead({ pageTitles: stablePageTitles, preferredLanguage: language });
+  const head = contactHead({ preferredLanguage: language });
   const tags = metaOf(head);
 
   assert.strictEqual(tagContent(tags, "name", "robots"), INDEXABLE_ROBOTS);
@@ -157,9 +157,9 @@ it("a detail page publishes the article card and its author, while the list page
   assert.notInclude(detail, `"property":"article:author","content":"${SITE_NAME}"`);
 
   const listPages = [
-    homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" }),
-    educationHead({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "en" }),
-    contactHead({ pageTitles: stablePageTitles, preferredLanguage: "en" }),
+    homeHead({ experienceList: [], preferredLanguage: "en" }),
+    educationHead({ educationList: [], preferredLanguage: "en" }),
+    contactHead({ preferredLanguage: "en" }),
   ];
 
   for (const head of listPages) {
@@ -170,7 +170,7 @@ it("a detail page publishes the article card and its author, while the list page
 
 it("every card publishes one absolute HTTPS og:image without duplicate URL aliases", () => {
   for (const head of [
-    homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" }),
+    homeHead({ experienceList: [], preferredLanguage: "en" }),
     experienceHead({ experience: samplePortfolio, preferredLanguage: "en" }),
     experienceHead({ experience: { ...samplePortfolio, imageName: "" }, preferredLanguage: "pl" }),
   ]) {
@@ -258,7 +258,7 @@ it("og:locale:alternate lists every other supported locale as its own tag (ogp.m
 it("localized metadata uses authored SEO copy and emits the current-language Markdown representation", () => {
   assert.deepStrictEqual(canonicalLink("https://www.remiforge.dev/education"), { rel: "canonical", href: "https://www.remiforge.dev/education" });
 
-  const head = homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "pl" });
+  const head = homeHead({ experienceList: [], preferredLanguage: "pl" });
   const html = JSON.stringify(head);
   assert.include(html, STATIC_PAGES["/"].copy.pl.title);
   assert.include(html, STATIC_PAGES["/"].copy.pl.description);
@@ -286,9 +286,9 @@ it("og:url is byte-equal to the canonical link on every page kind", () => {
   const canonicalOf = (head: ReturnType<typeof homeHead>) => head.links?.find((tag) => tag.rel === "canonical")?.href;
 
   for (const head of [
-    homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" }),
-    educationHead({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "pl" }),
-    contactHead({ pageTitles: stablePageTitles, preferredLanguage: "en" }),
+    homeHead({ experienceList: [], preferredLanguage: "en" }),
+    educationHead({ educationList: [], preferredLanguage: "pl" }),
+    contactHead({ preferredLanguage: "en" }),
     experienceHead({ experience: { ...samplePortfolio, slug: "résumé & more" }, preferredLanguage: "pl" }),
   ]) {
     assert.strictEqual(ogUrlOf(head), canonicalOf(head));
@@ -413,7 +413,7 @@ it("experience page images stay aligned with social cards, with or without a scr
 });
 
 it("home structured data is a first-party ProfilePage linking site entities plus grouped content collections", () => {
-  const head = homeHead({ pageTitles: stablePageTitles, experienceList: [samplePortfolio], preferredLanguage: "en" });
+  const head = homeHead({ experienceList: [samplePortfolio], preferredLanguage: "en" });
   const graph = graphOf(head.scripts?.[0]?.children);
   const profile = nodeOf(graph, "ProfilePage");
   // The home document is the profile, so its node id is the canonical URL every other surface cites
@@ -433,7 +433,7 @@ it("home structured data is a first-party ProfilePage linking site entities plus
   ]);
 
   // An empty portfolio still emits the ProfilePage graph, never a misleading empty Collection
-  const emptyGraph = graphOf(homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" }).scripts?.[0]?.children);
+  const emptyGraph = graphOf(homeHead({ experienceList: [], preferredLanguage: "en" }).scripts?.[0]?.children);
   assert.isTrue(emptyGraph.some((node) => node["@type"] === "ProfilePage"));
   assert.isFalse(emptyGraph.some((node) => node["@type"] === "Collection"));
   assert.isUndefined(nodeOf(emptyGraph, "ProfilePage")?.hasPart);
@@ -441,9 +441,9 @@ it("home structured data is a first-party ProfilePage linking site entities plus
 
 it("no page head emits an ItemList: Google's Carousel beta only supports Course, Movie, Recipe and Restaurant", () => {
   const heads = [
-    homeHead({ pageTitles: stablePageTitles, experienceList: [samplePortfolio], preferredLanguage: "en" }),
-    educationHead({ pageTitles: stablePageTitles, educationList: sampleEducation, preferredLanguage: "en" }),
-    contactHead({ pageTitles: stablePageTitles, preferredLanguage: "en" }),
+    homeHead({ experienceList: [samplePortfolio], preferredLanguage: "en" }),
+    educationHead({ educationList: sampleEducation, preferredLanguage: "en" }),
+    contactHead({ preferredLanguage: "en" }),
     experienceHead({ experience: samplePortfolio, preferredLanguage: "en" }),
   ];
   // Any ItemList on this site could only ever surface as an invalid carousel candidate
@@ -452,7 +452,7 @@ it("no page head emits an ItemList: Google's Carousel beta only supports Course,
 
 it("home structured data splits employment from portfolio projects with localized collection names", () => {
   const mixed = [samplePortfolio, { ...samplePortfolio, type: "e" as const, slug: "sample-job" }];
-  const graph = graphOf(homeHead({ pageTitles: stablePageTitles, experienceList: mixed, preferredLanguage: "pl" }).scripts?.[0]?.children);
+  const graph = graphOf(homeHead({ experienceList: mixed, preferredLanguage: "pl" }).scripts?.[0]?.children);
   // Two labeled collections mirror the HTML page and .md twin grouping, in visible order
   const collections = graph.filter((node) => node["@type"] === "Collection");
   assert.deepStrictEqual(
@@ -469,7 +469,7 @@ it("home structured data splits employment from portfolio projects with localize
 });
 
 it("education structured data links its page to the Person and the Person to attended schools", () => {
-  const head = educationHead({ pageTitles: stablePageTitles, educationList: sampleEducation, preferredLanguage: "en" });
+  const head = educationHead({ educationList: sampleEducation, preferredLanguage: "en" });
   const graph = graphOf(head.scripts?.[0]?.children);
   // The page is about the Person. Schools are organizations, not CreativeWorks, so they do not go in Collection.hasPart.
   const collection = nodeOf(graph, "CollectionPage");
@@ -490,7 +490,7 @@ it("education structured data links its page to the Person and the Person to att
   assert.strictEqual(listItems(nodeOf(graph, "BreadcrumbList"))?.[1]?.name, STATIC_PAGES["/education"].copy.en.title);
 
   // An empty education list keeps the page and trail without referencing a missing collection
-  const empty = graphOf(educationHead({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "en" }).scripts?.[0]?.children);
+  const empty = graphOf(educationHead({ educationList: [], preferredLanguage: "en" }).scripts?.[0]?.children);
   assert.isTrue(empty.some((node) => node["@type"] === "CollectionPage"));
   assert.isFalse(empty.some((node) => node["@type"] === "Collection"));
   // The site Person is still present, but carries no alumni edge — an empty list adds no "studied at"
@@ -499,17 +499,12 @@ it("education structured data links its page to the Person and the Person to att
   assert.deepStrictEqual(nodeOf(empty, "CollectionPage")?.mainEntity, { "@id": "https://www.remiforge.dev/#person" });
 });
 
-it("contact structured data uses the catalogue identity when its visible heading varies", () => {
-  const visibleHeading = "A dynamic contact heading.";
-  const head = contactHead({
-    pageTitles: { ...stablePageTitles, "/contact": { ...stablePageTitles["/contact"], heading: visibleHeading } },
-    preferredLanguage: "pl",
-  });
+it("contact structured data uses the catalogue identity", () => {
+  const head = contactHead({ preferredLanguage: "pl" });
   const script = head.scripts?.[0]?.children ?? "{}";
   const graph = graphOf(script);
   const contact = nodeOf(graph, "ContactPage");
   assert.strictEqual(contact?.name, STATIC_PAGES["/contact"].copy.pl.title);
-  assert.notInclude(script, visibleHeading);
   assert.strictEqual(contact?.description, "Skontaktuj się z Remim Forge w sprawie tworzenia stron internetowych, współpracy lub projektów.");
   assert.deepStrictEqual(contact?.isPartOf, { "@id": "https://www.remiforge.dev/#website" });
   assert.deepStrictEqual(contact?.mainEntity, { "@id": "https://www.remiforge.dev/#person" });

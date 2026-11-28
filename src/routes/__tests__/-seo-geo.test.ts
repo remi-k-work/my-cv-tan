@@ -21,7 +21,7 @@ import { BRANDED_TITLE, HOME_URL } from "@/domain/site";
 import { STATIC_PAGES } from "@/domain/pages";
 import { INDEXABLE_ROBOTS, NEGOTIATED_DOCUMENT_CACHE, NOINDEX_FOLLOW } from "@/domain/http";
 import { HOME_PATH } from "@/domain/constants";
-import { pageHighlights, sampleEducation, samplePortfolio, stablePageTitles } from "@/testing/fixtures";
+import { pageHighlights, sampleEducation, samplePortfolio } from "@/testing/fixtures";
 import type { PageHead } from "@/features/document-head/domain/models";
 import type { MatchChain, RouteStatus } from "@/features/document-head/domain/route-head";
 
@@ -42,7 +42,10 @@ const headOf = async (route: HeadRoute, { loaderData, params = {}, matchStatus =
   const head = route.options.head;
   if (head === undefined) throw new Error("Route must declare head()");
 
-  const matches: MatchChain = [{ loaderData: { preferredLanguage }, status: "success" }, { loaderData, status: matchStatus }];
+  const matches: MatchChain = [
+    { loaderData: { preferredLanguage }, status: "success" },
+    { loaderData, status: matchStatus },
+  ];
 
   // Route callbacks receive a large TanStack context; these tests exercise only the fields the
   // application declared it reads, without mocking the head builders themselves.
@@ -62,7 +65,6 @@ it("the index route builds home and detail heads from their respective loader pa
     loaderData: {
       type: "list",
       randomPageHighlights: pageHighlights,
-      stablePageTitles,
       experienceList: [samplePortfolio],
     },
   });
@@ -93,10 +95,10 @@ it("the index route builds home and detail heads from their respective loader pa
 
 it("static HTML routes connect their loader data to the correct localized page heads", async () => {
   const education = await headOf(EducationRoute, {
-    loaderData: { randomPageHighlights: pageHighlights, stablePageTitles, educationList: sampleEducation },
+    loaderData: { randomPageHighlights: pageHighlights, educationList: sampleEducation },
   });
   const contact = await headOf(ContactRoute, {
-    loaderData: { randomPageHighlights: pageHighlights, stablePageTitles },
+    loaderData: { randomPageHighlights: pageHighlights },
   });
 
   assert.strictEqual(metaContent(education, "property", "og:locale"), "pl_PL");
@@ -120,7 +122,6 @@ it("the detail route derives its degraded canonical from current params, never s
     loaderData: {
       type: "list",
       randomPageHighlights: pageHighlights,
-      stablePageTitles,
       experienceList: [samplePortfolio],
     },
     params: { slug },
@@ -137,7 +138,6 @@ it("the home route keeps its canonical and noindex directive when data is unavai
     loaderData: {
       type: "list",
       randomPageHighlights: pageHighlights,
-      stablePageTitles,
       experienceList: [samplePortfolio],
     },
     matchStatus: "error",
@@ -150,7 +150,7 @@ it("the home route keeps its canonical and noindex directive when data is unavai
 
 it("route heads fall back to English when the root locale is unsupported", async () => {
   const head = await headOf(ContactRoute, {
-    loaderData: { randomPageHighlights: pageHighlights, stablePageTitles },
+    loaderData: { randomPageHighlights: pageHighlights },
     preferredLanguage: "de",
   });
 
@@ -186,7 +186,10 @@ it("the root route publishes response headers for the language negotiated by its
   if (headers === undefined) throw new Error("Root route must declare headers()");
 
   const result = await headers({
-    matches: [{ loaderData: { preferredLanguage: "pl" }, status: "success" }, { loaderData: {}, status: "success" }],
+    matches: [
+      { loaderData: { preferredLanguage: "pl" }, status: "success" },
+      { loaderData: {}, status: "success" },
+    ],
   } as never);
 
   assert.strictEqual(result?.["Content-Language"], "pl");

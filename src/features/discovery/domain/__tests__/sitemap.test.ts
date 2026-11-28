@@ -199,7 +199,6 @@ it.effect("the sitemap document reads the shared canonical slug set only from th
         Sitemap.layer.pipe(
           Layer.provide(
             Layer.succeed(Datasets, {
-              pageTitles: () => Effect.die("sitemap must not read page titles"),
               experienceList: (language) =>
                 Effect.sync(() => {
                   reads.push(language);
@@ -225,7 +224,6 @@ it.effect("the sitemap document recovers a dataset failure as a non-cacheable 50
         Sitemap.layer.pipe(
           Layer.provide(
             Layer.succeed(Datasets, {
-              pageTitles: () => failed,
               experienceList: () => failed,
               educationList: () => failed,
             })

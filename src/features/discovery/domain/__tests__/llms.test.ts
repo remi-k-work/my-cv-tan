@@ -7,16 +7,17 @@ import { twinDocument } from "@/features/markdown/domain/format";
 import { SOURCE_CONTEXT } from "@/features/markdown/domain/models";
 import { CONTACT_EMAIL, PERSON_DESCRIPTION } from "@/domain/site";
 import { LANG_PARAM } from "@/domain/urls";
+import { STATIC_PAGES } from "@/domain/pages";
 import { DISCOVERY_DOCUMENTS } from "@/domain/discovery";
 import { experienceSeo } from "@/features/experience/domain/seo";
 import { SITE_LANGUAGE_NAMES, SITE_LANGUAGES } from "@/domain/constants";
-import { sampleEmployment, stablePageTitles, translateEn } from "@/testing/fixtures";
+import { sampleEmployment, translateEn } from "@/testing/fixtures";
 import type { MarkdownTwin } from "@/features/markdown/domain/models";
 
 it("buildLlmsTxt indexes pages, about facts, grouped experience and negotiated language guidance", () => {
   const txt = buildLlmsTxt([{ ...sampleEmployment, slug: "my project" }]);
   // Rendered alongside the index below, so the two documents are compared rather than re-stated
-  const fullDocument = buildLlmsFullTxt({ pageTitles: stablePageTitles, experienceList: [], educationList: [] });
+  const fullDocument = buildLlmsFullTxt({ experienceList: [], educationList: [] });
   assert.include(txt, `# Remi Forge`);
   assert.include(txt, `## Pages`);
   assert.include(txt, `https://www.remiforge.dev/index.md`);
@@ -39,7 +40,10 @@ it("buildLlmsTxt indexes pages, about facts, grouped experience and negotiated l
   // the introductory guidance would spend context tokens without giving an agent another destination.
   assert.include(txt, `- [Full site content](https://www.remiforge.dev/llms-full.txt): every page above in one document, for single-request ingestion.`);
   assert.notInclude(txt, `single request: https://www.remiforge.dev/llms-full.txt`);
-  assert.include(txt, `Use \`?lang=pl\` on a \`.md\` URL to request Polish explicitly; replace any existing \`lang\` value rather than appending a second parameter`);
+  assert.include(
+    txt,
+    `Use \`?lang=pl\` on a \`.md\` URL to request Polish explicitly; replace any existing \`lang\` value rather than appending a second parameter`
+  );
   assert.include(txt, "Markdown page twins follow the request's language preferences.");
   assert.include(txt, "English is the fallback when no supported preference is present.");
   assert.include(txt, "The llms.txt indexes are English discovery documents.");
@@ -166,7 +170,7 @@ it("the reuse note names the frontmatter facts every published page twin actuall
   // The set both kinds of twin share: a static twin's own kind and the detail twin's role, company,
   // year and skills are this document's own extras, not the headline facts the note describes.
   const twins: ReadonlyArray<MarkdownTwin> = [
-    buildHomeMd({ ...SOURCE_CONTEXT, pageTitles: stablePageTitles, experienceList: [sampleEmployment] }),
+    buildHomeMd({ ...SOURCE_CONTEXT, experienceList: [sampleEmployment] }),
     buildExperienceMd({ seo: experienceSeo({ experience: sampleEmployment, preferredLanguage: "en" }), translate: translateEn }),
   ];
 
@@ -183,7 +187,7 @@ it("the index and home twin share one experience listing, with canonical citatio
   // citation target, keeping its retrieval and citation roles explicit without duplicating list logic.
   const experienceList = [{ ...sampleEmployment, type: "e" as const, slug: "sample-job", role: "Backend Developer", company: "Sample Co" }];
   const index = buildLlmsTxt(experienceList);
-  const twin = twinDocument(buildHomeMd({ ...SOURCE_CONTEXT, pageTitles: stablePageTitles, experienceList }));
+  const twin = twinDocument(buildHomeMd({ ...SOURCE_CONTEXT, experienceList }));
   const entry = "Backend Developer at Sample Co";
   const canonical = "https://www.remiforge.dev/sample-job";
   const twinRoute = "https://www.remiforge.dev/sample-job.md?lang=en";
@@ -214,7 +218,6 @@ it("the index and home twin share one experience listing, with canonical citatio
 it("both AI indexes carry the same single-sourced reuse notes", () => {
   const index = buildLlmsTxt([sampleEmployment]);
   const full = buildLlmsFullTxt({
-    pageTitles: stablePageTitles,
     experienceList: [sampleEmployment],
     educationList: [{ name: "Example School", year: "2020", location: "Poland", info: "Studied interaction design." }],
   });
@@ -229,7 +232,6 @@ it("both AI indexes carry the same single-sourced reuse notes", () => {
 it("the index links the single-request companion without a duplicate bare pointer; the companion never points at itself", () => {
   const index = buildLlmsTxt([sampleEmployment]);
   const full = buildLlmsFullTxt({
-    pageTitles: stablePageTitles,
     experienceList: [sampleEmployment],
     educationList: [{ name: "Example School", year: "2020", location: "Poland", info: "Studied interaction design." }],
   });
@@ -248,7 +250,7 @@ it("the companion carries the retrieval-surface map, so a direct entry does not 
   // Discovery section it was the only AI-facing surface that could not be entered directly and
   // still walked away knowing robots.txt and sitemap.xml exist, forcing a backtrack through the
   // index for two URLs that are already declared once in the shared constants.
-  const full = buildLlmsFullTxt({ pageTitles: stablePageTitles, experienceList: [], educationList: [] });
+  const full = buildLlmsFullTxt({ experienceList: [], educationList: [] });
   const index = buildLlmsTxt([]);
 
   assert.include(full, "## Discovery");
@@ -273,7 +275,6 @@ it("the discovery list projects every crawl document from the shared catalogue",
 
 it("the full-content companion gives every concatenated document its own section heading", () => {
   const txt = buildLlmsFullTxt({
-    pageTitles: stablePageTitles,
     experienceList: [sampleEmployment],
     educationList: [{ name: "Example School", year: "2020", location: "Poland", info: "Studied interaction design." }],
   });
@@ -292,7 +293,6 @@ it("the full-content companion gives every concatenated document its own section
 
 it("buildLlmsFullTxt concatenates every twin behind its canonical URL", () => {
   const txt = buildLlmsFullTxt({
-    pageTitles: stablePageTitles,
     experienceList: [sampleEmployment],
     educationList: [{ name: "Example School", year: "2020", location: "Poland", info: "Studied interaction design." }],
   });
@@ -309,7 +309,7 @@ it("buildLlmsFullTxt concatenates every twin behind its canonical URL", () => {
   // Every substantive block survives concatenation; only heading depth shifts. Standalone twins
   // retain their crawl graph, while the companion's table of contents replaces repeated page nav.
   assert.notInclude(txt, "#### Pages");
-  assert.include(txt, `### Stable home title`);
+  assert.include(txt, `### ${STATIC_PAGES["/"].copy.en.heading}`);
   assert.include(txt, `### Full-Stack Developer at Sample Co`);
   assert.include(txt, `type: "overview"`);
   assert.include(txt, `type: "education"`);
@@ -339,7 +339,6 @@ it("the full-content companion gives every concatenated document a distinct head
   // walking the companion's headings cannot tell one document from the next. The levels are:
   // # the site, ## one document, ### its headline, #### its sections, ##### nested entries.
   const txt = buildLlmsFullTxt({
-    pageTitles: stablePageTitles,
     experienceList: [sampleEmployment],
     educationList: [{ name: "Example School", year: "2020", location: "Poland", info: "Studied interaction design." }],
   });
@@ -349,7 +348,7 @@ it("the full-content companion gives every concatenated document a distinct head
   for (const name of ["## Home page", "## Education \\& Certificates", "## Contact", "## Full-Stack Developer at Sample Co"]) {
     assert.include(txt, `\n${name}\n`);
   }
-  assert.include(txt, "\n### Stable home title\n");
+  assert.include(txt, `\n### ${STATIC_PAGES["/"].copy.en.heading}\n`);
   assert.include(txt, "\n#### Experience\n");
   // A nested entry (one school) lands one level deeper still, never beside the page's own sections
   assert.include(txt, "\n##### Example School\n");
@@ -374,7 +373,7 @@ it("the companion fences each twin's identity facts instead of publishing a seco
   // thematic break, and the closing `---`, sitting directly under the last fact, is a setext
   // underline — so `type: "overview"` became an H2 at the same depth as the `## Home page` section
   // heading above it, breaking the hierarchy a concatenated document promises its reader.
-  const txt = buildLlmsFullTxt({ pageTitles: stablePageTitles, experienceList: [], educationList: [] });
+  const txt = buildLlmsFullTxt({ experienceList: [], educationList: [] });
 
   // The facts survive, still YAML, still machine-readable — fenced so they cannot be structure
   assert.include(txt, '```yaml\ntitle: "Remi Forge ● Web Developer in Rzeszów, Poland"');
@@ -390,7 +389,6 @@ it("the companion's only H2s are its own document sections, never a concatenated
   // #### its sections, ##### nested entries. A twin's frontmatter leaking in as structure would add
   // an H2 nobody declared, which is what the fenced facts prevent.
   const txt = buildLlmsFullTxt({
-    pageTitles: stablePageTitles,
     experienceList: [sampleEmployment],
     educationList: [{ name: "Example School", year: "2020", location: "Poland", info: "Studied interaction design." }],
   });
@@ -426,7 +424,6 @@ it("index entries encode a paren-bearing slug so the twin destination survives",
 
 it("the companion encodes every slug-derived twin URL exactly as its table of contents does", () => {
   const txt = buildLlmsFullTxt({
-    pageTitles: stablePageTitles,
     experienceList: [{ ...sampleEmployment, slug: "role (senior)" }],
     educationList: [],
   });
@@ -445,12 +442,12 @@ it("the companion's Source and Markdown links preserve slug characters as destin
   const underscore = { ...sampleEmployment, slug: "_role_" };
   const paren = { ...sampleEmployment, slug: "role (senior)" };
 
-  const doc = buildLlmsFullTxt({ pageTitles: stablePageTitles, experienceList: [underscore], educationList: [] });
+  const doc = buildLlmsFullTxt({ experienceList: [underscore], educationList: [] });
   assert.include(doc, `[Source](https://www.remiforge.dev/_role_)`);
   assert.include(doc, `[Markdown](https://www.remiforge.dev/_role_.md?lang=en)`);
   assert.notInclude(doc, "\\_role\\_");
 
-  const encoded = buildLlmsFullTxt({ pageTitles: stablePageTitles, experienceList: [paren], educationList: [] });
+  const encoded = buildLlmsFullTxt({ experienceList: [paren], educationList: [] });
   assert.include(encoded, "[Source](https://www.remiforge.dev/role%20%28senior%29)");
 });
 

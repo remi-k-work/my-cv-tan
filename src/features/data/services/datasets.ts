@@ -1,4 +1,4 @@
-// Localized, required dataset accessors for machine-readable documents.
+// Localized, required dataset accessors for machine-readable documents
 
 // services, features, and other libraries
 import { Context, Effect, Layer, Option } from "effect";
@@ -22,7 +22,6 @@ export class Datasets extends Context.Service<Datasets>()("my-cv-v4-tan/features
     Data,
     (data) =>
       ({
-        pageTitles: localizedDataset("page titles", data.stablePageTitles),
         experienceList: localizedDataset("experience list", data.experienceList),
         educationList: localizedDataset("education list", data.educationList),
       }) as const

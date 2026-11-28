@@ -2,22 +2,21 @@ import { assert, it } from "@effect/vitest";
 import { Effect, Layer } from "effect";
 import { Datasets } from "@/features/data/services/datasets";
 import { RequiredDataError } from "@/features/data/domain/required";
+import { STATIC_PAGES } from "@/domain/pages";
 import { HOME_PATH } from "@/domain/constants";
 import { NOINDEX_FOLLOW } from "@/domain/http";
-import { sampleEmployment, stablePageTitles } from "@/testing/fixtures";
+import { sampleEmployment } from "@/testing/fixtures";
 import { Markdown } from "../markdown";
 import { Translation } from "../translation";
 
 const failed = (dataset: string) => Effect.fail(new RequiredDataError({ dataset, message: `test outage: ${dataset}` }));
 
 const unavailableDatasets = {
-  pageTitles: () => failed("page titles"),
   experienceList: () => failed("experience list"),
   educationList: () => failed("education list"),
 };
 
 const availableDatasets = {
-  pageTitles: () => Effect.succeed(stablePageTitles),
   experienceList: () => Effect.succeed([sampleEmployment]),
   educationList: () => Effect.succeed([]),
 };
@@ -32,7 +31,7 @@ it.effect("Markdown.layer composes its translation and dataset dependencies", ()
 
     assert.strictEqual(response.status, 200);
     assert.strictEqual(response.headers.get("Content-Language"), "en");
-    assert.include(yield* Effect.promise(() => response.text()), "Stable home title");
+    assert.include(yield* Effect.promise(() => response.text()), STATIC_PAGES[HOME_PATH].copy.en.heading);
   }).pipe(Effect.provide(testLayer(availableDatasets)))
 );
 

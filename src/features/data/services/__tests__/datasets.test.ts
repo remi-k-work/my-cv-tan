@@ -13,7 +13,6 @@ const MissingData = Layer.succeed(
   Data,
   Data.of({
     randomPageHighlights: () => Effect.succeedNone,
-    stablePageTitles: () => Effect.succeedNone,
     experienceList: () => Effect.succeedNone,
     educationList: () => Effect.succeedNone,
     experience: () => Effect.succeedNone,
@@ -24,11 +23,9 @@ it.effect("the service binds one localized accessor per portfolio asset by name"
   Effect.gen(function* () {
     const datasets = yield* Datasets;
 
-    const titles = yield* datasets.pageTitles("en");
     const experienceList = yield* datasets.experienceList("pl");
     const educationList = yield* datasets.educationList("en");
 
-    assert.isString(titles["/"].heading);
     assert.isArray(experienceList);
     assert.isArray(educationList);
   }).pipe(Effect.provide(Datasets.layer))
@@ -42,7 +39,6 @@ it.effect("every localized accessor reports the asset it could not read, by name
     // reports, so an accessor must carry its own asset rather than collapsing every one into an
     // anonymous failure; the mapping also pins each accessor to the asset it reads
     const reads: ReadonlyArray<readonly [string, Effect.Effect<void, RequiredDataError>]> = [
-      ["page titles", datasets.pageTitles("en")],
       ["experience list", datasets.experienceList("pl")],
       ["education list", datasets.educationList("en")],
     ];

@@ -1,7 +1,7 @@
 // Cross-surface integration: the HTML head, the JSON-LD graph, the Markdown twin, the sitemap and
-// the AI index are five projections of one page identity. Each feature tests its own projection;
+// the AI index are five projections of one page identity; each feature tests its own projection;
 // nothing but this test can catch the projections disagreeing, so it lives at the feature root
-// rather than inside any one feature.
+// rather than inside any one feature
 
 import { assert, it } from "@effect/vitest";
 import { createElement } from "react";
@@ -20,7 +20,7 @@ import { mdResponse } from "@/features/markdown/services/responses";
 import { buildLlmsFullTxt, buildLlmsTxt } from "@/features/discovery/domain/llms";
 import { buildContactMd, buildEducationMd, buildExperienceMd, buildHomeMd } from "@/features/markdown/domain/twins";
 import { twinDocument } from "@/features/markdown/domain/format";
-import { sampleEmployment, stablePageTitles, translateEn } from "@/testing/fixtures";
+import { sampleEmployment, translateEn } from "@/testing/fixtures";
 import { graphOf } from "@/features/jsonld/domain/__tests__/fixtures";
 import { metaOf } from "@/features/document-head/domain/__tests__/readers";
 import type { PagePath, PreferredLanguage } from "@/domain/models";
@@ -100,9 +100,9 @@ it("each static page's head, JSON-LD graph and twin publish one canonical, title
   const index = buildLlmsTxt([]);
 
   for (const { path, head: buildHead, twin: buildTwin } of pages) {
-    const copy = staticPageCopy(stablePageTitles, path, preferredLanguage);
-    const head = buildHead({ pageTitles: stablePageTitles, experienceList: [], educationList: [], preferredLanguage });
-    const twin = twinDocument(buildTwin({ pageTitles: stablePageTitles, experienceList: [], educationList: [], preferredLanguage, translate: translateEn }));
+    const copy = staticPageCopy(path, preferredLanguage);
+    const head = buildHead({ experienceList: [], educationList: [], preferredLanguage });
+    const twin = twinDocument(buildTwin({ experienceList: [], educationList: [], preferredLanguage, translate: translateEn }));
     const graph = graphOf(head.scripts[0]?.children);
     const pageNode = graph.find(
       (node) => node["url"] === copy.canonical && ["ProfilePage", "CollectionPage", "ContactPage"].some((type) => node["@type"] === type)
@@ -150,16 +150,16 @@ it("each static page's head, JSON-LD graph and twin publish one canonical, title
     assert.strictEqual(markdownLink?.href, `https://www.remiforge.dev${STATIC_PAGES[path].mdHref}?lang=${preferredLanguage}`);
 
     // The visible H1 and the twin's H1 are one stable identity heading. The route reads it from the
-    // stable titles while the twin reads it from the resolved copy; nothing else pins the two
-    // together, so a drift between the rendered page and its machine-readable twin would slip past
-    // every feature-local test.
-    assert.strictEqual(copy.heading, stablePageTitles[path].heading, `${path} identity heading`);
+    // catalogue while the twin reads it from the resolved copy; nothing else pins the two together,
+    // so a drift between the rendered page and its machine-readable twin would slip past every
+    // feature-local test.
+    assert.strictEqual(copy.heading, STATIC_PAGES[path].copy[preferredLanguage].heading, `${path} identity heading`);
     assert.include(twin, `# ${copy.heading}`, `${path} twin H1`);
     const visible = renderToStaticMarkup(
       createElement(PageTitle, {
-        heading: stablePageTitles[path].heading,
-        eyebrow: stablePageTitles[path].eyebrow,
-        intro: stablePageTitles[path].intro,
+        heading: STATIC_PAGES[path].copy[preferredLanguage].heading,
+        eyebrow: STATIC_PAGES[path].copy[preferredLanguage].heading,
+        intro: STATIC_PAGES[path].copy[preferredLanguage].intro,
       })
     );
     assert.include(/<h1\b[^>]*>([\s\S]*?)<\/h1>/.exec(visible)?.[1] ?? "", copy.heading, `${path} visible H1`);
@@ -167,14 +167,14 @@ it("each static page's head, JSON-LD graph and twin publish one canonical, title
 });
 
 it("the full-content companion keeps one source link per embedded twin", () => {
-  const document = buildLlmsFullTxt({ pageTitles: stablePageTitles, experienceList: [sampleEmployment], educationList: [] });
+  const document = buildLlmsFullTxt({ experienceList: [sampleEmployment], educationList: [] });
 
   assert.strictEqual((document.match(/\[Source\]\(/g) ?? []).length, STATIC_PAGE_PATHS.length + 1);
   assert.notInclude(document, "[Canonical HTML]");
 });
 
 it("the full-content companion preserves each experience's queryable resource facts", () => {
-  const document = buildLlmsFullTxt({ pageTitles: stablePageTitles, experienceList: [sampleEmployment], educationList: [] });
+  const document = buildLlmsFullTxt({ experienceList: [sampleEmployment], educationList: [] });
 
   assert.include(document, 'repository: "https://github.com/example/repo"');
   assert.include(document, 'image: "https://www.remiforge.dev/images/01-a.webp"');
@@ -189,7 +189,7 @@ it("every advertised download is published by the sitemap, the AI index and the 
   // appearing on one surface and going missing from another.
   const sitemap = buildSitemapXml([]);
   const index = buildLlmsTxt([]);
-  const twin = twinDocument(buildEducationMd({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "en", translate: translateEn }));
+  const twin = twinDocument(buildEducationMd({ educationList: [], preferredLanguage: "en", translate: translateEn }));
 
   for (const document of DOWNLOADABLE_DOCUMENTS) {
     const url = absoluteUrl(document.href);
@@ -217,9 +217,9 @@ it("a page's advertised twin URL is the very URL the twin route answers on", asy
     // Keyed by PagePath rather than listed by hand, so a page added to the catalogue is a compile
     // error here until this test names its head too.
     const heads: Readonly<Record<PagePath, PageHead>> = {
-      "/": homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage }),
-      "/education": educationHead({ pageTitles: stablePageTitles, educationList: [], preferredLanguage }),
-      "/contact": contactHead({ pageTitles: stablePageTitles, preferredLanguage }),
+      "/": homeHead({ experienceList: [], preferredLanguage }),
+      "/education": educationHead({ educationList: [], preferredLanguage }),
+      "/contact": contactHead({ preferredLanguage }),
     };
 
     for (const path of STATIC_PAGE_PATHS) {

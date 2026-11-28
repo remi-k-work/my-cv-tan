@@ -4,7 +4,6 @@ import { Effect, Option } from "effect";
 import { getLocale } from "gt-tanstack-start";
 import { vi } from "vite-plus/test";
 import { Data, localizedExperienceAsset } from "../data";
-import { pageTitlesFromHighlights } from "@/domain/pages";
 import { RequiredDataError } from "@/features/data/domain/required";
 import { applyHtmlDataUnavailableResponse, markHtmlDataUnavailable } from "@/features/data/http/html-response";
 import { haveSameExperienceSlugs } from "@/features/experience/domain/helpers";
@@ -16,18 +15,6 @@ import experiencePl from "@/assets/data/pl/experience.json";
 import educationPl from "@/assets/data/pl/education.json";
 
 vi.mock("gt-tanstack-start", () => ({ getLocale: vi.fn<() => string>(() => "en") }));
-
-it.effect("stablePageTitles always selects the first authored entry for each locale", () =>
-  Effect.gen(function* () {
-    const data = yield* Data;
-    const english = yield* data.stablePageTitles(Option.some("en"));
-    const polish = yield* data.stablePageTitles(Option.some("pl"));
-
-    // The first authored variant supplies the eyebrow and intro; the heading comes from the catalogue
-    assert.deepStrictEqual(english, Option.some(pageTitlesFromHighlights(pageTitlesEn[0], "en")));
-    assert.deepStrictEqual(polish, Option.some(pageTitlesFromHighlights(pageTitlesPl[0], "pl")));
-  }).pipe(Effect.provide(Data.layer))
-);
 
 it.effect("localized experience assets keep the same unique canonical route identities", () =>
   Effect.gen(function* () {
@@ -68,19 +55,12 @@ it.effect("data accessors resolve an implicit request locale when they execute",
 
     // Effects are values: create every accessor under English, then run the same values in Polish
     const randomPageHighlights = data.randomPageHighlights(Option.none());
-    const stablePageTitles = data.stablePageTitles(Option.none());
     const experienceList = data.experienceList(Option.none());
     const educationList = data.educationList(Option.none());
     const experience = data.experience(experiencePl[0].slug, Option.none());
 
     locale.mockReturnValue("pl");
-    const [randomHighlights, stableTitles, experiences, education, selectedExperience] = yield* Effect.all([
-      randomPageHighlights,
-      stablePageTitles,
-      experienceList,
-      educationList,
-      experience,
-    ]);
+    const [randomHighlights, experiences, education, selectedExperience] = yield* Effect.all([randomPageHighlights, experienceList, educationList, experience]);
 
     assert.isTrue(
       Option.match(randomHighlights, {
@@ -88,7 +68,6 @@ it.effect("data accessors resolve an implicit request locale when they execute",
         onSome: (entry) => pageTitlesPl.some((variant) => variant["/"].eyebrow === entry["/"].eyebrow),
       })
     );
-    assert.deepStrictEqual(Option.getOrThrow(stableTitles), pageTitlesFromHighlights(pageTitlesPl[0], "pl"));
     assert.deepStrictEqual(
       Option.getOrThrow(experiences).map(({ slug }) => slug),
       experiencePl.map(({ slug }) => slug)

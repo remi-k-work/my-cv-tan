@@ -48,7 +48,7 @@ const experienceImages = (title: string, screenshot: Option.Option<ImageFacts>) 
 // Reuses each page's SEO identity so sitemap URLs and image metadata cannot drift from HTML or Markdown
 export const buildSitemapXml = (experiences: ExperienceList) => {
   const staticPageEntries = Array.map(STATIC_PAGE_PATHS, (path) => {
-    const { canonical: loc, title } = staticPageCopy({}, path, DEFAULT_LANGUAGE);
+    const { canonical: loc, title } = staticPageCopy(path, DEFAULT_LANGUAGE);
     return {
       path,
       loc,

@@ -9,7 +9,6 @@ import { makeRpcHandler } from "@/domain/helpers";
 const RpcDataLayer = RpcData.toLayer(
   Effect.map(Data, (data) => ({
     randomPageHighlights: () => data.randomPageHighlights(Option.none()),
-    stablePageTitles: () => data.stablePageTitles(Option.none()),
     experienceList: () => data.experienceList(Option.none()),
     educationList: () => data.educationList(Option.none()),
     experience: ({ slug }) => data.experience(slug, Option.none()),

@@ -16,7 +16,6 @@ const load = <E>(source: PageData<E>) =>
   Effect.all(
     {
       randomPageHighlights: requireDataFrom(source.randomPageHighlights, "random page highlights"),
-      stablePageTitles: requireDataFrom(source.stablePageTitles, "stable page titles"),
       educationList: requireDataFrom(source.educationList, "education list"),
     },
     { concurrency: "unbounded" }

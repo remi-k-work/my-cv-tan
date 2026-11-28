@@ -7,7 +7,7 @@ import { decodePreferredLanguage } from "./models";
 
 // types
 import type { Rpc } from "effect/rpc";
-import type { PagePath, PageTitles, PreferredLanguage, Translate } from "./models";
+import type { PreferredLanguage, Translate } from "./models";
 
 // constants
 import { DEFAULT_LANGUAGE } from "./constants";
@@ -55,9 +55,5 @@ export const preferredLanguageFromLocale = (locale: string): PreferredLanguage =
     decodePreferredLanguage(locale),
     Option.getOrElse(() => DEFAULT_LANGUAGE)
   );
-
-// Localized page title/intro with a static fallback when loader data is missing or partial
-export const pageField = (pageTitles: Partial<PageTitles> | null, pagePath: PagePath, key: "heading" | "intro", fallback: string) =>
-  pageTitles?.[pagePath]?.[key] ?? fallback;
 
 export const translateSource: Translate = (source) => source;

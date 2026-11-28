@@ -1,9 +1,8 @@
 // services, features, and other libraries
-import { Array, Context, Effect, Layer, Option, Random, Schema, pipe } from "effect";
+import { Context, Effect, Layer, Option, Random, Schema, pipe } from "effect";
 import { experienceFromList, haveSameExperienceSlugs } from "@/features/experience/domain/helpers";
 import { ExperienceList } from "@/features/experience/domain/models";
 import { EducationList, PageHighlightsList } from "@/domain/models";
-import { pageTitlesFromHighlights } from "@/domain/pages";
 import { requestPreferredLanguage } from "./request-language";
 
 // assets
@@ -89,21 +88,13 @@ export class Data extends Context.Service<Data>()("my-cv-v4-tan/features/data/se
         })
       );
 
-    // The stable titles pair the first authored highlight with the page's catalogue-declared heading
-    const stablePageTitles = (preferredLanguage: Option.Option<PreferredLanguage>) =>
-      Effect.sync(() => {
-        const language = requestPreferredLanguage(preferredLanguage);
-        return Option.flatMap(localized(Option.some(language), pageTitlesAsset), (highlights) =>
-          Option.map(Array.head(highlights), (first) => pageTitlesFromHighlights(first, language))
-        );
-      });
     const experienceList = (preferredLanguage: Option.Option<PreferredLanguage>) => Effect.sync(() => localized(preferredLanguage, experienceAsset));
     const educationList = (preferredLanguage: Option.Option<PreferredLanguage>) => Effect.sync(() => localized(preferredLanguage, educationAsset));
 
     const experience = (slug: Experience["slug"], preferredLanguage: Option.Option<PreferredLanguage>) =>
       Effect.sync(() => Option.flatMap(localized(preferredLanguage, experienceAsset), (experiences) => experienceFromList(experiences, slug)));
 
-    return { randomPageHighlights, stablePageTitles, experienceList, educationList, experience } as const;
+    return { randomPageHighlights, experienceList, educationList, experience } as const;
   }),
 }) {
   static readonly layer = Layer.effect(this, this.make);

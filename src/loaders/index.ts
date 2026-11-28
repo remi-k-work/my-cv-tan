@@ -27,10 +27,9 @@ const load = Effect.fnUntraced(function* <E>(source: PageData<E>, slug: Option.O
     });
   }
 
-  const { randomPageHighlights, stablePageTitles, experienceList } = yield* Effect.all(
+  const { randomPageHighlights, experienceList } = yield* Effect.all(
     {
       randomPageHighlights: requireDataFrom(source.randomPageHighlights, "random page highlights"),
-      stablePageTitles: requireDataFrom(source.stablePageTitles, "stable page titles"),
       experienceList: requireDataFrom(source.experienceList, "experience list"),
     },
     { concurrency: "unbounded" }
@@ -39,7 +38,6 @@ const load = Effect.fnUntraced(function* <E>(source: PageData<E>, slug: Option.O
   return {
     type: "list" as const,
     randomPageHighlights,
-    stablePageTitles,
     experienceList,
   };
 });

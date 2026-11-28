@@ -35,10 +35,10 @@ const pageTwin = <P extends PagePath>(pagePath: P, load: LoadPageContent<P>): Pa
 // Exhaustive over PagePath; each entry declares only the datasets its pure builder actually reads
 export const PAGE_TWINS = {
   [HOME_PATH]: pageTwin(HOME_PATH, (datasets, preferredLanguage) =>
-    Effect.all({ pageTitles: datasets.pageTitles(preferredLanguage), experienceList: datasets.experienceList(preferredLanguage) }, { concurrency: "unbounded" })
+    Effect.map(datasets.experienceList(preferredLanguage), (experienceList) => ({ experienceList }))
   ),
   [EDUCATION_PATH]: pageTwin(EDUCATION_PATH, (datasets, preferredLanguage) =>
-    Effect.all({ pageTitles: datasets.pageTitles(preferredLanguage), educationList: datasets.educationList(preferredLanguage) }, { concurrency: "unbounded" })
+    Effect.map(datasets.educationList(preferredLanguage), (educationList) => ({ educationList }))
   ),
-  [CONTACT_PATH]: pageTwin(CONTACT_PATH, (datasets, preferredLanguage) => Effect.map(datasets.pageTitles(preferredLanguage), (pageTitles) => ({ pageTitles }))),
+  [CONTACT_PATH]: pageTwin(CONTACT_PATH, () => Effect.succeed({})),
 } satisfies Record<PagePath, PageTwin>;

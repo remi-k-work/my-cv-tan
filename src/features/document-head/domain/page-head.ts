@@ -11,7 +11,7 @@ import { canonicalAndDiscoveryLinks, markdownRepresentationLink } from "@/domain
 import type { JsonLdNodes } from "@/features/jsonld/domain/models";
 import type { PageHead, SocialImage, SocialMetaInput } from "./models";
 import type { StaticPageCopy } from "@/domain/pages";
-import type { EducationList, ImageFacts, PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
+import type { EducationList, ImageFacts, PagePath, PreferredLanguage } from "@/domain/models";
 import type { ExperienceIdentityInput, ExperienceList } from "@/features/experience/domain/models";
 
 // The ingredients of one indexable page head: its social facts, its Markdown twin and its graph
@@ -21,9 +21,8 @@ interface PageHeadSpec {
   readonly graph: JsonLdNodes;
 }
 
-// The loader-provided inputs every static page head shares
+// The loader-independent inputs every static page head shares
 interface StaticPageHeadInput {
-  readonly pageTitles: PageTitles;
   readonly preferredLanguage: PreferredLanguage;
 }
 
@@ -76,7 +75,7 @@ export const experienceHead = (input: ExperienceIdentityInput): PageHead => {
 // Resolves the page's copy once, then derives its graph from that same copy, so the head and the
 // graph can never name different descriptions, languages or canonical URLs
 const staticPageHead = (input: StaticPageHeadInput, path: PagePath, graph: (copy: StaticPageCopy) => JsonLdNodes): PageHead => {
-  const copy = staticPageCopy(input.pageTitles, path, input.preferredLanguage);
+  const copy = staticPageCopy(path, input.preferredLanguage);
 
   return pageHead({
     social: {

@@ -1,11 +1,11 @@
 import { assert, it } from "@effect/vitest";
 import { STATIC_PAGES } from "@/domain/pages";
 import { CONTACT_EMAIL } from "@/domain/site";
-import { contactTwin, educationTwin, homeTwin, sampleEmployment, stablePageTitles, translateEn, translatePl } from "@/testing/fixtures";
+import { contactTwin, educationTwin, homeTwin, sampleEmployment, translateEn, translatePl } from "@/testing/fixtures";
 import type { ExperienceList } from "@/features/experience/domain/models";
 
 it("buildHomeMd groups work and projects and links to .md twins", () => {
-  const md = homeTwin({ pageTitles: stablePageTitles, experienceList: [sampleEmployment], preferredLanguage: "en", translate: translateEn });
+  const md = homeTwin({ experienceList: [sampleEmployment], preferredLanguage: "en", translate: translateEn });
   assert.include(md, `canonical: "https://www.remiforge.dev/"`);
   assert.include(md, `title: "Remi Forge ● ${STATIC_PAGES["/"].copy.en.title}"`);
   assert.include(md, `description: "${STATIC_PAGES["/"].copy.en.description}"`);
@@ -33,7 +33,7 @@ it("the home twin's two experience listings are one split: every experience exac
     { type: "p", slug: "project-b", year: "2025", role: "Art", company: "Co", txt: "Play.", skillsUsed: ["React"], imageName: "" },
     { type: "p", slug: "project-c", year: "2026", role: "Song", company: "Co", txt: "Sang.", skillsUsed: ["Effect"], imageName: "" },
   ];
-  const md = homeTwin({ pageTitles: stablePageTitles, experienceList, preferredLanguage: "en", translate: translateEn });
+  const md = homeTwin({ experienceList, preferredLanguage: "en", translate: translateEn });
 
   const sectionOf = (title: string) => md.split(`## ${title}\n`)[1]?.split("\n## ")[0] ?? "";
   const employment = sectionOf("Experience");
@@ -60,12 +60,12 @@ it("the home twin's two experience listings are one split: every experience exac
 
 it("home Markdown links encode experience slugs consistently", () => {
   const experience = { ...sampleEmployment, slug: "my project" };
-  const md = homeTwin({ pageTitles: stablePageTitles, experienceList: [experience], preferredLanguage: "en", translate: translateEn });
+  const md = homeTwin({ experienceList: [experience], preferredLanguage: "en", translate: translateEn });
   assert.include(md, "https://www.remiforge.dev/my%20project.md?lang=en");
 });
 
 it("buildHomeMd localizes Markdown structure in Polish", () => {
-  const md = homeTwin({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "pl", translate: translatePl });
+  const md = homeTwin({ experienceList: [], preferredLanguage: "pl", translate: translatePl });
   assert.include(md, "## Doświadczenie");
   assert.include(md, "## Projekty do Portfolio");
   assert.include(md, "## Strony");
@@ -81,7 +81,6 @@ it("the education twin nests each school one level below its own section", () =>
   // as a peer of "Documents" and "Pages", so a reader with no visual context could not tell a
   // school's facts from the page's own structure
   const md = educationTwin({
-    pageTitles: stablePageTitles,
     educationList: [
       { name: "Example School", year: "2020", location: "Poland", info: "Studied interaction design." },
       { name: "Second School", year: "2021", location: "Spain", info: "Studied colour." },
@@ -101,13 +100,13 @@ it("the education twin nests each school one level below its own section", () =>
   assert.isTrue((md.match(/^## /gm) ?? []).length >= 3); // Education, Documents, Pages
   assert.strictEqual((md.match(/^### /gm) ?? []).length, 2);
 
-  const polish = educationTwin({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "pl", translate: translatePl });
+  const polish = educationTwin({ educationList: [], preferredLanguage: "pl", translate: translatePl });
   assert.include(polish, "## Edukacja");
   assert.include(polish, "_Brak wpisów._");
 });
 
 it("the education twin stays localized and a missing document has no canonical", () => {
-  const edu = educationTwin({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "pl", translate: translatePl });
+  const edu = educationTwin({ educationList: [], preferredLanguage: "pl", translate: translatePl });
   assert.include(edu, `lang: "pl"`);
   assert.include(edu, `title: "Remi Forge ● ${STATIC_PAGES["/education"].copy.pl.title}"`);
   assert.include(edu, `description: "${STATIC_PAGES["/education"].copy.pl.description}"`);
@@ -118,7 +117,6 @@ it("the education twin stays localized and a missing document has no canonical",
   assert.include(edu, "_Brak wpisów._");
 
   const populated = educationTwin({
-    pageTitles: stablePageTitles,
     educationList: [{ name: "Example School", year: "2020", location: "Poland", info: "Studied interaction design." }],
     preferredLanguage: "pl",
     translate: translatePl,
@@ -126,10 +124,10 @@ it("the education twin stays localized and a missing document has no canonical",
   assert.include(populated, "Lata: 2020");
   assert.include(populated, "Lokalizacja: Poland");
 
-  const missing = contactTwin({ pageTitles: stablePageTitles, preferredLanguage: "en", translate: translateEn });
+  const missing = contactTwin({ preferredLanguage: "en", translate: translateEn });
   assert.include(missing, `title: "Remi Forge ● ${STATIC_PAGES["/contact"].copy.en.title}"`);
 
-  const missingPl = contactTwin({ pageTitles: stablePageTitles, preferredLanguage: "pl", translate: translatePl });
+  const missingPl = contactTwin({ preferredLanguage: "pl", translate: translatePl });
   assert.include(missingPl, "## Kanały");
   assert.include(missingPl, "[Formularz Kontaktowy](https://www.remiforge.dev/contact)");
   assert.include(missingPl, "Lokalizacja: Rzeszów, Polska");
@@ -139,7 +137,7 @@ it("a translated document label cannot fabricate a Markdown link destination", (
   // The label is dictionary copy inside a link label: an unescaped "]" would close the label
   // early and hand a crawler a destination the site never published
   const hostile = (source: string): string => (source === "Certificates" ? "Evil](https://evil.test)" : source);
-  const md = educationTwin({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "en", translate: hostile });
+  const md = educationTwin({ educationList: [], preferredLanguage: "en", translate: hostile });
 
   // The bracket is escaped, so the label stays one label and the real destination survives
   assert.include(md, "[Evil\\](https://evil.test)](https://www.remiforge.dev/my-certificates.pdf)");
@@ -147,7 +145,7 @@ it("a translated document label cannot fabricate a Markdown link destination", (
 });
 
 it("the contact twin advertises the same social profiles as the HTML page", () => {
-  const md = contactTwin({ pageTitles: stablePageTitles, preferredLanguage: "en", translate: translateEn });
+  const md = contactTwin({ preferredLanguage: "en", translate: translateEn });
   assert.include(md, `title: "Remi Forge ● ${STATIC_PAGES["/contact"].copy.en.title}"`);
   assert.notInclude(md, "Notes for AI systems");
   // The Channels line names the contact page's canonical — the same URL the contact <head>
@@ -160,7 +158,7 @@ it("the contact twin advertises the same social profiles as the HTML page", () =
   // the AI index's "Based in" fact state the same constant and a Polish reader gets its own spelling
   assert.include(md, "- Base: Rzeszów, Poland");
 
-  const polish = contactTwin({ pageTitles: stablePageTitles, preferredLanguage: "pl", translate: translatePl });
+  const polish = contactTwin({ preferredLanguage: "pl", translate: translatePl });
   assert.include(polish, "## Kanały");
   assert.include(polish, "[Formularz Kontaktowy](https://www.remiforge.dev/contact)");
   assert.include(polish, "Lokalizacja: Rzeszów, Polska");
@@ -168,9 +166,9 @@ it("the contact twin advertises the same social profiles as the HTML page", () =
 
 it("every static twin links its siblings and both AI indexes (the GEO crawl graph)", () => {
   const twins = [
-    homeTwin({ pageTitles: stablePageTitles, experienceList: [sampleEmployment], preferredLanguage: "en", translate: translateEn }),
-    educationTwin({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "en", translate: translateEn }),
-    contactTwin({ pageTitles: stablePageTitles, preferredLanguage: "en", translate: translateEn }),
+    homeTwin({ experienceList: [sampleEmployment], preferredLanguage: "en", translate: translateEn }),
+    educationTwin({ educationList: [], preferredLanguage: "en", translate: translateEn }),
+    contactTwin({ preferredLanguage: "en", translate: translateEn }),
   ];
 
   for (const md of twins) {

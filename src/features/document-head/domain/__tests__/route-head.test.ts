@@ -4,7 +4,7 @@ import { rootHead } from "../root-head";
 import { homeHead } from "../page-head";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 import { graphOf } from "@/features/jsonld/domain/__tests__/fixtures";
-import { stablePageTitles } from "@/testing/fixtures";
+
 import type { PageHead } from "../models";
 
 // The loader payload shapes headLanguage sees: a valid locale, an unsupported
@@ -17,7 +17,7 @@ it("routeHead keeps a canonical noindex fallback when loader data is missing", (
     matches: [],
     matchStatus: "success",
     fallbackPath: "/contact",
-    build: () => homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" }),
+    build: () => homeHead({ experienceList: [], preferredLanguage: "en" }),
   });
 
   assert.deepStrictEqual(
@@ -53,7 +53,7 @@ it("routeHead leaves not-found metadata to the root boundary, even with stale lo
   let builderCalled = false;
   const build = () => {
     builderCalled = true;
-    return homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" });
+    return homeHead({ experienceList: [], preferredLanguage: "en" });
   };
 
   const notFound = routeHead({

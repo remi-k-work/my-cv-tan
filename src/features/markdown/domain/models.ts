@@ -2,7 +2,7 @@
 import { translateSource } from "@/domain/helpers";
 
 // types
-import type { EducationList, PageIdentity, PageTitles, PreferredLanguage, Translate } from "@/domain/models";
+import type { EducationList, PageIdentity, PreferredLanguage, Translate } from "@/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
 import type { StaticPageCopy } from "@/domain/pages";
 
@@ -25,15 +25,15 @@ export interface TwinContext {
 }
 
 export interface PageContent {
-  readonly pageTitles: PageTitles;
   readonly experienceList: ExperienceList;
   readonly educationList: EducationList;
 }
 
+// The datasets each page's twin actually reads; the contact page reads none, so its content is empty
 export interface PageDocumentContent {
-  readonly [HOME_PATH]: Pick<PageContent, "pageTitles" | "experienceList">;
-  readonly [EDUCATION_PATH]: Pick<PageContent, "pageTitles" | "educationList">;
-  readonly [CONTACT_PATH]: Pick<PageContent, "pageTitles">;
+  readonly [HOME_PATH]: Pick<PageContent, "experienceList">;
+  readonly [EDUCATION_PATH]: Pick<PageContent, "educationList">;
+  readonly [CONTACT_PATH]: Record<never, never>;
 }
 
 // The source-language context every English-only surface (llms.txt, llms-full.txt) renders with

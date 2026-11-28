@@ -10,6 +10,7 @@ import { experienceHead, homeHead } from "@/features/document-head/domain/page-h
 import { experienceHeadline, partitionExperiences } from "@/features/experience/domain/helpers";
 import { experiencePath } from "@/domain/urls";
 import { preferredLanguageFromLocale } from "@/domain/helpers";
+import { pageHeading } from "@/domain/pages";
 
 // components
 import { PageTitle } from "@/ui/page-title";
@@ -20,7 +21,7 @@ import { ExperienceDetailsModal } from "@/features/modals/ui/experience-details-
 import { NotFoundPage } from "@/ui/not-found-page";
 
 // types
-import type { PageHighlights, PageTitles } from "@/domain/models";
+import type { PageHighlights } from "@/domain/models";
 import type { Experience, ExperienceList } from "@/features/experience/domain/models";
 
 // constants
@@ -38,7 +39,7 @@ export const Route = createFileRoute("/{-$slug}")({
       build: (data, preferredLanguage) => {
         // The loader resolves either an item or a list; both branches produce a full head.
         if (data.type === "item") return experienceHead({ experience: data.experience, preferredLanguage });
-        return homeHead({ pageTitles: data.stablePageTitles, experienceList: data.experienceList, preferredLanguage });
+        return homeHead({ experienceList: data.experienceList, preferredLanguage });
       },
     }),
   component: IndexRoutePage,
@@ -54,36 +55,22 @@ export const Route = createFileRoute("/{-$slug}")({
 function IndexRoutePage() {
   const loaderData = Route.useLoaderData();
 
-  if (loaderData.type === "list")
-    return (
-      <HomeListPage
-        pageHighlights={loaderData.randomPageHighlights}
-        stablePageTitles={loaderData.stablePageTitles}
-        experienceList={loaderData.experienceList}
-      />
-    );
+  if (loaderData.type === "list") return <HomeListPage pageHighlights={loaderData.randomPageHighlights} experienceList={loaderData.experienceList} />;
   return <ExperienceItemPage experience={loaderData.experience} />;
 }
 
 // Homepage list: two experience sliders and the overlay that opens a project's details
-function HomeListPage({
-  pageHighlights,
-  stablePageTitles,
-  experienceList,
-}: {
-  pageHighlights: PageHighlights;
-  stablePageTitles: PageTitles;
-  experienceList: ExperienceList;
-}) {
+function HomeListPage({ pageHighlights, experienceList }: { pageHighlights: PageHighlights; experienceList: ExperienceList }) {
   const gt = useGT();
   const { eyebrow, intro } = pageHighlights[HOME_PATH];
+  const heading = pageHeading(HOME_PATH, preferredLanguageFromLocale(useLocale()));
 
   // Same one-pass split the home JSON-LD collections use, so UI and structured data group identically
   const [employmentHistory, portfolioProjects] = partitionExperiences(experienceList);
 
   return (
     <>
-      <PageTitle heading={stablePageTitles[HOME_PATH].heading} eyebrow={eyebrow} intro={intro} />
+      <PageTitle heading={heading} eyebrow={eyebrow} intro={intro} />
       <PageGrid className="auto-rows-fr">
         <SliderPanel title={gt("Experience")} experienceList={employmentHistory} />
         <SliderPanel title={gt("Portfolio Projects")} experienceList={portfolioProjects} />

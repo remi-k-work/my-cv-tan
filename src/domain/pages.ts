@@ -5,11 +5,10 @@
 // services, features, and other libraries
 import { Record } from "effect";
 import { msg } from "gt-i18n";
-import { pageField } from "./helpers";
 import { absoluteUrl } from "./urls";
 
 // types
-import type { PageHighlights, PageIdentity, PagePath, PageTitles, PreferredLanguage } from "./models";
+import type { PageIdentity, PagePath, PreferredLanguage } from "./models";
 
 // constants
 import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "./constants";
@@ -104,9 +103,12 @@ export const STATIC_PAGES = {
 
 export const STATIC_PAGE_PATHS = Record.keys(STATIC_PAGES);
 
-// Resolves localized static page copy, falling back to static strings if loader titles are missing
-// The titles are a loader payload, so they are only as complete as the request that produced them
-export const staticPageCopy = (pageTitles: Partial<PageTitles>, pagePath: PagePath, preferredLanguage: PreferredLanguage): StaticPageCopy => {
+// The visible heading each static route renders above its content
+export const pageHeading = (pagePath: PagePath, preferredLanguage: PreferredLanguage): string => STATIC_PAGES[pagePath].copy[preferredLanguage].heading;
+
+// Resolves localized static page copy straight from the catalogue, the one source every static page
+// head, Markdown twin and the sitemap read
+export const staticPageCopy = (pagePath: PagePath, preferredLanguage: PreferredLanguage): StaticPageCopy => {
   const { mdHref, type, copy } = STATIC_PAGES[pagePath];
   const { heading, intro, title, description } = copy[preferredLanguage];
 
@@ -114,21 +116,11 @@ export const staticPageCopy = (pageTitles: Partial<PageTitles>, pagePath: PagePa
     path: pagePath,
     mdHref,
     type,
-    heading: pageField(pageTitles, pagePath, "heading", heading),
+    heading,
     title,
-    intro: pageField(pageTitles, pagePath, "intro", intro),
+    intro,
     description,
     canonical: absoluteUrl(pagePath),
     preferredLanguage,
   };
 };
-
-// Resolves the rotating eyebrow and intro against each page's catalogue-declared heading, producing
-// the full titles every surface reads; the heading is not part of the rotating asset, so it cannot
-// drift between loads
-export const pageTitlesFromHighlights = (highlights: PageHighlights, preferredLanguage: PreferredLanguage): PageTitles =>
-  Record.map(highlights, ({ eyebrow, intro }, pagePath) => ({
-    eyebrow,
-    heading: STATIC_PAGES[pagePath].copy[preferredLanguage].heading,
-    intro,
-  }));

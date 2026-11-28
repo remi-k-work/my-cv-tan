@@ -2,17 +2,8 @@ import { assert, it } from "@effect/vitest";
 import { ROOT_HEAD } from "../root-head";
 import { rootHead } from "../root-head";
 import { homeHead, contactHead, educationHead, experienceHead } from "../page-head";
-import {
-  AI_DISCOVERY_LINKS,
-  authorLink,
-  canonicalLink,
-  joinLinkHeader,
-  LLMS_DISCOVERY_LINK,
-  markdownRepresentationLink,
-  SITEMAP_LINK,
-} from "@/domain/links";
+import { AI_DISCOVERY_LINKS, authorLink, canonicalLink, joinLinkHeader, LLMS_DISCOVERY_LINK, markdownRepresentationLink, SITEMAP_LINK } from "@/domain/links";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
-import { stablePageTitles } from "@/testing/fixtures";
 
 // types
 import type { LinkTag } from "@/domain/links";
@@ -47,7 +38,7 @@ it("root metadata defaults to noindex and complete page heads explicitly allow i
   // render beside every page's own — advertising the English home twin from a Polish subpage
   assert.notInclude(JSON.stringify(ROOT_HEAD.links), '"type":"text/markdown"');
 
-  const indexable = homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" });
+  const indexable = homeHead({ experienceList: [], preferredLanguage: "en" });
   // TanStack reads only top-level meta/links off head results (load-server.js): the shape must stay flat
   assert.isDefined(indexable.meta);
   assert.isDefined(indexable.links);
@@ -55,10 +46,10 @@ it("root metadata defaults to noindex and complete page heads explicitly allow i
   assert.notInclude(JSON.stringify(indexable.meta), "noindex");
   assert.notInclude(JSON.stringify(indexable.meta), '"name":"keywords"');
 
-  const emptyEducation = educationHead({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "pl" });
+  const emptyEducation = educationHead({ educationList: [], preferredLanguage: "pl" });
   assert.include(JSON.stringify(emptyEducation.meta), INDEXABLE_ROBOTS);
 
-  const contact = contactHead({ pageTitles: stablePageTitles, preferredLanguage: "en" });
+  const contact = contactHead({ preferredLanguage: "en" });
   assert.include(JSON.stringify(contact.meta), INDEXABLE_ROBOTS);
 });
 
@@ -80,7 +71,7 @@ it("the root head publishes the site-wide discovery and author links exactly onc
 
   // Pages contribute only their own canonical and Markdown alternate; nothing site-wide is repeated
   for (const head of [
-    homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" }),
+    homeHead({ experienceList: [], preferredLanguage: "en" }),
     experienceHead({
       experience: {
         type: "p",

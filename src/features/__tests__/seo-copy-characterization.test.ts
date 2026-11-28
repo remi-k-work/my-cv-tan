@@ -1,15 +1,15 @@
-// Characterization snapshot of every localized SEO/GEO surface *before* the simplification.
+// Characterization snapshot of every localized SEO/GEO surface *before* the simplification
 //
 // These tests deliberately pin today's exact EN/PL output, not the current implementation: the point
-// is that any change during Phase A shows up as a diff here first. Each block names the step that is
-// expected to change it. A failure without such a note is a regression, not an intended change.
+// is that any change during Phase A shows up as a diff here first; each block names the step that is
+// expected to change it; a failure without such a note is a regression, not an intended change
 //
-// The rotating `pageTitles` payload is reproduced from the real data assets (see `productionPageTitles`)
-// so the assertions describe what the site serves, not a test-only fixture.
+// Page copy is resolved from the real static-page catalogue (the authored data the site serves) so the
+// assertions describe what the site publishes, not a test-only fixture
 
 import { assert, describe, it } from "@effect/vitest";
 import { Option } from "effect";
-import { pageTitlesFromHighlights, STATIC_PAGES, STATIC_PAGE_PATHS, staticPageCopy } from "@/domain/pages";
+import { STATIC_PAGES, STATIC_PAGE_PATHS, staticPageCopy } from "@/domain/pages";
 import { contactHead, educationHead, experienceHead, homeHead } from "@/features/document-head/domain/page-head";
 import { notFoundHead, unavailableHead } from "@/features/document-head/domain/fallback";
 import { metaOf, tagContent } from "@/features/document-head/domain/__tests__/readers";
@@ -26,28 +26,15 @@ import { absoluteUrl } from "@/domain/urls";
 import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 import { CONTACT_PATH, EDUCATION_PATH, HOME_PATH } from "@/domain/constants";
 import { sampleEducation, sampleEmployment, samplePortfolio, translateEn, translatePl } from "@/testing/fixtures";
-import pageTitlesEn from "@/assets/data/en/page-titles.json";
-import pageTitlesPl from "@/assets/data/pl/page-titles.json";
 
 // types
 import type { PageHead } from "@/features/document-head/domain/models";
-import type { PageHighlights, PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
+import type { PagePath, PreferredLanguage } from "@/domain/models";
 
-// Mirrors `Data.stablePageTitles`: the first authored highlight supplies the rotating intro and
-// eyebrow; the heading is the catalogue's stable heading. The real assets are used so the snapshot
-// describes production rather than the shared test fixture.
-const HIGHLIGHTS: Readonly<Record<PreferredLanguage, ReadonlyArray<PageHighlights>>> = {
-  en: pageTitlesEn as ReadonlyArray<PageHighlights>,
-  pl: pageTitlesPl as ReadonlyArray<PageHighlights>,
-};
-
-const productionPageTitles = (language: PreferredLanguage): PageTitles =>
-  pageTitlesFromHighlights(HIGHLIGHTS[language][0]!, language);
-
-const HEADS: { readonly [P in PagePath]: (pageTitles: PageTitles, preferredLanguage: PreferredLanguage) => PageHead } = {
-  [HOME_PATH]: (pageTitles, preferredLanguage) => homeHead({ pageTitles, experienceList: [], preferredLanguage }),
-  [EDUCATION_PATH]: (pageTitles, preferredLanguage) => educationHead({ pageTitles, educationList: [], preferredLanguage }),
-  [CONTACT_PATH]: (pageTitles, preferredLanguage) => contactHead({ pageTitles, preferredLanguage }),
+const HEADS: { readonly [P in PagePath]: (preferredLanguage: PreferredLanguage) => PageHead } = {
+  [HOME_PATH]: (preferredLanguage) => homeHead({ experienceList: [], preferredLanguage }),
+  [EDUCATION_PATH]: (preferredLanguage) => educationHead({ educationList: [], preferredLanguage }),
+  [CONTACT_PATH]: (preferredLanguage) => contactHead({ preferredLanguage }),
 };
 
 const metaContent = (head: PageHead, key: "name" | "property", value: string) => tagContent(metaOf(head), key, value);
@@ -94,7 +81,7 @@ describe("static page heads keep their authored EN/PL copy", () => {
     for (const language of ["en", "pl"] as const) {
       it(`${pagePath} (${language})`, () => {
         const expected = STATIC_HEAD_EXPECTED[pagePath][language];
-        const head = HEADS[pagePath](productionPageTitles(language), language);
+        const head = HEADS[pagePath](language);
 
         assert.strictEqual(metaContent(head, "property", "og:title"), expected.title);
         assert.strictEqual(metaContent(head, "name", "description"), expected.description);
@@ -107,9 +94,7 @@ describe("static page heads keep their authored EN/PL copy", () => {
         assert.strictEqual(markdownLinkOf(head), `${absoluteUrl(STATIC_PAGES[pagePath].mdHref)}?lang=${language}`);
 
         const graph = graphOf(head.scripts?.[0]?.children);
-        const pageNode = graph.find(
-          (node) => node["url"] === canonical && ["ProfilePage", "CollectionPage", "ContactPage"].includes(String(node["@type"]))
-        );
+        const pageNode = graph.find((node) => node["url"] === canonical && ["ProfilePage", "CollectionPage", "ContactPage"].includes(String(node["@type"])));
         assert.isDefined(pageNode, `${pagePath} JSON-LD page node`);
         assert.strictEqual(pageNode?.["name"], expected.title);
         assert.strictEqual(pageNode?.["description"], expected.description);
@@ -194,11 +179,10 @@ describe("error heads (404/503) keep their EN/PL envelope", () => {
 describe(".md twins keep their current EN/PL copy and language pin", () => {
   for (const language of ["en", "pl"] as const) {
     const translate = language === "en" ? translateEn : translatePl;
-    const pageTitles = productionPageTitles(language);
 
     it(`home twin (${language})`, () => {
-      const copy = staticPageCopy(pageTitles, HOME_PATH, language);
-      const twin = twinDocument(buildHomeMd({ pageTitles, experienceList: [sampleEmployment], preferredLanguage: language, translate }));
+      const copy = staticPageCopy(HOME_PATH, language);
+      const twin = twinDocument(buildHomeMd({ experienceList: [sampleEmployment], preferredLanguage: language, translate }));
 
       assert.include(twin, `# ${escapeMdInline(copy.heading)}`);
       assert.include(twin, `> ${escapeMdInline(copy.description)}`);
@@ -207,13 +191,13 @@ describe(".md twins keep their current EN/PL copy and language pin", () => {
       assert.include(twin, `canonical: ${JSON.stringify(copy.canonical)}`);
       assert.include(twin, `type: "overview"`);
       assert.include(twin, `## ${escapeMdInline(translate("Pages"))}`);
-      // Step A1 replaces this rotating authored intro with the catalogue intro.
-      assert.notStrictEqual(copy.intro, STATIC_PAGES[HOME_PATH].copy[language].intro);
+      // Step A1 removed the rotating authored intro; the twin now reads the catalogue intro.
+      assert.strictEqual(copy.intro, STATIC_PAGES[HOME_PATH].copy[language].intro);
     });
 
     it(`education twin (${language})`, () => {
-      const copy = staticPageCopy(pageTitles, EDUCATION_PATH, language);
-      const twin = twinDocument(buildEducationMd({ pageTitles, educationList: sampleEducation, preferredLanguage: language, translate }));
+      const copy = staticPageCopy(EDUCATION_PATH, language);
+      const twin = twinDocument(buildEducationMd({ educationList: sampleEducation, preferredLanguage: language, translate }));
 
       assert.include(twin, `# ${escapeMdInline(copy.heading)}`);
       assert.include(twin, `type: "education"`);
@@ -222,8 +206,8 @@ describe(".md twins keep their current EN/PL copy and language pin", () => {
     });
 
     it(`contact twin (${language})`, () => {
-      const copy = staticPageCopy(pageTitles, CONTACT_PATH, language);
-      const twin = twinDocument(buildContactMd({ pageTitles, preferredLanguage: language, translate }));
+      const copy = staticPageCopy(CONTACT_PATH, language);
+      const twin = twinDocument(buildContactMd({ preferredLanguage: language, translate }));
 
       assert.include(twin, `# ${escapeMdInline(copy.heading)}`);
       assert.include(twin, `type: "contact"`);

@@ -7,7 +7,7 @@ import { absoluteUrl, experienceMarkdownPath, experiencePath } from "@/domain/ur
 import { CACHEABLE_HEADERS } from "@/lib/http-response";
 import { contactHandler, educationHandler, experienceHandler, homeHandler } from "../handlers";
 import { contactHead, educationHead, homeHead } from "@/features/document-head/domain/page-head";
-import { stablePageTitles } from "@/testing/fixtures";
+
 import experienceEn from "@/assets/data/en/experience.json";
 
 // types
@@ -87,9 +87,9 @@ it("a served twin's response canonical names the very page its frontmatter cites
 
 it("HTML heads advertise the current Markdown twin and responses do not claim it is a localized HTML page", async () => {
   const pages = [
-    [homeHandler, (preferredLanguage: PreferredLanguage) => homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage })],
-    [educationHandler, (preferredLanguage: PreferredLanguage) => educationHead({ pageTitles: stablePageTitles, educationList: [], preferredLanguage })],
-    [contactHandler, (preferredLanguage: PreferredLanguage) => contactHead({ pageTitles: stablePageTitles, preferredLanguage })],
+    [homeHandler, (preferredLanguage: PreferredLanguage) => homeHead({ experienceList: [], preferredLanguage })],
+    [educationHandler, (preferredLanguage: PreferredLanguage) => educationHead({ educationList: [], preferredLanguage })],
+    [contactHandler, (preferredLanguage: PreferredLanguage) => contactHead({ preferredLanguage })],
   ] as const;
 
   for (const [handler, headFor] of pages) {

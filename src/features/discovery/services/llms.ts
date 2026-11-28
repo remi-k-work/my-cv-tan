@@ -49,7 +49,6 @@ export class Discovery extends Context.Service<
         Effect.map(
           Effect.all(
             {
-              pageTitles: datasets.pageTitles(DEFAULT_LANGUAGE),
               experienceList: datasets.experienceList(DEFAULT_LANGUAGE),
               educationList: datasets.educationList(DEFAULT_LANGUAGE),
             },

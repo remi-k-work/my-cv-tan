@@ -4,7 +4,6 @@ import { Schema } from "effect";
 // types
 export type PreferredLanguage = typeof PreferredLanguage.Type;
 export type PagePath = typeof PagePath.Type;
-export type PageTitles = typeof PageTitles.Type;
 export type PageHighlights = typeof PageHighlights.Type;
 export type PageHighlightsList = typeof PageHighlightsList.Type;
 export type EducationList = typeof EducationList.Type;
@@ -40,13 +39,6 @@ export const decodePreferredLanguage = Schema.decodeUnknownOption(PreferredLangu
 
 // The route list above is the vocabulary, so a path the schema accepted but no constant names would be a page no surface could address
 const PagePath = Schema.Literals([HOME_PATH, EDUCATION_PATH, CONTACT_PATH]);
-const PageTitle = Schema.Struct({
-  eyebrow: Schema.Trim.check(Schema.isNonEmpty()),
-  heading: Schema.Trim.check(Schema.isNonEmpty()),
-  intro: Schema.Trim.check(Schema.isNonEmpty()),
-});
-
-export const PageTitles = Schema.Record(PagePath, PageTitle);
 
 // The supporting copy that may rotate between page loads: the eyebrow and intro, never the heading,
 // which each page declares once in the static-page catalogue

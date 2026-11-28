@@ -18,7 +18,7 @@ import { INDEXABLE_ROBOTS, NOINDEX_FOLLOW } from "@/domain/http";
 import { NotFoundPage } from "@/ui/not-found-page";
 import { BRANDED_TITLE, NOT_FOUND_COPY, SITE_DESCRIPTION, SOCIAL_LINKS, UNAVAILABLE_COPY } from "@/domain/site";
 import { notFoundHead } from "../fallback";
-import { samplePortfolio, stablePageTitles } from "@/testing/fixtures";
+import { samplePortfolio } from "@/testing/fixtures";
 import type { LinkTag } from "@/domain/links";
 import type { MetaTag, PageHead } from "../models";
 import type { MatchChain } from "../route-head";
@@ -78,9 +78,9 @@ const successMatches: MatchChain = [{ loaderData: { preferredLanguage: "pl" }, s
 
 // Every page kind's own head, built the way its route builds it.
 const pageHeads: ReadonlyArray<PageHead> = [
-  homeHead({ pageTitles: stablePageTitles, experienceList: [samplePortfolio], preferredLanguage: "pl" }),
-  contactHead({ pageTitles: stablePageTitles, preferredLanguage: "en" }),
-  educationHead({ pageTitles: stablePageTitles, educationList: [], preferredLanguage: "en" }),
+  homeHead({ experienceList: [samplePortfolio], preferredLanguage: "pl" }),
+  contactHead({ preferredLanguage: "en" }),
+  educationHead({ educationList: [], preferredLanguage: "en" }),
   experienceHead({ experience: samplePortfolio, preferredLanguage: "en" }),
 ];
 
@@ -134,7 +134,7 @@ it("a not-found document carries the root's fallback copy and no canonical, whil
     matches: notFoundMatches,
     matchStatus: "notFound",
     fallbackPath: "/missing",
-    build: () => homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" }),
+    build: () => homeHead({ experienceList: [], preferredLanguage: "en" }),
   });
 
   const document = mergeHeads([rootHead(notFoundMatches), leaf]);
@@ -159,7 +159,7 @@ it("a page whose data is unavailable publishes its own fallback beside the site-
     matches: successMatches,
     matchStatus: "success",
     fallbackPath: "/contact",
-    build: () => homeHead({ pageTitles: stablePageTitles, experienceList: [], preferredLanguage: "en" }),
+    build: () => homeHead({ experienceList: [], preferredLanguage: "en" }),
   });
 
   const document = mergeHeads([rootHead(successMatches), unavailable]);

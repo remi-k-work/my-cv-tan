@@ -6,19 +6,17 @@ import { LLMS_FULL_TXT_INDEX, LLMS_TXT_INDEX } from "@/domain/discovery";
 import { CACHEABLE_HEADERS } from "@/lib/http-response";
 import { buildLlmsFullTxt, buildLlmsTxt } from "@/features/discovery/domain/llms";
 import { NOINDEX_FOLLOW } from "@/domain/http";
-import { sampleEmployment, stablePageTitles } from "@/testing/fixtures";
+import { sampleEmployment } from "@/testing/fixtures";
 import { Discovery } from "../llms";
 
 const failed = (dataset: string) => Effect.fail(new RequiredDataError({ dataset, message: `test outage: ${dataset}` }));
 
 const unavailableDatasets = {
-  pageTitles: () => failed("page titles"),
   experienceList: () => failed("experience list"),
   educationList: () => failed("education list"),
 };
 
 const availableDatasets = {
-  pageTitles: () => Effect.succeed(stablePageTitles),
   experienceList: () => Effect.succeed([sampleEmployment]),
   educationList: () => Effect.succeed([]),
 };
@@ -33,7 +31,7 @@ it.effect("Discovery AI indexes serve English source content with cacheable disc
     const full = yield* discovery.siteIndexFull(new Request(`${LLMS_FULL_TXT_INDEX.url}?lang=pl`));
     const documents = [
       [index, LLMS_TXT_INDEX.url, buildLlmsTxt([sampleEmployment])],
-      [full, LLMS_FULL_TXT_INDEX.url, buildLlmsFullTxt({ pageTitles: stablePageTitles, experienceList: [sampleEmployment], educationList: [] })],
+      [full, LLMS_FULL_TXT_INDEX.url, buildLlmsFullTxt({ experienceList: [sampleEmployment], educationList: [] })],
     ] as const;
 
     for (const [response, contentLocation, expectedBody] of documents) {

@@ -16,7 +16,6 @@ import type { PageData } from "./page-data";
 // Binds the Data service to one language, producing the same Effect-valued surface the RPC client exposes
 const fromData = (data: Data["Service"], preferredLanguage: PreferredLanguage): PageData => ({
   randomPageHighlights: data.randomPageHighlights(Option.some(preferredLanguage)),
-  stablePageTitles: data.stablePageTitles(Option.some(preferredLanguage)),
   experienceList: data.experienceList(Option.some(preferredLanguage)),
   educationList: data.educationList(Option.some(preferredLanguage)),
 });

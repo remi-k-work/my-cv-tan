@@ -11,15 +11,15 @@ import { pageFacts, twinIdentity } from "./models";
 import { canonicalSourceLink, detailPagesSection, pagesSection } from "./twin-nav";
 
 // types
-import type { EducationList, PagePath, PageTitles, Translate } from "@/domain/models";
+import type { EducationList, PagePath, Translate } from "@/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
 import type { StaticPageCopy } from "@/domain/pages";
 import type { ExperienceSeo } from "@/features/experience/domain/models";
 import type { MarkdownTwin, PageDocumentContent, TwinContext } from "./models";
 
-export type HomeMdInput = TwinContext & { readonly pageTitles: PageTitles; readonly experienceList: ExperienceList };
-export type EducationMdInput = TwinContext & { readonly pageTitles: PageTitles; readonly educationList: EducationList };
-export type ContactMdInput = TwinContext & { readonly pageTitles: PageTitles };
+export type HomeMdInput = TwinContext & { readonly experienceList: ExperienceList };
+export type EducationMdInput = TwinContext & { readonly educationList: EducationList };
+export type ContactMdInput = TwinContext;
 
 interface ExperienceMdInput extends Pick<TwinContext, "translate" | "includeNavigation"> {
   readonly seo: ExperienceSeo;
@@ -85,11 +85,11 @@ const contactChannels = (canonical: string, translate: Translate) =>
   );
 
 const staticTwinDocument = (
-  { pageTitles, preferredLanguage, translate, includeNavigation = true }: TwinContext & { readonly pageTitles: PageTitles },
+  { preferredLanguage, translate, includeNavigation = true }: TwinContext,
   pagePath: PagePath,
   sections: (copy: StaticPageCopy) => ReadonlyArray<string>
 ): MarkdownTwin => {
-  const copy = staticPageCopy(pageTitles, pagePath, preferredLanguage);
+  const copy = staticPageCopy(pagePath, preferredLanguage);
 
   return {
     facts: pageFacts(copy),
