@@ -11,8 +11,7 @@ import { pageFacts, twinIdentity } from "./models";
 import { canonicalSourceLink, detailPagesSection, pagesSection } from "./twin-nav";
 
 // types
-import type { PagePath, PageTitles, Translate } from "@/domain/models";
-import type { EducationList } from "@/features/education/domain/models";
+import type { EducationList, PagePath, PageTitles, Translate } from "@/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
 import type { StaticPageCopy } from "@/domain/pages";
 import type { ExperienceSeo } from "@/features/experience/domain/models";

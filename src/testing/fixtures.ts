@@ -17,8 +17,7 @@ import { twinDocument } from "@/features/markdown/domain/format";
 import { buildContactMd, buildEducationMd, buildHomeMd } from "@/features/markdown/domain/twins";
 
 // types
-import type { PageHighlights, PageTitles, Translate } from "@/domain/models";
-import type { EducationList } from "@/features/education/domain/models";
+import type { EducationList, PageHighlights, PageTitles, Translate } from "@/domain/models";
 import type { Experience } from "@/features/experience/domain/models";
 import type { ContactMdInput, EducationMdInput, HomeMdInput } from "@/features/markdown/domain/twins";
 

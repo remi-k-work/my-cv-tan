@@ -18,8 +18,7 @@ import {
 } from "./nodes";
 
 // types
-import type { PageIdentity, PreferredLanguage } from "@/domain/models";
-import type { EducationList } from "@/features/education/domain/models";
+import type { EducationList, PageIdentity, PreferredLanguage } from "@/domain/models";
 import type { ExperienceList, ExperienceSeo } from "@/features/experience/domain/models";
 import type { JsonLdNode, JsonLdNodes } from "./models";
 import type { PageNodeType } from "./nodes";

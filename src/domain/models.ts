@@ -7,6 +7,7 @@ export type PagePath = typeof PagePath.Type;
 export type PageTitles = typeof PageTitles.Type;
 export type PageHighlights = typeof PageHighlights.Type;
 export type PageHighlightsList = typeof PageHighlightsList.Type;
+export type EducationList = typeof EducationList.Type;
 
 // Resolves a msg()-registered source string into the requested language; injected so the
 // pure builders stay testable while the service decides where translations come from
@@ -55,3 +56,12 @@ const PageHighlight = Schema.Struct({
 });
 export const PageHighlights = Schema.Record(PagePath, PageHighlight);
 export const PageHighlightsList = Schema.Array(PageHighlights);
+
+// Education facts are read by the data decoder, page UI, Markdown twin and JSON-LD graph.
+const Education = Schema.Struct({
+  name: Schema.Trim.check(Schema.isNonEmpty()),
+  year: Schema.Trim.check(Schema.isNonEmpty()),
+  location: Schema.Trim.check(Schema.isNonEmpty()),
+  info: Schema.Trim.check(Schema.isNonEmpty()),
+});
+export const EducationList = Schema.Array(Education);

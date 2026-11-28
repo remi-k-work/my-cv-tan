@@ -2,8 +2,7 @@
 import { Schema } from "effect";
 import { Rpc, RpcGroup } from "effect/rpc";
 import { Experience, ExperienceList } from "@/features/experience/domain/models";
-import { EducationList } from "@/features/education/domain/models";
-import { PageHighlights, PageTitles } from "@/domain/models";
+import { EducationList, PageHighlights, PageTitles } from "@/domain/models";
 import { RpcLogger } from "@/services/rpc-logger";
 
 export class RpcData extends RpcGroup.make(

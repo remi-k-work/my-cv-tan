@@ -11,8 +11,7 @@ import { canonicalAndDiscoveryLinks, markdownRepresentationLink } from "@/domain
 import type { JsonLdNodes } from "@/features/jsonld/domain/models";
 import type { PageHead, SocialImage, SocialMetaInput } from "./models";
 import type { StaticPageCopy } from "@/domain/pages";
-import type { ImageFacts, PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
-import type { EducationList } from "@/features/education/domain/models";
+import type { EducationList, ImageFacts, PagePath, PageTitles, PreferredLanguage } from "@/domain/models";
 import type { ExperienceIdentityInput, ExperienceList } from "@/features/experience/domain/models";
 
 // The ingredients of one indexable page head: its social facts, its Markdown twin and its graph

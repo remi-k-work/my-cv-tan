@@ -8,7 +8,7 @@ import { useGT } from "gt-tanstack-start";
 import { PageSection } from "@/ui/page-section";
 
 // types
-import type { EducationList } from "@/features/education/domain/models";
+import type { EducationList } from "@/domain/models";
 
 // One education entry: the definition term (name, year, location) and its description (info)
 interface EducationEntryProps {

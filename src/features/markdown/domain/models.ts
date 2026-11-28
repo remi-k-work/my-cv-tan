@@ -2,8 +2,7 @@
 import { translateSource } from "@/domain/helpers";
 
 // types
-import type { PageIdentity, PageTitles, PreferredLanguage, Translate } from "@/domain/models";
-import type { EducationList } from "@/features/education/domain/models";
+import type { EducationList, PageIdentity, PageTitles, PreferredLanguage, Translate } from "@/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
 import type { StaticPageCopy } from "@/domain/pages";
 

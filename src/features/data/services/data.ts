@@ -2,8 +2,7 @@
 import { Array, Context, Effect, Layer, Option, Random, Schema, pipe } from "effect";
 import { experienceFromList, haveSameExperienceSlugs } from "@/features/experience/domain/helpers";
 import { ExperienceList } from "@/features/experience/domain/models";
-import { EducationList } from "@/features/education/domain/models";
-import { PageHighlightsList } from "@/domain/models";
+import { EducationList, PageHighlightsList } from "@/domain/models";
 import { pageTitlesFromHighlights } from "@/domain/pages";
 import { requestPreferredLanguage } from "./request-language";
 

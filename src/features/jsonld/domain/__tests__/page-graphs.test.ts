@@ -9,7 +9,7 @@ import { CONTACT_EMAIL, EXPERIENCE_LIST_ID, GLOBAL_SOCIAL_IMAGE, HOME_URL, PERSO
 import { jsonLdGraph } from "../serialize";
 import { graphOf, nodeOf } from "./fixtures";
 import type { PreferredLanguage } from "@/domain/models";
-import type { EducationList } from "@/features/education/domain/models";
+import type { EducationList } from "@/domain/models";
 import type { Experience, ExperienceList } from "@/features/experience/domain/models";
 
 const language: PreferredLanguage = "en";
@@ -443,10 +443,7 @@ it("static page graphs publish primaryImageOfPage matching the global social ima
     height: GLOBAL_SOCIAL_IMAGE.height,
   };
 
-  const home = nodeOf(
-    homeJsonLd({ title: "Home", description: "Home.", canonical: HOME_URL, experienceList: [], preferredLanguage: language }),
-    "ProfilePage"
-  );
+  const home = nodeOf(homeJsonLd({ title: "Home", description: "Home.", canonical: HOME_URL, experienceList: [], preferredLanguage: language }), "ProfilePage");
   const education = nodeOf(
     educationJsonLd({
       title: "Education",

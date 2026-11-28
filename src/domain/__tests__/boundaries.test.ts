@@ -50,10 +50,11 @@ const isSharedDomain = (modulePath: string) => slashed(modulePath).startsWith("d
 
 // One entry per forbidden edge, not per mirror pair: `document-head -> jsonld` is fine, `jsonld -> document-head` is not.
 const FORBIDDEN: Readonly<Record<string, ReadonlyArray<string>>> = {
-  markdown: ["document-head", "jsonld", "discovery"],
-  "document-head": ["markdown", "discovery"],
-  jsonld: ["document-head", "markdown", "discovery"],
-  discovery: ["document-head", "jsonld"],
+  markdown: ["document-head", "jsonld", "discovery", "education"],
+  "document-head": ["markdown", "discovery", "education"],
+  jsonld: ["document-head", "markdown", "discovery", "education"],
+  discovery: ["document-head", "jsonld", "education"],
+  data: ["education"],
 };
 
 const files = productionFiles(SOURCE_ROOT);

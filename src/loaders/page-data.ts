@@ -1,8 +1,7 @@
 // types
 import type { Effect, Option } from "effect";
-import type { PageHighlights, PageTitles } from "@/domain/models";
+import type { EducationList, PageHighlights, PageTitles } from "@/domain/models";
 import type { ExperienceList } from "@/features/experience/domain/models";
-import type { EducationList } from "@/features/education/domain/models";
 
 // The localized datasets every page loader reads, as ready-to-run Effects.
 // The server binds the Data service to the request's language (see
